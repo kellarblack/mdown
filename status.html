@@ -22,7 +22,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=30">
+<link rel="stylesheet" href="assets/app.css?v=31">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -104,8 +104,8 @@
   const noteEl = $("#status-note");
   const stampEl = $("#status-stamp");
 
-  /* where a report should go once you have somewhere for it:
-     a GitHub "new issue" URL, or leave empty to just copy the text */
+  /* where a report should go once you have somewhere for it: any URL you
+     control. Empty means the button just copies the text to the clipboard. */
   const REPORT_URL = "";
 
   const HISTORY_KEY = "mdown.uptime";
