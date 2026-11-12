@@ -137,6 +137,19 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 }
 .topbar-actions { display: flex; align-items: center; gap: 7px; }
 
+/* the repo link: a small 3d tilt on hover, nothing that moves on its own */
+.icon-btn.gh { perspective: 300px; text-decoration: none; }
+.icon-btn.gh svg {
+  transition: transform 280ms cubic-bezier(.22,.8,.3,1), filter 280ms ease;
+  transform-style: preserve-3d;
+}
+.icon-btn.gh:hover svg,
+.icon-btn.gh:focus-visible svg {
+  transform: rotateY(-22deg) rotateX(10deg) translateZ(4px) scale(1.08);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .55));
+}
+.icon-btn.gh:active svg { transform: rotateY(-8deg) rotateX(3deg) scale(.96); }
+
 .instance-pill {
   display: inline-flex; align-items: center; gap: 7px;
   height: var(--h); padding: 0 10px; border-radius: var(--r-sm);
