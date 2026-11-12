@@ -806,7 +806,8 @@ a.ghost-btn { text-decoration: none; }
   .instance-pill { display: none; }
   .lede { font-size: 0.82rem; }
   .composer-main { flex-wrap: wrap; }
-  .service-badge svg { display: none; }
+  /* keep the mark on phones: it is the fastest way to see what got detected */
+  .service-badge svg { width: 12px; height: 12px; }
   .service-badge[data-empty="true"] { display: none; }
   .service-badge[data-empty="false"] { padding: 0 7px; }
   .service-name { font-size: 0.66rem; }
