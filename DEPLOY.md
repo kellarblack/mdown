@@ -253,6 +253,19 @@ If you do add a network later: it sets cookies, which means a consent banner for
 EU visitors, and a privacy policy that names the network. That is a real amount of
 work for a few dollars a month.
 
+## 6c2. What the install script does to the box
+
+Tuned for 1 vCPU / 1 GB, which is the smallest box this runs on:
+
+| | value | why |
+| --- | --- | --- |
+| **swapfile** | 1 GB, `vm.swappiness=10` | headroom for an ffmpeg merge; not working memory |
+| **journald** | 200 MB cap | logs cannot fill a 20 GB disk |
+| **`MemoryMax`** | 1536 MB (RAM + swap) | a runaway job is killed before the box locks up |
+| **`CPUQuota`** | 180% | leaves room for ffmpeg's child processes |
+| **`LimitNOFILE`** | 524288 | many sockets during a multi-stream download |
+| **`--concurrent-fragments`** | 4 | tuned for one core; more just queues |
+
 ## 6d. Keeping it alive after launch
 
 Three things, and only the first needs doing before you share the link.

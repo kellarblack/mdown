@@ -59,6 +59,26 @@ bantime = 1h
 F2B
 systemctl enable --now fail2ban >/dev/null 2>&1 || true
 
+echo "==> swap (a 1 GB box needs headroom for ffmpeg merges)"
+if [ ! -f /swapfile ]; then
+  fallocate -l 1G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=1024 status=none
+  chmod 600 /swapfile
+  mkswap /swapfile >/dev/null
+fi
+swapon /swapfile 2>/dev/null || true
+grep -q "^/swapfile" /etc/fstab || echo "/swapfile none swap sw 0 0" >> /etc/fstab
+# keep swap as a safety net, not as working memory
+sysctl -qw vm.swappiness=10
+
+echo "==> cap the journal so logs cannot fill the disk"
+install -d -m 0755 /etc/systemd/journald.conf.d
+cat > /etc/systemd/journald.conf.d/mdown.conf <<'JOURNAL'
+[Journal]
+SystemMaxUse=200M
+SystemMaxFileSize=20M
+JOURNAL
+systemctl restart systemd-journald 2>/dev/null || true
+
 echo "==> service account"
 if ! id "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home "$DATA_ROOT" --shell /usr/sbin/nologin "$APP_USER"

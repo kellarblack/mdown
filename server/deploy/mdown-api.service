@@ -36,7 +36,7 @@ ReadWritePaths=/var/lib/mdown
 
 # --- resource ceilings ----------------------------------------------------
 # sized for a 2 OCPU / 12 GB VM shared with nothing else
-MemoryMax=3G
+MemoryMax=1536M
 CPUQuota=180%
 TasksMax=256
 
