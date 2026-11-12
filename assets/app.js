@@ -1227,6 +1227,9 @@
       }
     }
 
+    if (code === "api.instance.not_ready" && context && context.reason === "disk") {
+      text = "This instance is out of disk space. Try again later.";
+    }
     if (code === "api.rate_limit") {
       const reason = context && context.reason ? String(context.reason) : "";
       if (reason === "daily_cap") {

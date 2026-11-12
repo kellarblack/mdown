@@ -212,7 +212,10 @@ class JobManager:
 
         free = self._free_bytes()
         if free < config.min_free_bytes:
-            raise ApiError.busy()
+            # not "busy": nothing is busy, the disk is full. A 4K job is a
+            # gigabyte, and filling the disk mid-write corrupts the output.
+            raise ApiError("api.instance.not_ready", 503, {"reason": "disk"},
+                           detail="not enough free disk for another download")
 
         token = ""
         for _ in range(3):

@@ -141,6 +141,18 @@ class JobManagerTest(unittest.TestCase):
         self.assertEqual(caught.exception.status, 413)
         self.assertEqual(self.leftovers(), [])
 
+    def test_refuses_to_start_without_disk_headroom(self):
+        # a 4K job is a gigabyte; starting one on a full disk corrupts it
+        self.manager = jobs_module.JobManager(Config(
+            work_dir=self.tmp, min_free_bytes=1 << 62, max_output_bytes=2048,
+            max_concurrent=1, max_queue=2))
+        with self.assertRaises(ApiError) as caught:
+            self.make()
+        self.assertEqual(caught.exception.status, 503,
+                         "got %s %s" % (caught.exception.status, caught.exception.code))
+        self.assertEqual(caught.exception.code, "api.instance.not_ready")
+        self.assertEqual(self.leftovers(), [])
+
     def test_audio_mode_must_not_return_video(self):
         self.fake.media["has_video"] = True
         with self.assertRaises(ApiError):
