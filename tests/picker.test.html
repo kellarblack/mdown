@@ -6,6 +6,7 @@
 <style>
   html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
   iframe { display: block; width: 900px; height: 700px; border: 0; }
+  body.narrow iframe { width: 390px; height: 760px; }
   pre { padding: 10px; white-space: pre-wrap; }
 </style>
 </head>
@@ -33,6 +34,9 @@ function record(name, ok, detail) {
   results.push({ name, ok, detail: detail || "" });
   log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
 }
+
+const NARROW = new URLSearchParams(location.search).get("w") === "390";
+if (NARROW) document.body.classList.add("narrow");
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -75,6 +79,17 @@ async function main() {
   const opened = await waitFor(() => modal() && !modal().hidden, 15000);
   record("picker modal opens", opened);
   if (!opened) { window.__results = { total: results.length, failures, results }; return; }
+
+  let modalWidth = 0;
+  if (NARROW) {
+    const inner = frame.contentWindow;
+    const de = doc().documentElement;
+    modalWidth = Math.round(doc().querySelector("#modal").getBoundingClientRect().width);
+    record("no horizontal overflow at 390px",
+      de.scrollWidth <= inner.innerWidth + 1, de.scrollWidth + " vs " + inner.innerWidth);
+    record("modal fits the viewport", modalWidth > 0 && modalWidth <= inner.innerWidth,
+      modalWidth + "px wide");
+  }
 
   const bulk = doc().querySelector(".picker-bulk");
   record("bulk buttons exist", !!bulk);
