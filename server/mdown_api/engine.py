@@ -272,7 +272,17 @@ def download(
     base = _common(url, cache_dir, max_bytes, fragments, cookies, extra_args)
 
     if mode == "audio":
-        fmt = audio_format if audio_format in ("mp3", "ogg", "opus", "wav") else "mp3"
+        fmt = audio_format if audio_format in ("best", "mp3", "ogg", "opus", "wav") else "mp3"
+
+        # "best" is the untouched source stream: no ffmpeg, no re-encode,
+        # whatever container the service served (m4a, webm/opus, mp3).
+        if fmt == "best":
+            cmd = base + ["-f", "bestaudio/best", "-o", template, url]
+            code, out, err = run(cmd, timeout, cache_dir)
+            if code != 0:
+                raise _download_error(err)
+            return _single_file(dest_dir)
+
         cmd = base + [
             "-f", "bestaudio/best",
             "-x",

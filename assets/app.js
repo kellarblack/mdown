@@ -24,9 +24,9 @@
   const DEFAULT_INSTANCE = "";
 
   /* deliberate ceilings: the top tiers are the ones services paywall */
-  const VIDEO_QUALITIES = ["1440", "1080", "720", "480", "360", "240", "144"];
+  const VIDEO_QUALITIES = ["4320", "2160", "1440", "1080", "720", "480", "360", "240", "144"];
   const AUDIO_BITRATES = ["128", "96", "64", "8"];
-  const AUDIO_FORMATS = ["mp3", "ogg", "wav", "opus"];
+  const AUDIO_FORMATS = ["best", "mp3", "ogg", "wav", "opus"];
   const clampQuality = (value) => (VIDEO_QUALITIES.includes(String(value)) ? String(value) : "1080");
   const clampBitrate = (value) => (AUDIO_BITRATES.includes(String(value)) ? String(value) : "128");
   const clampFormat = (value) => (AUDIO_FORMATS.includes(String(value)) ? String(value) : "mp3");
@@ -493,10 +493,12 @@
   }
 
   function audioExt() {
-    return settings.audioFormat;
+    /* the untouched stream keeps whatever container the source used */
+    return settings.audioFormat === "best" ? "m4a" : settings.audioFormat;
   }
 
   function audioLabel() {
+    if (settings.audioFormat === "best") return "source";
     if (settings.audioFormat === "wav") return "wav";
     return settings.audioFormat + " · " + settings.audioBitrate + "k";
   }
@@ -523,7 +525,7 @@
 
   /* bitrate only means something for lossy output */
   function syncAudioControls() {
-    const off = settings.audioFormat === "wav";
+    const off = settings.audioFormat === "wav" || settings.audioFormat === "best";
     $$('[data-setting="audioBitrate"] button').forEach((btn) => {
       btn.disabled = off;
       btn.setAttribute("aria-disabled", off ? "true" : "false");

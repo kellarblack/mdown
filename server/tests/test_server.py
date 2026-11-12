@@ -127,7 +127,7 @@ class ServerTest(unittest.TestCase):
         self.assertIn("soundcloud", data["cobalt"]["services"])
         self.assertFalse(data["cobalt"]["apiKeyRequired"])
         self.assertEqual(data["limits"]["maxDuration"], 1800)
-        self.assertEqual(data["limits"]["maxHeight"], 1440)
+        self.assertEqual(data["limits"]["maxHeight"], 4320)
         self.assertEqual(headers.get("Content-Type"), "application/json; charset=utf-8")
 
     def test_health(self):
@@ -230,7 +230,7 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(data["error"]["context"]["limit"], 1800)
 
     def test_resolution_is_serverside(self):
-        self.fake.media["height"] = 2160
+        self.fake.media["height"] = 8640
         status, _, data = self.post({"url": URL})
         self.assertEqual(status, 422)
         self.assertEqual(data["status"], "error")

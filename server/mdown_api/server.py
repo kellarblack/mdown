@@ -338,7 +338,7 @@ class Handler(BaseHTTPRequestHandler):
 
         height = _as_int(body.get("videoQuality"), self.config.max_height)
         audio_format = str(body.get("audioFormat") or "mp3").strip().lower()
-        if audio_format not in ("mp3", "ogg", "opus", "wav"):
+        if audio_format not in ("best", "mp3", "ogg", "opus", "wav"):
             audio_format = "mp3"
         bitrate = min(_as_int(body.get("audioBitrate"), 128), 128)
 

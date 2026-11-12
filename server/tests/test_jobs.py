@@ -118,14 +118,14 @@ class JobManagerTest(unittest.TestCase):
         self.assertEqual(caught.exception.code, "api.content.video.live")
 
     def test_rejects_resolution_above_cap(self):
-        self.fake.media["height"] = 2160
+        self.fake.media["height"] = 8640
         with self.assertRaises(ApiError):
             self.make()
         self.assertEqual(self.leftovers(), [])
 
     def test_clamps_requested_height(self):
         self.make(height=4320)
-        self.assertEqual(self.fake.calls[-1]["height"], 1440)
+        self.assertEqual(self.fake.calls[-1]["height"], 4320)
 
     def test_clamps_bitrate(self):
         self.fake.media["has_video"] = False

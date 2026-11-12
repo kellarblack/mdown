@@ -212,7 +212,7 @@ Full walkthrough, including the free backend: **[DEPLOY.md](DEPLOY.md)**.
 The short version:
 
 1. **Get an API instance** — a cobalt v11 server. `DEPLOY.md` builds one on Oracle's free tier,
-   with the 1440p / 128 kb/s / 30-minute caps this front-end assumes. Nothing is bundled here:
+   with the 8k / 128 kb/s / 30-minute caps this front-end assumes. Nothing is bundled here:
    without an instance the page says "not connected" and downloads nothing.
 2. **Set a default API** — in `assets/app.js`, top of the file:
    ```js

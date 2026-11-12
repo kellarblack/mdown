@@ -33,7 +33,7 @@ class ConfigTest(unittest.TestCase):
 
     def test_defaults_are_conservative(self):
         config = Config.from_env()
-        self.assertEqual(config.max_height, 1440)
+        self.assertEqual(config.max_height, 4320)
         self.assertEqual(config.max_duration, 1800)
         self.assertEqual(config.max_concurrent, 2)
         self.assertEqual(config.api_key, "")

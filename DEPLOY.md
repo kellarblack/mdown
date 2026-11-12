@@ -130,7 +130,7 @@ sudo systemctl reload caddy
 | --- | --- | --- |
 | `MDOWN_API_URL` | — | public base URL, used to build tunnel links |
 | `MDOWN_CORS_ORIGINS` | `https://mdown.cc` | comma-separated, exact origins only |
-| `MDOWN_MAX_HEIGHT` | `1440` | hard resolution cap, enforced after download |
+| `MDOWN_MAX_HEIGHT` | `4320` | hard resolution cap, enforced after download |
 | `MDOWN_MAX_DURATION` | `1800` | 30 minutes, in seconds, checked before download |
 | `MDOWN_MAX_OUTPUT_MB` | `800` | per-file ceiling, also handed to yt-dlp |
 | `MDOWN_MAX_CONCURRENT` | `2` | simultaneous downloads |

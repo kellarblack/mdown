@@ -2,13 +2,13 @@
 
 > mdown is a media downloader that runs in the browser. You paste a link to a
 > video or audio post, choose a format, and the file lands in your normal
-> downloads. It is capped at 1440p and 30 minutes per item, requires no account,
+> downloads. It is capped at 8k and 30 minutes per item, requires no account,
 > and stores nothing on a server.
 
 ## What it does
 
 - Downloads video and audio from a pasted link, in auto (video + audio), audio-only, or muted mode.
-- Offers mp4, webm and mkv for video; mp3, wav, ogg and opus for audio.
+- Offers mp4, webm and mkv for video; the untouched source stream, or mp3, wav, ogg and opus for audio.
 - Includes three tools that run entirely in the browser tab, with no upload:
   - **Remux** — repackages streams into a different container without re-encoding, so quality is unchanged and it finishes in seconds.
   - **Subtitle extractor** — exports embedded text subtitle tracks as SRT, and explains when a track is image-based and cannot be exported.
@@ -25,7 +25,7 @@
 
 ## Limits
 
-- Maximum resolution: 1440p.
+- Maximum resolution: 8k (4320p), decided by the instance.
 - Maximum duration: 30 minutes.
 - The downloader needs a compatible API instance; the page has no backend of its own and says so when none is configured.
 

@@ -66,7 +66,7 @@
       "featureList": [
         "Download video and audio from a pasted link",
         "Audio-only and muted modes",
-        "Resolution capped at 1440p",
+        "Resolution capped at 4320p",
         "Duration capped at 30 minutes",
         "Remux containers without re-encoding",
         "Extract embedded subtitles as SRT",
@@ -501,8 +501,10 @@
 
         <div class="field">
           <span class="field-label">Preferred video quality</span>
-          <p class="field-help">Capped at 1440p on purpose. Higher tiers are the ones that tend to move behind a paywall; if your pick is unavailable, the next best is used. Videos longer than 30 minutes are refused by the instance.</p>
+          <p class="field-help">Up to 8k, but the instance decides what it will serve — if your pick is unavailable the next best is used. Videos longer than 30 minutes are refused.</p>
           <div class="seg wrap" data-setting="videoQuality" role="radiogroup" aria-label="Video quality">
+            <button type="button" data-value="4320">8k</button>
+            <button type="button" data-value="2160">4k</button>
             <button type="button" data-value="1440">1440p</button>
             <button type="button" data-value="1080">1080p</button>
             <button type="button" data-value="720">720p</button>
@@ -561,8 +563,9 @@
       <section class="pane" data-pane="audio">
         <div class="field">
           <span class="field-label">Audio format</span>
-          <p class="field-help">mp3, ogg, opus and wav are encoded by the API; wav is uncompressed and large. The untouched source stream isn't offered — that's the tier most likely to become premium-only.</p>
+          <p class="field-help"><code>source</code> keeps the stream untouched (usually <code>.m4a</code> or <code>.webm</code>) — no re-encode, best quality. mp3, ogg, opus and wav are re-encoded by the API; wav is uncompressed and large.</p>
           <div class="seg wrap" data-setting="audioFormat" role="radiogroup" aria-label="Audio format">
+            <button type="button" data-value="best">source</button>
             <button type="button" data-value="mp3">mp3</button>
             <button type="button" data-value="ogg">ogg</button>
             <button type="button" data-value="wav">wav</button>
@@ -866,7 +869,7 @@
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
-<script src="assets/app.js?v=13" defer></script>
+<script src="assets/app.js?v=14" defer></script>
 <script type="module" src="assets/nav.js?v=8"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>
