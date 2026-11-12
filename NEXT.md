@@ -1,23 +1,60 @@
-# Later, when you can be bothered
+# What's left
 
-## ⏰ MORNING: pay for the box (~11am)
-
-The DediOne checkout is open in your browser, unpaid. Carts expire overnight and
-stock moves, so:
-
-1. **Refresh the page.** If it's gone, re-open:
-   https://dedione.com/store/special-vps-plans/20260520-lax-vps-intl-1c1g20g-special-1299
-   (check it still says **Los Angeles** + **1 TB monthly**, $12.99/yr)
-2. **Pay by card** — scroll past "Bank Transfer"; the card option is Stripe, which
-   that page loads. No PayPal needed.
-3. **Don't tick the mailing list.** Screenshot the confirmation.
-4. **Send me the IP.** Then add my key on the box (one command, below) and I take over.
-
-If DediOne is sold out or won't take the card: **CloudCone** takes cards directly,
-$20.25/yr, 2 vCPU / 1.25 GB / 4 TB —
-https://app.cloudcone.com/vps/536/create?token=frankenstein-26-ssd-vps-1
+**Status:** the API is live on `136.0.57.157` and downloads real media.
+Verified tonight: a real YouTube link → valid 10 MB mp3 in 26 s, ffprobe clean.
 
 ---
+
+## Tomorrow — 15 minutes, needs the domain
+
+1. **Buy `mdown.cc`** (~$8.55/yr). Point its nameservers at Cloudflare (free).
+2. **DNS record:**
+   | type | name | value | proxy |
+   | --- | --- | --- | --- |
+   | `A` | `api` | `136.0.57.157` | **DNS only (grey)** |
+3. Tell me. Caddy gets a certificate in ~20 s, then I run `verify.py`.
+4. **Flip the frontend:** `DEFAULT_INSTANCE = "https://api.mdown.cc"` in
+   `assets/app.js`, bump `?v=` in `index.html`, push.
+5. **Publish the site:** GitHub → Settings → Pages → Source: **GitHub Actions**,
+   then Custom domain `mdown.cc`.
+
+## After it's live — the rest of the list
+
+- **UptimeRobot** (free): HTTP monitor on `https://api.mdown.cc/health`, 5 min,
+  email alerts. Nothing on the box can tell you the box is dead.
+- **API auto-deploy** (optional): three repo secrets — `DEPLOY_HOST`, `DEPLOY_USER`,
+  `DEPLOY_SSH_KEY` — plus `git clone` the repo to `/opt/mdown-src` on the box.
+  Then a merged PR redeploys the API by itself.
+- **Donate link:** not built yet. Decide Ko-fi / Liberapay / GitHub Sponsors, then
+  it's one line in the footer.
+- **Sponsor slot:** `#slot` exists in `index.html`, hidden. Delete `hidden` to show it.
+- **API key:** `MDOWN_API_KEY=` in `/etc/mdown/api.env` when you want friends-only.
+
+## Tune after a week of real traffic
+
+Watch `journalctl -u mdown-api` and the bandwidth panel, then adjust:
+`MDOWN_JOB_RATE_MAX` (12/5min), `MDOWN_RATE_MAX` (30/min), `MDOWN_DAILY_JOBS` (500).
+
+## Still unverified (needs the browser back, or real use)
+
+- `tests/tools.test.html` (38) and `tests/remux.test.html` (90) — last green before
+  the browser tool was removed from the session
+- picker on a real multi-item post
+- subtitle embedding on a real file
+- `source` audio mode (the 10 MB mp3 above used `mp3`, not `best`)
+
+## Known limits, stated plainly
+
+- Multi-item pickers return page links the client re-posts — fine for playlists,
+  untested on Instagram carousels
+- Age-gated / login-walled content needs a cookies file
+- 1 GB RAM = one download at a time
+- YouTube bot checks can return at any time; the fix is cookies or a new IP
+- A DMCA complaint ends the hosting. No code prevents that.
+
+---
+
+## Older notes (kept for the record)
 
 Nothing here is urgent. The site is built, tested and sitting in `mdown/`.
 This is just the order to do it in.
