@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Status — mdown</title>
+<meta name="description" content="Live health of the mdown API: downloader, ffmpeg, storage and queue depth.">
+<link rel="canonical" href="https://mdown.cc/status.html">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a0a0b">
+<link rel="manifest" href="manifest.webmanifest">
+<script>
+  try {
+    var saved = JSON.parse(localStorage.getItem("mdown.settings") || "{}");
+    var pick = saved.theme;
+    if (pick !== "light" && pick !== "dark") {
+      pick = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    document.documentElement.dataset.theme = pick;
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="assets/app.css?v=27">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div class="backdrop" aria-hidden="true">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="grain"></div>
+</div>
+
+<header class="topbar">
+  <a class="brand" href="./" aria-label="mdown home">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+      </svg>
+    </span>
+    <span class="brand-text">mdown<span class="brand-dot">.</span><span class="brand-sub">cc</span></span>
+  </a>
+  <nav class="nav" aria-label="Sections">
+    <a class="nav-link is-active" href="./">download</a>
+    <details class="nav-tools">
+      <summary class="nav-link">tools <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></summary>
+      <div class="nav-menu">
+        <a href="./#remux">remux</a>
+        <a href="./#subs">subtitles</a>
+        <a href="./#clean">metadata</a>
+      </div>
+    </details>
+  </nav>
+</header>
+
+<main class="wrap">
+  <h1 class="page-h1">Status</h1>
+
+  <section class="status-card" id="status-card" data-state="checking" aria-live="polite">
+    <div class="status-head">
+      <span class="status-dot" aria-hidden="true"></span>
+      <b id="status-title">checking…</b>
+    </div>
+
+    <p class="status-note" id="status-note"></p>
+    <p class="status-cta" id="status-cta" hidden><a class="back-btn" href="./">open the downloader</a></p>
+
+    <div class="uptime" id="uptime" hidden>
+      <div class="uptime-head">
+        <span class="uptime-pct" id="uptime-pct">—</span>
+        <span class="uptime-meta" id="uptime-meta"></span>
+      </div>
+      <div class="uptime-strip" id="uptime-strip" aria-hidden="true"></div>
+    </div>
+
+    <div class="status-actions">
+      <button type="button" class="ghost-btn small" id="status-refresh">check again</button>
+      <button type="button" class="ghost-btn small" id="status-report">report a problem</button>
+    </div>
+
+    <details class="status-more">
+      <summary>what it checked</summary>
+      <dl class="status-rows" id="status-rows"></dl>
+      <p class="status-stamp" id="status-stamp"></p>
+    </details>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p class="footer-meta">mdown.cc · local-first · no accounts · <a href="terms.html">terms</a></p>
+</footer>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const $ = (sel) => document.querySelector(sel);
+  const rowsEl = $("#status-rows");
+  const card = $("#status-card");
+  const titleEl = $("#status-title");
+  const noteEl = $("#status-note");
+  const stampEl = $("#status-stamp");
+
+  /* where a report should go once you have somewhere for it:
+     a GitHub "new issue" URL, or leave empty to just copy the text */
+  const REPORT_URL = "";
+
+  const HISTORY_KEY = "mdown.uptime";
+  const HISTORY_MAX = 480;
+  const CALM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let last = null;
+  let shownPct = null;
+  let shownMs = null;
+
+  /* ---- smooth numbers: tick instead of jump ---------------------------- */
+  function tween(target, from, to, format) {
+    if (CALM || from === to || !Number.isFinite(from)) {
+      target.textContent = format(to);
+      return;
+    }
+    const start = performance.now();
+    const duration = 420;
+    const step = (now) => {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      target.textContent = format(from + (to - from) * eased);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  /* ---- rows that update in place instead of being rebuilt -------------- */
+  const rowCache = new Map();
+  const touched = new Set();
+
+  function setRow(label, value, tone) {
+    touched.add(label);
+    let entry = rowCache.get(label);
+    if (!entry) {
+      const wrap = document.createElement("div");
+      const dt = document.createElement("dt");
+      const dd = document.createElement("dd");
+      dt.textContent = label;
+      wrap.appendChild(dt);
+      wrap.appendChild(dd);
+      rowsEl.appendChild(wrap);
+      entry = { dd };
+      rowCache.set(label, entry);
+    }
+    const next = String(value);
+    if (entry.dd.textContent !== next) {
+      entry.dd.textContent = next;
+      if (!CALM) {
+        entry.dd.animate(
+          [{ opacity: 0.35 }, { opacity: 1 }],
+          { duration: 220, easing: "ease-out" }
+        );
+      }
+    }
+    if (tone) entry.dd.dataset.tone = tone;
+    else entry.dd.removeAttribute("data-tone");
+    return entry.dd;
+  }
+
+  function pruneRows() {
+    for (const [label, entry] of rowCache) {
+      if (touched.has(label)) continue;
+      const wrap = entry.dd.parentElement;
+      if (CALM) { wrap.remove(); }
+      else {
+        const anim = wrap.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, easing: "ease-in" });
+        anim.onfinish = () => wrap.remove();
+      }
+      rowCache.delete(label);
+    }
+    touched.clear();
+  }
+
+  /* ---- history ---------------------------------------------------------- */
+  function readHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.filter((x) => x && typeof x.ok === "boolean") : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function pushHistory(ok) {
+    const history = readHistory();
+    history.push({ t: Date.now(), ok: ok });
+    while (history.length > HISTORY_MAX) history.shift();
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (e) {}
+    return history;
+  }
+
+  function renderHistory(history, added) {
+    const wrap = $("#uptime");
+    const strip = $("#uptime-strip");
+    if (!history.length) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+
+    const ok = history.filter((x) => x.ok).length;
+    const pct = Math.round((ok / history.length) * 1000) / 10;
+    const pctEl = $("#uptime-pct");
+    tween(pctEl, shownPct === null ? pct : shownPct, pct, (v) => v.toFixed(1) + "% up");
+    shownPct = pct;
+
+    $("#uptime-meta").textContent =
+      "· " + history.length + " check" + (history.length === 1 ? "" : "s") +
+      " recorded while this page was open";
+
+    const recent = history.slice(-60);
+    const existing = strip.children.length;
+    strip.innerHTML = "";
+    recent.forEach((entry, i) => {
+      const bar = document.createElement("span");
+      bar.className = "uptime-bar";
+      bar.dataset.ok = entry.ok ? "true" : "false";
+      if (!CALM) {
+        bar.animate(
+          [{ transform: "scaleY(0.2)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
+          { duration: 260, delay: Math.min(i, 8) * 12, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
+        );
+      }
+      strip.appendChild(bar);
+    });
+  }
+
+  /* ---- state ------------------------------------------------------------ */
+  function apiBase() {
+    try {
+      const raw = localStorage.getItem("mdown.settings");
+      const parsed = raw ? JSON.parse(raw) : null;
+      const value = parsed && parsed.instance ? String(parsed.instance).trim() : "";
+      return value.replace(/\/+$/, "");
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function setState(state, title, note) {
+    if (card.dataset.state !== state) card.dataset.state = state;
+    if (titleEl.textContent !== title) titleEl.textContent = title;
+    noteEl.textContent = note || "";
+    noteEl.hidden = !note;
+    const cta = $("#status-cta");
+    if (cta) cta.hidden = state !== "no-instance";
+  }
+
+  function stamp() {
+    stampEl.textContent = "checked " + new Date().toLocaleTimeString();
+  }
+
+  async function check() {
+    const base = apiBase();
+    stampEl.textContent = "";
+
+    if (!base) {
+      setState("no-instance", "no API hooked up", "Add an instance address in Settings → Connection and this page fills in.");
+      setRow("api", "(none)");
+      pruneRows();
+      last = { api: "", state: "no-instance" };
+      renderHistory(readHistory());
+      return;
+    }
+
+    setRow("api", base);
+
+    const started = performance.now();
+    let response = null;
+    let body = null;
+    try {
+      response = await fetch(base + "/health", { headers: { Accept: "application/json" }, cache: "no-store" });
+      body = await response.json().catch(() => null);
+    } catch (e) {
+      const ms = Math.round(performance.now() - started);
+      setState("down", "mdown is down lol", "The API never answered. Nothing on this page can fix that — the page is static, the server is the half that's sulking.");
+      setRow("error", String(e && e.message ? e.message : e), "err");
+      const dd = setRow("latency", ms + " ms", "warn");
+      tween(dd, shownMs === null ? ms : shownMs, ms, (v) => Math.round(v) + " ms");
+      shownMs = ms;
+      pruneRows();
+      last = { api: base, state: "unreachable", error: String(e), ms };
+      stamp();
+      renderHistory(pushHistory(false));
+      return;
+    }
+
+    const ms = Math.round(performance.now() - started);
+    const checks = (body && body.checks && typeof body.checks === "object") ? body.checks : null;
+    const checkKeys = checks ? Object.keys(checks) : [];
+    const failing = checkKeys.filter((key) => !checks[key]);
+    const healthy = response.ok && failing.length === 0 && (!body || body.status !== "degraded");
+
+    setState(
+      healthy ? "up" : "degraded",
+      healthy ? "mdown is up" : "mdown is limping",
+      healthy
+        ? (checkKeys.length ? "" : "This API does not report dependency checks, so this is the instance answering — not proof that downloads work.")
+        : "The API answered, but " + (failing.length ? failing.join(", ") + " " + (failing.length === 1 ? "is" : "are") + " failing" : "it reports itself as degraded") + ". Downloads may still work; merges and conversions may not."
+    );
+
+    setRow("status", "HTTP " + response.status);
+    const latency = setRow("latency", ms + " ms");
+    tween(latency, shownMs === null ? ms : shownMs, ms, (v) => Math.round(v) + " ms");
+    shownMs = ms;
+
+    if (checkKeys.length) {
+      setRow("downloader", checks.downloader ? "ok" : "failing", checks.downloader ? "ok" : "err");
+      setRow("ffmpeg", checks.ffmpeg ? "ok" : "failing", checks.ffmpeg ? "ok" : "err");
+      setRow("ffprobe", checks.ffprobe ? "ok" : "failing", checks.ffprobe ? "ok" : "err");
+      setRow("storage", checks.storage ? "ok" : "low disk", checks.storage ? "ok" : "err");
+    }
+    const jobs = body && body.jobs;
+    if (jobs && jobs.active !== undefined) {
+      setRow("jobs", (jobs.active || 0) + " active · " + (jobs.queued || 0) + " queued");
+    }
+    if (body && typeof body.uptimeSeconds === "number") {
+      setRow("uptime", Math.floor(body.uptimeSeconds / 3600) + " h");
+    }
+    if (body && body.cobalt && body.cobalt.version) {
+      setRow("version", body.cobalt.version);
+    }
+
+    pruneRows();
+    last = { api: base, state: healthy ? "up" : "degraded", status: response.status, ms, checks, body };
+    stamp();
+    renderHistory(pushHistory(healthy));
+  }
+
+  function reportText() {
+    const lines = [
+      "mdown status report",
+      "time: " + new Date().toISOString(),
+      "page: " + location.href,
+      "api: " + (last && last.api ? last.api : "(none configured)"),
+      "state: " + (last ? last.state : "unknown"),
+      "browser: " + navigator.userAgent
+    ];
+    if (last && last.status) lines.push("http: " + last.status + " in " + last.ms + " ms");
+    if (last && last.checks) lines.push("checks: " + JSON.stringify(last.checks));
+    if (last && last.error) lines.push("error: " + last.error);
+    return lines.join("\n");
+  }
+
+  async function copyReport() {
+    const text = reportText();
+    try {
+      await navigator.clipboard.writeText(text);
+      toast("Report copied — paste it wherever you report the problem.");
+    } catch (e) {
+      toast("Couldn't copy automatically. Select the text below instead.", "warn");
+      noteEl.hidden = false;
+      noteEl.textContent = text;
+    }
+    if (REPORT_URL) window.open(REPORT_URL, "_blank", "noopener");
+  }
+
+  function toast(message, tone) {
+    const host = $("#toasts");
+    if (!host) return;
+    const node = document.createElement("div");
+    node.className = "toast";
+    node.dataset.tone = tone || "ok";
+    node.textContent = message;
+    host.appendChild(node);
+    setTimeout(() => {
+      node.classList.add("is-leaving");
+      setTimeout(() => node.remove(), 200);
+    }, 4000);
+  }
+
+  renderHistory(readHistory());
+  $("#status-refresh").addEventListener("click", check);
+  $("#status-report").addEventListener("click", copyReport);
+  check();
+
+  /* polling a hidden tab is wasted requests; resume the moment it is visible */
+  let timer = null;
+  function startPolling() {
+    if (timer) return;
+    timer = setInterval(check, 30000);
+  }
+  function stopPolling() {
+    if (!timer) return;
+    clearInterval(timer);
+    timer = null;
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopPolling();
+    else { check(); startPolling(); }
+  });
+  startPolling();
+})();
+</script>
+
+</body>
+</html>

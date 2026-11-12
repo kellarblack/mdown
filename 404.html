@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mdown.cc</title>
+<meta name="robots" content="noindex">
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid; place-items: center; background: #0a0a0b; color: #707076;
+    font: 13px ui-monospace, "SF Mono", Menlo, monospace;
+  }
+</style>
+</head>
+<body>
+<p>opening…</p>
+<script>
+  /* Pretty deep links live on paths no file matches, e.g.
+       mdown.cc/https://youtube.com/watch?v=x
+     Static hosts serve this page for those, so we hand the path to the app.
+     Works at a domain root and in a project subfolder (/repo/...). */
+  (function () {
+    var path = location.pathname;
+    var query = location.search || "";
+
+    /* already a redirect target: go home instead of looping */
+    if (/[?&]url=/.test(query) || /url%3D/i.test(path)) {
+      location.replace("/");
+      return;
+    }
+
+    /* everything before the pasted link */
+    function baseFor(p) {
+      var withScheme = p.match(/^(.*?)\/(?:https?:)?\/\//i);
+      if (withScheme) return (withScheme[1] || "") + "/";
+      var segments = p.split("/");
+      var cut = 1;
+      for (var i = 1; i < segments.length; i++) {
+        if (segments[i].indexOf(".") !== -1) break;
+        cut = i + 1;
+      }
+      return (segments.slice(0, cut).join("/") + "/").replace(/\/{2,}/g, "/");
+    }
+
+    var base = baseFor(path);
+    var stripped = path.replace(/^\/+/, "");
+    var baseBare = base.replace(/^\/+|\/+$/g, "");
+    if (baseBare && stripped.indexOf(baseBare + "/") === 0) {
+      stripped = stripped.slice(baseBare.length + 1);
+    }
+
+    var rest;
+    try {
+      rest = decodeURI(stripped);
+    } catch (e) {
+      rest = stripped;
+    }
+    rest += query;
+
+    /* not a link: just open the app (and never loop on our own path) */
+    if (!rest || (rest.indexOf(".") === -1 && rest.indexOf("://") === -1)) {
+      var here = path.replace(/\/+$/, "");
+      var there = base.replace(/\/+$/, "");
+      location.replace(here && here === there ? "/" : base);
+      return;
+    }
+    if (!/^https?:\/\//i.test(rest)) rest = "https://" + rest;
+    location.replace(base + "?url=" + encodeURIComponent(rest));
+  })();
+</script>
+</body>
+</html>

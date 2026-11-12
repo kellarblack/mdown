@@ -1,0 +1,35 @@
+# Deploy the static site to Cloudflare Pages on every push to main.
+#
+# Setup, once:
+#   1. Cloudflare dashboard → Pages → create project "mdown" (direct upload)
+#   2. Repo → Settings → Secrets → add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
+#   3. Push to main
+#
+# The API is NOT deployed here: it lives on the VPS and is updated by
+# `deploy-to.sh` (or by hand). This workflow only ships the static files.
+
+name: deploy site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mdown/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy mdown --project-name=mdown --branch=main

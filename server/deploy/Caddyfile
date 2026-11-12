@@ -1,0 +1,30 @@
+# /etc/caddy/Caddyfile
+# TLS is issued and renewed automatically.
+
+api.mdown.cc {
+	# request bodies are tiny; downloads are responses
+	request_body {
+		max_size 64KB
+	}
+
+	reverse_proxy 127.0.0.1:9000 {
+		# stream bytes as they are read from disk instead of buffering them
+		flush_interval -1
+		# a job may legitimately run for several minutes before the tunnel
+		# URL is even returned
+		transport http {
+			read_timeout 360s
+			write_timeout 360s
+			dial_timeout 5s
+		}
+	}
+
+	encode zstd gzip
+	log {
+		output file /var/log/caddy/api.log {
+			roll_size 20mb
+			roll_keep 5
+		}
+		format json
+	}
+}

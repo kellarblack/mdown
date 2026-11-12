@@ -1,0 +1,12 @@
+[Unit]
+Description=Update yt-dlp and restart the mdown API
+Documentation=https://mdown.cc
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# yt-dlp is the extractor layer: when a site changes, only a new release fixes it.
+# This is the single most important maintenance job on the box.
+ExecStart=/bin/sh -c '/opt/mdown/venv/bin/pip install --quiet --upgrade yt-dlp && /usr/bin/systemctl restart mdown-api'
+TimeoutStartSec=600

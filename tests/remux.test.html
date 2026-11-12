@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>remux tests</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  body { padding: 20px; }
+  #log { font: 12px ui-monospace, monospace; white-space: pre-wrap; }
+  .pass { color: #4ade80; } .fail { color: #f87171; }
+</style>
+</head>
+<body>
+<!-- minimal DOM the remux module expects -->
+<nav>
+  <a class="nav-link" href="#" data-view="download">download</a>
+  <a class="nav-link" href="#remux" data-view="remux">remux</a>
+</nav>
+<main data-view-panel="download" id="download-view"></main>
+<main class="wrap" data-view-panel="remux" id="remux-view" hidden>
+  <section class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose files">
+    <p class="dropzone-title">Drop files here</p>
+    <button type="button" class="primary-btn" id="browse-btn">choose files</button>
+    <input type="file" id="remux-input" class="sr-only" multiple>
+  </section>
+  <p class="remux-privacy"></p>
+  <section>
+    <div class="section-head">
+      <h2>Files <span class="count" id="remux-count" hidden>0</span></h2>
+      <div class="section-actions">
+        <span class="qstats" id="remux-stats"></span>
+        <button type="button" id="remux-clear" hidden>clear</button>
+      </div>
+    </div>
+    <div id="remux-list"></div>
+    <p id="remux-empty">No files yet.</p>
+  </section>
+</main>
+<pre id="log">starting…</pre>
+
+<script type="module" src="../assets/nav.js"></script>
+<script type="module" src="../assets/remux.js"></script>
+<script type="module">
+  const log = document.getElementById("log");
+  const results = [];
+  let failures = 0;
+
+  function record(name, ok, detail) {
+    if (!ok) failures++;
+    results.push({ name, ok, detail: detail || "" });
+    log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+  }
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  async function waitFor(fn, ms = 60000) {
+    const start = Date.now();
+    while (Date.now() - start < ms) {
+      if (fn()) return true;
+      await sleep(120);
+    }
+    return false;
+  }
+
+  async function asFile(path, name, type) {
+    const res = await fetch(path);
+    const blob = await res.blob();
+    return new File([blob], name || path.split("/").pop(), { type: type || blob.type });
+  }
+
+  async function probe(blob) {
+    const { engine, parseProbe } = window.remuxTool;
+    const ff = await engine.get();
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    await ff.writeFile("probe.bin", bytes);
+    engine.logs = [];
+    await ff.exec(["-hide_banner", "-i", "probe.bin"]).catch(() => {});
+    const info = parseProbe(engine.logs);
+    await ff.deleteFile("probe.bin");
+    return info;
+  }
+
+  async function runCase(label, file, expect) {
+    const T = window.remuxTool;
+    const before = T.items.length;
+    T.addFiles([file]);
+    const item = T.items[before];
+    const settled = await waitFor(() => item.status === "done" || item.status === "error" || item.status === "cancelled");
+    const ok = settled && item.status === expect.status && (!expect.target || item.target === expect.target);
+    record(label, ok, `${item.status}${item.target ? " · " + item.target : ""}${item.error ? " · " + item.error : ""}`);
+
+    if (expect.status === "done") {
+      const blob = await (await fetch(item.blobUrl)).blob();
+      const head = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+      const hex = [...head.subarray(0, 4)].map((b) => b.toString(16).padStart(2, "0")).join("");
+      const ascii = String.fromCharCode(...head.subarray(0, 12));
+      const checks = {
+        mp4: () => ascii.slice(4, 8) === "ftyp",
+        m4a: () => ascii.slice(4, 8) === "ftyp",
+        webm: () => hex === "1a45dfa3",
+        mkv: () => hex === "1a45dfa3",
+        ogg: () => ascii.slice(0, 4) === "OggS",
+        opus: () => ascii.slice(0, 4) === "OggS",
+        wav: () => ascii.slice(0, 4) === "RIFF",
+        mp3: () => ascii.slice(0, 3) === "ID3" || head[0] === 0xff
+      };
+      const matches = checks[expect.target] ? checks[expect.target]() : false;
+      record(label + " output magic", matches, "got " + hex + " / " + ascii.slice(0, 8).trim());
+      record(label + " output size", blob.size > 0, blob.size + " bytes");
+      record(label + " size comparable", blob.size > item.size * 0.35 && blob.size < item.size * 2.5, `${item.size} → ${blob.size}`);
+      record(label + " filename", item.outName === item.name.replace(/\.[^.]+$/, "") + "-remuxed." + expect.target, item.outName);
+
+      const info = await probe(blob);
+      record(label + " streams preserved", info.video === expect.video && info.audio === expect.audio, JSON.stringify(info));
+      if (expect.codecVideo) record(label + " video codec kept", info.videoCodec === expect.codecVideo, info.videoCodec);
+      if (expect.codecAudio) record(label + " audio codec kept", info.codecAudio === expect.codecAudio, info.codecAudio);
+    }
+
+    if (expect.errorMatch) {
+      record(label + " error explains", expect.errorMatch.test(item.error), item.error);
+    }
+    return item;
+  }
+
+  async function main() {
+    const T = window.remuxTool;
+    if (!T) { log.textContent = "FAIL: module did not load"; return; }
+
+    record("module loaded", typeof T.addFiles === "function");
+    const mp4Head = new Uint8Array(20); mp4Head.set([0,0,0,0x20,0x66,0x74,0x79,0x70,0x69,0x73,0x6f,0x6d]);
+    const webmHead = new Uint8Array(40); webmHead.set([0x1a,0x45,0xdf,0xa3]);
+    webmHead.set(new TextEncoder().encode("webm"), 12);
+    const mkvHead = new Uint8Array(40); mkvHead.set([0x1a,0x45,0xdf,0xa3]);
+    mkvHead.set(new TextEncoder().encode("matroska"), 12);
+    const wavHead = new Uint8Array(20); wavHead.set([...new TextEncoder().encode("RIFF"), 0,0,0,0, ...new TextEncoder().encode("WAVE")]);
+    record("sniff mp4", T.sniff(mp4Head, "a.mp4")?.container === "mp4");
+    record("sniff webm", T.sniff(webmHead, "a.webm")?.container === "webm");
+    record("sniff wav", T.sniff(wavHead, "a.wav")?.container === "wav");
+    record("sniff mkv", T.sniff(mkvHead, "a.mkv")?.container === "mkv");
+    record("sniff rejects text", T.sniff(new Uint8Array(40).fill(0x61), "a.txt") === null);
+    record("sniff rejects empty", T.sniff(new Uint8Array(4), "a.bin") === null);
+    record("name: simple", T.outputNameFor("clip.mp4", "mp4") === "clip-remuxed.mp4", T.outputNameFor("clip.mp4", "mp4"));
+    record("name: dots", T.outputNameFor("my.clip.v2.mkv", "mp4") === "my.clip.v2-remuxed.mp4", T.outputNameFor("my.clip.v2.mkv", "mp4"));
+    record("name: no extension", T.outputNameFor("clip", "webm") === "clip-remuxed.webm");
+
+    await runCase("mp4 → mp4", await asFile("../tests/media/sample.mp4"), {
+      status: "done", target: "mp4", video: true, audio: true, codecVideo: "h264", codecAudio: "aac"
+    });
+    await runCase("webm → webm", await asFile("../tests/media/sample.webm"), {
+      status: "done", target: "webm", video: true, audio: true
+    });
+    await runCase("mkv → mp4", await asFile("../tests/media/sample.mkv"), {
+      status: "done", target: "mp4", video: true, audio: true, codecVideo: "h264"
+    });
+    await runCase("mp3 → mp3", await asFile("../tests/media/sample.mp3"), {
+      status: "done", target: "mp3", video: false, audio: true
+    });
+    await runCase("wav → wav", await asFile("../tests/media/sample.wav"), {
+      status: "done", target: "wav", video: false, audio: true
+    });
+    await runCase("ogg → ogg", await asFile("../tests/media/sample.ogg"), {
+      status: "done", target: "ogg", video: false, audio: true
+    });
+    await runCase("m4a → m4a", await asFile("../tests/media/sample.m4a"), {
+      status: "done", target: "m4a", video: false, audio: true
+    });
+    await runCase("webm bytes named .mp4", await asFile("../tests/media/mismatch.mp4", "mismatch.mp4"), {
+      status: "done", target: "webm", video: true, audio: true
+    });
+
+    await runCase("flac rejected", await asFile("../tests/media/sample.flac"), {
+      status: "error", errorMatch: /FLAC/i
+    });
+    await runCase("truncated mp4", await asFile("../tests/media/broken.mp4"), {
+      status: "error", errorMatch: /corrupt|streams|failed/i
+    });
+    await runCase("text file", await asFile("../tests/media/notes.txt"), {
+      status: "error", errorMatch: /media container|recognise/i
+    });
+
+    /* container metadata repair: zero the duration fields, then remux */
+    const clean = await asFile("../tests/media/sample.mp4");
+    const raw = new Uint8Array(await clean.arrayBuffer());
+    const find = (needle) => {
+      for (let i = 0; i < raw.length - 4; i++) {
+        if (raw[i] === needle.charCodeAt(0) && raw[i+1] === needle.charCodeAt(1) &&
+            raw[i+2] === needle.charCodeAt(2) && raw[i+3] === needle.charCodeAt(3)) return i;
+      }
+      return -1;
+    };
+    const mvhd = find("mvhd"), tkhd = find("tkhd");
+    if (mvhd > 0) raw.fill(0, mvhd + 20, mvhd + 24);
+    if (tkhd > 0) raw.fill(0, tkhd + 24, tkhd + 28);
+    const patched = new File([raw], "broken-duration.mp4", { type: "video/mp4" });
+    const beforeProbe = await probe(patched);
+    record("fixture has broken duration", !/00:00:02/.test(beforeProbe.duration), beforeProbe.duration || "none");
+
+    const repaired = await runCase("duration repaired", patched, {
+      status: "done", target: "mp4", video: true, audio: true
+    });
+    if (repaired.status === "done") {
+      const blob = await (await fetch(repaired.blobUrl)).blob();
+      const info = await probe(blob);
+      record("duration restored", /00:00:0[12]/.test(info.duration), info.duration || "none");
+    }
+
+    /* one failure must not block the rest of the batch */
+    T.clearQueue();
+    const batch = await Promise.all([asFile("../tests/media/notes.txt"), asFile("../tests/media/sample.mp3")]);
+    T.addFiles(batch);
+    await waitFor(() => T.items.length === 2 && T.items.every((i) => i.status === "done" || i.status === "error"), 60000);
+    record("batch continues after failure", T.items[0].status === "error" && T.items[1].status === "done",
+      T.items.map((i) => i.status).join(","));
+
+    /* queue behaviour */
+    T.clearQueue();
+    T.addFiles([await asFile("../tests/media/sample.mp3"), await asFile("../tests/media/sample.wav")]);
+    record("batch queue adds 2", T.items.length === 2, String(T.items.length));
+    T.clearQueue();
+    record("clear empties queue", T.items.length === 0 && document.getElementById("remux-list").children.length === 0);
+
+    /* cancel while queued, then retry */
+    const cancelFile = await asFile("../tests/media/sample.m4a");
+    T.addFiles([cancelFile]);
+    const last = T.items[T.items.length - 1];
+    const btn = last.refs.actions.querySelector('button[title="Cancel"]');
+    record("cancel button present", !!btn);
+    if (btn) btn.click();
+    record("cancel sets state", last.status === "cancelled", last.status);
+    const retry = last.refs.actions.querySelector('button[title="Retry"]');
+    record("retry button appears", !!retry);
+    if (retry) retry.click();
+    const retried = await waitFor(() => last.status === "done" || last.status === "error", 60000);
+    record("retry completes", retried && last.status === "done", last.status + " " + last.error);
+
+    /* engine filesystem is clean */
+    const ff = await T.engine.get();
+    const entries = await ff.listDir("/");
+    const leftovers = entries.filter((e) => /^(in|out)_/.test(e.name));
+    record("no temp files left", leftovers.length === 0, JSON.stringify(leftovers.map((l) => l.name)));
+
+    /* keyboard + drag affordances */
+    const input = document.getElementById("remux-input");
+    let opened = 0;
+    input.addEventListener("click", (e) => { e.preventDefault(); opened++; });
+    document.getElementById("dropzone").dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    record("Enter opens picker", opened === 1, String(opened));
+    document.getElementById("dropzone").dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    record("Space opens picker", opened === 2, String(opened));
+    const zone = document.getElementById("dropzone");
+    zone.dispatchEvent(new DragEvent("dragenter", { bubbles: true, cancelable: true, dataTransfer: new DataTransfer() }));
+    record("drag-over state", zone.classList.contains("is-dragging"));
+    zone.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: new DataTransfer() }));
+    record("drag-over cleared", !zone.classList.contains("is-dragging"));
+
+    /* routing */
+    location.hash = "#remux";
+    await sleep(120);
+    record("route shows remux", !document.getElementById("remux-view").hidden && document.getElementById("download-view").hidden);
+    record("route marks nav", document.querySelector('.nav-link[data-view="remux"]').classList.contains("is-active"));
+    location.hash = "";
+    await sleep(120);
+    record("route returns to download", document.getElementById("remux-view").hidden);
+
+    document.title = failures ? `${failures} failed` : "all passed";
+    window.__results = { results, failures, total: results.length };
+    log.innerHTML += `\n\n${failures ? failures + " FAILURES" : "ALL " + results.length + " PASSED"}`;
+  }
+
+  main().catch((err) => {
+    log.textContent = "FATAL " + err;
+    window.__results = { fatal: String(err) };
+  });
+</script>
+</body>
+</html>

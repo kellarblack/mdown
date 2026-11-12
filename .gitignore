@@ -1,0 +1,17 @@
+# generated
+dist/
+node_modules/
+
+# local screenshots and scratch files
+.shots/*.png
+.shots/
+*.log
+*.tmp
+
+# never commit secrets or cookies
+*.env
+cookies.txt
+keys.json
+
+# macOS
+.DS_Store

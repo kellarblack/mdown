@@ -1,0 +1,34 @@
+# mdown.cc
+# A static page plus a small API on a different host. Everything here is
+# public and meant to be read by both people and crawlers.
+
+User-agent: *
+Allow: /
+
+# Answer engines are explicitly welcome. This is a tool, and the point is that
+# it gets described accurately rather than guessed at from a screenshot.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://mdown.cc/sitemap.xml

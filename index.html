@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>mdown — media downloader for video and audio</title>
+<meta name="description" content="A media downloader for video and audio, capped at 1080p and 25 minutes. Includes a subtitle extractor, remux and metadata cleaner that run in your browser — nothing is uploaded.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<link rel="canonical" href="https://mdown.cc/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="mdown">
+<meta property="og:url" content="https://mdown.cc/">
+<meta property="og:title" content="mdown — Simple Media Downloader">
+<meta property="og:description" content="A media downloader for video and audio, capped at 1080p and 25 minutes. Includes a subtitle extractor, remux and metadata cleaner that run in your browser — nothing is uploaded.">
+<meta property="og:image" content="https://mdown.cc/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
+<meta property="og:image:alt" content="mdown — a dark, minimal media downloader with a link field and format controls">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mdown.cc/assets/og.png">
+<meta name="twitter:title" content="mdown — Simple Media Downloader">
+<meta name="twitter:description" content="A media downloader for video and audio, capped at 1080p and 25 minutes. Subtitle extractor, remux and metadata cleaner run in your browser — nothing is uploaded.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a0a0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="mdown">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<script>
+  try {
+    var saved = JSON.parse(localStorage.getItem("mdown.settings") || localStorage.getItem("mget.settings") || localStorage.getItem("mediadownload.settings") || "{}");
+    var pick = saved.theme;
+    if (pick !== "light" && pick !== "dark") {
+      pick = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    document.documentElement.dataset.theme = pick;
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="assets/app.css?v=27">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://mdown.cc/#website",
+      "url": "https://mdown.cc/",
+      "name": "mdown",
+      "alternateName": "mdown.cc",
+      "description": "A media downloader for video and audio with browser-based tools for remuxing, subtitle extraction and metadata removal.",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://mdown.cc/#app",
+      "name": "mdown",
+      "url": "https://mdown.cc/",
+      "applicationCategory": "MultimediaApplication",
+      "applicationSubCategory": "Media downloader",
+      "operatingSystem": "Any (runs in a web browser)",
+      "browserRequirements": "Requires JavaScript and a modern browser",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": [
+        "Download video and audio from a pasted link",
+        "Audio-only and muted modes",
+        "Resolution capped at 1080p",
+        "Duration capped at 25 minutes",
+        "Remux containers without re-encoding",
+        "Extract embedded subtitles as SRT",
+        "Remove container metadata",
+        "No account required",
+        "Local tools: files are never uploaded"
+      ],
+      "description": "Paste a link, pick a format, keep the file. mdown saves video and audio at up to 1080p, and includes three tools that run entirely in the browser: a remuxer that repackages streams without re-encoding, a subtitle extractor that exports SRT, and a metadata cleaner that strips container tags."
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://mdown.cc/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does it ask for an API address?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Because the page has no server of its own. A browser cannot fetch video from most sites directly, so it uses an API server that can. You paste that server address once in Settings, and it is remembered." }
+        },
+        {
+          "@type": "Question",
+          "name": "Where do my files go?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Into your browser's normal downloads. Nothing is stored on a server, and the queue disappears when you close the tab." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which formats can I get?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Video as mp4, webm or mkv depending on the codec. Audio as mp3, wav, ogg or opus." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it work on my phone?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The same page and queue work on mobile, and a media link can be placed after the domain so the download starts immediately." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does it end in .cc?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Closed captions. It is the country code for the Cocos Islands, but here it refers to the subtitle extractor that pulls captions out of a file." }
+        },
+        {
+          "@type": "Question",
+          "name": "What does it keep?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Settings and a short list of recent links, stored in this browser only. No account, no cookies, no analytics." }
+        },
+        {
+          "@type": "Question",
+          "name": "What does it work with?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The list is whatever the connected API supports, shown in Settings under Connection. The reference API covers about thirty services, including YouTube, Vimeo, TikTok, Instagram, Reddit, Twitch, SoundCloud, Bandcamp, Mixcloud, Bilibili and Dailymotion." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it download from Spotify?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Spotify, Deezer, Tidal and Apple Music encrypt their audio, so the downloader refuses them and says so rather than failing vaguely. The same track is usually available on YouTube or SoundCloud." }
+        },
+        {
+          "@type": "Question",
+          "name": "A link failed — why?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Usually the post is private, region-locked or age-gated; the API does not support that service; or it is rate limiting. The row shows which, and retry re-sends it." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+</head>
+<body>
+
+<div class="backdrop" aria-hidden="true">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="grain"></div>
+</div>
+
+<header class="topbar">
+  <a class="brand" href="./" aria-label="mdown home" title="mdown.cc — media downloader, cc for closed captions">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+      </svg>
+    </span>
+    <span class="brand-text">mdown<span class="brand-dot">.</span><span class="brand-sub">cc</span></span>
+  </a>
+
+  <nav class="nav" aria-label="Sections">
+    <a class="nav-link is-active" href="#" data-view="download">download</a>
+    <details class="nav-tools" id="nav-tools">
+      <summary class="nav-link" data-tools-toggle>tools <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></summary>
+      <div class="nav-menu">
+        <a href="#remux" data-view="remux">remux</a>
+        <a href="#subs" data-view="subs">subtitles</a>
+        <a href="#clean" data-view="clean">metadata</a>
+      </div>
+    </details>
+  </nav>
+
+  <div class="topbar-actions">
+    <button class="instance-pill" id="instance-pill" type="button" data-state="unknown" title="API status">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="instance-pill-label" id="instance-pill-label">not connected</span>
+    </button>
+
+
+    <div class="dock" id="queue-dock">
+      <button class="icon-btn dock-btn" id="queue-toggle" type="button"
+              aria-expanded="false" aria-controls="queue-panel" aria-label="downloads" title="downloads">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M5 17.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-1.5"/></svg>
+        <span class="dock-badge" id="queue-badge" hidden>0</span>
+      </button>
+
+      <div class="dock-panel" id="queue-panel" hidden>
+        <div class="dock-head">
+          <span class="section-label">downloads <span class="count" id="queue-count" hidden>0</span></span>
+          <span class="section-actions">
+            <span class="qstats" id="queue-stats"></span>
+            <button type="button" class="ghost-btn small" id="clear-finished" hidden>clear finished</button>
+          </span>
+        </div>
+        <div class="queue-list" id="queue-list"></div>
+        <p class="empty" id="empty-state">Nothing here yet.</p>
+      </div>
+    </div>
+
+    <button class="icon-btn" id="open-help" type="button" title="how it works" aria-label="how it works" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.3c-.8.5-1.2 1-1.2 1.9"/><path d="M12 16.9h.01"/></svg>
+    </button>
+
+    <button class="icon-btn labeled" id="open-settings" type="button" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.9 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9.4a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9.4a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      <span>settings</span>
+    </button>
+  </div>
+</header>
+
+<p class="file-note" id="file-note" hidden>
+  This page needs to be served over http — the media engine can't start from a double-clicked file.
+  From this folder run <code>python3 -m http.server 4331</code> and open <code>http://127.0.0.1:4331</code>.
+</p>
+
+<main class="wrap" data-view-panel="download" id="download-view">
+
+  <div class="hero">
+    <p class="hero-kicker">Media Downloader</p>
+    <h1 class="sr-only">mdown — media downloader for video and audio</h1>
+
+  <section class="composer" id="composer">
+    <form id="fetch-form" novalidate>
+      <div class="composer-main">
+        <span class="service-badge" id="service-badge" data-empty="true">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13.5a4 4 0 0 0 5.7 0l2.8-2.8a4 4 0 1 0-5.7-5.7L11.4 6.4"/><path d="M14 10.5a4 4 0 0 0-5.7 0l-2.8 2.8a4 4 0 1 0 5.7 5.7l1.3-1.3"/></svg>
+          <span class="service-name" id="service-name" hidden></span>
+        </span>
+
+        <label class="sr-only" for="url-input">Media link</label>
+        <textarea id="url-input" rows="1" placeholder="paste a link" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" inputmode="url" enterkeyhint="go"></textarea>
+
+        <div class="composer-tools">
+          <button type="button" class="icon-btn" id="clear-btn" title="Clear" aria-label="Clear input" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+          <button type="button" class="ghost-btn" id="paste-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="12" height="16" rx="2.5"/><path d="M16 4V3.2A1.2 1.2 0 0 0 14.8 2H9.2A1.2 1.2 0 0 0 8 3.2V4"/><path d="M4 8v11.5A1.5 1.5 0 0 0 5.5 21H13"/></svg>
+            <span>paste</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="composer-foot">
+        <div class="mode-group">
+        <div class="modes" role="radiogroup" aria-label="Download mode">
+          <button type="button" class="mode" data-mode="auto" role="radio" aria-checked="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/></svg>
+            <span class="mode-name">auto</span>
+          </button>
+          <button type="button" class="mode" data-mode="audio" role="radio" aria-checked="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6.5l9-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="15.5" cy="16" r="2.5"/></svg>
+            <span class="mode-name">audio</span>
+          </button>
+          <button type="button" class="mode" data-mode="mute" role="radio" aria-checked="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="m3 19 18-14"/></svg>
+            <span class="mode-name">mute</span>
+          </button>
+        </div>
+        </div>
+
+        <div class="composer-cta">
+          <span class="format-note" id="format-note"></span>
+          <button type="button" class="icon-btn tune" id="tune-mode" title="format settings" aria-label="format settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
+          </button>
+          <p class="hint" id="composer-hint"></p>
+          <button type="submit" class="primary-btn" id="fetch-btn">
+            <span>fetch</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="setup-note" id="setup-note" hidden>
+      <p>Not connected — <button type="button" class="link-btn" id="setup-open-settings">connect an API</button> to download.</p>
+    </div>
+  </section>
+
+
+  <div class="quickpick" id="quickpick" hidden>
+    <p class="quickpick-q"><b id="quickpick-service">this link</b> — download as</p>
+    <div class="quickpick-actions" role="group" aria-label="Choose what to download">
+      <button type="button" class="quickpick-btn" data-pick="audio">audio only</button>
+      <button type="button" class="quickpick-btn" data-pick="auto">video + audio</button>
+      <button type="button" class="quickpick-btn" data-pick="mute">video only</button>
+    </div>
+    <button type="button" class="quickpick-close" id="quickpick-cancel" aria-label="dismiss">esc</button>
+  </div>
+
+    <p class="meta-line">
+      <span class="shortcut-tag">shortcut</span>
+      <code class="tip" tabindex="0" data-tip="yes — any link that isn't DRM-locked">mdown.cc/&lt;link&gt;</code>
+    </p>
+  </div>
+
+  <p class="recent-line" id="recent" hidden></p>
+
+  <!-- One sponsor slot. Off by default: delete `hidden` and put something in it.
+       It is deliberately small and labelled so it never reads as part of the app.
+       AdSense will not accept a media downloader; the networks that do are the
+       ones that serve fake download buttons. Self-sold or nothing. -->
+  <aside class="slot" id="slot" hidden aria-label="Sponsor">
+    <span class="slot-label">sponsor</span>
+    <span class="slot-body">your one line here</span>
+  </aside>
+
+
+
+
+</main>
+
+<main class="wrap" data-view-panel="remux" id="remux-view" hidden>
+  <h1 class="page-h1">Remux</h1>
+  <p class="page-lede">Repackage a file without touching the encoded audio or video. Use it when a player refuses to open something, seeking is broken, or you need a different container.</p>
+
+  <section class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose or drop media files">
+    <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4.5 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/></svg>
+    <p class="dropzone-title">Drop files here</p>
+    <p class="dropzone-hint">MP4 · MOV · WebM · M4A · MP3 · OGG · OPUS · WAV</p>
+    <span class="primary-btn" id="browse-btn">choose files</span>
+    <input type="file" id="remux-input" class="sr-only" tabindex="-1" aria-hidden="true" multiple
+           accept=".mp4,.m4a,.mov,.webm,.mkv,.mp3,.ogg,.oga,.opus,.wav,video/*,audio/*">
+  </section>
+
+  <p class="remux-privacy">Files are processed on this device. Nothing is uploaded, and nothing is kept after you leave the page.</p>
+
+  <section class="remux-queue" aria-labelledby="remux-queue-title">
+    <details class="remux-queue disclosure" id="remux-section" aria-labelledby="remux-queue-title" open>
+      <summary class="section-head">
+        <span class="section-label" id="remux-queue-title"><svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 3 4 5-4 5"/></svg>Files <span class="count" id="remux-count" hidden>0</span></span>
+        <span class="section-actions">
+          <span class="qstats" id="remux-stats"></span>
+          <button type="button" class="ghost-btn small" id="remux-clear" hidden>clear</button>
+        </span>
+      </summary>
+      <div class="rqueue" id="remux-list"></div>
+      <p class="empty" id="remux-empty">No files yet.</p>
+    </details>
+  </section>
+
+  <section class="explain" aria-labelledby="explain-title">
+    <h2 class="sr-only" id="explain-title">How remuxing works</h2>
+    <div class="explain-grid">
+      <div class="explain-item">
+        <h3>What it fixes</h3>
+        <p>A file that won't seek, shows the wrong length, or gets rejected by an editor or an older player. It rebuilds the packaging, not the media.</p>
+      </div>
+      <div class="explain-item">
+        <h3>How it works</h3>
+        <p>The encoded audio and video are copied into a fresh container. Nothing is re-encoded, so the quality is identical to the original.</p>
+      </div>
+      <div class="explain-item">
+        <h3>Where it runs</h3>
+        <p>In this tab, on your device. No upload, no queue, no account — and no server to wait on.</p>
+      </div>
+    </div>
+
+    <details class="remux-help">
+      <summary>What remuxing can and can't do</summary>
+      <div class="remux-help-body">
+        <p><b>Think of it like a box.</b> The container (MP4, WebM) is the box; the codecs inside (H.264, AAC, VP9) are the contents. Remuxing puts the same contents in a new box. Nothing inside is touched, so nothing gets worse.</p>
+        <p><b>It can</b> move existing streams into a compatible container, rebuild the index so seeking works, and recalculate missing durations and timestamps.</p>
+        <p><b>It can't</b> change codecs. If the target container won't accept a codec, that needs a re-encode, which this tool doesn't do — you get an explanation instead of a quietly degraded file. It also can't repair damaged frame data: if the media itself is corrupt, a new container won't save it.</p>
+        <p><b>Good to know</b> — a file whose extension lies (a WebM named .mp4) is detected by its actual bytes, not its name. Your original file is never modified.</p>
+      </div>
+    </details>
+  </section>
+</main>
+
+<main class="wrap" data-view-panel="subs" hidden>
+  <h1 class="page-h1">Subtitles</h1>
+  <p class="page-lede">Pull the subtitle tracks out of a video as separate <code>.srt</code> files. Text tracks convert cleanly; image-based ones (PGS, VobSub) can't be turned into text without OCR. The <code>.cc</code> in the domain is for closed captions — this is that tool.</p>
+
+  <section class="dropzone" id="subs-drop" tabindex="0" role="button" aria-label="Choose a video file">
+    <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 14h4M13 14h4M7 10.5h2M11 10.5h6"/></svg>
+    <p class="dropzone-title">Drop a video file</p>
+    <p class="dropzone-hint">MKV · MP4 · MOV · WebM</p>
+    <span class="primary-btn">choose file</span>
+    <input type="file" id="subs-input" class="sr-only" tabindex="-1" aria-hidden="true" accept=".mkv,.mp4,.m4v,.mov,.webm,video/*">
+  </section>
+  <p class="remux-privacy">Read in this tab. Nothing is uploaded, and nothing is kept.</p>
+
+  <section class="tool" id="subs-panel" hidden aria-live="polite">
+    <div class="tool-file" id="subs-file"></div>
+    <div class="track-list" id="subs-tracks"></div>
+    <p class="tool-note" id="subs-note" hidden></p>
+    <div class="tool-actions">
+      <button type="button" class="primary-btn" id="subs-extract" disabled>extract selected</button>
+      <button type="button" class="ghost-btn" id="subs-reset">choose another</button>
+    </div>
+    <div class="tool-outputs" id="subs-outputs"></div>
+  </section>
+</main>
+
+<main class="wrap" data-view-panel="clean" hidden>
+  <h1 class="page-h1">Metadata</h1>
+  <p class="page-lede">Remove titles, comments, creation dates and location tags from a file. The audio and video are copied untouched, so nothing is re-encoded.</p>
+
+  <section class="dropzone" id="clean-drop" tabindex="0" role="button" aria-label="Choose a media file">
+    <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4.5h6V7"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v5M14 11v5"/></svg>
+    <p class="dropzone-title">Drop a media file</p>
+    <p class="dropzone-hint">MP4 · MOV · MKV · WebM · M4A · MP3 · OGG · WAV</p>
+    <span class="primary-btn">choose file</span>
+    <input type="file" id="clean-input" class="sr-only" tabindex="-1" aria-hidden="true" accept=".mp4,.m4a,.mov,.mkv,.webm,.mp3,.ogg,.oga,.opus,.wav,video/*,audio/*">
+  </section>
+  <p class="remux-privacy">Read and rewritten on this device. Nothing is uploaded.</p>
+
+  <section class="tool" id="clean-panel" hidden aria-live="polite">
+    <div class="tool-file" id="clean-file"></div>
+    <div class="tag-list" id="clean-tags"></div>
+    <p class="tool-note">Container tags only. Watermarks, burned-in text, and data inside the encoded frames are outside its reach.</p>
+    <div class="tool-actions">
+      <button type="button" class="primary-btn" id="clean-run" disabled>strip metadata</button>
+      <button type="button" class="ghost-btn" id="clean-reset">choose another</button>
+    </div>
+    <div class="tool-outputs" id="clean-outputs"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p class="footer-meta">by continuing, you agree to <a href="terms.html">our TOS</a> · <a href="status.html">status</a> · <span id="footer-version">mdown.cc</span> · local-first</p>
+</footer>
+
+<!-- ======================= settings sheet ======================= -->
+<aside class="sheet" id="settings" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+  <div class="sheet-backdrop" data-close-settings></div>
+  <div class="sheet-panel">
+    <header class="sheet-head">
+      <div>
+        <h2 id="settings-title">Settings</h2>
+        <p class="sheet-sub">Stored locally. Applied to every request.</p>
+      </div>
+      <button type="button" class="icon-btn" data-close-settings aria-label="Close settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+
+    <nav class="sheet-nav" aria-label="Settings sections">
+      <button type="button" class="sheet-nav-item is-active" data-section="appearance">Appearance</button>
+      <button type="button" class="sheet-nav-item" data-section="video">Video</button>
+      <button type="button" class="sheet-nav-item" data-section="audio">Audio</button>
+      <button type="button" class="sheet-nav-item" data-section="output">Output</button>
+      <button type="button" class="sheet-nav-item" data-section="privacy">Privacy</button>
+      <button type="button" class="sheet-nav-item" data-section="advanced">Advanced</button>
+      <button type="button" class="sheet-nav-item" data-section="instance">Connection</button>
+    </nav>
+
+    <div class="sheet-body" id="sheet-body">
+
+      <section class="pane is-active" data-pane="appearance">
+        <div class="field">
+          <span class="field-label">Theme</span>
+          <p class="field-help">Follows your system setting unless you choose otherwise.</p>
+          <div class="seg" data-setting="theme" role="radiogroup" aria-label="Theme">
+            <button type="button" data-value="auto">system</button>
+            <button type="button" data-value="light">light</button>
+            <button type="button" data-value="dark">dark</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="instance">
+        <div class="field">
+          <label class="field-label" for="instance-url">API address</label>
+          <p class="field-help">The download runs on an API server, not on this page. Paste its address — whoever runs it gives you the URL. Usually something like <code>https://api.example.com</code>.</p>
+          <div class="field-row">
+            <input type="url" id="instance-url" class="text-input" placeholder="https://api.example.com" spellcheck="false" autocomplete="off">
+            <button type="button" class="ghost-btn" id="check-instance">Check</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="api-key">API key <span class="optional">if required</span></label>
+          <p class="field-help">Only if the API asks for one. Stored in this browser, sent with each request.</p>
+          <input type="password" id="api-key" class="text-input" placeholder="paste key" spellcheck="false" autocomplete="off">
+        </div>
+
+        <div class="instance-card" id="instance-detail" data-state="empty">
+          <div class="instance-card-head">
+            <span class="dot"></span>
+            <strong id="instance-detail-title">Not checked</strong>
+          </div>
+          <dl class="instance-meta" id="instance-meta"></dl>
+          <p class="instance-error" id="instance-error" hidden></p>
+        </div>
+
+        <div class="services" id="services-card" hidden>
+          <div class="services-head">
+            <span class="field-label">Supported services <span class="count" id="services-count">0</span></span>
+            <button type="button" class="ghost-btn small" id="refresh-instance">refresh</button>
+          </div>
+          <div class="chips" id="services-chips"></div>
+        </div>
+
+        <p class="field-help footnote">No API yet? Ask the person hosting one for its address, or run one yourself.</p>
+      </section>
+
+      <section class="pane" data-pane="video">
+        <div class="field">
+          <span class="field-label">Default download mode</span>
+          <div class="seg" data-setting="downloadMode" role="radiogroup" aria-label="Default download mode">
+            <button type="button" data-value="auto">auto</button>
+            <button type="button" data-value="audio">audio</button>
+            <button type="button" data-value="mute">mute</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Preferred video quality</span>
+          <p class="field-help">Capped at 1080p on purpose. Higher tiers are the ones that tend to move behind a paywall; if your pick is unavailable, the next best is used. Videos longer than 25 minutes are refused by the instance.</p>
+          <div class="seg wrap" data-setting="videoQuality" role="radiogroup" aria-label="Video quality">
+            <button type="button" data-value="1080">1080p</button>
+            <button type="button" data-value="720">720p</button>
+            <button type="button" data-value="480">480p</button>
+            <button type="button" data-value="360">360p</button>
+            <button type="button" data-value="240">240p</button>
+            <button type="button" data-value="144">144p</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">YouTube codec</span>
+          <p class="field-help">h264 = best compatibility · av1 = best quality and efficiency · vp9 = same quality, larger files.</p>
+          <div class="seg" data-setting="youtubeVideoCodec" role="radiogroup" aria-label="YouTube codec">
+            <button type="button" data-value="h264">h264 + aac</button>
+            <button type="button" data-value="av1">av1 + opus</button>
+            <button type="button" data-value="vp9">vp9 + opus</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="yt-container">YouTube container</label>
+          <div class="field-row">
+            <select id="yt-container" class="select" data-setting="youtubeVideoContainer">
+              <option value="auto">auto</option>
+              <option value="mp4">mp4</option>
+              <option value="webm">webm</option>
+              <option value="mkv">mkv</option>
+            </select>
+          </div>
+          <p class="field-help">auto picks mp4 for h264, webm for vp9/av1. auto + h264 + mp4 is the combination that yields a single playable <code>.mp4</code> with video and audio already muxed.</p>
+        </div>
+
+        <div class="field">
+          <label class="switch-row" for="allow-h265">
+            <span>
+              <span class="field-label">Allow h265 (HEVC)</span>
+              <span class="field-help">Higher quality on TikTok &amp; similar, at the cost of compatibility.</span>
+            </span>
+            <input type="checkbox" id="allow-h265" class="switch" data-setting="allowH265">
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="switch-row" for="convert-gif">
+            <span>
+              <span class="field-label">Convert looping videos to GIF</span>
+              <span class="field-help">Twitter/X loops. GIF conversion is lossy and files get large.</span>
+            </span>
+            <input type="checkbox" id="convert-gif" class="switch" data-setting="convertGif">
+          </label>
+        </div>
+
+              </section>
+
+      <section class="pane" data-pane="audio">
+        <div class="field">
+          <span class="field-label">Audio format</span>
+          <p class="field-help">mp3, ogg, opus and wav are encoded by the API; wav is uncompressed and large. The untouched source stream isn't offered — that's the tier most likely to become premium-only.</p>
+          <div class="seg wrap" data-setting="audioFormat" role="radiogroup" aria-label="Audio format">
+            <button type="button" data-value="mp3">mp3</button>
+            <button type="button" data-value="ogg">ogg</button>
+            <button type="button" data-value="wav">wav</button>
+            <button type="button" data-value="opus">opus</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Bitrate</span>
+          <p class="field-help">Capped at 128 kb/s. Only applied to lossy output — above that, the extra bits rarely buy anything audible.</p>
+          <div class="seg wrap" data-setting="audioBitrate" role="radiogroup" aria-label="Audio bitrate">
+            <button type="button" data-value="128">128</button>
+            <button type="button" data-value="96">96</button>
+            <button type="button" data-value="64">64</button>
+            <button type="button" data-value="8">8</button>
+            <span class="seg-suffix">kb/s</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="dub-lang">Preferred audio track</label>
+          <div class="field-row">
+            <select id="dub-lang" class="select" data-setting="youtubeDubLang">
+              <option value="original">original</option>
+              <option value="en">English</option>
+              <option value="es">español</option>
+              <option value="pt">português</option>
+              <option value="fr">français</option>
+              <option value="de">Deutsch</option>
+              <option value="ru">русский</option>
+              <option value="zh">中文</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="hi">हिन्दी</option>
+              <option value="ar">العربية</option>
+              <option value="uk">українська</option>
+            </select>
+          </div>
+          <p class="field-help">Picks a dubbed track when the service has one; otherwise you get the original.</p>
+        </div>
+
+        
+        <div class="field">
+          <label class="switch-row" for="tiktok-audio">
+            <span>
+              <span class="field-label">TikTok: original sound</span>
+              <span class="field-help">Grabs the sound as the author uploaded it, unmodified.</span>
+            </span>
+            <input type="checkbox" id="tiktok-audio" class="switch" data-setting="tiktokFullAudio">
+          </label>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="output">
+        <div class="field">
+          <span class="field-label">Saved file name</span>
+          <div class="seg" data-setting="filenameStyle" role="radiogroup" aria-label="Filename style">
+            <button type="button" data-value="classic">classic</button>
+            <button type="button" data-value="basic">basic</button>
+            <button type="button" data-value="pretty">pretty</button>
+            <button type="button" data-value="nerdy">nerdy</button>
+          </div>
+          <div class="filename-preview">
+            <span class="preview-label">video</span>
+            <code id="preview-video">Video Title - Video Author (1080p, h264).mp4</code>
+            <span class="preview-label">audio</span>
+            <code id="preview-audio">Audio Title - Audio Author.mp3</code>
+          </div>
+          <p class="field-help">Only used for tunneled files. Some services only support classic.</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="subtitle-lang">Preferred subtitle language</label>
+          <div class="field-row">
+            <select id="subtitle-lang" class="select" data-setting="subtitleLang">
+              <option value="none">none</option>
+              <option value="en">English</option>
+              <option value="es">español</option>
+              <option value="pt">português</option>
+              <option value="fr">français</option>
+              <option value="de">Deutsch</option>
+              <option value="it">italiano</option>
+              <option value="nl">Nederlands</option>
+              <option value="pl">polski</option>
+              <option value="ru">русский</option>
+              <option value="uk">українська</option>
+              <option value="tr">Türkçe</option>
+              <option value="ar">العربية</option>
+              <option value="he">עברית</option>
+              <option value="hi">हिन्दी</option>
+              <option value="bn">বাংলা</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="zh">中文</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="id">Indonesia</option>
+              <option value="th">ไทย</option>
+            </select>
+          </div>
+          <p class="field-help">Added when available. Services with a single track get it regardless of choice.</p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Saving method</span>
+          <p class="field-help">How finished files are handed to you. If the preferred way is unavailable, you'll be asked.</p>
+          <div class="seg wrap" data-setting="savingMethod" role="radiogroup" aria-label="Saving method">
+            <button type="button" data-value="ask">ask</button>
+            <button type="button" data-value="download">download</button>
+            <button type="button" data-value="share">share</button>
+            <button type="button" data-value="copy">copy link</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="switch-row" for="disable-metadata">
+            <span>
+              <span class="field-label">Strip file metadata</span>
+              <span class="field-help">Title, artist and other tags are not written into the file.</span>
+            </span>
+            <input type="checkbox" id="disable-metadata" class="switch" data-setting="disableMetadata">
+          </label>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="privacy">
+        <div class="field">
+          <label class="switch-row" for="always-proxy">
+            <span>
+              <span class="field-label">Always tunnel files</span>
+              <span class="field-help">Hides your IP and browser from the source service, and gives readable filenames even when the source wouldn't.</span>
+            </span>
+            <input type="checkbox" id="always-proxy" class="switch" data-setting="alwaysProxy">
+          </label>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Local processing</span>
+          <p class="field-help">When the API serves separate streams, they must be merged on your machine. This build hands you the tunnels and lists the exact <code>ffmpeg</code> command instead of silently failing.</p>
+          <div class="seg" data-setting="localProcessing" role="radiogroup" aria-label="Local processing">
+            <button type="button" data-value="disabled">disabled</button>
+            <button type="button" data-value="preferred">preferred</button>
+            <button type="button" data-value="forced">forced</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Telemetry</span>
+          <div class="notice">
+            <strong>None, by design.</strong> This front-end sends nothing anywhere except the API you configure. Settings and history live in <code>localStorage</code>.
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="advanced">
+        <div class="field">
+          <span class="field-label">Grab the page you're on</span>
+          <p class="field-help">Drag this to your bookmarks bar. On any media page, click it and the link opens here and starts fetching.</p>
+          <a class="ghost-btn" id="bookmarklet" href="#" draggable="true">send this page</a>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Parallel downloads</span>
+          <p class="field-help">Fetches run side by side. Higher finishes batches faster; lower is gentler on your API.</p>
+          <div class="seg" data-setting="concurrency" role="radiogroup" aria-label="Parallel downloads">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Request preview</span>
+          <p class="field-help">Exactly what will be POSTed to <code>/</code>. Sensitive headers are not shown.</p>
+          <pre class="code-block" id="request-preview">{}</pre>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Settings data</span>
+          <div class="field-row wrap-row">
+            <button type="button" class="ghost-btn" id="export-settings">Export JSON</button>
+            <button type="button" class="ghost-btn" id="import-settings">Import JSON</button>
+            <button type="button" class="ghost-btn danger" id="reset-settings">Reset all</button>
+            <input type="file" id="import-file" accept="application/json,.json" hidden>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Local data</span>
+          <div class="field-row wrap-row">
+            <button type="button" class="ghost-btn" id="clear-history">Clear recent links</button>
+            <button type="button" class="ghost-btn" id="clear-queue-all">Clear queue</button>
+          </div>
+          <p class="field-help">Both live in this browser only.</p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">About</span>
+          <dl class="instance-meta">
+            <div><dt>build</dt><dd>mdown.cc</dd></div>
+            <div><dt>api target</dt><dd>v11 protocol</dd></div>
+            <div><dt>storage</dt><dd>localStorage</dd></div>
+          </dl>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</aside>
+
+
+<!-- ======================= modal ======================= -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-inner" role="document">
+    <header class="modal-head">
+      <h2 id="modal-title">Title</h2>
+      <button type="button" class="icon-btn" id="modal-close" aria-label="Close" data-close-modal>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+    <div class="modal-body" id="modal-body"></div>
+    <footer class="modal-foot" id="modal-foot"></footer>
+  </div>
+</div>
+
+<template id="help-template">
+  <div class="help">
+    <p class="help-lede">A downloader with no server of its own. It hands the link to an API you point it at, streams the file back, and keeps nothing.</p>
+
+    <ol class="steps">
+      <li>
+        <div>
+          <strong>Drop a link</strong>
+          <span>Paste it above, or put it straight after the address: <code>mdown.cc/&lt;link&gt;</code>. Both start fetching on their own.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Pick the output</strong>
+          <span>auto takes video with sound at your preferred quality. audio takes just the track — mp3, wav, ogg, opus, or the untouched source. mute takes video without sound.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Keep the file</strong>
+          <span>It streams straight into your downloads with live progress and speed. Cancel mid-transfer and nothing half-written is kept.</span>
+        </div>
+      </li>
+    </ol>
+
+    <h3 class="help-sub">Questions</h3>
+    <div class="faq">
+      <details>
+        <summary>Why does it ask for an API address?</summary>
+        <p>Because this page has no server. A browser can’t fetch video from most sites by itself, so it borrows an API server that can. Paste that server’s address in <b>Settings → Connection</b>, press check, and it’s done once. If the API needs a key, it will tell you.</p>
+      </details>
+      <details>
+        <summary>Where do my files go?</summary>
+        <p>Into your browser's normal downloads. Nothing is stored on a server, and the queue disappears when you close the tab.</p>
+      </details>
+      <details>
+        <summary>Which formats can I get?</summary>
+        <p>Video as <code>mp4</code>, <code>webm</code> or <code>mkv</code> depending on the codec you pick. Audio as <code>mp3</code>, <code>wav</code>, <code>ogg</code> or <code>opus</code>. The mode row sets it per download.</p>
+      </details>
+      <details>
+        <summary>Does it work on my phone?</summary>
+        <p>Yes — same page, same queue. You can also skip the paste step: put the media link after the domain, <code>mdown.cc/&lt;link&gt;</code>, then bookmark or message that URL. Opening it starts the download straight away, and refreshing won't fetch it twice.</p>
+      </details>
+      <details>
+        <summary>Why does it end in .cc?</summary>
+        <p>Closed captions. It's the country code for the Cocos Islands, but here it's a nod to the subtitle extractor — the tool that pulls captions out of a file.</p>
+      </details>
+      <details>
+        <summary>What does it keep?</summary>
+        <p>Your settings and a short list of recent links, in this browser only. No account, no cookies, no analytics.</p>
+      </details>
+      <details>
+        <summary>What does it work with?</summary>
+        <p>The list is whatever the connected API supports, not a marketing page — open <b>Settings → Connection</b> and it's right there as a row of names. With the reference API that's about thirty: YouTube, Vimeo, TikTok, Instagram, Reddit, Twitch, SoundCloud, Bandcamp, Mixcloud, Bilibili, Dailymotion and more. Paste a link and the composer tells you if the service isn't on that list before you fetch.</p>
+      </details>
+      <details>
+        <summary>Can it download from Spotify?</summary>
+        <p>No — and neither can anything else without breaking encryption. Spotify, Deezer, Tidal and Apple Music encrypt their audio, so the downloader refuses them and says so. The same track is usually on YouTube or SoundCloud, which do work.</p>
+      </details>
+      <details>
+        <summary>A link failed — why?</summary>
+        <p>Usually one of three things: the post is private, region-locked or age-gated; the API doesn't support that service; or it's rate limiting. The error on the row says which, and retry re-sends it.</p>
+      </details>
+    </div>
+
+    <p class="help-note">
+      <b>Respect copyright.</b> mdown saves files; it doesn't grant rights to them.
+      Use it for content you own, content that's licensed for reuse, or where the
+      service's terms allow it.
+    </p>
+  </div>
+
+</template>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script src="assets/app.js?v=13" defer></script>
+<script type="module" src="assets/nav.js?v=8"></script>
+<script type="module" src="assets/remux.js?v=7"></script>
+<script type="module" src="assets/tools.js?v=8"></script>
+</body>
+</html>

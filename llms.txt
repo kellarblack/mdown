@@ -1,0 +1,42 @@
+# mdown
+
+> mdown is a media downloader that runs in the browser. You paste a link to a
+> video or audio post, choose a format, and the file lands in your normal
+> downloads. It is capped at 1080p and 25 minutes per item, requires no account,
+> and stores nothing on a server.
+
+## What it does
+
+- Downloads video and audio from a pasted link, in auto (video + audio), audio-only, or muted mode.
+- Offers mp4, webm and mkv for video; mp3, wav, ogg and opus for audio.
+- Includes three tools that run entirely in the browser tab, with no upload:
+  - **Remux** — repackages streams into a different container without re-encoding, so quality is unchanged and it finishes in seconds.
+  - **Subtitle extractor** — exports embedded text subtitle tracks as SRT, and explains when a track is image-based and cannot be exported.
+  - **Metadata cleaner** — strips container tags such as title, artist, comment and creation time, leaving the streams untouched.
+- Accepts a media link after the domain (`https://mdown.cc/<link>`) so a download can be started from a bookmark or a message.
+- Keeps settings and recent links in the browser's local storage only.
+
+## What it does not do
+
+- No account, no cookies, no analytics, no advertising.
+- Does not host, store, index or redistribute media. Files are transferred once and deleted.
+- Does not bypass DRM, logins, paywalls or region locks. Those requests fail and the error says so.
+- Does not process image-based subtitles (no OCR) and cannot remove watermarks burned into frames.
+
+## Limits
+
+- Maximum resolution: 1080p.
+- Maximum duration: 25 minutes.
+- The downloader needs a compatible API instance; the page has no backend of its own and says so when none is configured.
+
+## Pages
+
+- [Home](https://mdown.cc/): the downloader, the three browser tools, and a short help section.
+- [Help](https://mdown.cc/#help): how the API connection works, which formats are available, and what the site keeps.
+- [Terms & ethics](https://mdown.cc/terms.html): permitted use, what is refused (DRM, paywalls, redistribution), privacy, and the no-warranty clause.
+- [Status](https://mdown.cc/status.html): live health of whichever API the visitor has connected — dependency checks, queue depth and recent uptime. Not indexed, because it is per-visitor.
+
+## Notes
+
+- The `.cc` in the name stands for closed captions, not a company.
+- The site is a static page; the tools run client-side in WebAssembly.

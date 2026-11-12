@@ -1,0 +1,9 @@
+# Runtime dependencies for the mdown API.
+# Install into a venv (see deploy/install.sh) — Ubuntu 24.04 blocks
+# system-wide pip installs by design.
+#
+# yt-dlp is deliberately unpinned: it is the extractor layer, and every site
+# change (YouTube especially) needs the latest release. Update it with
+#   sudo /opt/mdown/venv/bin/pip install -U yt-dlp
+# and restart the service.
+yt-dlp

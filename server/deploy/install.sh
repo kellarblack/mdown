@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# Provision the mdown API on a fresh Ubuntu 22.04/24.04 ARM64 VM.
+# Run as root from the directory that contains this script's parent,
+# i.e. after copying `server/` to the VM.
+#
+#   sudo bash /tmp/server/deploy/install.sh
+#
+# Idempotent: safe to re-run after a code copy.
+set -euo pipefail
+
+API_DOMAIN="${API_DOMAIN:-api.mdown.cc}"
+SITE_ORIGIN="${SITE_ORIGIN:-https://mdown.cc}"
+SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+APP_USER=mdown
+APP_ROOT=/opt/mdown
+DATA_ROOT=/var/lib/mdown
+CONF_DIR=/etc/mdown
+
+echo "==> packages"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get -y upgrade -qq
+apt-get -y install -qq --no-install-recommends \
+  python3 python3-venv python3-pip ffmpeg ca-certificates curl rsync
+
+echo "==> service account"
+if ! id "$APP_USER" >/dev/null 2>&1; then
+  useradd --system --home "$DATA_ROOT" --shell /usr/sbin/nologin "$APP_USER"
+fi
+install -d -m 0755 "$APP_ROOT"
+install -d -m 0700 -o "$APP_USER" -g "$APP_USER" "$DATA_ROOT" "$DATA_ROOT/jobs" "$DATA_ROOT/cache"
+install -d -m 0750 -o root -g "$APP_USER" "$CONF_DIR"
+
+echo "==> application code"
+# the API package is copied, not cloned: the VM holds no git remote
+rsync -a --delete "$SRC_DIR/mdown_api/" "$APP_ROOT/api/mdown_api/"
+install -m 0644 "$SRC_DIR/requirements.txt" "$APP_ROOT/api/requirements.txt"
+
+echo "==> python environment"
+if [ ! -x "$APP_ROOT/venv/bin/python" ]; then
+  python3 -m venv "$APP_ROOT/venv"
+fi
+"$APP_ROOT/venv/bin/pip" install --quiet --upgrade pip
+"$APP_ROOT/venv/bin/pip" install --quiet --upgrade yt-dlp
+
+echo "==> environment file"
+if [ ! -f "$CONF_DIR/api.env" ]; then
+  cat > "$CONF_DIR/api.env" <<ENV
+# mdown API configuration. mode 0600, owned by root; systemd reads it before
+# dropping to the mdown user, so the service account never needs read access.
+MDOWN_HOST=127.0.0.1
+MDOWN_PORT=9000
+MDOWN_API_URL=https://${API_DOMAIN}/
+MDOWN_CORS_ORIGINS=${SITE_ORIGIN}
+MDOWN_TRUST_PROXY=1
+
+# media limits
+MDOWN_MAX_HEIGHT=1080
+MDOWN_MAX_DURATION=1500
+MDOWN_MAX_OUTPUT_MB=800
+
+# capacity, sized for 2 OCPU / 12 GB
+MDOWN_MAX_CONCURRENT=2
+MDOWN_MAX_QUEUE=6
+MDOWN_JOB_TIMEOUT=300
+MDOWN_PROBE_TIMEOUT=45
+MDOWN_JOB_TTL=900
+MDOWN_MIN_FREE_MB=3072
+
+# request frequency
+MDOWN_RATE_MAX=30
+MDOWN_RATE_WINDOW=60
+MDOWN_TUNNEL_RATE_MAX=120
+
+# downloads per IP. A person batching a few links is fine; a scraper is not.
+MDOWN_JOB_RATE_MAX=12
+MDOWN_JOB_RATE_WINDOW=300
+
+# hard ceiling on jobs per day. Bounds the damage from a scraper, a viral spike
+# or a bug that loops: the box cannot be drained. 0 disables it.
+MDOWN_DAILY_JOBS=500
+
+# when a source starts asking for a login, point this at a cookies.txt.
+# never commit that file anywhere.
+# MDOWN_YTDLP_COOKIES=/var/lib/mdown/cookies.txt
+
+# last-resort escape hatch for extractor changes:
+# MDOWN_YTDLP_EXTRA_ARGS=--extractor-args "youtube:player_client=tv,web_safari"
+
+MDOWN_WORK_DIR=${DATA_ROOT}/jobs
+
+# leave empty to run open to anyone who knows the hostname
+MDOWN_API_KEY=
+ENV
+  chmod 0600 "$CONF_DIR/api.env"
+else
+  echo "    keeping existing $CONF_DIR/api.env"
+fi
+
+echo "==> systemd"
+install -m 0644 "$SRC_DIR/deploy/mdown-api.service" /etc/systemd/system/mdown-api.service
+install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.service" /etc/systemd/system/mdown-ytdlp-update.service
+install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.timer" /etc/systemd/system/mdown-ytdlp-update.timer
+systemctl daemon-reload
+systemctl enable --now mdown-api.service
+# keep yt-dlp current: a site change is the most common way this breaks
+systemctl enable --now mdown-ytdlp-update.timer
+sleep 1
+systemctl --no-pager --lines=5 status mdown-api.service || true
+systemctl --no-pager list-timers mdown-ytdlp-update.timer --all || true
+
+echo "==> log rotation (journald handles the rest)"
+cat > /etc/logrotate.d/mdown-api <<'ROTATE'
+/var/log/mdown/*.log {
+    daily
+    rotate 7
+    compress
+    missingok
+    notifempty
+    copytruncate
+}
+ROTATE
+
+echo
+echo "done. next:"
+echo "  1. install caddy and use deploy/Caddyfile with API_DOMAIN=$API_DOMAIN"
+echo "  2. curl -s https://${API_DOMAIN}/health"
+echo "  3. curl -s https://${API_DOMAIN}/ | head -c 400"

@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>visual harness</title>
+<style>
+  html, body { margin: 0; background: #08090c; }
+  iframe { display: block; width: 100%; height: 2600px; border: 0; }
+</style>
+</head>
+<body>
+<!--
+  Dev-only screenshot harness. Loads the app in an iframe, points it at the
+  mock API, drives the UI, and lets headless Chrome capture the result:
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless=new --screenshot=shot.png --window-size=1440,2600 \
+      --virtual-time-budget=9000 "http://127.0.0.1:4331/tests/visual.html?view=queue"
+-->
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const view = params.get("view") || "queue";
+  const theme = params.get("theme") || "dark";
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  localStorage.setItem("mget.settings", JSON.stringify({
+    instance: "http://127.0.0.1:4320",
+    savingMethod: "ask",
+    theme: theme,
+    downloadMode: "auto",
+    filenameStyle: "pretty"
+  }));
+
+  const frame = document.createElement("iframe");
+  const forcedWidth = params.get("w");
+  if (forcedWidth) {
+    frame.style.width = forcedWidth + "px";
+    frame.style.height = "1400px";
+    frame.style.margin = "0";
+  } else if (view === "mobile") {
+    frame.style.width = "390px";
+    frame.style.height = "1500px";
+    frame.style.margin = "0";
+  }
+  document.body.appendChild(frame);
+
+  frame.addEventListener("load", async () => {
+    const win = frame.contentWindow;
+    const doc = frame.contentDocument;
+    const wait = (fn, ms) => new Promise((resolve) => {
+      const start = Date.now();
+      (function loop() {
+        if (fn()) return resolve(true);
+        if (Date.now() - start > ms) return resolve(false);
+        setTimeout(loop, 60);
+      })();
+    });
+
+    const submit = (value) => {
+      const field = doc.querySelector("#url-input");
+      field.value = value;
+      field.dispatchEvent(new win.Event("input", { bubbles: true }));
+      doc.querySelector("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+    };
+
+    if (view === "light-home") {
+      submit("https://youtube.com/watch?v=demo");
+      await wait(() => doc.querySelectorAll('.qitem[data-status="ready"]').length >= 1, 6000);
+    } else if (view === "mobile") {
+      submit("https://youtube.com/watch?v=demo");
+      submit("https://youtube.com/watch?v=error-demo");
+      await wait(() => doc.querySelectorAll('.qitem[data-status="ready"]').length >= 1, 6000);
+    } else if (view === "queue") {
+      submit("https://youtube.com/watch?v=demo");
+      submit("https://youtube.com/watch?v=error-demo");
+      submit("https://x.com/i/status/12345");
+      await wait(() => doc.querySelectorAll('.qitem[data-status="ready"]').length >= 2, 6000);
+    } else if (view === "settings") {
+      submit("https://youtube.com/watch?v=demo");
+      await sleep(400);
+      doc.querySelector('.sheet-nav-item[data-section="' + (params.get("pane") || "appearance") + '"]').click();
+      doc.querySelector('#open-settings').click();
+    } else if (view === "detect") {
+      const field = doc.querySelector("#url-input");
+      field.value = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+      field.dispatchEvent(new win.Event("input", { bubbles: true }));
+      field.focus();
+      await sleep(250);
+    } else if (view === "remux" || view === "remux-files" || view === "remux-open") {
+      doc.querySelector('.nav-link[data-view="remux"]').click();
+      await sleep(200);
+      if (view === "remux-open") {
+        doc.querySelector(".remux-help").open = true;
+        await sleep(150);
+      }
+      if (view === "remux-files") {
+        const mk = async (path, name) => {
+          const blob = await (await fetch(path)).blob();
+          return new File([blob], name);
+        };
+        const dt = new win.DataTransfer();
+        dt.items.add(await mk("/tests/media/sample.mp4", "holiday clip.mp4"));
+        dt.items.add(await mk("/tests/media/sample.ogg", "voice note.ogg"));
+        doc.querySelector("#dropzone").dispatchEvent(new win.DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
+        await wait(() => doc.querySelectorAll('.rqitem[data-status="done"]').length >= 2, 30000);
+      }
+    } else if (view === "subs" || view === "clean") {
+      const dropFile = async (zoneSel, path, name) => {
+        const blob = await (await fetch(path)).blob();
+        const dt = new win.DataTransfer();
+        dt.items.add(new File([blob], name));
+        doc.querySelector(zoneSel).dispatchEvent(new win.DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
+      };
+      if (view === "subs") {
+        doc.querySelector('.nav-menu a[data-view="subs"]').click();
+        await sleep(200);
+        await dropFile("#subs-drop", "/tests/media/subs.mkv", "holiday.mkv");
+        await wait(() => doc.querySelectorAll("#subs-tracks .track").length > 0, 25000);
+      } else {
+        doc.querySelector('.nav-menu a[data-view="clean"]').click();
+        await sleep(200);
+        await dropFile("#clean-drop", "/tests/media/meta.mp4", "holiday.mp4");
+        await wait(() => doc.querySelectorAll("#clean-tags .tag").length > 0, 25000);
+      }
+    } else if (view === "subs-static" || view === "clean-static") {
+      /* layout preview only: fills the tool UI with representative data, no engine */
+      if (view === "subs-static") {
+        doc.querySelector('.nav-menu a[data-view="subs"]').click();
+        await sleep(150);
+        doc.querySelector("#subs-panel").hidden = false;
+        doc.querySelector("#subs-file").textContent = "holiday.mkv · 21 KB · video + audio + subtitle · 00:00:02.02";
+        doc.querySelector("#subs-extract").disabled = false;
+        win.tools.renderTracks({ streams: [
+          { type: "video", codec: "h264" },
+          { type: "audio", codec: "aac" },
+          { type: "subtitle", codec: "subrip", lang: "eng", title: "English" },
+          { type: "subtitle", codec: "subrip", lang: "spa", title: "Español" },
+          { type: "subtitle", codec: "hdmv_pgs_subtitle", lang: "eng", title: "English (SDH)" }
+        ]});
+      } else {
+        doc.querySelector('.nav-menu a[data-view="clean"]').click();
+        await sleep(150);
+        doc.querySelector("#clean-panel").hidden = false;
+        doc.querySelector("#clean-file").textContent = "holiday.mp4 · 28 KB · video + audio · 00:00:02.04";
+        doc.querySelector("#clean-run").disabled = false;
+        win.tools.renderTags([
+          ["artist", "Someone Real"], ["title", "Holiday Clip"],
+          ["comment", "private note"], ["creation_time", "2021-05-04T10:00:00Z"],
+          ["location", "+37.7700-122.4100/"]
+        ]);
+      }
+    } else if (view === "menu") {
+      doc.querySelector("#nav-tools summary").click();
+      await sleep(250);
+    } else if (view === "help") {
+      doc.querySelector("#open-help").click();
+      await sleep(400);
+    } else {
+      submit("https://youtube.com/watch?v=demo");
+      await sleep(400);
+      doc.querySelector("#open-settings").click();
+      doc.querySelector('.sheet-nav-item[data-section="' + view + '"]').click();
+    }
+
+    window.scrollTo(0, 0);
+    try { win.scrollTo(0, 0); } catch (e) {}
+  });
+
+  frame.src = "../index.html";
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>tools tests</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>body{padding:20px} #log{font:12px ui-monospace,monospace;white-space:pre-wrap}</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-link" href="#" data-view="download">download</a>
+  <details class="nav-tools" id="nav-tools">
+    <summary class="nav-link" data-tools-toggle>tools</summary>
+    <div class="nav-menu">
+      <a href="#remux" data-view="remux">remux</a>
+      <a href="#subs" data-view="subs">subtitles</a>
+      <a href="#clean" data-view="clean">metadata</a>
+    </div>
+  </details>
+</nav>
+
+<main data-view-panel="download" id="download-view"></main>
+<main class="wrap" data-view-panel="remux" id="remux-view" hidden>
+  <section class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="choose files">
+    <span class="primary-btn" id="browse-btn">choose files</span>
+    <input type="file" id="remux-input" class="sr-only" tabindex="-1" aria-hidden="true" multiple>
+  </section>
+  <p class="remux-privacy"></p>
+  <section>
+    <div class="section-head">
+      <span id="remux-queue-title">Files <span class="count" id="remux-count" hidden>0</span></span>
+      <span class="section-actions">
+        <span class="qstats" id="remux-stats"></span>
+        <button type="button" id="remux-clear" hidden>clear</button>
+      </span>
+    </div>
+    <div id="remux-list"></div>
+    <p id="remux-empty">No files yet.</p>
+  </section>
+</main>
+
+<main class="wrap" data-view-panel="subs" hidden>
+  <section class="dropzone" id="subs-drop" tabindex="0" role="button" aria-label="Choose a video">
+    <span class="primary-btn">choose file</span>
+    <input type="file" id="subs-input" class="sr-only" tabindex="-1" aria-hidden="true">
+  </section>
+  <section class="tool" id="subs-panel" hidden>
+    <div class="tool-file" id="subs-file"></div>
+    <div class="track-list" id="subs-tracks"></div>
+    <p class="tool-note" id="subs-note" hidden></p>
+    <div class="tool-actions">
+      <button type="button" id="subs-extract" disabled>extract selected</button>
+      <button type="button" id="subs-reset">choose another</button>
+    </div>
+    <div class="tool-outputs" id="subs-outputs"></div>
+  </section>
+  <p class="remux-privacy"></p>
+</main>
+
+<main class="wrap" data-view-panel="clean" hidden>
+  <section class="dropzone" id="clean-drop" tabindex="0" role="button" aria-label="Choose a file">
+    <span class="primary-btn">choose file</span>
+    <input type="file" id="clean-input" class="sr-only" tabindex="-1" aria-hidden="true">
+  </section>
+  <section class="tool" id="clean-panel" hidden>
+    <div class="tool-file" id="clean-file"></div>
+    <div class="tag-list" id="clean-tags"></div>
+    <p class="tool-note"></p>
+    <div class="tool-actions">
+      <button type="button" id="clean-run" disabled>strip metadata</button>
+      <button type="button" id="clean-reset">choose another</button>
+    </div>
+    <div class="tool-outputs" id="clean-outputs"></div>
+  </section>
+  <p class="remux-privacy"></p>
+</main>
+
+<pre id="log">starting…</pre>
+
+<script type="module" src="../assets/nav.js"></script>
+<script type="module" src="../assets/remux.js"></script>
+<script type="module" src="../assets/tools.js"></script>
+<script type="module">
+  const log = document.getElementById("log");
+  const results = [];
+  let failures = 0;
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const waitFor = async (fn, ms = 45000) => {
+    const start = Date.now();
+    while (Date.now() - start < ms) { if (fn()) return true; await sleep(120); }
+    return false;
+  };
+  function record(name, ok, detail) {
+    if (!ok) failures++;
+    results.push({ name, ok, detail: detail || "" });
+    log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+  }
+  async function fileFrom(path, name) {
+    const blob = await (await fetch(path)).blob();
+    return new File([blob], name || path.split("/").pop());
+  }
+  const text = async (url) => (await (await fetch(url)).text()).replace(/\r/g, "");
+
+  async function main() {
+    const T = window.tools;
+    if (!T) { log.textContent = "FAIL: tools module missing"; window.__results = { fatal: true }; return; }
+
+    record("tools module loaded", typeof T.pickSubs === "function");
+    record("subtitle classifier", T.IMAGE_SUBS.has("hdmv_pgs_subtitle") && T.TEXT_SUBS.has("subrip"));
+
+    /* ---------- subtitles: two tracks ---------- */
+    const subsFile = await fileFrom("../tests/media/subs.mkv");
+    const subsSizeBefore = subsFile.size;
+    await T.pickSubs(subsFile);
+    await waitFor(() => T.subs.probe);
+    const rows = [...document.querySelectorAll("#subs-tracks .track")];
+    record("mkv tracks found", rows.length === 2, String(rows.length));
+    record("mkv languages read", rows.some((r) => r.textContent.includes("eng")) && rows.some((r) => r.textContent.includes("spa")));
+    record("mkv titles read", rows.some((r) => r.textContent.includes("English")) && rows.some((r) => r.textContent.includes("Español")));
+    record("mkv tracks marked text", [...document.querySelectorAll("#subs-tracks .badge")].every((b) => b.textContent === "text"));
+    record("extract enabled", document.getElementById("subs-extract").disabled === false);
+
+    await T.extract();
+    await waitFor(() => T.subs.outputs.length >= 2);
+    record("mkv extracted 2 files", T.subs.outputs.length === 2, String(T.subs.outputs.length));
+    const eng = T.subs.outputs.find((o) => o.lang === "eng");
+    const spa = T.subs.outputs.find((o) => o.lang === "spa");
+    record("mkv filenames", eng && eng.filename === "subs.eng.srt" && spa.filename === "subs.spa.srt", `${eng?.filename}, ${spa?.filename}`);
+
+    const engBody = await text(eng.url);
+    const stamp = /(\d\d):(\d\d):(\d\d),(\d{3}) --> (\d\d):(\d\d):(\d\d),(\d{3})/.exec(engBody);
+    const ms = (h, m, sec, frac) => ((+h * 3600) + (+m * 60) + (+sec)) * 1000 + +frac;
+    const span = stamp ? ms(stamp[5], stamp[6], stamp[7], stamp[8]) - ms(stamp[1], stamp[2], stamp[3], stamp[4]) : 0;
+    record("srt timestamps", !!stamp && span === 1000, stamp ? stamp[0] : "no cue");
+    record("srt text preserved", engBody.includes("Hello from the English track."));
+    record("srt is not empty", (await text(spa.url)).includes("Hola desde la pista"));
+    record("subtitle file downloads", document.querySelectorAll("#subs-outputs .out-row").length === 2);
+    record("original untouched", subsFile.size === subsSizeBefore);
+
+    /* ---------- subtitles: mp4 / mov_text ---------- */
+    T.subs.outputs.forEach((o) => URL.revokeObjectURL(o.url));
+    await T.pickSubs(await fileFrom("../tests/media/subs-mp4.mp4"));
+    await waitFor(() => T.subs.probe && T.subs.probe.streams.some((s) => s.type === "subtitle"));
+    await T.extract();
+    await waitFor(() => T.subs.outputs.length >= 1);
+    record("mov_text converted", (await text(T.subs.outputs[0].url)).includes("Hello from the English track"));
+    T.subs.outputs.forEach((o) => URL.revokeObjectURL(o.url));
+
+    /* ---------- subtitles: none ---------- */
+    await T.pickSubs(await fileFrom("../tests/media/sample.mp4"));
+    await waitFor(() => T.subs.probe && !T.subs.probe.streams.some((s) => s.type === "subtitle"));
+    const note = document.getElementById("subs-note").textContent;
+    record("no-subtitle message", /no subtitle tracks/i.test(note), note);
+    record("extract disabled when empty", document.getElementById("subs-extract").disabled === true);
+
+    /* ---------- subtitles: image-based ---------- */
+    T.renderTracks({ streams: [{ type: "subtitle", codec: "hdmv_pgs_subtitle", lang: "eng", title: "PGS" }] });
+    const imgBox = document.querySelector("#subs-tracks .track-box");
+    record("pgs track disabled", imgBox && imgBox.disabled === true);
+    record("pgs badge", /image/.test(document.querySelector("#subs-tracks .badge").textContent));
+    record("pgs explained", /OCR/i.test(document.getElementById("subs-note").textContent));
+
+    /* ---------- filename helper ---------- */
+    record("filename without language", T.trackFilename("movie.mkv", { lang: "" }, new Set()) === "movie.und.srt");
+    record("filename collision", (() => {
+      const used = new Set(["movie.eng"]);
+      return T.trackFilename("movie.mkv", { lang: "eng" }, used) === "movie.eng-2.srt";
+    })());
+
+    /* ---------- metadata: mp4 ---------- */
+    const metaFile = await fileFrom("../tests/media/meta.mp4");
+    const metaSize = metaFile.size;
+    await T.pickClean(metaFile);
+    await waitFor(() => T.clean.tags.length > 0);
+    const keys = T.clean.tags.map(([k]) => k);
+    record("mp4 tags found", keys.includes("title") && keys.includes("comment") && keys.includes("artist"), keys.join(","));
+    record("tag values shown", document.getElementById("clean-tags").textContent.includes("Holiday Clip"));
+
+    await T.runClean();
+    await waitFor(() => T.clean.url && document.getElementById("clean-outputs").querySelector(".out-row"));
+    const cleaned = await (await fetch(T.clean.url)).arrayBuffer();
+    const head = new Uint8Array(cleaned.slice(0, 12));
+    const ascii = String.fromCharCode(...head);
+    record("cleaned mp4 valid", ascii.slice(4, 8) === "ftyp");
+    record("cleaned filename", document.querySelector("#clean-outputs .out-name").textContent === "meta-clean.mp4");
+    const outUrl = T.clean.url;
+    const ff = await window.remuxTool.engine.get();
+    await ff.writeFile("verify.mp4", new Uint8Array(cleaned));
+    window.remuxTool.engine.logs.length = 0;
+    await ff.exec(["-hide_banner", "-i", "verify.mp4"]).catch(() => {});
+    const lines = window.remuxTool.engine.logs.slice();
+    const info = T.parseProbe(lines);
+    const leftTags = T.parseTags(lines);
+    await ff.deleteFile("verify.mp4");
+    record("cleaned mp4 streams kept", info.video && info.audio, JSON.stringify(info.streams.map((s) => s.type)));
+    record("mp4 tags removed", leftTags.length === 0, "left: " + leftTags.map(([k]) => k).join(","));
+    record("original mp4 untouched", metaFile.size === metaSize && T.clean.file === metaFile);
+
+    /* ---------- metadata: mkv ---------- */
+    await T.pickClean(await fileFrom("../tests/media/meta.mkv"));
+    await waitFor(() => T.clean.tags.length > 0);
+    record("mkv tags found", T.clean.tags.length > 0, T.clean.tags.map(([k]) => k).join(","));
+    const beforeMkv = T.clean.url;
+    await T.runClean();
+    await waitFor(() => T.clean.url && T.clean.url !== beforeMkv);
+    const mkvOut = new Uint8Array(await (await fetch(T.clean.url)).arrayBuffer());
+    record("cleaned mkv valid", mkvOut[0] === 0x1a && mkvOut[1] === 0x45, [...mkvOut.slice(0, 4)].map((b) => b.toString(16)).join(" "));
+
+    /* ---------- metadata: no tags ---------- */
+    await T.pickClean(await fileFrom("../tests/media/sample.mp4"));
+    await waitFor(() => T.clean.file && T.clean.file.name === "sample.mp4" && T.clean.probe);
+    record("no-tag message", /No descriptive metadata/i.test(document.getElementById("clean-tags").textContent));
+
+    /* ---------- routing ---------- */
+    location.hash = "#subs";
+    await sleep(150);
+    record("route: subs", !document.querySelector('[data-view-panel="subs"]').hidden);
+    location.hash = "#clean";
+    await sleep(150);
+    record("route: clean", !document.querySelector('[data-view-panel="clean"]').hidden);
+    location.hash = "#remux";
+    await sleep(150);
+    record("route: remux", !document.querySelector('[data-view-panel="remux"]').hidden);
+    record("tools nav active", document.querySelector("[data-tools-toggle]").classList.contains("is-active"));
+    location.hash = "";
+    await sleep(150);
+    record("route: download", !document.querySelector('[data-view-panel="download"]').hidden);
+
+    /* ---------- cleanup ---------- */
+    document.getElementById("subs-reset").click();
+    document.getElementById("clean-reset").click();
+    await sleep(300);
+    const ffCleanup = await window.remuxTool.engine.get();
+    const entries = await ffCleanup.listDir("/");
+    const leftovers = entries.filter((e) => /^(subs_|clean_|in_|out_)/.test(e.name));
+    record("no temp files left", leftovers.length === 0, leftovers.map((l) => l.name).join(","));
+
+    document.title = failures ? failures + " failed" : "all passed";
+    window.__results = { results, failures, total: results.length };
+    log.innerHTML += `\n\n${failures ? failures + " FAILURES" : "ALL " + results.length + " PASSED"}`;
+  }
+
+  main().catch((err) => {
+    log.textContent = "FATAL " + err;
+    window.__results = { fatal: String(err) };
+  });
+</script>
+</body>
+</html>

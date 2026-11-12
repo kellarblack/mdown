@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terms &amp; ethics — mdown</title>
+<meta name="description" content="What mdown does, what it will not do, and the rules for using it: no DRM circumvention, no redistribution, no warranty.">
+<link rel="canonical" href="https://mdown.cc/terms.html">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="mdown">
+<meta property="og:url" content="https://mdown.cc/terms.html">
+<meta property="og:title" content="Terms &amp; ethics — mdown">
+<meta property="og:description" content="What mdown does, what it will not do, and the rules for using it.">
+<meta name="twitter:card" content="summary">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a0a0b">
+<link rel="manifest" href="manifest.webmanifest">
+<script>
+  try {
+    var saved = JSON.parse(localStorage.getItem("mdown.settings") || "{}");
+    var pick = saved.theme;
+    if (pick !== "light" && pick !== "dark") {
+      pick = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    document.documentElement.dataset.theme = pick;
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="assets/app.css?v=27">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div class="backdrop" aria-hidden="true">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="grain"></div>
+</div>
+
+<header class="topbar">
+  <a class="brand" href="./" aria-label="mdown home">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+      </svg>
+    </span>
+    <span class="brand-text">mdown<span class="brand-dot">.</span><span class="brand-sub">cc</span></span>
+  </a>
+  <nav class="nav" aria-label="Sections">
+    <a class="nav-link is-active" href="./">download</a>
+    <details class="nav-tools">
+      <summary class="nav-link">tools <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></summary>
+      <div class="nav-menu">
+        <a href="./#remux">remux</a>
+        <a href="./#subs">subtitles</a>
+        <a href="./#clean">metadata</a>
+      </div>
+    </details>
+  </nav>
+</header>
+
+<main class="wrap">
+  <h1 class="page-h1">Terms &amp; ethics</h1>
+  <p class="page-lede">Plain language, no lawyer cosplay. Using mdown means accepting the four rules below.</p>
+
+  <section class="terms">
+    <h2>1. What mdown is</h2>
+    <p>A tool that saves a file from a link you paste. It runs in your browser; the download itself passes through an API server that someone has to operate. mdown hosts no media, keeps no library, and redistributes nothing.</p>
+
+    <h2>2. What you may do</h2>
+    <p>Save content you own, content that is licensed for reuse, content in the public domain, or content a service's terms allow you to keep. That is the whole permitted use, and it is broader than it sounds.</p>
+
+    <h2>3. What you may not do</h2>
+    <ul>
+      <li><b>Break encryption.</b> DRM-protected services are refused. Nothing here circumvents a technical protection measure.</li>
+      <li><b>Bypass access controls.</b> Logins, paywalls and region locks are not worked around.</li>
+      <li><b>Redistribute.</b> Uploading or sharing copies of someone else's work is infringement, and this tool has no ability to do it.</li>
+      <li><b>Abuse the server.</b> Automated scraping, resale of access, or anything that gets the host terminated.</li>
+    </ul>
+
+    <h2>4. No warranty</h2>
+    <p>Provided as is. No guarantee of uptime, of a particular file, or of fitness for any purpose. You are responsible for what you save and for how you use it. If a download is unlawful where you live, don't do it — that is on you, not on the software.</p>
+
+    <h2>5. Privacy</h2>
+    <p>Settings and recent links live in your browser's local storage. No account, no cookies, no analytics, no third-party requests. Files processed by the local tools never leave your device. Files downloaded through an API are deleted shortly after transfer.</p>
+
+    <h2>6. Changes</h2>
+    <p>These terms may change as the tool does. The date below is the version you are agreeing to.</p>
+  </section>
+
+  <p class="help-note">
+    <b>Last updated:</b> 11 November 2026. Questions or a takedown request: open an issue on the project repository.
+  </p>
+</main>
+
+<footer class="footer">
+  <p class="footer-meta">mdown.cc · local-first · no accounts</p>
+</footer>
+
+</body>
+</html>

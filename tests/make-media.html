@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>make test media</title></head>
+<body>
+<p id="status">generating…</p>
+<script type="module">
+  /* Generates small real media files with the same ffmpeg build the app uses,
+     so tests run against genuine containers instead of fixtures of unknown origin. */
+  const BASE = new URL("../assets/vendor/ffmpeg/", import.meta.url).href;
+  const { FFmpeg } = await import(BASE + "ffmpeg/index.js");
+  const ff = new FFmpeg();
+  await ff.load({ coreURL: BASE + "core/ffmpeg-core.js", wasmURL: BASE + "core/ffmpeg-core.wasm" });
+
+  const b64 = (u8) => {
+    let s = "";
+    for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+    return btoa(s);
+  };
+
+  const sources = [
+    ["sample.mp4", ["-f", "lavfi", "-i", "testsrc=size=320x180:rate=15:duration=2", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest"]],
+    ["sample.webm", ["-f", "lavfi", "-i", "testsrc=size=320x180:rate=15:duration=2", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:v", "libvpx", "-b:v", "200k", "-c:a", "libvorbis", "-shortest"]],
+    ["sample.mkv", ["-f", "lavfi", "-i", "testsrc=size=320x180:rate=15:duration=2", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest"]],
+    ["sample.mp3", ["-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:a", "libmp3lame", "-b:a", "96k"]],
+    ["sample.wav", ["-f", "lavfi", "-i", "sine=frequency=440:duration=1", "-c:a", "pcm_s16le"]],
+    ["sample.ogg", ["-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:a", "libvorbis"]],
+    ["sample.m4a", ["-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:a", "aac"]],
+    ["sample.flac", ["-f", "lavfi", "-i", "sine=frequency=440:duration=1", "-c:a", "flac"]]
+  ];
+
+  const out = {};
+  for (const [name, args] of sources) {
+    await ff.exec(["-hide_banner", "-y", ...args, name]);
+    const data = await ff.readFile(name);
+    out[name] = b64(data);
+    await ff.deleteFile(name);
+  }
+
+  /* derived cases */
+  const mp4 = Uint8Array.from(atob(out["sample.mp4"]), (c) => c.charCodeAt(0));
+  out["broken.mp4"] = b64(mp4.subarray(0, Math.floor(mp4.length * 0.55)));
+  out["mismatch.mp4"] = out["sample.webm"];
+  out["notes.txt"] = btoa("this is not media");
+
+  window.__media = out;
+  document.getElementById("status").textContent = "done: " + Object.keys(out).join(", ");
+</script>
+</body>
+</html>

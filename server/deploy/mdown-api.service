@@ -1,0 +1,47 @@
+[Unit]
+Description=mdown media download API
+Documentation=https://mdown.cc
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mdown
+Group=mdown
+WorkingDirectory=/opt/mdown/api
+EnvironmentFile=/etc/mdown/api.env
+ExecStart=/opt/mdown/venv/bin/python -m mdown_api
+
+Restart=always
+RestartSec=3
+# a runaway job is killed at this point rather than waiting for an operator
+TimeoutStopSec=20
+
+# --- isolation ------------------------------------------------------------
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=no
+ReadWritePaths=/var/lib/mdown
+
+# --- resource ceilings ----------------------------------------------------
+# sized for a 2 OCPU / 12 GB VM shared with nothing else
+MemoryMax=3G
+CPUQuota=180%
+TasksMax=256
+
+# --- logging --------------------------------------------------------------
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mdown-api
+
+[Install]
+WantedBy=multi-user.target
