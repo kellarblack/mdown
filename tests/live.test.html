@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>live e2e</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 620px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The real thing: the actual site driving the actual API, downloading actual
+  media. Not a mock anywhere in the path except the /report sink.
+
+    ./tests/live.test.html?api=http://127.0.0.1:9000&report=1
+
+  Needs the API reachable from the browser (SSH tunnel or DNS) and its CORS
+  origins to include this page's origin.
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+
+<script>
+const log = document.getElementById("log");
+const params = new URLSearchParams(location.search);
+const API = params.get("api") || "";
+const SAMPLE = params.get("url") || "https://www.youtube.com/watch?v=jNQXAC9IVRw";
+const results = [];
+let failures = 0;
+
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, ms = 60000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(250);
+  }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  if (!API) { record("api url given", false, "pass ?api="); window.__results = { results, failures, total: results.length }; return; }
+
+  const doc = () => frame.contentDocument;
+  const win = () => frame.contentWindow;
+  await waitFor(() => doc() && doc().querySelector("#open-settings"), 20000);
+
+  // connect to the live instance
+  doc().querySelector("#open-settings").click();
+  await sleep(300);
+  doc().querySelector('[data-section="instance"]').click();
+  await sleep(200);
+  const field = doc().querySelector("#instance-url");
+  field.value = API;
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  field.dispatchEvent(new Event("blur", { bubbles: true }));
+
+  const connected = await waitFor(() => doc().querySelector("#instance-pill").dataset.state === "ok", 20000);
+  record("site connects to the live API", connected,
+    doc().querySelector("#instance-pill-label").textContent);
+  record("footer shows the real version",
+    /api\s+mdown/.test(doc().querySelector("#footer-version").textContent),
+    doc().querySelector("#footer-version").textContent);
+  doc().querySelector("[data-close-settings]").click();
+  await sleep(250);
+
+  // a real download, through the real UI
+  const input = doc().querySelector("#url-input");
+  input.value = SAMPLE;
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  const started = Date.now();
+  doc().querySelector("#fetch-form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+  const finished = await waitFor(() => {
+    const items = win().md.state().items;
+    return items.length && items.every((i) => ["done", "error"].includes(i.status));
+  }, 120000);
+
+  const item = win().md.state().items.slice(-1)[0] || {};
+  record("real download completes", finished && item.status === "done", item.status + " · " + (item.error || ""));
+  record("a real file arrived", (item.size || 0) > 1000, (item.size || 0) + " bytes");
+  record("filename looks sane", /\.(mp4|mkv|webm|mp3|m4a|opus|ogg|wav)$/i.test(item.filename || ""), item.filename || "");
+  record("finished under two minutes", Date.now() - started < 120000, Math.round((Date.now() - started) / 1000) + "s");
+
+  window.__results = { results, failures, total: results.length };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { results, failures, total: results.length };
+});
+
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 180000) clearInterval(timer);
+  }, 500);
+}
+</script>
+</body>
+</html>
