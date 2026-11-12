@@ -140,7 +140,7 @@ sudo systemctl reload caddy
 | `MDOWN_JOB_TTL` | `900` | how long a finished file is kept |
 | `MDOWN_MIN_FREE_MB` | `3072` | refuse new jobs below this much free disk |
 | `MDOWN_RATE_MAX` / `WINDOW` | `30` / `60` | requests per IP per window |
-| `MDOWN_JOB_RATE_MAX` / `WINDOW` | `12` / `300` | **downloads** per IP per window — the burst limiter |
+| `MDOWN_JOB_RATE_MAX` / `WINDOW` | `60` / `300` | **downloads** per IP per window — the burst limiter |
 | `MDOWN_DAILY_JOBS` | `500` | hard ceiling per day, all IPs. `0` disables |
 | `MDOWN_API_KEY` | empty | set it and every request needs `Authorization: Api-Key …` |
 | `MDOWN_REQUIRE_ORIGIN` | `1` | POSTs must carry an allowed `Origin`. CORS alone does **not** stop a request running — this does |

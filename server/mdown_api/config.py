@@ -76,7 +76,7 @@ class Config:
     rate_limit_tunnel_max: int = 120
     # downloads (not requests) per IP per window. Generous for a person
     # batching a few links, tight enough to stop a scraper.
-    job_rate_max: int = 12
+    job_rate_max: int = 60
     job_rate_window: int = 300
 
     # ---- source-side workarounds ----------------------------------------
@@ -119,7 +119,7 @@ class Config:
             rate_limit_max=_int("MDOWN_RATE_MAX", 30, 1, 10000),
             rate_limit_window=_int("MDOWN_RATE_WINDOW", 60, 1, 3600),
             rate_limit_tunnel_max=_int("MDOWN_TUNNEL_RATE_MAX", 120, 1, 100000),
-            job_rate_max=_int("MDOWN_JOB_RATE_MAX", 12, 1, 10000),
+            job_rate_max=_int("MDOWN_JOB_RATE_MAX", 60, 1, 10000),
             job_rate_window=_int("MDOWN_JOB_RATE_WINDOW", 300, 10, 86400),
             ytdlp_cookies=os.environ.get("MDOWN_YTDLP_COOKIES", "").strip(),
             ytdlp_extra_args=os.environ.get("MDOWN_YTDLP_EXTRA_ARGS", "").strip(),

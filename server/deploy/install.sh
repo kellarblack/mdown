@@ -109,7 +109,7 @@ MDOWN_RATE_WINDOW=60
 MDOWN_TUNNEL_RATE_MAX=120
 
 # downloads per IP. A person batching a few links is fine; a scraper is not.
-MDOWN_JOB_RATE_MAX=12
+MDOWN_JOB_RATE_MAX=60
 MDOWN_JOB_RATE_WINDOW=300
 
 # hard ceiling on jobs per day. Bounds the damage from a scraper, a viral spike

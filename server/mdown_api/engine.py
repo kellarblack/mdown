@@ -343,13 +343,29 @@ def _download_error(stderr: str) -> ApiError:
     return ApiError.unavailable(detail=(stderr or "")[-400:])
 
 
+SUBTITLE_EXTS = (".srt", ".vtt", ".ass", ".ssa", ".lrc")
+
+
 def _single_file(directory: str, extensions=None) -> str:
+    """The media file, never a subtitle sidecar.
+
+    With --embed-subs yt-dlp leaves the .srt next to the video. Picking by size
+    happens to work, but a tiny clip with a long transcript would serve the
+    transcript. Filter them out by name and extension instead of by luck.
+    """
     candidates = []
     for name in sorted(os.listdir(directory)):
-        if name.startswith("media.") and not name.endswith((".part", ".ytdl", ".tmp")):
-            if extensions and os.path.splitext(name)[1].lower() not in extensions:
-                continue
-            candidates.append(os.path.join(directory, name))
+        if not name.startswith("media."):
+            continue
+        if name.endswith((".part", ".ytdl", ".tmp")):
+            continue
+        lowered = name.lower()
+        # media.en.srt, media.en.vtt, ... are sidecars, not the download
+        if any(lowered.endswith(ext) for ext in SUBTITLE_EXTS):
+            continue
+        if extensions and os.path.splitext(name)[1].lower() not in extensions:
+            continue
+        candidates.append(os.path.join(directory, name))
     if not candidates:
         raise EngineError("downloader finished without producing a file")
     # largest wins if a leftover from an earlier attempt is present

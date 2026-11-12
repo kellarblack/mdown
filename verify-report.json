@@ -1,0 +1,79 @@
+{
+  "api": "http://127.0.0.1:9000",
+  "when": "2026-11-12T15:15:08Z",
+  "results": [
+    {
+      "check": "instance info",
+      "status": "PASS",
+      "detail": "version=mdown-1.0 services=32"
+    },
+    {
+      "check": "health",
+      "status": "PASS",
+      "detail": "HTTP 200 {'downloader': True, 'ffmpeg': True, 'ffprobe': True, 'storage': True}"
+    },
+    {
+      "check": "cors allows the site",
+      "status": "PASS",
+      "detail": "allow-origin=https://mdown.cc"
+    },
+    {
+      "check": "cors blocks other origins",
+      "status": "PASS",
+      "detail": "allow-origin=absent"
+    },
+    {
+      "check": "rejects javascript: urls",
+      "status": "PASS",
+      "detail": "HTTP 400 api.url.invalid"
+    },
+    {
+      "check": "rejects metadata address",
+      "status": "PASS",
+      "detail": "HTTP 400"
+    },
+    {
+      "check": "rejects empty body",
+      "status": "PASS",
+      "detail": "HTTP 400"
+    },
+    {
+      "check": "real download produces a tunnel",
+      "status": "PASS",
+      "detail": "HTTP 200 Big Buck Bunny 60fps 4K - Official Blender Foundation Short Film.mp3 10154157B"
+    },
+    {
+      "check": "tunnel streams real media",
+      "status": "PASS",
+      "detail": "10154157B, first bytes b'ID3\\x04\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "check": "output is decodable (ffprobe)",
+      "status": "SKIP",
+      "detail": "ffprobe not installed here"
+    },
+    {
+      "check": "rejects media over 30 minutes",
+      "status": "SKIP",
+      "detail": "set LONG_URL to a >30 min link"
+    },
+    {
+      "check": "unknown tunnel token is refused",
+      "status": "PASS",
+      "detail": "HTTP 404"
+    },
+    {
+      "check": "3 simultaneous downloads",
+      "status": "PASS",
+      "detail": "200s=3 429s=0 wall=75.1s"
+    }
+  ],
+  "timings": {
+    "instance_info_ms": 43,
+    "post_to_tunnel_s": 27.08,
+    "tunnel_ttfb_s": 0.087,
+    "transfer_s": 0.53,
+    "throughput_mbps": 152.49,
+    "concurrency_wall_s": 75.08
+  }
+}

@@ -244,7 +244,7 @@ class Handler(BaseHTTPRequestHandler):
                 "maxHeight": self.config.max_height,
                 "maxDuration": self.config.max_duration,
                 "modes": ["auto", "audio", "mute"],
-                "audioFormats": ["mp3", "ogg", "opus", "wav"],
+                "audioFormats": ["best", "mp3", "ogg", "opus", "wav"],
                 "maxAudioBitrate": 128,
             },
         }

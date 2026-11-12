@@ -73,6 +73,7 @@ class ServerTest(unittest.TestCase):
         engine.INFO_CACHE._data.clear()
 
         self.config = Config(
+            port=0,          # let the OS pick, so the suite never collides with a tunnel
             work_dir=self.tmp,
             min_free_bytes=0,
             max_concurrent=2,
@@ -357,7 +358,7 @@ class AuthTest(unittest.TestCase):
         security.resolve = lambda host, port: list(PUBLIC)
         engine.INFO_CACHE._data.clear()
 
-        self.config = Config(work_dir=self.tmp, min_free_bytes=0, api_key="secret-key",
+        self.config = Config(port=0, work_dir=self.tmp, min_free_bytes=0, api_key="secret-key",
                              cors_origins=["https://mdown.cc"])
         self.server = server_module.ApiServer(self.config)
         self.base = "http://127.0.0.1:%d" % self.server.server_address[1]

@@ -71,8 +71,21 @@ def request(method, url, body=None, headers=None, timeout=30):
         connection.close()
 
 
+def retarget(url):
+    """Point a tunnel URL at the API base we were told to test.
+
+    The API builds tunnel links from its own public URL, which does not resolve
+    until DNS exists. Testing through an SSH tunnel (or before DNS) should still
+    exercise the same endpoint, so keep the path and swap the host.
+    """
+    api = urllib.parse.urlsplit(API)
+    target = urllib.parse.urlsplit(url)
+    return urllib.parse.urlunsplit((api.scheme, api.netloc, target.path, target.query, ""))
+
+
 def download_tunnel(url, timeout=300):
     """Stream the tunnel URL, measuring time-to-first-byte and throughput."""
+    url = retarget(url)
     scheme, netloc, path = split(url)
     connection = http.client.HTTPSConnection(netloc, timeout=timeout) if scheme == "https" \
         else http.client.HTTPConnection(netloc, timeout=timeout)
@@ -248,11 +261,11 @@ def main() -> int:
             long_code = json.loads(long_job["body"]).get("error", {}).get("code", "")
         except json.JSONDecodeError:
             pass
-        record("rejects media over 25 minutes",
+        record("rejects media over 30 minutes",
                PASS if long_job["status"] == 422 and "too_long" in long_code else FAIL,
                f"HTTP {long_job['status']} {long_code}")
     else:
-        record("rejects media over 25 minutes", SKIP, "set LONG_URL to a >25 min link")
+        record("rejects media over 30 minutes", SKIP, "set LONG_URL to a >30 min link")
 
     # 7. job isolation -----------------------------------------------------
     forged = request("GET", API + "/tunnel/" + "z" * 32)
