@@ -148,7 +148,11 @@
     "api.auth.turnstile.missing": "This instance requires a turnstile challenge.",
     "api.auth.turnstile.invalid": "The turnstile challenge failed.",
     "api.instance.version_mismatch": "This API version isn't supported.",
-    "api.instance.not_ready": "The instance is still starting up."
+    "api.instance.not_ready": "The instance is still starting up.",
+    "api.instance.timed_out": "The instance took too long and gave up. Try a shorter link.",
+    "api.auth.origin": "This instance only answers its own site.",
+    "api.content.too_large": "The file would be bigger than this instance allows.",
+    "api.content.video.unavailable": "The video is unavailable."
   };
 
   /* ----------------------------------------------------------
@@ -1151,8 +1155,17 @@
       }
     }
 
-    if (code === "api.rate_limit" && rateRemaining != null) {
-      text += " Remaining: " + rateRemaining + ".";
+    if (code === "api.rate_limit") {
+      const reason = context && context.reason ? String(context.reason) : "";
+      if (reason === "daily_cap") {
+        text = "This instance has hit its daily download limit. Try again tomorrow.";
+      } else if (reason === "too_many_downloads") {
+        text = "That's a lot of downloads in a row — give it a minute and retry.";
+      } else if (reason === "queue_full") {
+        text = "The queue is full right now. Try again in a moment.";
+      } else if (rateRemaining != null) {
+        text += " Remaining: " + rateRemaining + ".";
+      }
     }
     item.error = text;
     setStatus(item, "error", "failed");
