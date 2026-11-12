@@ -134,6 +134,19 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"status": "error", "error": {"code": "api.content.video.too_long", "context": {"limit": 1500}}})
             return
 
+        if self.path.startswith("/report"):
+            # the browser suites POST their results here so a headless run can be
+            # read back without a devtools session
+            # do_POST already consumed the body — never read it twice or the
+            # handler blocks waiting for bytes that will never arrive
+            try:
+                with open("/tmp/mdown-report.json", "w") as fh:
+                    json.dump(body, fh)
+            except OSError:
+                pass
+            self._json({"ok": True})
+            return
+
         # the three rate-limit reasons the UI words differently
         for needle, reason in (("dailycap", "daily_cap"),
                                ("burst", "too_many_downloads"),

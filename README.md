@@ -221,6 +221,18 @@ open http://127.0.0.1:4331/tests/status.test.html  # 10 assertions (needs mock-a
 
 Backend: `cd server && python3 -m unittest discover -s tests` (81 assertions).
 
+**Headless runs** (no devtools needed). Do *not* pass `--virtual-time-budget` —
+it freezes the clock the WASM engine needs, and the suite hangs:
+
+```sh
+python3 tests/mock-api.py 4320 &
+python3 -m http.server 4331 &
+rm -f /tmp/mdown-report.json
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+  --user-data-dir=/tmp/mdown-run "http://127.0.0.1:4331/tests/tools.test.html?report=1" &
+# the page POSTs its results to /report; read /tmp/mdown-report.json
+```
+
 ## Before you deploy
 
 Full walkthrough, including the free backend: **[DEPLOY.md](DEPLOY.md)**.
