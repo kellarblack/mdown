@@ -40,11 +40,11 @@ CHUNK = 64 * 1024
 #: services this instance can actually fetch, for the front-end's
 #: "is this service available here" hint
 SERVICES = [
-    "youtube", "twitter", "instagram", "tiktok", "reddit", "soundcloud",
-    "bandcamp", "mixcloud", "audiomack", "hearthis", "bilibili", "vimeo",
-    "dailymotion", "twitch", "kick", "rumble", "odysee", "streamable",
-    "coub", "facebook", "threads", "snapchat", "rutube", "ok", "vk",
-    "loom", "tumblr", "bluesky", "newgrounds", "xiaohongshu", "imgur", "9gag",
+    "9gag", "audiomack", "bandcamp", "bilibili", "bluesky", "coub", "dailymotion",
+    "douyin", "facebook", "hearthis", "imgur", "instagram", "kick", "loom",
+    "mixcloud", "newgrounds", "odysee", "ok", "reddit", "rumble", "rutube",
+    "snapchat", "soundcloud", "streamable", "threads", "tiktok", "tumblr",
+    "twitch", "twitter", "vimeo", "vk", "xiaohongshu", "youtube",
 ]
 
 CONTENT_TYPES = {
