@@ -212,7 +212,7 @@ Full walkthrough, including the free backend: **[DEPLOY.md](DEPLOY.md)**.
 The short version:
 
 1. **Get an API instance** — a cobalt v11 server. `DEPLOY.md` builds one on Oracle's free tier,
-   with the 1080p / 128 kb/s / 25-minute caps this front-end assumes. Nothing is bundled here:
+   with the 1440p / 128 kb/s / 30-minute caps this front-end assumes. Nothing is bundled here:
    without an instance the page says "not connected" and downloads nothing.
 2. **Set a default API** — in `assets/app.js`, top of the file:
    ```js
@@ -270,7 +270,7 @@ headless browser can capture it:
   bitrate ceiling is 128 kb/s for lossy formats. wav ignores the bitrate setting: it is
   uncompressed PCM (≈42 MB for a 4-minute track), so it avoids a second lossy encode but is
   ~11× the size of mp3 and no better than whatever the source stream was.
-- **Duration is capped by the instance, not the page** — `DURATION_LIMIT=1500` means 25 minutes
+- **Duration is capped by the instance, not the page** — `DURATION_LIMIT=1800` means 30 minutes
   for youtube, soundcloud and vimeo. The front-end can't know a length before the API fetches
   it, so it translates the API's `content.too_long` error instead of pretending to check.
 - **Service recognition is wider than any instance.** The hostname map covers more sites than

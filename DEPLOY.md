@@ -130,8 +130,8 @@ sudo systemctl reload caddy
 | --- | --- | --- |
 | `MDOWN_API_URL` | — | public base URL, used to build tunnel links |
 | `MDOWN_CORS_ORIGINS` | `https://mdown.cc` | comma-separated, exact origins only |
-| `MDOWN_MAX_HEIGHT` | `1080` | hard resolution cap, enforced after download |
-| `MDOWN_MAX_DURATION` | `1500` | 25 minutes, in seconds, checked before download |
+| `MDOWN_MAX_HEIGHT` | `1440` | hard resolution cap, enforced after download |
+| `MDOWN_MAX_DURATION` | `1800` | 30 minutes, in seconds, checked before download |
 | `MDOWN_MAX_OUTPUT_MB` | `800` | per-file ceiling, also handed to yt-dlp |
 | `MDOWN_MAX_CONCURRENT` | `2` | simultaneous downloads |
 | `MDOWN_MAX_QUEUE` | `6` | waiting requests before 429 |
@@ -292,14 +292,14 @@ sets cache policy, the second makes `mdown.cc/<pasted link>` work.
 
 ## Capacity, honestly
 
-With 1080p / 128 kb/s / 25 min caps:
+With 1440p / 128 kb/s / 30 min caps:
 
 | download | size | 10 TB buys |
 | --- | --- | --- |
 | mp3 128k, 4 min | ~3.8 MB | ~2,600,000 |
 | wav, 4 min | ~42 MB | ~240,000 |
-| wav, 25 min | ~265 MB | ~38,000 |
-| 1080p, 25 min | ~400–750 MB | ~13,000–25,000 |
+| wav, 30 min | ~318 MB | ~32,000 |
+| 1440p, 30 min (worst case) | ~1.1 GB | ~9,300 |
 
 Two concurrent jobs on 2 OCPU is the real limit, not bandwidth: yt-dlp and
 ffmpeg are mostly network-bound during download and briefly CPU-bound during

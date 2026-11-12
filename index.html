@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>mdown — media downloader for video and audio</title>
-<meta name="description" content="A media downloader for video and audio, capped at 1080p and 25 minutes. Includes a subtitle extractor, remux and metadata cleaner that run in your browser — nothing is uploaded.">
+<meta name="description" content="A media downloader for video and audio, capped at 1440p and 30 minutes. Includes a subtitle extractor, remux and metadata cleaner that run in your browser — nothing is uploaded.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <link rel="canonical" href="https://mdown.cc/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="mdown">
 <meta property="og:url" content="https://mdown.cc/">
 <meta property="og:title" content="mdown — Simple Media Downloader">
-<meta property="og:description" content="A media downloader for video and audio, capped at 1080p and 25 minutes. Includes a subtitle extractor, remux and metadata cleaner that run in your browser — nothing is uploaded.">
+<meta property="og:description" content="A media downloader for video and audio, capped at 1440p and 30 minutes. Includes a subtitle extractor, remux and metadata cleaner that run in your browser — nothing is uploaded.">
 <meta property="og:image" content="https://mdown.cc/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="675">
@@ -20,7 +20,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://mdown.cc/assets/og.png">
 <meta name="twitter:title" content="mdown — Simple Media Downloader">
-<meta name="twitter:description" content="A media downloader for video and audio, capped at 1080p and 25 minutes. Subtitle extractor, remux and metadata cleaner run in your browser — nothing is uploaded.">
+<meta name="twitter:description" content="A media downloader for video and audio, capped at 1440p and 30 minutes. Subtitle extractor, remux and metadata cleaner run in your browser — nothing is uploaded.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -66,8 +66,8 @@
       "featureList": [
         "Download video and audio from a pasted link",
         "Audio-only and muted modes",
-        "Resolution capped at 1080p",
-        "Duration capped at 25 minutes",
+        "Resolution capped at 1440p",
+        "Duration capped at 30 minutes",
         "Remux containers without re-encoding",
         "Extract embedded subtitles as SRT",
         "Remove container metadata",
@@ -501,8 +501,9 @@
 
         <div class="field">
           <span class="field-label">Preferred video quality</span>
-          <p class="field-help">Capped at 1080p on purpose. Higher tiers are the ones that tend to move behind a paywall; if your pick is unavailable, the next best is used. Videos longer than 25 minutes are refused by the instance.</p>
+          <p class="field-help">Capped at 1440p on purpose. Higher tiers are the ones that tend to move behind a paywall; if your pick is unavailable, the next best is used. Videos longer than 30 minutes are refused by the instance.</p>
           <div class="seg wrap" data-setting="videoQuality" role="radiogroup" aria-label="Video quality">
+            <button type="button" data-value="1440">1440p</button>
             <button type="button" data-value="1080">1080p</button>
             <button type="button" data-value="720">720p</button>
             <button type="button" data-value="480">480p</button>

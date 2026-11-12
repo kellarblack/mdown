@@ -13,7 +13,7 @@ const PANELS = {
 const META = {
   download: {
     title: "mdown — media downloader for video and audio",
-    desc: "A media downloader for video and audio, capped at 1080p and 25 minutes. Subtitle extractor, remux and metadata cleaner run in your browser — nothing is uploaded."
+    desc: "A media downloader for video and audio, capped at 1440p and 30 minutes. Subtitle extractor, remux and metadata cleaner run in your browser — nothing is uploaded."
   },
   remux: {
     title: "Remux MP4, MKV and WebM without re-encoding — mdown",

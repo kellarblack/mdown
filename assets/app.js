@@ -24,7 +24,7 @@
   const DEFAULT_INSTANCE = "";
 
   /* deliberate ceilings: the top tiers are the ones services paywall */
-  const VIDEO_QUALITIES = ["1080", "720", "480", "360", "240", "144"];
+  const VIDEO_QUALITIES = ["1440", "1080", "720", "480", "360", "240", "144"];
   const AUDIO_BITRATES = ["128", "96", "64", "8"];
   const AUDIO_FORMATS = ["mp3", "ogg", "wav", "opus"];
   const clampQuality = (value) => (VIDEO_QUALITIES.includes(String(value)) ? String(value) : "1080");

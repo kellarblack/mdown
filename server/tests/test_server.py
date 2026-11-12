@@ -126,8 +126,8 @@ class ServerTest(unittest.TestCase):
         self.assertIn("youtube", data["cobalt"]["services"])
         self.assertIn("soundcloud", data["cobalt"]["services"])
         self.assertFalse(data["cobalt"]["apiKeyRequired"])
-        self.assertEqual(data["limits"]["maxDuration"], 1500)
-        self.assertEqual(data["limits"]["maxHeight"], 1080)
+        self.assertEqual(data["limits"]["maxDuration"], 1800)
+        self.assertEqual(data["limits"]["maxHeight"], 1440)
         self.assertEqual(headers.get("Content-Type"), "application/json; charset=utf-8")
 
     def test_health(self):
@@ -223,11 +223,11 @@ class ServerTest(unittest.TestCase):
 
     # -- rejections --------------------------------------------------------
     def test_duration_limit_is_serverside(self):
-        self.fake.info["duration"] = 1501
+        self.fake.info["duration"] = 1801
         status, _, data = self.post({"url": URL})
         self.assertEqual(status, 422)
         self.assertEqual(data["error"]["code"], "api.content.video.too_long")
-        self.assertEqual(data["error"]["context"]["limit"], 1500)
+        self.assertEqual(data["error"]["context"]["limit"], 1800)
 
     def test_resolution_is_serverside(self):
         self.fake.media["height"] = 2160

@@ -55,8 +55,8 @@ class Config:
     api_key: str = ""
 
     # ---- media limits ---------------------------------------------------
-    max_height: int = 1080
-    max_duration: int = 1500          # 25 minutes
+    max_height: int = 1440
+    max_duration: int = 1800          # 30 minutes
     max_output_bytes: int = 800 * MB
 
     # ---- capacity -------------------------------------------------------
@@ -103,8 +103,8 @@ class Config:
             trust_proxy=os.environ.get("MDOWN_TRUST_PROXY", "").strip() in ("1", "true", "yes"),
             cors_origins=origins,
             api_key=os.environ.get("MDOWN_API_KEY", "").strip(),
-            max_height=_int("MDOWN_MAX_HEIGHT", 1080, 144, 4320),
-            max_duration=_int("MDOWN_MAX_DURATION", 1500, 30, 86400),
+            max_height=_int("MDOWN_MAX_HEIGHT", 1440, 144, 4320),
+            max_duration=_int("MDOWN_MAX_DURATION", 1800, 30, 86400),
             max_output_bytes=_int("MDOWN_MAX_OUTPUT_MB", 800, 16, 8192) * MB,
             max_concurrent=_int("MDOWN_MAX_CONCURRENT", 2, 1, 16),
             max_queue=_int("MDOWN_MAX_QUEUE", 6, 0, 100),

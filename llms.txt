@@ -2,7 +2,7 @@
 
 > mdown is a media downloader that runs in the browser. You paste a link to a
 > video or audio post, choose a format, and the file lands in your normal
-> downloads. It is capped at 1080p and 25 minutes per item, requires no account,
+> downloads. It is capped at 1440p and 30 minutes per item, requires no account,
 > and stores nothing on a server.
 
 ## What it does
@@ -25,8 +25,8 @@
 
 ## Limits
 
-- Maximum resolution: 1080p.
-- Maximum duration: 25 minutes.
+- Maximum resolution: 1440p.
+- Maximum duration: 30 minutes.
 - The downloader needs a compatible API instance; the page has no backend of its own and says so when none is configured.
 
 ## Pages

@@ -33,8 +33,8 @@ class ConfigTest(unittest.TestCase):
 
     def test_defaults_are_conservative(self):
         config = Config.from_env()
-        self.assertEqual(config.max_height, 1080)
-        self.assertEqual(config.max_duration, 1500)
+        self.assertEqual(config.max_height, 1440)
+        self.assertEqual(config.max_duration, 1800)
         self.assertEqual(config.max_concurrent, 2)
         self.assertEqual(config.api_key, "")
         self.assertEqual(config.cors_origins, ["https://mdown.cc"])

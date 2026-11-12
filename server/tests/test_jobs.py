@@ -93,15 +93,15 @@ class JobManagerTest(unittest.TestCase):
 
     # -- limits ------------------------------------------------------------
     def test_rejects_over_duration(self):
-        self.fake.info["duration"] = 1501
+        self.fake.info["duration"] = 1801
         with self.assertRaises(ApiError) as caught:
             self.make()
         self.assertEqual(caught.exception.code, "api.content.video.too_long")
-        self.assertEqual(caught.exception.context["limit"], 1500)
+        self.assertEqual(caught.exception.context["limit"], 1800)
         self.assertEqual(self.leftovers(), [])
 
     def test_accepts_duration_at_the_cap(self):
-        self.fake.info["duration"] = 1500
+        self.fake.info["duration"] = 1800
         job = self.make()
         self.assertTrue(os.path.isfile(job.path))
 
@@ -125,7 +125,7 @@ class JobManagerTest(unittest.TestCase):
 
     def test_clamps_requested_height(self):
         self.make(height=4320)
-        self.assertEqual(self.fake.calls[-1]["height"], 1080)
+        self.assertEqual(self.fake.calls[-1]["height"], 1440)
 
     def test_clamps_bitrate(self):
         self.fake.media["has_video"] = False
