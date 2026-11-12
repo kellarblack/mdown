@@ -10,6 +10,7 @@ Implements just enough of the v11 contract:
   POST /         tunnel / picker / error responses, chosen by keywords in the url
   GET  /tunnel   a small generated file with Content-Length + CORS
 """
+import base64
 import json
 import sys
 import time
@@ -30,6 +31,15 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Expose-Headers", "Content-Disposition, Content-Length, Estimated-Content-Length, RateLimit-Remaining")
 
+    def _thumb(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "image/png")
+        self.send_header("Content-Length", str(len(self.PNG)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(self.PNG)
+
     def _json(self, payload, status=200):
         body = json.dumps(payload).encode()
         self.send_response(status)
@@ -45,7 +55,14 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", "0")
         self.end_headers()
 
+    PNG = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    )
+
     def do_GET(self):
+        if self.path.startswith("/thumb.png"):
+            self._thumb()
+            return
         if self.path.startswith("/tunnel"):
             query = parse_qs(urlparse(self.path).query)
             name = (query.get("name") or ["mock.bin"])[0]
@@ -87,6 +104,7 @@ class Handler(BaseHTTPRequestHandler):
 
         url = body.get("url", "")
         host = "http://127.0.0.1:%d" % PORT
+        self._host = host
 
         if "picker" in url:
             # "link" entries are pages the client re-posts; the rest are files
@@ -94,8 +112,8 @@ class Handler(BaseHTTPRequestHandler):
                 "status": "picker",
                 "title": "a mock playlist",
                 "picker": [
-                    {"type": "link", "url": "https://youtu.be/one", "thumb": host + "/tunnel?n=1", "name": "first item"},
-                    {"type": "link", "url": "https://youtu.be/two", "thumb": host + "/tunnel?n=2", "name": "second item"},
+                    {"type": "link", "url": "https://youtu.be/one", "thumb": host + "/thumb.png", "name": "first item"},
+                    {"type": "link", "url": "https://youtu.be/two", "thumb": host + "/thumb.png", "name": "second item"},
                     {"type": "link", "url": "https://youtu.be/three", "thumb": "", "name": "third item"},
                 ],
             })

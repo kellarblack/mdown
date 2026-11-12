@@ -95,6 +95,12 @@ async function main() {
   await sleep(150);
   record("'all' selects everything", selected() === 3, "selected=" + selected());
 
+  // thumbnails must actually load: a strict CSP would silently break them
+  await sleep(400);
+  const imgs = [...doc().querySelectorAll(".picker-cell img")];
+  const loaded = imgs.filter((i) => i.complete && i.naturalWidth > 0).length;
+  record("thumbnails load", loaded >= 1, loaded + "/" + imgs.length + " images");
+
   // a tile toggles off, then back on
   const first = doc().querySelector(".picker-cell");
   first.click();
