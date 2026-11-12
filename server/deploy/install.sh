@@ -22,7 +22,42 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get -y upgrade -qq
 apt-get -y install -qq --no-install-recommends \
-  python3 python3-venv python3-pip ffmpeg ca-certificates curl rsync
+  python3 python3-venv python3-pip ffmpeg ca-certificates curl rsync \
+  unattended-upgrades fail2ban
+
+echo "==> unattended security updates"
+# patches install themselves nightly; no reboot without you deciding to
+cat > /etc/apt/apt.conf.d/20auto-upgrades <<'APT'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";
+APT
+cat > /etc/apt/apt.conf.d/51unattended-no-reboot <<'APT'
+Unattended-Upgrade::Automatic-Reboot "false";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+APT
+systemctl enable --now unattended-upgrades >/dev/null 2>&1 || true
+
+echo "==> ssh hardening"
+# key-only login, no root password, and a brute-force ban after 5 tries
+install -d -m 0755 /etc/ssh/sshd_config.d
+cat > /etc/ssh/sshd_config.d/99-mdown.conf <<'SSH'
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin prohibit-password
+MaxAuthTries 5
+SSH
+ssh-keygen -A >/dev/null 2>&1 || true
+systemctl reload ssh 2>/dev/null || systemctl reload sshd 2>/dev/null || true
+
+cat > /etc/fail2ban/jail.d/mdown.local <<'F2B'
+[sshd]
+enabled = true
+maxretry = 5
+findtime = 10m
+bantime = 1h
+F2B
+systemctl enable --now fail2ban >/dev/null 2>&1 || true
 
 echo "==> service account"
 if ! id "$APP_USER" >/dev/null 2>&1; then
