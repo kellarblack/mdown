@@ -134,6 +134,15 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"status": "error", "error": {"code": "api.content.video.too_long", "context": {"limit": 1500}}})
             return
 
+        # the three rate-limit reasons the UI words differently
+        for needle, reason in (("dailycap", "daily_cap"),
+                               ("burst", "too_many_downloads"),
+                               ("queuefull", "queue_full")):
+            if needle in url:
+                self._json({"status": "error", "error": {"code": "api.rate_limit",
+                                                         "context": {"reason": reason}}}, 429)
+                return
+
         if "error" in url:
             self._json({"status": "error", "error": {"code": "api.content.video.private", "context": {"service": "youtube"}}})
             return
