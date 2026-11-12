@@ -1,5 +1,24 @@
 # Later, when you can be bothered
 
+## ⏰ MORNING: pay for the box (~11am)
+
+The DediOne checkout is open in your browser, unpaid. Carts expire overnight and
+stock moves, so:
+
+1. **Refresh the page.** If it's gone, re-open:
+   https://dedione.com/store/special-vps-plans/20260520-lax-vps-intl-1c1g20g-special-1299
+   (check it still says **Los Angeles** + **1 TB monthly**, $12.99/yr)
+2. **Pay by card** — scroll past "Bank Transfer"; the card option is Stripe, which
+   that page loads. No PayPal needed.
+3. **Don't tick the mailing list.** Screenshot the confirmation.
+4. **Send me the IP.** Then add my key on the box (one command, below) and I take over.
+
+If DediOne is sold out or won't take the card: **CloudCone** takes cards directly,
+$20.25/yr, 2 vCPU / 1.25 GB / 4 TB —
+https://app.cloudcone.com/vps/536/create?token=frankenstein-26-ssd-vps-1
+
+---
+
 Nothing here is urgent. The site is built, tested and sitting in `mdown/`.
 This is just the order to do it in.
 

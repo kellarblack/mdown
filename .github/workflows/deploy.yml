@@ -1,4 +1,5 @@
-# Deploy the static site to Cloudflare Pages on every push to main.
+# OPTIONAL: deploy to Cloudflare Pages instead of GitHub Pages.
+# If you use .github/workflows/pages.yml, delete this file.
 #
 # Setup, once:
 #   1. Cloudflare dashboard → Pages → create project "mdown" (direct upload)

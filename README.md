@@ -1,5 +1,16 @@
 # mdown
 
+**Open source, MIT.** The front-end is plain HTML/CSS/JS with no build step; the
+API is Python stdlib + yt-dlp + ffmpeg. Fork it, run your own instance, send a PR.
+
+- **Site:** published to GitHub Pages from `main` by `.github/workflows/pages.yml`
+- **API:** deployed to a VPS separately — `server/deploy/deploy-to.sh <ip>` (see `DEPLOY.md`)
+- **No secrets in the repo.** `cookies.txt`, `keys.json` and `*.env` are gitignored; keep them that way.
+
+Want to work on it? `python3 -m http.server 4331` in this folder is the whole dev
+setup, and `server/tests` runs with `python3 -m unittest discover -s tests`.
+
+
 A quiet front-end for the [cobalt](https://github.com/imputnet/cobalt) media API — the same
 capabilities as `cobalt.tools`, rebuilt as a single static page with no build step, no
 framework, and no telemetry.
