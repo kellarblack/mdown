@@ -123,7 +123,7 @@
     "api.url.invalid": "That link isn't valid for any supported service.",
     "api.url.unsupported": "This service isn't supported by the instance.",
     "api.url.missing": "No link was sent.",
-    "api.url.invalid_input": "The instace rejected the input.",
+    "api.url.invalid_input": "The instance rejected that input.",
     "api.service.unsupported": "This service isn't supported by the instance.",
     "api.service.disabled": "This service is disabled on the instance.",
     "api.service.not_implemented": "This service isn't implemented yet.",
