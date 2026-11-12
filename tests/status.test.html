@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>status test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 620px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Exercises status.html: the health fetch, the uptime strip and its maths,
+  the state machine, and the collapsed detail block.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --virtual-time-budget=20000 --dump-dom \
+      "http://127.0.0.1:4331/tests/status.test.html" | grep PASS
+-->
+<iframe id="app" src="../status.html"></iframe>
+<pre id="log">starting…</pre>
+
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(120);
+  }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+
+  // 40 checks: 30 up, 10 down => 75%
+  const history = [];
+  for (let i = 0; i < 40; i++) history.push({ t: Date.now() - (40 - i) * 30000, ok: i >= 10 });
+
+  frame.contentWindow.localStorage.setItem("mdown.settings", JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  frame.contentWindow.localStorage.setItem("mdown.uptime", JSON.stringify(history));
+  frame.src = "../status.html?t=" + Date.now();
+
+  const doc = () => frame.contentDocument;
+  const opened = await waitFor(() => doc() && doc().querySelector("#status-card"));
+  record("status page loads", opened);
+  if (!opened) { window.__results = { total: results.length, failures, results }; return; }
+
+  const card = doc().querySelector("#status-card");
+  const title = doc().querySelector("#status-title");
+
+  const settled = await waitFor(() => card.dataset.state !== "checking", 15000);
+  record("health check settles", settled, "state=" + card.dataset.state);
+
+  // the mock answers 200 but reports no dependency checks
+  record("healthy API reads as up", card.dataset.state === "up", title.textContent);
+  const note = doc().querySelector("#status-note");
+  record("missing checks are called out",
+    !note.hidden && /does not report dependency checks/i.test(note.textContent), note.textContent.slice(0, 60));
+
+  // uptime maths: 30 of 40 = 75%
+  // 30 of the 40 seeded checks are up; the page also records its own check on
+  // load, so allow for that extra sample rather than assuming a frozen count
+  const pct = doc().querySelector("#uptime-pct").textContent;
+  record("uptime percentage is correct", /7[5-6]\.\d% up/.test(pct), pct);
+
+  const bars = doc().querySelectorAll(".uptime-bar");
+  record("strip draws every check it has", bars.length >= 40 && bars.length <= 42, bars.length + " bars");
+  const down = [...bars].filter((b) => b.getAttribute("data-ok") === "false").length;
+  record("failed checks are marked", down === 10, down + " red");
+
+  // details start closed, and open on demand
+  const details = doc().querySelector(".status-more");
+  record("diagnostics start collapsed", details && !details.open);
+  details.open = true;
+  await sleep(150);
+  const rows = doc().querySelectorAll("#status-rows > div").length;
+  record("expanded view lists what it checked", rows >= 2, rows + " rows");
+
+  // the report copies something useful
+  const report = doc().querySelector("#status-report");
+  record("report button exists", !!report && /report/i.test(report.textContent));
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+</body>
+</html>

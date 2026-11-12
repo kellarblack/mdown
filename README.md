@@ -216,6 +216,7 @@ open http://127.0.0.1:4331/tests/remux.test.html   # 90 assertions
 open http://127.0.0.1:4331/tests/tools.test.html   # 38 assertions
 open http://127.0.0.1:4331/tests/picker.test.html  # 15 assertions (needs mock-api.py 4320)
 open http://127.0.0.1:4331/tests/picker.test.html?w=390  # same, at phone width
+open http://127.0.0.1:4331/tests/status.test.html  # 10 assertions (needs mock-api.py 4320)
 ```
 
 Backend: `cd server && python3 -m unittest discover -s tests` (81 assertions).
