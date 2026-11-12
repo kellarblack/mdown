@@ -1347,9 +1347,34 @@
       const selected = new Set(entries.map((_, i) => i));
       const body = el("div");
       const grid = el("div", { class: "picker-grid" });
+      const cells = [];
+
+      const paint = () => {
+        cells.forEach((cell, index) => {
+          cell.setAttribute("data-selected", selected.has(index) ? "true" : "false");
+        });
+      };
 
       if (!entries.length) {
         body.appendChild(el("p", { class: "picker-empty", text: "The API returned an empty picker." }));
+      } else {
+        /* the two answers people actually want: one of them, or everything */
+        const bulk = el("div", { class: "picker-bulk" });
+        const one = el("button", { type: "button", class: "ghost-btn small", text: "just the first" });
+        const all = el("button", { type: "button", class: "ghost-btn small", text: "all " + entries.length });
+        one.addEventListener("click", () => {
+          selected.clear();
+          selected.add(0);
+          paint();
+        });
+        all.addEventListener("click", () => {
+          entries.forEach((_, index) => selected.add(index));
+          paint();
+        });
+        bulk.appendChild(one);
+        bulk.appendChild(all);
+        bulk.appendChild(el("span", { class: "picker-bulk-note", text: "or tick them below" }));
+        body.appendChild(bulk);
       }
 
       entries.forEach((entry, index) => {
@@ -1366,6 +1391,7 @@
           else selected.add(index);
           cell.setAttribute("data-selected", selected.has(index) ? "true" : "false");
         });
+        cells.push(cell);
         grid.appendChild(cell);
       });
 

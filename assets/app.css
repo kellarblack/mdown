@@ -714,6 +714,11 @@ a.ghost-btn { text-decoration: none; }
 }
 .modal-foot:empty { display: none; }
 
+.picker-bulk {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.picker-bulk-note { color: var(--text-3); font-family: var(--mono); font-size: 0.66rem; }
+
 .picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
 .picker-cell {
   position: relative; display: block; padding: 0; overflow: hidden;
