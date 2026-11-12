@@ -214,7 +214,10 @@ during extraction and cleaning recorded **zero** fetch/XHR calls.
 python3 -m http.server 4331          # from the repo folder
 open http://127.0.0.1:4331/tests/remux.test.html   # 90 assertions
 open http://127.0.0.1:4331/tests/tools.test.html   # 38 assertions
+open http://127.0.0.1:4331/tests/picker.test.html  # 12 assertions (needs mock-api.py 4320)
 ```
+
+Backend: `cd server && python3 -m unittest discover -s tests` (81 assertions).
 
 ## Before you deploy
 

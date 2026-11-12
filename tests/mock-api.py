@@ -89,12 +89,14 @@ class Handler(BaseHTTPRequestHandler):
         host = "http://127.0.0.1:%d" % PORT
 
         if "picker" in url:
+            # "link" entries are pages the client re-posts; the rest are files
             self._json({
                 "status": "picker",
+                "title": "a mock playlist",
                 "picker": [
-                    {"type": "photo", "url": host + "/tunnel?n=1", "thumb": host + "/tunnel?n=1"},
-                    {"type": "photo", "url": host + "/tunnel?n=2", "thumb": host + "/tunnel?n=2"},
-                    {"type": "video", "url": host + "/tunnel?n=3"},
+                    {"type": "link", "url": "https://youtu.be/one", "thumb": host + "/tunnel?n=1", "name": "first item"},
+                    {"type": "link", "url": "https://youtu.be/two", "thumb": host + "/tunnel?n=2", "name": "second item"},
+                    {"type": "link", "url": "https://youtu.be/three", "thumb": "", "name": "third item"},
                 ],
             })
             return

@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>picker test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 700px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Drives the picker modal in the real app against the mock API.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --virtual-time-budget=15000 --dump-dom \
+      "http://127.0.0.1:4331/tests/picker.test.html" | grep PASS
+
+  The picker path never touches the WASM engine, so it runs fine headless.
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, ms = 12000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(120);
+  }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  const doc = () => frame.contentDocument;
+  const win = () => frame.contentWindow;
+
+  await waitFor(() => doc() && doc().querySelector("#open-settings"), 12000);
+
+  // point the app at the mock instance
+  doc().querySelector("#open-settings").click();
+  await sleep(300);
+  doc().querySelector('[data-section="instance"]').click();
+  await sleep(200);
+  const field = doc().querySelector("#instance-url");
+  field.value = "http://127.0.0.1:4320";
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  field.dispatchEvent(new Event("blur", { bubbles: true }));
+  await waitFor(() => doc().querySelector("#instance-pill").dataset.state === "ok", 12000);
+  doc().querySelector("[data-close-settings]").click();
+  await sleep(250);
+
+  // submit a URL the mock answers with a picker
+  const input = doc().querySelector("#url-input");
+  input.value = "https://youtube.com/playlist?list=picker";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  doc().querySelector("#fetch-form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+  const modal = () => doc().querySelector("#modal");
+  const opened = await waitFor(() => modal() && !modal().hidden, 15000);
+  record("picker modal opens", opened);
+  if (!opened) { window.__results = { total: results.length, failures, results }; return; }
+
+  const bulk = doc().querySelector(".picker-bulk");
+  record("bulk buttons exist", !!bulk);
+  const buttons = bulk ? [...bulk.querySelectorAll("button")] : [];
+  record("two bulk buttons", buttons.length === 2, buttons.map((b) => b.textContent).join(" / "));
+  record("all button shows the count",
+    !!buttons[1] && /all\s+3/.test(buttons[1].textContent), buttons[1] && buttons[1].textContent);
+
+  const selected = () => [...doc().querySelectorAll(".picker-cell")].filter((c) => c.dataset.selected === "true").length;
+
+  record("everything starts selected", selected() === 3, "selected=" + selected());
+
+  buttons[0].click();
+  await sleep(150);
+  record("'just the first' selects one", selected() === 1, "selected=" + selected());
+
+  buttons[1].click();
+  await sleep(150);
+  record("'all' selects everything", selected() === 3, "selected=" + selected());
+
+  // a tile toggles off, then back on
+  const first = doc().querySelector(".picker-cell");
+  first.click();
+  await sleep(120);
+  record("a tile can be unticked", selected() === 2, "selected=" + selected());
+  first.click();
+  await sleep(120);
+  record("a tile can be re-ticked", selected() === 3, "selected=" + selected());
+
+  // confirm queues the three link entries through the normal path
+  const confirm = [...doc().querySelectorAll("#modal .primary-btn")].pop();
+  record("confirm button present", !!confirm);
+  if (confirm) {
+    confirm.click();
+    const queued = await waitFor(() => win().md.state().items.length >= 3, 8000);
+    record("confirm queues every picked entry", queued, "items=" + win().md.state().items.length);
+    record("picker modal closes", modal().hidden);
+  }
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+</body>
+</html>
