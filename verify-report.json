@@ -1,11 +1,11 @@
 {
   "api": "http://127.0.0.1:9000",
-  "when": "2026-11-12T15:15:08Z",
+  "when": "2026-11-12T22:50:31Z",
   "results": [
     {
       "check": "instance info",
       "status": "PASS",
-      "detail": "version=mdown-1.0 services=32"
+      "detail": "version=mdown-1.0 services=33"
     },
     {
       "check": "health",
@@ -65,15 +65,15 @@
     {
       "check": "3 simultaneous downloads",
       "status": "PASS",
-      "detail": "200s=3 429s=0 wall=75.1s"
+      "detail": "200s=3 429s=0 wall=72.9s"
     }
   ],
   "timings": {
-    "instance_info_ms": 43,
-    "post_to_tunnel_s": 27.08,
-    "tunnel_ttfb_s": 0.087,
-    "transfer_s": 0.53,
-    "throughput_mbps": 152.49,
-    "concurrency_wall_s": 75.08
+    "instance_info_ms": 37,
+    "post_to_tunnel_s": 26.21,
+    "tunnel_ttfb_s": 0.099,
+    "transfer_s": 0.72,
+    "throughput_mbps": 113.59,
+    "concurrency_wall_s": 72.88
   }
 }

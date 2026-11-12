@@ -132,7 +132,8 @@ sudo systemctl reload caddy
 | `MDOWN_CORS_ORIGINS` | `https://mdown.cc` | comma-separated, exact origins only |
 | `MDOWN_MAX_HEIGHT` | `4320` | hard resolution cap, enforced after download |
 | `MDOWN_MAX_DURATION` | `1800` | 30 minutes, in seconds, checked before download |
-| `MDOWN_MAX_OUTPUT_MB` | `800` | per-file ceiling, also handed to yt-dlp |
+| `MDOWN_MAX_OUTPUT_MB` | `2048` | per-file ceiling, also handed to yt-dlp. 800 blocked 4K |
+| `MDOWN_FRAGMENTS` | `8` | parallel range requests per download. 8 measured ~40% faster than 4 on a 900 MB 4K file; 16 is slower on one vCPU |
 | `MDOWN_MAX_CONCURRENT` | `2` | simultaneous downloads |
 | `MDOWN_MAX_QUEUE` | `6` | waiting requests before 429 |
 | `MDOWN_JOB_TIMEOUT` | `300` | whole-download timeout |
@@ -264,7 +265,7 @@ Tuned for 1 vCPU / 1 GB, which is the smallest box this runs on:
 | **`MemoryMax`** | 1536 MB (RAM + swap) | a runaway job is killed before the box locks up |
 | **`CPUQuota`** | 180% | leaves room for ffmpeg's child processes |
 | **`LimitNOFILE`** | 524288 | many sockets during a multi-stream download |
-| **`--concurrent-fragments`** | 4 | tuned for one core; more just queues |
+| **`--concurrent-fragments`** | 8 | measured: 8 beats 4 by ~40% on a 900 MB file, 16 loses to 8 |
 
 ## 6d. Keeping it alive after launch
 

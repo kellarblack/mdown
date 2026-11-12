@@ -219,8 +219,8 @@ open http://127.0.0.1:4331/tests/picker.test.html?w=390  # same, at phone width
 open http://127.0.0.1:4331/tests/status.test.html  # 10 assertions (needs mock-api.py 4320)
 ```
 
-**Everything at once:** `./tests/run-all.sh` — backend plus all four browser suites
-(81 · 38 · 90 · 13 · 15 · 10). It starts the mock and a static server itself.
+**Everything at once:** `./tests/run-all.sh` — backend plus every browser suite
+(88 · 38 · 90 · 13 · 15 · 10 · 8 · 8). It starts the mock and a static server itself.
 
 Backend alone: `cd server && python3 -m unittest discover -s tests`.
 

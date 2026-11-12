@@ -341,6 +341,7 @@
     formatNote: $("#format-note"),
     hint: $("#composer-hint"),
     badge: $("#service-badge"),
+    serviceMark: $("#service-mark"),
     serviceName: $("#service-name"),
     composer: $("#composer"),
     setupNote: $("#setup-note"),
@@ -445,6 +446,10 @@
     const service = detected && detected.id ? detected.id : null;
 
     dom.badge.dataset.empty = service ? "false" : "true";
+    if (dom.serviceMark) {
+      const mark = markForService(service);
+      if (dom.serviceMark.innerHTML !== mark) dom.serviceMark.innerHTML = mark;
+    }
     if (dom.serviceName) {
       dom.serviceName.hidden = !service;
       dom.serviceName.textContent = service || "";
@@ -766,6 +771,73 @@
     local: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v10H4z"/><path d="M8 11h8M8 14h5"/></svg>',
     picker: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>'
   };
+
+  /* ------------------------------------------------------------
+     One monochrome mark per service. Same 24x24 box and 1.7px
+     stroke as every other icon here, so a YouTube link and a
+     Reddit link look like they belong to the same site.
+     ---------------------------------------------------------- */
+  const _mark = (inner) =>
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+
+  const MARK_AUDIO = _mark('<path d="M4 12v2M7 9v6M10 6v12M13 9v6M16 7v10M19 10v4"/>');
+  const MARK_VIDEO = _mark('<rect x="3" y="6.5" width="13" height="11" rx="2.6"/><path d="M16 10.6l4.6-2.7v8.2L16 13.4z"/>');
+  const MARK_IMAGE = _mark('<rect x="3.5" y="5.5" width="17" height="13" rx="2.6"/><path d="M6.5 16l4-5 3 3.4 2.4-2.6 3.6 4.2"/><circle cx="9" cy="9.4" r="1.1"/>');
+
+  const SERVICE_MARKS = {
+    youtube: _mark('<rect x="3" y="6" width="18" height="12" rx="3.4"/><path d="M10.4 9.4v5.2l4.4-2.6z" fill="currentColor" stroke="none"/>'),
+    twitter: _mark('<path d="M5.5 5.5l13 13M18.5 5.5l-13 13"/>'),
+    instagram: _mark('<rect x="4" y="4" width="16" height="16" rx="4.6"/><circle cx="12" cy="12" r="3.6"/><path d="M16.7 7.4h.01"/>'),
+    tiktok: _mark('<path d="M14.2 4v10.4a3.4 3.4 0 1 1-3-3.36"/><path d="M14.2 4c.5 2.3 1.9 3.7 4.2 4"/>'),
+    douyin: _mark('<path d="M13.8 4.4v9.8a3.1 3.1 0 1 1-2.7-3.08"/><path d="M13.8 4.4c.5 2.1 1.7 3.4 3.9 3.7"/><path d="M6 19.6c3.4 1 8.6 1 12 0"/>'),
+    reddit: _mark('<circle cx="12" cy="13.2" r="7.2"/><path d="M9.7 12.8h.01M14.3 12.8h.01"/><path d="M9.5 15.6c1.4 1.1 3.6 1.1 5 0"/><path d="M12 6c0-1.2 1-2 2.2-1.7"/><circle cx="15.2" cy="4.4" r="1.1"/>'),
+    soundcloud: _mark('<path d="M6.6 17.6h9a3.4 3.4 0 0 0 .2-6.8 5.2 5.2 0 0 0-9.9-1.4 3.4 3.4 0 0 0 .7 8.2z"/><path d="M9.8 11.6v6M12.2 11v6.6"/>'),
+    bandcamp: _mark('<path d="M9 5.5L4.5 18.5H10l4.5-13z"/><path d="M14.5 5.5H20l-4.5 13"/>'),
+    mixcloud: _mark('<path d="M6.6 17.6h9a3.3 3.3 0 0 0 .2-6.6 5 5 0 0 0-9.6-1.3 3.3 3.3 0 0 0 .4 7.9z"/><circle cx="11" cy="13.6" r="1.3"/><path d="M12.3 13.6V8.9l2.6-.7v4.2"/>'),
+    audiomack: _mark('<path d="M4 12v3M7 9v9M10 6.5v12M13 9.5v8M16 7v11M19 10.5v6"/>'),
+    hearthis: _mark('<path d="M4 13v-2M7.5 15V9M11 17V7M14.5 14.5v-5M18 16V8M20.5 13v-2"/>'),
+    bilibili: _mark('<rect x="3.5" y="7.5" width="17" height="11.5" rx="3"/><path d="M7.5 7.5L5.5 4.5M16.5 7.5l2-3"/><path d="M9.6 12.2v1.8M14.4 12.2v1.8"/>'),
+    vimeo: _mark('<path d="M5 8.4l6.6 8.2L19 8.4"/>'),
+    twitch: _mark('<path d="M4 4.6h16v9.4l-4.5 4.5H12l-3.5 3v-3H4z"/><path d="M11 8.6v4M15.5 8.6v4"/>'),
+    dailymotion: _mark('<circle cx="12" cy="12" r="8.2"/><path d="M10.4 8.8h1.2a3.3 3.3 0 0 1 0 6.6h-1.2z"/>'),
+    facebook: _mark('<circle cx="12" cy="12" r="8.2"/><path d="M14.2 7.9h-1.5c-1 0-1.6.6-1.6 1.7V17"/><path d="M9.7 12.1h4.3"/>'),
+    pinterest: _mark('<circle cx="12" cy="12" r="8.2"/><path d="M10.4 18.6l1.7-6.4"/><path d="M10.1 12.5c0-2.3 1.6-3.5 3.1-3.5 1.7 0 2.9 1.1 2.9 2.9 0 2.1-1.3 3.7-2.9 3.7-.9 0-1.5-.6-1.3-1.5"/>'),
+    tumblr: _mark('<path d="M14 4.6v4.1h3.2"/><path d="M14 8.7v6.1a2.2 2.2 0 0 0 2.2 2.2h1.1"/><path d="M9.7 13.4h5.1"/>'),
+    vk: _mark('<path d="M6.4 7.4l4.3 9.2 4.3-9.2"/><path d="M17.6 7.4v9.2"/><path d="M21 7.4l-3.4 4.6L21 16.6"/>'),
+    ok: _mark('<circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="2.7"/>'),
+    rutube: _mark('<rect x="3.5" y="6.5" width="17" height="11" rx="3"/><path d="M9.6 10.4v3.2l3-1.6z" fill="currentColor" stroke="none"/><path d="M14.6 10.1v3.8"/>'),
+    rumble: _mark('<path d="M4.5 12l5.5-3.6v7.2z"/><path d="M13.5 8.6c2.3 1.6 2.3 5.2 0 6.8M17 6.2c3.8 3 3.8 8.6 0 11.6"/>'),
+    odysee: _mark('<circle cx="12" cy="12" r="8.2"/><path d="M10.2 9.2v5.6l4.4-2.8z" fill="currentColor" stroke="none"/>'),
+    kick: _mark('<path d="M7 5v14"/><path d="M17.4 5L9.4 12l8 7"/>'),
+    snapchat: _mark('<path d="M12 4.2c2.4 0 3.9 1.7 3.9 4.2v2c0 .6.5 1 1.2 1.2l1.2.4-1.5 1.2c-.4.3-.4.6-.2 1l.9 1.5-1.9.4c-.3 0-.5.3-.6.6l-.4 1.4-1.9-.6h-.6l-1.9.6-.4-1.4c-.1-.3-.3-.6-.6-.6l-1.9-.4.9-1.5c.2-.4.2-.7-.2-1L5.7 12l1.2-.4c.7-.2 1.2-.6 1.2-1.2v-2c0-2.5 1.5-4.2 3.9-4.2z"/>'),
+    threads: _mark('<circle cx="12" cy="12" r="8.2"/><path d="M8.8 12.6c0-2.7 1.5-4.4 3.5-4.4 2.2 0 3.6 1.6 3.6 4.2 0 2.5-1.4 4.4-3.4 4.4-1.5 0-2.6-1-2.6-2.3 0-1.6 1.4-2.6 3.3-2.6 1.5 0 2.8.5 3.6 1.4"/>'),
+    bluesky: _mark('<path d="M12 11.2c-1.2-2.6-3.2-4.4-5-4.4-1.3 0-2.1.9-2.1 2.4 0 2.9 2.6 5.4 4.6 6.2 1 .4 2 .4 2.5.1"/><path d="M12 11.2c1.2-2.6 3.2-4.4 5-4.4 1.3 0 2.1.9 2.1 2.4 0 2.9-2.6 5.4-4.6 6.2-1 .4-2 .4-2.5.1"/>'),
+    streamable: _mark('<rect x="3.5" y="6.5" width="17" height="11" rx="3"/><path d="M9.8 9.8v4.4l3.9-2.2z" fill="currentColor" stroke="none"/><path d="M15.6 10.3h1.8M15.6 13.7h1.8"/>'),
+    loom: _mark('<circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.1"/>'),
+    coub: _mark('<path d="M6.2 9.6a6.4 6.4 0 0 1 11.3-1.7"/><path d="M17.9 4.4v3.6h-3.6"/><path d="M17.8 14.4A6.4 6.4 0 0 1 6.5 16.1"/><path d="M6.1 19.6V16h3.6"/>'),
+    newgrounds: _mark('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 16.2V7.8l6 8.4V7.8"/>'),
+    "9gag": _mark('<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="11" cy="10.3" r="2.4"/><path d="M13.4 8.1v7.8"/>'),
+    imgur: MARK_IMAGE,
+    giphy: _mark('<rect x="3.5" y="5.5" width="17" height="13" rx="2.6"/><path d="M10 9.6v4.8l3.9-2.4z" fill="currentColor" stroke="none"/>'),
+    tenor: _mark('<rect x="3.5" y="5.5" width="17" height="13" rx="2.6"/><path d="M8.6 9.4h6.8M12 9.4v5.6"/>'),
+    pixiv: _mark('<rect x="3.5" y="5.5" width="17" height="13" rx="2.6"/><path d="M9.4 16.2V8.4h2.4a2.6 2.6 0 0 1 0 5.2H9.4"/>'),
+    xiaohongshu: _mark('<rect x="4.5" y="4" width="15" height="16" rx="3"/><path d="M8.6 4v16"/><path d="M12.6 9.4c.6-1 1.8-1.3 2.6-.6 1 .8 1 2.2.2 3.1l-2.8 3-2.8-3c-.8-.9-.8-2.3.2-3.1.8-.7 2-.4 2.6.6z"/>'),
+    spotify: _mark('<circle cx="12" cy="12" r="8.2"/><path d="M7.9 9.7c2.8-.8 5.7-.5 8.2.9"/><path d="M8.7 12.4c2.2-.6 4.5-.3 6.5.8"/><path d="M9.5 15c1.6-.4 3.2-.2 4.8.6"/>'),
+    deezer: _mark('<path d="M4 17.4h3.2v-3.1H4zM8.7 17.4h3.2v-6.2H8.7zM13.4 17.4h3.2V8H13.4zM18.1 17.4H21V5.7h-2.9z"/>'),
+    tidal: _mark('<path d="M12 3.8l2.8 2.8-2.8 2.8L9.2 6.6z"/><path d="M6.6 9.2l2.8 2.8-2.8 2.8L3.8 12z"/><path d="M17.4 9.2L20.2 12l-2.8 2.8L14.6 12z"/><path d="M12 14.6l2.8 2.8L12 20.2l-2.8-2.8z"/>'),
+    "apple-music": _mark('<circle cx="9.4" cy="16" r="2.4"/><circle cx="16.6" cy="14.4" r="2.4"/><path d="M11.8 16V6.6l7.2-1.6v9.4"/>')
+  };
+
+  const IMAGE_SERVICES = new Set(["imgur", "giphy", "tenor", "pixiv"]);
+
+  function markForService(service) {
+    if (!service) return ICONS.link;
+    if (SERVICE_MARKS[service]) return SERVICE_MARKS[service];
+    if (AUDIO_FIRST.has(service)) return MARK_AUDIO;
+    if (IMAGE_SERVICES.has(service)) return MARK_IMAGE;
+    return MARK_VIDEO;
+  }
 
   function iconFor(item) {
     switch (item.status) {
@@ -1210,6 +1282,17 @@
     item.indeterminate = !item.size;
     setStatus(item, "downloading", "downloading");
 
+    if (item.size > LARGE_FILE_BYTES) {
+      try {
+        if (res.body) await res.body.cancel();
+      } catch (err) { /* the browser owns the file from here */ }
+      item.sourceUrl = url;
+      item.filename = filenameFromHeaders(res) || filename;
+      item.received = 0;
+      handOffToBrowser(item, "large file (" + formatBytes(item.size) + ")");
+      return;
+    }
+
     const chunks = [];
     let lastPaint = 0;
     let lastTime = window.performance ? performance.now() : Date.now();
@@ -1237,6 +1320,17 @@
           if (!value) continue;
           chunks.push(value);
           item.received += value.length;
+          if (item.received > LARGE_FILE_BYTES) {
+            chunks.length = 0;
+            try {
+              await reader.cancel();
+            } catch (err) { /* already gone */ }
+            item.sourceUrl = url;
+            item.filename = filenameFromHeaders(res) || filename;
+            item.size = item.received;
+            handOffToBrowser(item, "large file (over " + formatBytes(LARGE_FILE_BYTES) + ")");
+            return;
+          }
           paint();
         }
       } else {
@@ -1291,6 +1385,46 @@
     } else if (settings.savingMethod === "ask") {
       toast("Ready — use the buttons on the queue item to save.", "ok");
     }
+  }
+
+  /* A file this big must never be buffered in the JS heap: streaming a 1 GB
+     video into an array of Uint8Arrays means ~1 GB of live memory, and the tab
+     is killed long before it finishes. Past this size the tunnel URL goes
+     straight to the browser, which streams to disk and can resume. */
+  const LARGE_FILE_BYTES = 200 * 1024 * 1024;
+
+  function handOffToBrowser(item, note) {
+    item.blob = null;
+    if (item.blobUrl) {
+      URL.revokeObjectURL(item.blobUrl);
+      item.blobUrl = "";
+    }
+    item.indeterminate = false;
+    const label = note || "large file";
+
+    if (settings.savingMethod === "ask") {
+      setStatus(item, "ready", label + " — open to save");
+      return;
+    }
+    if (settings.savingMethod === "copy") {
+      copyText(item.sourceUrl, "Link copied");
+      setStatus(item, "done", "link copied");
+      return;
+    }
+    if (!item.sourceUrl) {
+      setStatus(item, "ready", label + " — no direct link");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = item.sourceUrl;
+    link.download = item.filename || "download";
+    link.rel = "noopener";
+    link.dataset.ignoreDock = "true";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setStatus(item, "done", "saved by browser");
   }
 
   function saveBlob(item) {
@@ -1687,7 +1821,9 @@
     dom.servicesCount.textContent = String(services.length);
     dom.servicesCard.hidden = !services.length;
     services.forEach((service) => {
-      const chip = el("button", { type: "button", class: "chip", text: service, title: "Open a " + service + " link" });
+      const chip = el("button", { type: "button", class: "chip", title: "Open a " + service + " link" });
+      chip.innerHTML = markForService(service) + '<span class="chip-name"></span>';
+      chip.querySelector(".chip-name").textContent = service;
       chip.addEventListener("click", () => {
         dom.input.focus();
         dom.input.value = "";
@@ -2167,6 +2303,8 @@
         status: i.status,
         detail: i.detail,
         direct: i.direct,
+        sourceUrl: i.sourceUrl,
+        hasBlob: !!i.blob,
         filename: i.filename,
         received: i.received,
         size: i.size,
@@ -2174,6 +2312,8 @@
       }))
     }),
     settings: () => Object.assign({}, settings),
+    marks: () => Object.keys(SERVICE_MARKS),
+    markHtml: (id) => markForService(id),
     pump
   };
 })();

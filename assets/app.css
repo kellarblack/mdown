@@ -216,6 +216,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   transition: color var(--speed), border-color var(--speed);
 }
 .service-badge svg { width: 14px; height: 14px; flex: none; }
+.service-mark { display: inline-flex; align-items: center; justify-content: center; }
 .service-badge[data-empty="true"] { padding: 0; }
 .service-name {
   font-family: var(--mono); font-size: 0.7rem; letter-spacing: -0.01em;
@@ -437,16 +438,15 @@ a.ghost-btn { text-decoration: none; }
 .services-refresh { margin-top: 10px; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .chip {
+  display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 8px; border-radius: 5px;
   border: 1px solid var(--stroke);
   color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
   transition: color var(--speed), border-color var(--speed), background var(--speed);
 }
 .chip:hover { color: var(--text-2); border-color: var(--stroke-2); background: var(--surface); }
-.chip::before {
-  content: ""; display: inline-block; width: 4px; height: 4px; margin-right: 6px;
-  border-radius: 1px; background: var(--ok); vertical-align: middle; opacity: 0.7;
-}
+.chip svg { width: 11px; height: 11px; flex: none; opacity: 0.85; }
+.chip-name { white-space: nowrap; }
 
 
 .footer {

@@ -58,10 +58,14 @@ class Config:
     # ---- media limits ---------------------------------------------------
     max_height: int = 4320
     max_duration: int = 1800          # 30 minutes
-    max_output_bytes: int = 800 * MB
+    max_output_bytes: int = 2048 * MB   # a 30-minute 4K file is ~1 GB
 
     # ---- capacity -------------------------------------------------------
     max_concurrent: int = 2
+    # parallel range requests per download. Measured on the live box: 8 is ~40%
+    # faster than 4 on a 900 MB 4K file, and 16 is slower than 8 because one
+    # vCPU cannot keep more sockets fed.
+    fragments: int = 8
     max_queue: int = 6
     job_timeout: int = 300            # seconds, whole download
     probe_timeout: int = 45           # seconds, metadata only
@@ -107,8 +111,9 @@ class Config:
             api_key=os.environ.get("MDOWN_API_KEY", "").strip(),
             max_height=_int("MDOWN_MAX_HEIGHT", 4320, 144, 4320),
             max_duration=_int("MDOWN_MAX_DURATION", 1800, 30, 86400),
-            max_output_bytes=_int("MDOWN_MAX_OUTPUT_MB", 800, 16, 8192) * MB,
+            max_output_bytes=_int("MDOWN_MAX_OUTPUT_MB", 2048, 16, 8192) * MB,
             max_concurrent=_int("MDOWN_MAX_CONCURRENT", 2, 1, 16),
+            fragments=_int("MDOWN_FRAGMENTS", 8, 1, 16),
             max_queue=_int("MDOWN_MAX_QUEUE", 6, 0, 100),
             job_timeout=_int("MDOWN_JOB_TIMEOUT", 300, 30, 3600),
             probe_timeout=_int("MDOWN_PROBE_TIMEOUT", 45, 5, 600),

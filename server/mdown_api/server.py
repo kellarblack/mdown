@@ -37,6 +37,40 @@ log = logging.getLogger("mdown.api")
 MAX_BODY = 16 * 1024
 CHUNK = 64 * 1024
 
+_RANGE_INVALID = object()
+
+
+def _parse_range(header: str, size: int):
+    """Return (start, end) for a single byte range, None to serve the whole file.
+
+    Multi-range requests are answered with the full body, which is legal and
+    keeps the hot path to one seek. An unsatisfiable range returns the sentinel
+    so the caller can answer 416 instead of pretending the file is empty.
+    """
+    if not header or size <= 0:
+        return None
+    value = header.strip()
+    if not value.lower().startswith("bytes="):
+        return None
+    spec = value[6:].strip()
+    if "," in spec:
+        return None
+    first, _, last = spec.partition("-")
+    first, last = first.strip(), last.strip()
+    try:
+        if not first:                      # "bytes=-500": the final 500 bytes
+            suffix = int(last)
+            if suffix <= 0:
+                return _RANGE_INVALID
+            return max(0, size - suffix), size - 1
+        start = int(first)
+        end = int(last) if last else size - 1
+    except ValueError:
+        return None
+    if start < 0 or end < start or start >= size:
+        return _RANGE_INVALID
+    return start, min(end, size - 1)
+
 #: services this instance can actually fetch, for the front-end's
 #: "is this service available here" hint
 SERVICES = [
@@ -285,10 +319,30 @@ class Handler(BaseHTTPRequestHandler):
         except OSError:
             raise ApiError.not_found()
 
+        # Range support matters here more than anywhere else on the site: a 4K
+        # file is hundreds of megabytes, and without ranges a dropped
+        # connection means starting over from zero.
+        span = _parse_range(self.headers.get("Range") or "", size)
+        if span is _RANGE_INVALID:
+            self.send_response(416)
+            self.send_header("Content-Range", "bytes */%d" % size)
+            self.send_header("Content-Length", "0")
+            for key, value in self._cors_headers().items():
+                self.send_header(key, value)
+            self.end_headers()
+            return
+
+        start, end = span if span is not None else (0, size - 1)
+        length = end - start + 1
+        partial = span is not None
+
         with handle:
-            self.send_response(200)
+            self.send_response(206 if partial else 200)
             self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", str(size))
+            self.send_header("Content-Length", str(length))
+            self.send_header("Accept-Ranges", "bytes")
+            if partial:
+                self.send_header("Content-Range", "bytes %d-%d/%d" % (start, end, size))
             self.send_header("Content-Disposition", disposition)
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
@@ -298,7 +352,9 @@ class Handler(BaseHTTPRequestHandler):
             if self.command == "HEAD":
                 return
 
-            remaining = size
+            if start:
+                handle.seek(start)
+            remaining = length
             while remaining > 0:
                 chunk = handle.read(min(CHUNK, remaining))
                 if not chunk:

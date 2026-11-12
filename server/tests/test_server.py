@@ -223,6 +223,59 @@ class ServerTest(unittest.TestCase):
         status, _, _ = self.call("GET", "/tunnel?id=" + token)
         self.assertEqual(status, 200)
 
+    # -- range requests ----------------------------------------------------
+    # A dropped connection on a 900 MB file used to mean starting again from
+    # zero. These pin the resume contract.
+    def _tunnel(self, payload=b"0123456789" * 500):
+        self.fake.payload = payload
+        _, _, data = self.post({"url": URL})
+        return data["url"][len(self.base):], payload
+
+    def test_full_download_advertises_ranges(self):
+        path, payload = self._tunnel()
+        status, headers, body = self.call("GET", path)
+        self.assertEqual(status, 200)
+        self.assertEqual(headers.get("Accept-Ranges"), "bytes")
+        self.assertIsNone(headers.get("Content-Range"))
+        self.assertEqual(body, payload)
+
+    def test_range_returns_206_with_content_range(self):
+        path, payload = self._tunnel()
+        status, headers, body = self.call("GET", path, headers={"Range": "bytes=0-99"})
+        self.assertEqual(status, 206)
+        self.assertEqual(headers.get("Content-Length"), "100")
+        self.assertEqual(headers.get("Content-Range"), "bytes 0-99/%d" % len(payload))
+        self.assertEqual(body, payload[:100])
+
+    def test_range_from_offset_to_end(self):
+        path, payload = self._tunnel()
+        start = len(payload) - 40
+        status, headers, body = self.call("GET", path, headers={"Range": "bytes=%d-" % start})
+        self.assertEqual(status, 206)
+        self.assertEqual(headers.get("Content-Range"),
+                         "bytes %d-%d/%d" % (start, len(payload) - 1, len(payload)))
+        self.assertEqual(body, payload[start:])
+
+    def test_range_suffix_serves_the_tail(self):
+        path, payload = self._tunnel()
+        status, _, body = self.call("GET", path, headers={"Range": "bytes=-25"})
+        self.assertEqual(status, 206)
+        self.assertEqual(body, payload[-25:])
+
+    def test_range_past_the_end_is_416(self):
+        path, payload = self._tunnel()
+        status, headers, _ = self.call("GET", path, headers={"Range": "bytes=%d-" % (len(payload) + 10)})
+        self.assertEqual(status, 416)
+        self.assertEqual(headers.get("Content-Range"), "bytes */%d" % len(payload))
+
+    def test_head_reports_size_without_a_body(self):
+        path, payload = self._tunnel()
+        status, headers, body = self.call("HEAD", path)
+        self.assertEqual(status, 200)
+        self.assertEqual(headers.get("Content-Length"), str(len(payload)))
+        self.assertEqual(headers.get("Accept-Ranges"), "bytes")
+        self.assertEqual(body, b"")
+
     # -- rejections --------------------------------------------------------
     def test_duration_limit_is_serverside(self):
         self.fake.info["duration"] = 1801

@@ -70,6 +70,14 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", ctype)
             self.send_header("Content-Disposition", 'attachment; filename="%s"' % name)
+            # "large" claims a 300 MB file and sends no body: enough for the
+            # client to decide to hand the URL to the browser instead of
+            # buffering it in the JS heap
+            if "large" in name:
+                self.send_header("Content-Length", str(300 * 1024 * 1024))
+                self._cors()
+                self.end_headers()
+                return
             self.send_header("Content-Length", str(len(PAYLOAD)))
             self.send_header("RateLimit-Remaining", "17")
             self._cors()
@@ -169,6 +177,8 @@ class Handler(BaseHTTPRequestHandler):
             payload = ("mock-%s.mp4" % mode, "video/mp4")
         if "slow" in url:
             payload = (payload[0].replace("mock-", "mock-slow-"), payload[1])
+        if "bigfile" in url:
+            payload = ("mock-large-video.mp4", payload[1])
         self._json({
             "status": "tunnel",
             "url": host + "/tunnel?url=" + quote(url) + "&name=" + quote(payload[0]) + "&type=" + quote(payload[1]),

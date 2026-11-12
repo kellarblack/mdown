@@ -36,9 +36,21 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual(config.max_height, 4320)
         self.assertEqual(config.max_duration, 1800)
         self.assertEqual(config.max_concurrent, 2)
+        # 4K needs room: a 30-minute 2160p file is about a gigabyte
+        self.assertEqual(config.max_output_bytes, 2048 * 1024 * 1024)
+        self.assertEqual(config.fragments, 8)
         self.assertEqual(config.api_key, "")
         self.assertEqual(config.cors_origins, ["https://mdown.cc"])
         self.assertTrue(config.host.startswith("127.0.0.1"))
+
+    def test_fragments_out_of_range_is_a_startup_error(self):
+        # a bad value must stop the service loudly, not silently become 1
+        for bad in ("64", "0", "-3"):
+            os.environ["MDOWN_FRAGMENTS"] = bad
+            with self.assertRaises(ConfigError):
+                Config.from_env()
+        os.environ["MDOWN_FRAGMENTS"] = "12"
+        self.assertEqual(Config.from_env().fragments, 12)
 
     def test_env_overrides(self):
         os.environ["MDOWN_MAX_DURATION"] = "600"

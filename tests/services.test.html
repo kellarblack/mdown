@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>service marks test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 620px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Every service the site detects must show its own mark in the composer badge,
+  and every advertised service must appear in the supported list with one.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu \
+      "http://127.0.0.1:4331/tests/services.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, ms = 20000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(120);
+  }
+  return false;
+}
+
+/* one URL per service, using the exact host each one is detected by */
+const CASES = [
+  ["https://www.youtube.com/watch?v=x", "youtube"],
+  ["https://youtu.be/x", "youtube"],
+  ["https://x.com/user/status/1", "twitter"],
+  ["https://www.instagram.com/p/x", "instagram"],
+  ["https://www.tiktok.com/@a/video/1", "tiktok"],
+  ["https://www.reddit.com/r/a/comments/x", "reddit"],
+  ["https://soundcloud.com/a/b", "soundcloud"],
+  ["https://bandcamp.com/track/x", "bandcamp"],
+  ["https://www.bilibili.com/video/x", "bilibili"],
+  ["https://vimeo.com/1", "vimeo"],
+  ["https://www.twitch.tv/x", "twitch"],
+  ["https://www.dailymotion.com/video/x", "dailymotion"],
+  ["https://www.facebook.com/watch/x", "facebook"],
+  ["https://www.pinterest.com/pin/1", "pinterest"],
+  ["https://tumblr.com/x", "tumblr"],
+  ["https://vk.com/video-1", "vk"],
+  ["https://ok.ru/video/1", "ok"],
+  ["https://rutube.ru/video/x", "rutube"],
+  ["https://rumble.com/x", "rumble"],
+  ["https://odysee.com/x", "odysee"],
+  ["https://kick.com/x", "kick"],
+  ["https://www.snapchat.com/x", "snapchat"],
+  ["https://www.threads.net/@a/post/x", "threads"],
+  ["https://bsky.app/profile/x", "bluesky"],
+  ["https://streamable.com/x", "streamable"],
+  ["https://www.loom.com/share/x", "loom"],
+  ["https://coub.com/view/x", "coub"],
+  ["https://www.newgrounds.com/portal/view/x", "newgrounds"],
+  ["https://9gag.com/gag/x", "9gag"],
+  ["https://imgur.com/x", "imgur"],
+  ["https://giphy.com/gifs/x", "giphy"],
+  ["https://tenor.com/view/x", "tenor"],
+  ["https://www.pixiv.net/artworks/x", "pixiv"],
+  ["https://www.xiaohongshu.com/x", "xiaohongshu"],
+  ["https://open.spotify.com/track/x", "spotify"],
+  ["https://www.deezer.com/track/x", "deezer"],
+  ["https://tidal.com/browse/track/x", "tidal"],
+  ["https://music.apple.com/album/x", "apple-music"],
+  ["https://www.douyin.com/video/x", "douyin"]
+];
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  frame.src = "../index.html?t=" + Date.now();
+
+  const doc = () => frame.contentDocument;
+  const win = () => frame.contentWindow;
+  const ready = await waitFor(() => doc() && doc().querySelector("#url-input") && win().md, 20000);
+  record("app loads", ready);
+  if (!ready) { window.__results = { total: results.length, failures, results }; return; }
+
+  const input = doc().querySelector("#url-input");
+  const mark = doc().querySelector("#service-mark");
+  const name = doc().querySelector("#service-name");
+  const badge = doc().querySelector("#service-badge");
+
+  const blank = mark.innerHTML;
+
+  const wrong = [];
+  const missing = [];
+  for (const [url, expected] of CASES) {
+    input.value = url;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await sleep(30);
+    const got = name.textContent;
+    if (got !== expected) wrong.push(url + " -> " + got);
+    const html = mark.innerHTML;
+    if (!html || html === blank || html.indexOf("<svg") < 0) missing.push(expected);
+    if (badge.dataset.empty !== "false") missing.push(expected + " (badge empty)");
+  }
+
+  record("every test url is detected as the right service", wrong.length === 0,
+    wrong.length ? wrong.slice(0, 3).join(" | ") : CASES.length + " urls");
+  record("every detected service shows its own mark", missing.length === 0,
+    missing.length ? missing.slice(0, 4).join(", ") : "all distinct");
+
+  // the map should cover everything the site claims to support
+  const marks = win().md.marks();
+  record("the mark set is complete", marks.length >= 38, marks.length + " marks");
+
+  // unknown hosts fall back to a generic mark instead of breaking
+  input.value = "https://example.com/video";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  await sleep(60);
+  record("an unknown host still shows a mark", /<svg/.test(mark.innerHTML), name.textContent || "(no name)");
+  record("an unknown host is not called a service", name.hidden === true, "hidden=" + name.hidden);
+
+  // the supported list renders marks too, once the instance answers
+  const chips = await waitFor(() => doc().querySelectorAll("#services-chips .chip").length > 0, 15000);
+  record("supported services render", chips, doc().querySelectorAll("#services-chips .chip").length + " chips");
+  const firstChip = doc().querySelector("#services-chips .chip");
+  record("chips carry a mark", !!firstChip && /<svg/.test(firstChip.innerHTML),
+    firstChip ? firstChip.textContent : "(none)");
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+<script>
+/* With ?report, POST results so run-all.sh can read them without devtools. */
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 90000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

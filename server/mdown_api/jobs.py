@@ -257,7 +257,7 @@ class JobManager:
                 dest_dir=destination,
                 timeout=config.job_timeout,
                 max_bytes=config.max_output_bytes,
-                fragments=max(1, min(4, config.max_concurrent * 2)),
+                fragments=max(1, min(config.fragments, 16)),
                 cache_dir=os.path.join(config.work_dir, ".cache"),
                 cookies=config.ytdlp_cookies,
                 extra_args=config.ytdlp_extra_args,
