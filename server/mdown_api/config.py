@@ -49,6 +49,7 @@ class Config:
     host: str = "127.0.0.1"
     port: int = 9000
     trust_proxy: bool = False
+    require_origin: bool = True
     cors_origins: List[str] = field(default_factory=list)
 
     # ---- auth (optional; off by default for a friends-scale instance) ----
@@ -101,6 +102,7 @@ class Config:
             host=os.environ.get("MDOWN_HOST", "127.0.0.1").strip(),
             port=_int("MDOWN_PORT", 9000, 1024, 65535),
             trust_proxy=os.environ.get("MDOWN_TRUST_PROXY", "").strip() in ("1", "true", "yes"),
+            require_origin=os.environ.get("MDOWN_REQUIRE_ORIGIN", "1").strip() not in ("0", "false", "no"),
             cors_origins=origins,
             api_key=os.environ.get("MDOWN_API_KEY", "").strip(),
             max_height=_int("MDOWN_MAX_HEIGHT", 4320, 144, 4320),

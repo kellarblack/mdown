@@ -103,6 +103,7 @@ class ServerTest(unittest.TestCase):
         data = json.dumps(body).encode() if body is not None else None
         request = urllib.request.Request(self.base + path, data=data, method=method)
         request.add_header("Accept", "application/json")
+        request.add_header("Origin", "https://mdown.cc")
         if data is not None:
             request.add_header("Content-Type", "application/json")
         for key, value in (headers or {}).items():
@@ -253,11 +254,32 @@ class ServerTest(unittest.TestCase):
     def test_body_not_json(self):
         request = urllib.request.Request(self.base + "/", data=b"not json", method="POST")
         request.add_header("Content-Type", "application/json")
+        request.add_header("Origin", "https://mdown.cc")
         try:
             urllib.request.urlopen(request, timeout=10)
             self.fail("expected an error")
         except urllib.error.HTTPError as error:
             self.assertEqual(error.code, 400)
+
+    def test_post_from_a_foreign_origin_is_refused(self):
+        status, _, data = self.post({"url": URL}, {"Origin": "https://evil.example"})
+        self.assertEqual(status, 403)
+        self.assertEqual(data["error"]["code"], "api.auth.origin")
+
+    def test_post_without_an_origin_is_refused(self):
+        # curl and friends send no Origin: they must say who they are or use a key
+        data = json.dumps({"url": URL}).encode()
+        request = urllib.request.Request(self.base + "/", data=data, method="POST")
+        request.add_header("Content-Type", "application/json")
+        try:
+            urllib.request.urlopen(request, timeout=10)
+            self.fail("expected a refusal")
+        except urllib.error.HTTPError as error:
+            self.assertEqual(error.code, 403)
+
+    def test_reads_stay_open(self):
+        status, _, _ = self.call("GET", "/")
+        self.assertEqual(status, 200)
 
     def test_download_burst_is_limited(self):
         # config in this class allows 50 requests/min; the job bucket is separate

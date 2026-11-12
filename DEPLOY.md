@@ -143,6 +143,7 @@ sudo systemctl reload caddy
 | `MDOWN_JOB_RATE_MAX` / `WINDOW` | `12` / `300` | **downloads** per IP per window — the burst limiter |
 | `MDOWN_DAILY_JOBS` | `500` | hard ceiling per day, all IPs. `0` disables |
 | `MDOWN_API_KEY` | empty | set it and every request needs `Authorization: Api-Key …` |
+| `MDOWN_REQUIRE_ORIGIN` | `1` | POSTs must carry an allowed `Origin`. CORS alone does **not** stop a request running — this does |
 
 After editing: `sudo systemctl restart mdown-api`.
 
@@ -281,6 +282,28 @@ That is the whole maintenance story for the extractor layer. Check it with:
 systemctl list-timers mdown-ytdlp-update.timer
 journalctl -u mdown-ytdlp-update.service -n 20
 ```
+
+## 6e. Keeping other sites off your instance
+
+CORS is widely misunderstood: it stops a browser from **reading** the response, but
+the request still runs and still spends your bandwidth. So the API also checks
+`Origin` server-side (`MDOWN_REQUIRE_ORIGIN=1`, on by default) and answers **403**
+to anything that does not name an allowed origin.
+
+What that does and does not buy you:
+
+- **Stops another website** pointing its front-end at your instance — the realistic
+  abuse case. Blocked.
+- **Does not stop curl.** Anyone can add `-H "Origin: https://mdown.cc"`. A header
+  is a claim, not proof.
+- **Does not stop someone reading your JS.** An API key in a static file is public.
+
+If you need it actually closed, the only real answer is a login: accounts, sessions,
+per-user keys. That is a different product, and it is not what you have.
+
+What you *do* have: origin enforcement, per-IP request limits, a per-IP download
+burst limit, a 500/day ceiling, and unguessable single-use tunnel tokens. Enough to
+make abuse annoying, visible and bounded — not enough to make it impossible.
 
 ## 7. Publish the static site
 

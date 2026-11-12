@@ -161,6 +161,18 @@ class Handler(BaseHTTPRequestHandler):
         if not hmac.compare_digest(token, self.config.api_key):
             raise ApiError.auth_invalid()
 
+    def _check_origin(self) -> None:
+        """CORS only stops a browser reading the response; the request still
+        runs and still costs bandwidth. This rejects it outright, so another
+        site cannot quietly use this instance as its backend."""
+        if not self.config.require_origin:
+            return
+        origin = (self.headers.get("Origin") or "").strip()
+        if self.config.cors_origin_allowed(origin):
+            return
+        raise ApiError("api.auth.origin", 403, {"origin": origin or "none"},
+                       detail="origin not allowed")
+
     # -- routing -----------------------------------------------------------
     def do_OPTIONS(self) -> None:  # noqa: N802
         self.send_response(204)
@@ -302,6 +314,7 @@ class Handler(BaseHTTPRequestHandler):
             raise ApiError.not_found()
 
         self._check_auth()
+        self._check_origin()
 
         verdict = self.limiter.check(self._client_ip())
         headers = {
