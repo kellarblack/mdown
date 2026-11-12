@@ -1,0 +1,50 @@
+# Redeploys the API to the VPS when anything under server/ changes on main.
+#
+# This is what lets a collaborator help: they open a PR, you merge it, the box
+# updates itself. Nobody has to hand out a server password.
+#
+# One-time setup:
+#   1. On the box:  sudo git clone https://github.com/<you>/mdown.git /opt/mdown-src
+#   2. Locally:     ssh-keygen -t ed25519 -f ~/.ssh/mdown_deploy -N ""
+#                   ssh-copy-id -i ~/.ssh/mdown_deploy.pub root@<ip>
+#   3. Repo → Settings → Secrets → Actions:
+#        DEPLOY_HOST      <ip>
+#        DEPLOY_USER      root
+#        DEPLOY_SSH_KEY   contents of ~/.ssh/mdown_deploy  (the PRIVATE key)
+#
+# The key only exists in repo secrets, never in the code. Public repo, private key.
+
+name: deploy api
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "server/**"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update the box
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
+          command_timeout: 10m
+          script: |
+            set -e
+            cd /opt/mdown-src
+            git fetch --quiet origin main
+            git reset --hard --quiet origin/main
+            sudo bash server/deploy/install.sh
+            sleep 2
+            systemctl is-active mdown-api
+            curl -fsS http://127.0.0.1:9000/health || (journalctl -u mdown-api -n 30 --no-pager; exit 1)
