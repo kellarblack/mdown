@@ -397,11 +397,17 @@ def probe_file(path: str, timeout: int = 30) -> Dict[str, Any]:
 
 
 def tools_available() -> Dict[str, bool]:
+    """Probe each binary with the flag it actually supports.
+    yt-dlp takes --version; ffmpeg and ffprobe take -version."""
     found = {}
-    for name, binary in (("yt-dlp", YTDLP), ("ffmpeg", FFMPEG), ("ffprobe", FFPROBE)):
+    for name, binary, flag in (
+        ("yt-dlp", YTDLP, "--version"),
+        ("ffmpeg", FFMPEG, "-version"),
+        ("ffprobe", FFPROBE, "-version"),
+    ):
         try:
-            code, _, _ = run([binary, "--version"], 15)
-            found[name] = code == 0
+            code, out, _ = run([binary, flag], 15)
+            found[name] = code == 0 and bool(out.strip())
         except (OSError, EngineError):
             found[name] = False
     return found

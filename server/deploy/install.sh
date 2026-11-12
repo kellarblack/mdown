@@ -63,7 +63,7 @@ echo "==> service account"
 if ! id "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home "$DATA_ROOT" --shell /usr/sbin/nologin "$APP_USER"
 fi
-install -d -m 0755 "$APP_ROOT"
+install -d -m 0755 "$APP_ROOT" "$APP_ROOT/api"
 install -d -m 0700 -o "$APP_USER" -g "$APP_USER" "$DATA_ROOT" "$DATA_ROOT/jobs" "$DATA_ROOT/cache"
 install -d -m 0750 -o root -g "$APP_USER" "$CONF_DIR"
 
@@ -138,7 +138,10 @@ install -m 0644 "$SRC_DIR/deploy/mdown-api.service" /etc/systemd/system/mdown-ap
 install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.service" /etc/systemd/system/mdown-ytdlp-update.service
 install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.timer" /etc/systemd/system/mdown-ytdlp-update.timer
 systemctl daemon-reload
-systemctl enable --now mdown-api.service
+# enable on boot, then RESTART — `enable --now` is a no-op on a running service,
+# which means a redeploy would keep executing the old code
+systemctl enable mdown-api.service >/dev/null 2>&1 || true
+systemctl restart mdown-api.service
 # keep yt-dlp current: a site change is the most common way this breaks
 systemctl enable --now mdown-ytdlp-update.timer
 sleep 1

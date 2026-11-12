@@ -10,6 +10,8 @@ User=mdown
 Group=mdown
 WorkingDirectory=/opt/mdown/api
 EnvironmentFile=/etc/mdown/api.env
+# yt-dlp lives in the venv; ffmpeg/ffprobe come from apt
+Environment=PATH=/opt/mdown/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/opt/mdown/venv/bin/python -m mdown_api
 
 Restart=always
