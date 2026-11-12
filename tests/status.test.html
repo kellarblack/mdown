@@ -103,5 +103,22 @@ main().catch((e) => {
   window.__results = { total: results.length, failures, results };
 });
 </script>
+
+<script>
+/* With ?report, POST results so run-all.sh can read them without devtools. */
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 90000) clearInterval(timer);
+  }, 400);
+}
+</script>
 </body>
 </html>
