@@ -41,12 +41,18 @@ systemctl enable --now unattended-upgrades >/dev/null 2>&1 || true
 echo "==> ssh hardening"
 # key-only login, no root password, and a brute-force ban after 5 tries
 install -d -m 0755 /etc/ssh/sshd_config.d
-cat > /etc/ssh/sshd_config.d/99-mdown.conf <<'SSH'
+# 00- matters: sshd takes the FIRST value it sees, and cloud-init ships
+# 50-cloud-init.conf with "PasswordAuthentication yes". A 99- prefixed file
+# loses to it, so password logins stay on while the config looks hardened.
+rm -f /etc/ssh/sshd_config.d/99-mdown.conf
+cat > /etc/ssh/sshd_config.d/00-mdown.conf <<'SSH'
 PasswordAuthentication no
 KbdInteractiveAuthentication no
+PermitEmptyPasswords no
 PermitRootLogin prohibit-password
 MaxAuthTries 5
 SSH
+sshd -t
 ssh-keygen -A >/dev/null 2>&1 || true
 systemctl reload ssh 2>/dev/null || systemctl reload sshd 2>/dev/null || true
 

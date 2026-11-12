@@ -141,8 +141,8 @@
     "api.content.post.region": "The post is region-locked.",
     "api.content.short_link.unsupported": "Short links from this service aren't supported.",
     "api.rate_limit": "Rate limit reached. Try again in a moment.",
-    "api.auth.apikey.missing": "This API requires a key.",
-    "api.auth.apikey.invalid": "The API key was rejected.",
+    "api.auth.apikey.missing": "This instance needs an API key — add it in Settings → Connection.",
+    "api.auth.apikey.invalid": "That API key was rejected. Check it in Settings → Connection.",
     "api.auth.bearer.missing": "This instance requires a session token.",
     "api.auth.bearer.invalid": "The session token was rejected.",
     "api.auth.turnstile.missing": "This instance requires a turnstile challenge.",
@@ -1771,7 +1771,7 @@
         signal: controller.signal
       });
       if (res.status === 401 || res.status === 403) {
-        throw new Error("The API refused the request (HTTP " + res.status + "). Add or check the API key in Settings → Instances.");
+        throw new Error("The API refused the request (HTTP " + res.status + "). Add or check the API key in Settings → Connection.");
       }
       if (!res.ok) throw new Error("The API answered HTTP " + res.status + ".");
       const data = await res.json();

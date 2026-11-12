@@ -267,6 +267,18 @@ Tuned for 1 vCPU / 1 GB, which is the smallest box this runs on:
 | **`LimitNOFILE`** | 524288 | many sockets during a multi-stream download |
 | **`--concurrent-fragments`** | 8 | measured: 8 beats 4 by ~40% on a 900 MB file, 16 loses to 8 |
 
+## 6c3. SSH hardening: the file name matters
+
+`sshd` takes the **first** value it sees, and cloud-init ships
+`/etc/ssh/sshd_config.d/50-cloud-init.conf` with `PasswordAuthentication yes`.
+A hardening drop-in named `99-*.conf` therefore loses, and password logins stay
+on while the config looks correct. `install.sh` writes `00-mdown.conf` for that
+reason. Verify with:
+
+```sh
+sshd -T | grep -E '^passwordauthentication|^permitrootlogin'
+```
+
 ## 6d. Keeping it alive after launch
 
 Three things, and only the first needs doing before you share the link.

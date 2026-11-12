@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>api key test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 620px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  A locked instance must explain itself instead of showing "HTTP 401".
+  The mock serves a keyed instance at /keyed/ that answers 401 without a key
+  and 200 with "Api-Key test-key".
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu \
+      "http://127.0.0.1:4331/tests/apikey.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(120);
+  }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320/keyed", savingMethod: "ask" }));
+  frame.src = "../index.html?t=" + Date.now();
+
+  const doc = () => frame.contentDocument;
+  const win = () => frame.contentWindow;
+  const ready = await waitFor(() => doc() && doc().querySelector("#open-settings") && win().md, 20000);
+  record("app loads", ready);
+  if (!ready) { window.__results = { total: results.length, failures, results }; return; }
+
+  // opening the connection settings runs the check against the keyed instance
+  doc().querySelector("#open-settings").click();
+  await sleep(250);
+  doc().querySelector('[data-section="instance"]').click();
+  await sleep(150);
+  doc().querySelector("#check-instance").click();
+
+  const failed = await waitFor(() => doc().querySelector("#instance-pill").dataset.state === "bad", 12000);
+  record("a locked instance is reported, not hidden", failed,
+    doc().querySelector("#instance-pill").dataset.state);
+
+  const detail = doc().querySelector("#instance-error").textContent || "";
+  record("the error names the api key", /api key/i.test(detail), detail.slice(0, 90));
+  record("it says where to put the key", /settings . connection/i.test(detail), detail.slice(0, 90));
+
+  // a download against the locked instance must say the same thing
+  doc().querySelector("[data-close-settings]").click();
+  await sleep(200);
+  const input = doc().querySelector("#url-input");
+  input.value = "https://youtube.com/watch?v=keyless";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  doc().querySelector("#fetch-form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+  const errored = await waitFor(() => win().md.state().items.some((i) => i.status === "error"), 15000);
+  const item = win().md.state().items.filter((i) => i.status === "error").slice(-1)[0] || {};
+  record("a download is refused cleanly", errored, item.status);
+  record("and says the key is missing", /api key/i.test(item.error || ""), (item.error || "").slice(0, 90));
+
+  // with the key saved, the same instance answers
+  doc().querySelector("#open-settings").click();
+  await sleep(250);
+  doc().querySelector('[data-section="instance"]').click();
+  await sleep(150);
+  const keyField = doc().querySelector("#api-key");
+  keyField.value = "test-key";
+  keyField.dispatchEvent(new Event("input", { bubbles: true }));
+  doc().querySelector("#check-instance").click();
+
+  const ok = await waitFor(() => doc().querySelector("#instance-pill").dataset.state === "ok", 12000);
+  record("the saved key makes it connect", ok,
+    doc().querySelector("#instance-pill").dataset.state);
+
+  doc().querySelector("[data-close-settings]").click();
+  await sleep(200);
+  const input2 = doc().querySelector("#url-input");
+  input2.value = "https://youtube.com/watch?v=withkey";
+  input2.dispatchEvent(new Event("input", { bubbles: true }));
+  const before = win().md.state().items.length;
+  doc().querySelector("#fetch-form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  const worked = await waitFor(() => {
+    const items = win().md.state().items;
+    return items.length > before && items[items.length - 1].status === "ready";
+  }, 15000);
+  record("a download works with the key", worked,
+    (win().md.state().items.slice(-1)[0] || {}).detail || "");
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+<script>
+/* With ?report, POST results so run-all.sh can read them without devtools. */
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 90000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

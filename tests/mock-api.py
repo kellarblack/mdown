@@ -59,7 +59,27 @@ class Handler(BaseHTTPRequestHandler):
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
     )
 
+    def _keyed(self):
+        """An instance locked with an API key, reachable at /keyed/."""
+        return self.path.startswith("/keyed")
+
+    def _key_ok(self):
+        return self.headers.get("Authorization") == "Api-Key test-key"
+
+    def _require_key(self):
+        if not self._keyed():
+            return True
+        if self._key_ok():
+            return True
+        if self.headers.get("Authorization"):
+            self._json({"status": "error", "error": {"code": "api.auth.apikey.invalid"}}, 403)
+        else:
+            self._json({"status": "error", "error": {"code": "api.auth.apikey.missing"}}, 401)
+        return False
+
     def do_GET(self):
+        if self._keyed() and not self._require_key():
+            return
         if self.path.startswith("/thumb.png"):
             self._thumb()
             return
@@ -103,9 +123,15 @@ class Handler(BaseHTTPRequestHandler):
         })
 
     def do_POST(self):
+        # read the body before any rejection: leaving it in the socket makes the
+        # next request on this keep-alive connection parse as garbage (501, no
+        # CORS) and the browser reports "Failed to fetch" instead of the 401
         length = int(self.headers.get("Content-Length") or 0)
+        raw = self.rfile.read(length) if length > 0 else b""
+        if self._keyed() and not self._require_key():
+            return
         try:
-            body = json.loads(self.rfile.read(length) or b"{}")
+            body = json.loads(raw or b"{}")
         except json.JSONDecodeError:
             self._json({"status": "error", "error": {"code": "api.url.invalid"}}, 400)
             return

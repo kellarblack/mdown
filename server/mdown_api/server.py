@@ -157,6 +157,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def _send(self, status: int, body: bytes, content_type: str,
               extra: Optional[Dict[str, str]] = None) -> None:
+        if self.command == "POST" and not self._body_consumed:
+            # the request body is still unread; a keep-alive connection would
+            # parse it as the next request line and answer 501 with no CORS
+            self.close_connection = True
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
@@ -169,6 +173,10 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
+
+    #: set once a POST body has been read off the socket
+    _body_consumed = True
+    _raw_body = b""
 
     def _json(self, status: int, payload: Dict[str, Any],
               extra: Optional[Dict[str, str]] = None) -> None:
@@ -365,6 +373,24 @@ class Handler(BaseHTTPRequestHandler):
         self.jobs.mark_served(token)
 
     def _route_post(self) -> None:
+        # Read the body before any check can reject the request. A rejection
+        # that leaves bytes in the socket poisons the next request on the same
+        # keep-alive connection: the client gets a 501 with no CORS headers,
+        # which a browser reports as "Failed to fetch" instead of the real
+        # error. Bodies above MAX_BODY are deliberately not drained; those
+        # close the connection instead.
+        self._raw_body = b""
+        self._body_consumed = False
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            length = 0
+        if length <= 0:
+            self._body_consumed = True
+        elif length <= MAX_BODY:
+            self._raw_body = self.rfile.read(length)
+            self._body_consumed = True
+
         path, _ = self._split()
         if path not in ("/", ""):
             raise ApiError.not_found()
@@ -458,15 +484,11 @@ class Handler(BaseHTTPRequestHandler):
         }, headers)
 
     def _read_json(self) -> Dict[str, Any]:
-        try:
-            length = int(self.headers.get("Content-Length") or 0)
-        except ValueError:
-            raise ApiError.url_invalid("bad content-length")
-        if length <= 0:
-            raise ApiError.url_missing()
-        if length > MAX_BODY:
+        if not self._body_consumed:
             raise ApiError.url_invalid("body too large")
-        raw = self.rfile.read(length)
+        raw = self._raw_body
+        if not raw:
+            raise ApiError.url_missing()
         try:
             data = json.loads(raw.decode("utf-8", "replace"))
         except json.JSONDecodeError:

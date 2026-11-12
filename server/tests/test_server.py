@@ -5,6 +5,7 @@ auth, rate limiting, streaming and JSON shapes are the production code.
 """
 
 import dataclasses
+import http.client
 import json
 import logging
 import os
@@ -222,6 +223,54 @@ class ServerTest(unittest.TestCase):
         token = data["url"].rsplit("/", 1)[-1]
         status, _, _ = self.call("GET", "/tunnel?id=" + token)
         self.assertEqual(status, 200)
+
+    # -- keep-alive hygiene ------------------------------------------------
+    def test_rejected_post_does_not_poison_the_connection(self):
+        """A 403 that never reads the body must not leave it in the socket.
+
+        With HTTP/1.1 keep-alive the leftover bytes are parsed as the next
+        request line, so the client gets a 501 with no CORS headers and sees
+        "Failed to fetch" instead of the real error. Either drain the body or
+        close the connection — never answer on a poisoned socket.
+        """
+        body = json.dumps({"url": URL})
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+        try:
+            conn.request("POST", "/", body=body,
+                         headers=dict(headers, Origin="https://evil.example"))
+            first = conn.getresponse()
+            first.read()
+            self.assertEqual(first.status, 403)
+
+            try:
+                conn.request("POST", "/", body=body,
+                             headers=dict(headers, Origin="https://mdown.cc"))
+                second = conn.getresponse()
+                payload = second.read()
+            except (http.client.RemoteDisconnected, ConnectionResetError, BrokenPipeError):
+                return  # closing the socket is a correct answer
+
+            self.assertNotEqual(second.status, 501,
+                                "the leftover body was parsed as a request line")
+            self.assertIn(second.status, (200, 413, 422, 429),
+                          "unexpected %s: %s" % (second.status, payload[:80]))
+        finally:
+            conn.close()
+
+    def test_rejected_post_without_body_is_fine(self):
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+        try:
+            conn.request("POST", "/", body="", headers={"Origin": "https://evil.example"})
+            first = conn.getresponse()
+            first.read()
+            self.assertEqual(first.status, 403)
+            conn.request("GET", "/health")
+            second = conn.getresponse()
+            second.read()
+            self.assertEqual(second.status, 200)
+        finally:
+            conn.close()
 
     # -- range requests ----------------------------------------------------
     # A dropped connection on a 900 MB file used to mean starting again from

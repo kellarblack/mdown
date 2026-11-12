@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><pre id="o">…</pre>
+<script>
+const o = document.getElementById("o");
+(async () => {
+  const lines = [];
+  for (const [label, url, opts] of [
+    ["plain GET", "http://127.0.0.1:4320/keyed/", {}],
+    ["GET + auth", "http://127.0.0.1:4320/keyed/", { headers: { Authorization: "Api-Key test-key", Accept: "application/json" } }],
+    ["POST + auth", "http://127.0.0.1:4320/keyed/", { method: "POST", headers: { Authorization: "Api-Key test-key", "Content-Type": "application/json" }, body: "{}" }]
+  ]) {
+    try {
+      const r = await fetch(url, opts);
+      lines.push(label + ": " + r.status);
+    } catch (e) {
+      lines.push(label + ": THREW " + e.name + " " + e.message);
+    }
+  }
+  o.textContent = lines.join("\n");
+})();
+</script>
