@@ -355,6 +355,7 @@
     setupTail: $("#setup-tail"),
     setupButton: $("#setup-open-settings"),
     donateLink: $("#donate-link"),
+    openHealth: $("#open-health"),
     donateWrap: $("#donate-wrap"),
     setupOpenSettings: $("#setup-open-settings"),
     quickpick: $("#quickpick"),
@@ -1927,7 +1928,9 @@
       instanceInfo = { services: Array.isArray(cobalt.services) ? cobalt.services : [], version: cobalt.version || "" };
       if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
       const host = hostOf(base) || base;
-      setInstancePill("ok", host, cobalt.version ? "api " + cobalt.version : host);
+      const usingDefault = normalizeInstance(settings.instance) === normalizeInstance(DEFAULT_INSTANCE);
+      const detail = base + (cobalt.version ? " · api " + cobalt.version : "");
+      setInstancePill("ok", usingDefault ? "online" : host, detail);
 
       const uptime = cobalt.startTime ? formatUptime(Number(cobalt.startTime)) : "unknown";
       setInstanceDetail("ok", "Connected", [
@@ -2190,6 +2193,14 @@
     $("#open-settings").addEventListener("click", () => openSettings());
     dom.setupOpenSettings.addEventListener("click", () => openSettings("instance"));
     dom.instancePill.addEventListener("click", () => openSettings("instance"));
+
+    if (dom.openHealth) {
+      dom.openHealth.addEventListener("click", (event) => {
+        const base = normalizeInstance(settings.instance);
+        if (!base) { event.preventDefault(); return; }
+        dom.openHealth.href = base.replace(/\/+$/, "") + "/health";
+      });
+    }
 
     const help = $("#open-help");
     if (help) help.addEventListener("click", openHelp);

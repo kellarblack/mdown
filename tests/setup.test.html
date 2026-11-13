@@ -94,6 +94,44 @@ async function main() {
   const ok = await waitFor(() => doc().querySelector("#instance-pill").dataset.state === "ok", 15000);
   record("a reachable instance connects", ok,
     doc().querySelector("#instance-pill").dataset.state);
+
+  // a custom instance is worth naming in the pill
+  record("a custom instance shows its host",
+    /127\.0\.0\.1/.test(doc().querySelector("#instance-pill-label").textContent),
+    doc().querySelector("#instance-pill-label").textContent);
+
+  // the built-in instance should not put a hostname in front of a visitor:
+  // stub a healthy answer for the default address and read the pill
+  win().fetch = async () => new Response(JSON.stringify({
+    cobalt: { version: "11.7-mock", startTime: String(Date.now() - 60000), services: ["youtube"] },
+    git: {}
+  }), { status: 200, headers: { "Content-Type": "application/json" } });
+  field.value = "https://api.mdown.cc";
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  doc().querySelector("#check-instance").click();
+  await waitFor(() => doc().querySelector("#instance-pill").dataset.state === "ok", 10000);
+  record("the built-in instance reads as a state, not a host",
+    doc().querySelector("#instance-pill-label").textContent === "online",
+    doc().querySelector("#instance-pill-label").textContent);
+  record("the address is still the tooltip",
+    /api\.mdown\.cc/.test(doc().querySelector("#instance-pill").title || ""),
+    (doc().querySelector("#instance-pill").title || "").slice(0, 40));
+
+  // Connection carries the status page and the live health endpoint
+  doc().querySelector("#open-settings").click();
+  await sleep(250);
+  doc().querySelector('[data-section="instance"]').click();
+  await sleep(200);
+  doc().querySelector("#open-health").click();
+  await sleep(100);
+  const expectedHealth = win().md.settings().instance.replace(/\/+$/, "") + "/health";
+  record("Connection links the instance's health",
+    doc().querySelector("#open-health").getAttribute("href") === expectedHealth,
+    doc().querySelector("#open-health").getAttribute("href"));
+  record("and the status page",
+    !!doc().querySelector('a[href="status.html"]'), "status.html");
+  doc().querySelector("[data-close-settings]").click();
+  await sleep(150);
   record("the note disappears again", note().hidden, "hidden=" + note().hidden);
 
   window.__results = { total: results.length, failures, results };
