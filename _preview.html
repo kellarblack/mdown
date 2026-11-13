@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>device preview</title>
+<style>
+  html, body { margin: 0; background: #17181c; }
+  #stage { display: block; border: 0; background: #000; }
+</style>
+</head>
+<body>
+<!--
+  Local device preview: /_preview.html?w=390&h=844&url=...
+  Renders the site in a fixed-width iframe so a desktop browser window can see
+  and screenshot what a phone gets.
+-->
+<iframe id="stage" src="../index.html" width="390" height="844"></iframe>
+<script>
+  const params = new URLSearchParams(location.search);
+  const w = Number(params.get("w") || 390);
+  const h = Number(params.get("h") || 844);
+  const target = params.get("url") || "../index.html";
+  const frame = document.getElementById("stage");
+  frame.width = w;
+  frame.height = h;
+  frame.src = target + (target.includes("?") ? "&" : "?") + "t=" + Date.now();
+  let seeded = false;
+  frame.addEventListener("load", () => {
+    try {
+      const win = frame.contentWindow;
+      const stored = params.get("instance");
+      // seed once: reloading on every load would loop forever
+      if (stored && !seeded && win.localStorage) {
+        seeded = true;
+        win.localStorage.setItem("mdown.settings", JSON.stringify({ instance: stored }));
+        frame.src = target + "?seeded=" + Date.now();
+      }
+    } catch (e) { /* cross-origin: nothing to do */ }
+  });
+</script>
+</body>
+</html>

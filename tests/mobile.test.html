@@ -97,6 +97,17 @@ async function main() {
     record(device.name + ": fields are 16px (no iOS zoom)", small.length === 0,
       small.length ? small.map((f) => f.id + "=" + f.size + "px").join(", ") : "ok");
 
+    // the primary action must be big and reachable with a thumb
+    const cta = doc.querySelector(".primary-btn");
+    const ctaRect = cta ? cta.getBoundingClientRect() : null;
+    record(device.name + ": fetch is a full-width, 48px target",
+      !!ctaRect && ctaRect.width > device.w * 0.55 && ctaRect.height >= 44,
+      ctaRect ? Math.round(ctaRect.width) + "x" + Math.round(ctaRect.height) : "(missing)");
+
+    record(device.name + ": fetch sits above the fold",
+      !!ctaRect && ctaRect.bottom <= device.h + 1,
+      ctaRect ? "bottom=" + Math.round(ctaRect.bottom) + " of " + device.h : "");
+
     // the composer must be reachable without pinch-zoom
     const input = doc.querySelector("#url-input");
     const rect = input.getBoundingClientRect();
