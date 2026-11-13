@@ -121,7 +121,7 @@ MDOWN_MAX_HEIGHT=4320
 MDOWN_MAX_DURATION=1800
 MDOWN_MAX_OUTPUT_MB=2048
 
-# capacity, sized for 2 OCPU / 12 GB
+# capacity, sized for the smallest box this runs on (1 vCPU / 1 GB)
 MDOWN_MAX_CONCURRENT=2
 # parallel range requests per download: 8 measured ~40% faster than 4 here
 MDOWN_FRAGMENTS=8

@@ -1,5 +1,10 @@
 # mdown
 
+**Donations are off by default.** Fill in `assets/donate.js` to show a tip jar.
+Crypto addresses only, or a tip page that is not in your name — the dialog never
+loads anything from a third party. `python3 tests/privacy_check.py` fails the
+build if the published site ever carries a name, an email or a tracker.
+
 **Open source, MIT.** The front-end is plain HTML/CSS/JS with no build step; the
 API is Python stdlib + yt-dlp + ffmpeg. Fork it, run your own instance, send a PR.
 
@@ -242,7 +247,7 @@ Full walkthrough, including the free backend: **[DEPLOY.md](DEPLOY.md)**.
 
 The short version:
 
-1. **Get an API instance** — a cobalt v11 server. `DEPLOY.md` builds one on Oracle's free tier,
+1. **Get an API instance** — a cobalt v11 server. `DEPLOY.md` builds one on any Ubuntu VPS,
    with the 8k / 128 kb/s / 30-minute caps this front-end assumes. Nothing is bundled here:
    without an instance the page says "not connected" and downloads nothing.
 2. **Set a default API** — in `assets/app.js`, top of the file:

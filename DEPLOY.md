@@ -2,7 +2,7 @@
 
 ```
 mdown.cc            static site      Cloudflare Pages        $0, unlimited bandwidth
-api.mdown.cc        mdown API        any Ubuntu 24.04 VPS    $13-22/year, or $0 on Oracle
+api.mdown.cc        mdown API        any Ubuntu 24.04 VPS    $13-22/year
 ```
 
 The API is `server/` in this repo: a small Python service that speaks the same
@@ -33,8 +33,6 @@ merge works but blocks the queue while it runs.
 - **DediOne** — Los Angeles, $12.99/yr for 1 vCPU / 1 GB / 20 GB / 1 TB.
 - **RackNerd** — $21.99/yr for 1 vCPU / 1 GB / 20 GB / 3 TB. More track record.
 - **CloudCone** — ~$20/yr for 2 vCPU / 1.25 GB / 30 GB / 4 TB.
-- **Oracle Always Free** — 2 OCPU / 12 GB / 10 TB at $0, *if* your region has
-  Ampere capacity. Frequently it doesn't.
 
 Avoid anything IPv6-only: browsers need IPv4 to reach `api.mdown.cc`.
 
@@ -46,30 +44,28 @@ Any provider: pick **Ubuntu 24.04**, one IPv4, and paste your public key at
 checkout. Generate the key locally so the private half never leaves your machine:
 
 ```sh
-ssh-keygen -t ed25519 -f ~/.ssh/mdown_oracle -C mdown-api -N ""
-cat ~/.ssh/mdown_oracle.pub      # paste this into the provider
+ssh-keygen -t ed25519 -f ~/.ssh/mdown -C mdown-api -N ""
+cat ~/.ssh/mdown.pub       # paste this into the provider
 ```
 
-Then `ssh -i ~/.ssh/mdown_oracle root@<ip>` (some hosts use `ubuntu@`).
-
-**If you use Oracle**, the extra steps are: shape `VM.Standard.A1.Flex`
-(2 OCPU / 12 GB) or `VM.Standard.E2.1.Micro`, an Ubuntu **aarch64** image for the
-Ampere shape, and opening ports in both the VCN security list and the host's
-iptables (see step 2).
+Then `ssh -i ~/.ssh/mdown root@<ip>` (some providers use `ubuntu@`). If your key
+has another name, pass it: `deploy-to.sh <ip> root ~/.ssh/whatever`, or set
+`MDOWN_SSH_KEY`.
 
 ---
 
 ## 2. Open the ports
 
-**a) Oracle security list** — VCN → subnet → Security Lists → Default →
-Add Ingress Rules: `0.0.0.0/0` → TCP → `80`, and again for `443`.
+Open `80` and `443` in whatever firewall the host has:
 
-**b) Ubuntu's own iptables** — Oracle images end in a `REJECT`, so rules must
-be inserted above it:
+- **Cloud panel** — most providers have a security group / firewall tab next to
+  the instance. Add TCP 80 and 443 from anywhere.
+- **Host firewall** — if `ufw` is active, `sudo ufw allow 80,443/tcp`. Some
+  images ship an `iptables` chain that ends in `REJECT`; insert above it:
 
 ```sh
-sudo iptables -L INPUT --line-numbers -n      # find the REJECT line, usually 6
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80  -j ACCEPT
+sudo iptables -L INPUT --line-numbers -n      # find the REJECT line
+sudo iptables -I INPUT <n> -m state --state NEW -p tcp --dport 80  -j ACCEPT
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
 sudo apt install -y iptables-persistent
 sudo netfilter-persistent save
@@ -93,8 +89,8 @@ not meant to carry it. Caddy still issues a real certificate.
 From your machine:
 
 ```sh
-scp -r server ubuntu@<ip>:/tmp/
-ssh -i ~/.ssh/mdown_oracle ubuntu@<ip>
+scp -r server root@<ip>:/tmp/
+ssh -i ~/.ssh/mdown root@<ip>
 sudo bash /tmp/server/deploy/install.sh
 ```
 
@@ -379,5 +375,5 @@ a merge. Raise `MDOWN_MAX_CONCURRENT` only after watching `htop` and
   are swept from disk regardless.
 - **Rebinding is mitigated, not eliminated** — see the note at the top of
   `server/mdown_api/security.py`.
-- **Oracle can reclaim an idle Always Free instance.** Uptime is not promised
-  by the free tier.
+- **A cheap VPS can disappear.** Keep the provider account in good standing and
+  read `NEXT.md` if the box ever stops answering.

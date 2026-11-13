@@ -8,8 +8,16 @@
 set -euo pipefail
 
 IP="${1:?usage: deploy-to.sh <public-ip> [ssh-user] [ssh-key]}"
-USER_NAME="${2:-ubuntu}"
-SSH_KEY="${3:-$HOME/.ssh/mdown_oracle}"
+USER_NAME="${2:-root}"
+# pick a key that exists, newest name first, so a renamed key never breaks a deploy
+SSH_KEY="${3:-${MDOWN_SSH_KEY:-}}"
+if [ -z "$SSH_KEY" ]; then
+  for candidate in "$HOME/.ssh/mdown" "$HOME/.ssh/mdown_dedi" "$HOME/.ssh/mdown_oracle"; do
+    if [ -f "$candidate" ]; then SSH_KEY="$candidate"; break; fi
+  done
+fi
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/mdown}"
+[ -f "$SSH_KEY" ] || { echo "no ssh key at $SSH_KEY (pass it as the third argument or set MDOWN_SSH_KEY)"; exit 1; }
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # -> server/
 
 SSH=(ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 "$USER_NAME@$IP")

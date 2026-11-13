@@ -24,6 +24,10 @@ trap cleanup EXIT
 
 section() { printf '\n== %s\n' "$1"; }
 
+# ---- privacy --------------------------------------------------------------
+section "privacy"
+if python3 tests/privacy_check.py; then :; else fail=1; fi
+
 # ---- backend --------------------------------------------------------------
 section "backend"
 out=$(cd server && python3 -m unittest discover -s tests 2>&1 | tail -3)
@@ -97,6 +101,7 @@ report_suite large  "http://127.0.0.1:$WEB_PORT/tests/large.test.html?report=1" 
 report_suite marks  "http://127.0.0.1:$WEB_PORT/tests/services.test.html?report=1" 8
 report_suite apikey "http://127.0.0.1:$WEB_PORT/tests/apikey.test.html?report=1" 8
 report_suite setup  "http://127.0.0.1:$WEB_PORT/tests/setup.test.html?report=1" 8
+report_suite donate "http://127.0.0.1:$WEB_PORT/tests/donate.test.html?report=1" 11
 
 printf '\n'
 [ $fail -eq 0 ] && echo "all good" || echo "something failed"

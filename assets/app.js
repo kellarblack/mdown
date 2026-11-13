@@ -354,6 +354,8 @@
     setupLead: $("#setup-lead"),
     setupTail: $("#setup-tail"),
     setupButton: $("#setup-open-settings"),
+    donateLink: $("#donate-link"),
+    donateWrap: $("#donate-wrap"),
     setupOpenSettings: $("#setup-open-settings"),
     quickpick: $("#quickpick"),
     quickpickService: $("#quickpick-service"),
@@ -1691,6 +1693,88 @@
     setTimeout(() => { if (!dom.modal.hidden) dom.modalClose.focus(); }, 40);
   }
 
+  /* ----------------------------------------------------------
+     donations: identity-free by construction
+     ---------------------------------------------------------- */
+  function donateConfig() {
+    const cfg = window.MDOWN_DONATE;
+    if (!cfg || cfg.enabled !== true) return null;
+    const methods = Array.isArray(cfg.methods)
+      ? cfg.methods.filter((m) => m && typeof m === "object" && (m.value || m.href))
+      : [];
+    return methods.length ? { methods, note: typeof cfg.note === "string" ? cfg.note : "" } : null;
+  }
+
+  function renderDonate() {
+    if (!dom.donateLink || !dom.donateWrap) return;
+    const cfg = donateConfig();
+    /* the wrapper carries the leading separator, so hide that rather than
+       leaving a dangling " · " when donations are off */
+    dom.donateWrap.hidden = !cfg;
+    if (!cfg) return;
+    if (dom.donateLink.dataset.bound === "1") return;
+    dom.donateLink.dataset.bound = "1";
+    dom.donateLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      openDonate();
+    });
+    /* the link may have been rendered before the config existed */
+    dom.donateLink.removeAttribute("aria-disabled");
+  }
+
+  function openDonate() {
+    const cfg = donateConfig();
+    if (!cfg) return;
+
+    const wrap = el("div", { class: "donate" });
+    wrap.appendChild(el("p", {
+      class: "donate-lede",
+      text: "mdown is free, has no ads, and keeps nothing about you. Nothing here unlocks anything — it is just a tip jar."
+    }));
+    if (cfg.note) wrap.appendChild(el("p", { class: "donate-note", text: cfg.note }));
+
+    const list = el("div", { class: "donate-list" });
+    cfg.methods.forEach((method) => {
+      const row = el("div", { class: "donate-row" });
+      const left = el("div", { class: "donate-id" });
+      left.appendChild(el("span", { class: "donate-label", text: String(method.label || method.id || "tip") }));
+
+      if (method.href) {
+        const link = el("a", {
+          class: "donate-value",
+          href: String(method.href),
+          text: String(method.href).replace(/^https?:\/\//, ""),
+          rel: "noopener noreferrer",
+          target: "_blank"
+        });
+        left.appendChild(link);
+      } else {
+        left.appendChild(el("code", { class: "donate-value", text: String(method.value) }));
+      }
+      if (method.note) left.appendChild(el("span", { class: "donate-hint", text: String(method.note) }));
+      row.appendChild(left);
+
+      if (!method.href && method.value) {
+        row.appendChild(el("button", {
+          type: "button",
+          class: "ghost-btn small",
+          text: "copy",
+          onclick: () => copyText(String(method.value), "Address copied")
+        }));
+      }
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+
+    wrap.appendChild(el("p", {
+      class: "donate-fine",
+      text: "No receipts, no accounts, no tracking, and donating does not buy priority. If a tip page is listed, it shows whatever name that account uses."
+    }));
+
+    const close = el("button", { type: "button", class: "ghost-btn small", text: "close", onclick: () => closeModal() });
+    openModal("Donate", wrap, [close]);
+  }
+
   function closeModal() {
     if (dom.modal.hidden) return;
     dom.modal.hidden = true;
@@ -2278,6 +2362,7 @@
      boot
      ---------------------------------------------------------- */
   function boot() {
+    renderDonate();
     applyTheme();
     reflectSettings();
     bindSettings();
@@ -2349,6 +2434,7 @@
     settings: () => Object.assign({}, settings),
     marks: () => Object.keys(SERVICE_MARKS),
     markHtml: (id) => markForService(id),
+    refreshDonate: () => renderDonate(),
     pump
   };
 })();

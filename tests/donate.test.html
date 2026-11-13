@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>donate test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 620px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Donations are off by default and, when on, must not leak anything: no images,
+  no iframes, no tracking pixels, and external links carry no referrer.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu \
+      "http://127.0.0.1:4331/tests/donate.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(120);
+  }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.src = "../index.html?t=" + Date.now();
+
+  const doc = () => frame.contentDocument;
+  const win = () => frame.contentWindow;
+  const ready = await waitFor(() => doc() && doc().querySelector("#donate-wrap") && win().md, 20000);
+  record("app loads", ready);
+  if (!ready) { window.__results = { total: results.length, failures, results }; return; }
+
+  const wrap = doc().querySelector("#donate-wrap");
+  const link = doc().querySelector("#donate-link");
+
+  record("donations are off by default", wrap.hidden === true, "hidden=" + wrap.hidden);
+
+  // flip the config on, the way donate.js would
+  win().MDOWN_DONATE = {
+    enabled: true,
+    note: "two ways, neither asks who you are",
+    methods: [
+      { id: "xmr", label: "Monero", value: "4AdUndXHHZ6cfufTMvppY6JwXNouMBzSkbLYfpAV5Usx3skxNgYeYTRj5UzqtReoS44qo9mtmXCqY45DJ852K5Jv2684Rge", note: "no memo" },
+      { id: "kofi", label: "Ko-fi", href: "https://ko-fi.com/example" }
+    ]
+  };
+  win().md.refreshDonate();
+  await sleep(120);
+
+  record("enabling it shows the footer link", wrap.hidden === false && !link.hidden, "hidden=" + wrap.hidden);
+
+  link.click();
+  const opened = await waitFor(() => !doc().querySelector("#modal").hidden, 5000);
+  record("the donate dialog opens", opened, doc().querySelector("#modal-title").textContent);
+
+  const body = doc().querySelector("#modal-body");
+  const rows = body.querySelectorAll(".donate-row");
+  record("both methods render", rows.length === 2, rows.length + " rows");
+
+  const code = body.querySelector("code.donate-value");
+  record("crypto is shown as copyable text, not an image",
+    !!code && /^4AdUnd/.test(code.textContent), code ? code.textContent.slice(0, 12) + "…" : "(none)");
+
+  const copyBtn = [...body.querySelectorAll("button")].find(b => /copy/i.test(b.textContent || ""));
+  record("the address has a copy button", !!copyBtn, copyBtn ? copyBtn.textContent : "(none)");
+
+  const external = body.querySelector('a[href^="http"]');
+  record("the external link opens safely",
+    !!external && external.getAttribute("rel") === "noopener noreferrer" && external.getAttribute("target") === "_blank",
+    external ? external.getAttribute("rel") : "(none)");
+
+  // nothing may phone home: no images, iframes, scripts or pixels in the dialog
+  const leaks = body.querySelectorAll("img, iframe, script, object, embed, video, audio, source, link");
+  record("the dialog loads nothing from anywhere", leaks.length === 0, leaks.length + " foreign nodes");
+
+  record("it says donating buys nothing",
+    /does not buy|nothing here unlocks|just a tip jar/i.test(body.textContent),
+    (body.textContent || "").slice(-90));
+
+  doc().querySelector("[data-close-modal]").click();
+  await sleep(150);
+  record("it closes again", doc().querySelector("#modal").hidden === true);
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+<script>
+/* With ?report, POST results so run-all.sh can read them without devtools. */
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 90000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>
