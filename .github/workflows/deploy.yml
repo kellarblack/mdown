@@ -12,12 +12,14 @@
 name: deploy site
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "mdown/**"
-      - ".github/workflows/deploy.yml"
+  # Disabled: this repo publishes with pages.yml (GitHub Pages). Kept as a
+  # reference for anyone who wants Cloudflare Pages instead. To use it, delete
+  # pages.yml and restore `push: { branches: [main] }` here.
   workflow_dispatch:
+    inputs:
+      note:
+        description: "unused; this workflow is a reference"
+        required: false
 
 jobs:
   pages:

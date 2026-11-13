@@ -17,15 +17,9 @@
 name: deploy api
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "server/**"
+  # Manual on purpose: it needs three repo secrets, and until they exist every
+  # push would show a red X. Turn this back to `push:` once the secrets are set.
   workflow_dispatch:
-
-concurrency:
-  group: deploy-api
-  cancel-in-progress: false
 
 jobs:
   deploy:
