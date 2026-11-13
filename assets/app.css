@@ -453,7 +453,7 @@ a.ghost-btn { text-decoration: none; }
 .help-note b { color: var(--text-2); font-weight: 600; }
 .footer a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .footer a:hover { color: var(--text-2); }
-.footer-meta { font-family: var(--mono); font-size: 0.64rem; opacity: 0.8; }
+.footer-meta { font-family: var(--mono); font-size: 0.64rem; color: var(--text-3); }
 
 /* ---------- help ---------- */
 .help-lede { max-width: 60ch; color: var(--text-2); font-size: 0.86rem; line-height: 1.6; }
