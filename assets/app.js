@@ -465,7 +465,11 @@
       dom.serviceName.hidden = !service;
       dom.serviceName.textContent = service || "";
     }
-    dom.badge.setAttribute("aria-label", service ? "detected service: " + service : "detected service: unknown");
+    /* a bare span cannot take aria-label; role=status makes the announcement
+       legal and stops it reading "unknown" before anything is pasted */
+    dom.badge.setAttribute("role", "status");
+    if (service) dom.badge.setAttribute("aria-label", "detected: " + service);
+    else dom.badge.removeAttribute("aria-label");
     dom.hint.dataset.action = "";
     dom.hint.dataset.tone = "";
     dom.hint.textContent = "";
