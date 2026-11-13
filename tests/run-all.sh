@@ -96,7 +96,7 @@ report_suite tools  "http://127.0.0.1:$WEB_PORT/tests/tools.test.html?report=1" 
 report_suite remux  "http://127.0.0.1:$WEB_PORT/tests/remux.test.html?report=1" 90
 report_suite picker "http://127.0.0.1:$WEB_PORT/tests/picker.test.html?report=1" 13
 report_suite picker2 "http://127.0.0.1:$WEB_PORT/tests/picker.test.html?report=1&w=390" 15
-report_suite status "http://127.0.0.1:$WEB_PORT/tests/status.test.html?report=1" 10
+report_suite status "http://127.0.0.1:$WEB_PORT/tests/status.test.html?report=1" 11
 report_suite large  "http://127.0.0.1:$WEB_PORT/tests/large.test.html?report=1" 8
 report_suite marks  "http://127.0.0.1:$WEB_PORT/tests/services.test.html?report=1" 8
 report_suite apikey "http://127.0.0.1:$WEB_PORT/tests/apikey.test.html?report=1" 8

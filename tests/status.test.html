@@ -95,6 +95,15 @@ async function main() {
   const report = doc().querySelector("#status-report");
   record("report button exists", !!report && /report/i.test(report.textContent));
 
+  // last: no stored settings at all, which is what a first-time visitor has
+  frame.contentWindow.localStorage.clear();
+  frame.src = "../status.html?fresh=" + Date.now();
+  await waitFor(() => frame.contentDocument && frame.contentDocument.querySelector("#status-card"), 15000);
+  await sleep(300);
+  record("a fresh visitor gets the built-in api",
+    frame.contentDocument.querySelector("#status-card").dataset.api === "https://api.mdown.cc",
+    frame.contentDocument.querySelector("#status-card").dataset.api || "(none)");
+
   window.__results = { total: results.length, failures, results };
 }
 
