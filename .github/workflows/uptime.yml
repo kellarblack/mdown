@@ -13,6 +13,11 @@ on:
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch:
+  # editing the monitor runs the monitor, so a broken change fails immediately
+  # instead of silently never firing
+  push:
+    paths:
+      - ".github/workflows/uptime.yml"
 
 permissions:
   contents: read
