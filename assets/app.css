@@ -442,7 +442,7 @@ a.ghost-btn { text-decoration: none; }
   position: relative; z-index: 1;
   max-width: 900px; margin: auto auto 0; padding: 18px clamp(16px, 4vw, 26px) 26px;
   color: var(--text-3); font-size: 0.66rem;
-  opacity: 0.55;
+  /* was opacity: 0.55, which crushed the footer to 2:1 — too faint to read */
 }
 .footer p + p { margin-top: 5px; }
 .help-note {
