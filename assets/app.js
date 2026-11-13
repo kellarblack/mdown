@@ -1426,8 +1426,14 @@
      the file never reaches Files. Handing the tunnel URL to Safari uses its
      download manager instead. Share is different — that path needs the blob,
      so it keeps the normal flow (with the size cap above). */
-  const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  /* Pure, so it can be tested without an iPhone: iPadOS reports itself as a
+     Mac, which is why the touch-point check exists. */
+  function isIOS(userAgent, platform, maxTouchPoints) {
+    if (/iP(hone|ad|od)/.test(userAgent || "")) return true;
+    return (platform || "") === "MacIntel" && (maxTouchPoints || 0) > 1;
+  }
+
+  const IS_IOS = isIOS(navigator.userAgent, navigator.platform, navigator.maxTouchPoints);
 
   function handOffToBrowser(item, note) {
     item.blob = null;
@@ -2457,6 +2463,7 @@
     marks: () => Object.keys(SERVICE_MARKS),
     markHtml: (id) => markForService(id),
     refreshDonate: () => renderDonate(),
+    isIOS: (ua, platform, touch) => isIOS(ua, platform, touch),
     pump
   };
 })();

@@ -126,6 +126,22 @@ async function main() {
     }
   }
 
+  // iOS detection decides whether Safari or the blob path handles a download,
+  // so it is asserted directly rather than hoped for
+  {
+    const frame = await load(390, 800);
+    const md = frame.contentWindow.md;
+    const iphone = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+    const ipad = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15";
+    const android = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Mobile Safari/537.36";
+    const desktop = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
+
+    record("iPhone is detected as iOS", md.isIOS(iphone, "iPhone", 5) === true);
+    record("iPadOS is detected despite calling itself a Mac", md.isIOS(ipad, "MacIntel", 5) === true);
+    record("Android is not treated as iOS", md.isIOS(android, "Linux armv8l", 5) === false);
+    record("desktop Safari is not treated as iOS", md.isIOS(desktop, "MacIntel", 0) === false);
+  }
+
   // the three tool panels are the densest UI on the page
   {
     const frame = await load(320, 700);
