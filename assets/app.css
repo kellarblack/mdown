@@ -84,6 +84,8 @@ body {
   /* 100vh on iOS includes the collapsed toolbar, so the page jumps as it
      hides and reappears; dvh tracks the visible area */
   min-height: 100dvh;
+  /* Android's pull-to-refresh would reload the page and lose the queue */
+  overscroll-behavior-y: contain;
   display: flex;
   flex-direction: column;
   -webkit-tap-highlight-color: transparent;

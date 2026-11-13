@@ -151,7 +151,7 @@ async function main() {
   }
 
   // the other two pages ship to phones as well
-  for (const page of ["status.html", "terms.html"]) {
+  for (const page of ["status.html", "terms.html", "404.html"]) {
     for (const width of [320, 390]) {
       const frame = document.getElementById("stage");
       frame.width = width;
