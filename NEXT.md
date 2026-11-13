@@ -15,13 +15,27 @@ Deploy the site: push to `main` — `pages.yml` does it.
 
 ## What is left, in order
 
-1. **Donations are off.** Fill in `assets/donate.js` when you want the footer link.
-   Crypto addresses only, or a tip page you accept shows its account name.
-2. **Optional: UptimeRobot** on `https://api.mdown.cc/health` if you want an
+1. **Verify `mdown.cc` for GitHub Pages.** The custom-domain state stays on
+   "DNS Check in Progress" until the domain is verified in
+   *Settings → Pages → Verified domains*, and an unverified domain can be
+   claimed by someone else if the site is ever removed. One TXT record:
+
+   | type | host | value |
+   | --- | --- | --- |
+   | `TXT` | `_github-pages-challenge-kellarblack` | `8f6e13355604bb9c980c1c47699b81` |
+
+   Then press **Verify** on `github.com/settings/pages_verified_domains/mdown.cc`.
+
+2. **Donations are off.** Fill in `assets/donate.js` when you want the footer
+   link. Crypto addresses only, or a tip page you accept shows its account name.
+   Use a dedicated wallet: donation funds in your main wallet are publicly
+   traceable and linkable to you.
+
+3. **Optional: UptimeRobot** on `https://api.mdown.cc/health` if you want an
    uptime graph. The issue-based check already emails you when it breaks.
-3. **Optional: turn off** "Opt all domains into API access" in Porkbun
-   (Account → API). Only `mdown.cc` needed it. Revoke the API key too if you
-   do not plan to script DNS again.
+
+Done already: the Porkbun API key is revoked and "Opt all domains into API
+access" is off. DNS changes now need the Porkbun dashboard (or a fresh key).
 
 ## Things that will break, and what catches them
 

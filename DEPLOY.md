@@ -57,7 +57,13 @@ Six records, all **DNS only** (no proxy):
 
 An `ALIAS`/`ANAME` at the apex pointing at `<user>.github.io` is equivalent if
 your provider supports it, but the explicit A + AAAA set is what GitHub's own
-DNS checker expects. Do **not** add `AAAA` for `api` unless the VPS actually
+DNS checker expects.
+
+**GitHub also wants the domain verified, not just pointed.** Add the TXT record
+from *Settings → Pages → Verified domains* (`_github-pages-challenge-<user>`,
+a 32-char hex value). Without it the Pages settings page keeps saying
+"DNS Check in Progress" even though the site works, and the domain can be
+claimed on GitHub Pages by anyone if the site is ever removed. Do **not** add `AAAA` for `api` unless the VPS actually
 answers on IPv6 from the public internet — an unreachable AAAA makes
 v6-preferring phones fail to load the API at all.
 
