@@ -1285,7 +1285,9 @@ a.donate-value:hover { text-decoration: underline; }
 .dock.is-open .dock-btn { color: var(--text); background: var(--surface-2); border-color: var(--stroke); }
 .dock-panel {
   position: absolute; top: calc(100% + 8px); right: 0; z-index: 70;
-  width: min(430px, calc(100% - 20px));
+  /* 100% here resolves against .dock (the 40px button), which would shrink the
+     panel to a 20px sliver — this is one of the few places vw is correct */
+  width: min(430px, calc(100vw - 20px));
   max-height: min(70vh, 540px); overflow-y: auto; overscroll-behavior: contain;
   padding: 10px;
   border: 1px solid var(--stroke-2); border-radius: var(--r-md);

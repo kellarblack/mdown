@@ -196,6 +196,19 @@ async function main() {
     record("a second download opens it again", closed && reopened, "closed-before=" + closed);
   }
 
+  // desktop too: the panel must be a panel, not a sliver against its button
+  {
+    const frame = await loadWithMock(1100, 800);
+    const doc = frame.contentDocument;
+    doc.querySelector("#queue-toggle").click();
+    await sleep(250);
+    const panel = doc.querySelector("#queue-panel");
+    const r = panel ? panel.getBoundingClientRect() : null;
+    record("the queue panel is readable on a desktop", !!r && r.width > 300,
+      r ? Math.round(r.width) + "px wide" : "(missing)");
+    record("and stays inside the window", !!r && r.right <= 1100 + 1, r ? "right=" + Math.round(r.right) : "");
+  }
+
   // the narrowest phone, with the queue open
   {
     const frame = await loadWithMock(320, 640);
