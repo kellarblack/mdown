@@ -2,7 +2,7 @@
 #
 # Every 30 minutes this asks the API how it is. If it is not 200, it opens an
 # issue — GitHub emails repo watchers, which is the alert. When the API comes
-# back it comments and closes the issue, so the tracker is the history.
+# back it comments and closes the issue, so the tracker is the outage history.
 #
 # Note: GitHub disables scheduled workflows after 60 days without repo activity.
 # Any push re-enables them.
@@ -30,16 +30,9 @@ jobs:
         id: probe
         run: |
           set +e
-          code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 https://api.mdown.cc/health 2>/tmp/curl.err)
+          code=$(curl -sS -o health.json -w '%{http_code}' --max-time 20 https://api.mdown.cc/health 2>curl.err)
           [ -n "$code" ] || code=000
           echo "code=$code" >> "$GITHUB_OUTPUT"
-          {
-            echo "body<<HEALTH_EOF"
-            head -c 600 /tmp/health.json 2>/dev/null
-            head -c 300 /tmp/curl.err 2>/dev/null
-            echo
-            echo "HEALTH_EOF"
-          } >> "$GITHUB_OUTPUT"
           echo "probe returned $code"
 
       - name: open an issue when it is down
@@ -47,39 +40,43 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -e
           open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
                    --search 'api down in:title' --json number --jq 'length')
           if [ "$open" != "0" ]; then
             echo "already tracking an outage ($open open) — not opening another"
             exit 0
           fi
-          body=$(cat <<EOF
-          \`https://api.mdown.cc/health\` returned **${{ steps.probe.outputs.code }}** at $(date -u +%Y-%m-%dT%H:%MZ).
 
-          \`\`\`
-          ${{ steps.probe.outputs.body }}
-          \`\`\`
+          {
+            echo "\`https://api.mdown.cc/health\` returned **${{ steps.probe.outputs.code }}** at $(date -u +%Y-%m-%dT%H:%MZ)."
+            echo
+            echo '```'
+            head -c 800 health.json 2>/dev/null || true
+            head -c 400 curl.err 2>/dev/null || true
+            echo
+            echo '```'
+            echo
+            echo "What to check, in order:"
+            echo
+            echo '1. `ssh -i ~/.ssh/mdown_oracle root@136.0.57.157 "systemctl status mdown-api"`'
+            echo '2. `journalctl -u mdown-api -n 50 --no-pager`'
+            echo '3. `journalctl -t mdown-health -n 20 --no-pager` — the local watchdog logs restarts here'
+            echo '4. `curl -s https://api.mdown.cc/health` from the box, then from outside'
+            echo
+            echo "The box restarts the API itself when \`/health\` fails, at most once every ten minutes. If this issue is open, that did not work."
+          } > issue.md
 
-          What to check, in order:
-
-          1. \`ssh -i ~/.ssh/mdown root@136.0.57.157 'systemctl status mdown-api'\`
-          2. \`journalctl -u mdown-api -n 50 --no-pager\`
-          3. \`journalctl -t mdown-health -n 20 --no-pager\` — the local watchdog logs restarts here
-          4. \`curl -s https://api.mdown.cc/health\` from the box, then from outside
-
-          The box restarts the API itself when \`/health\` fails, at most once every ten
-          minutes. If this issue is open, that did not work.
-          EOF
-          )
           gh issue create --repo "$GITHUB_REPOSITORY" \
             --title "api down: $(date -u +%Y-%m-%dT%H:%MZ)" \
-            --body "$body"
+            --body-file issue.md
 
       - name: close the issue when it recovers
         if: steps.probe.outputs.code == '200'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -e
           numbers=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
                       --search 'api down in:title' --json number --jq '.[].number')
           for n in $numbers; do
