@@ -1304,6 +1304,9 @@ a.donate-value:hover { text-decoration: underline; }
   }
   .nav-link[data-view="download"] { display: none; }
 }
+/* while jobs are running the badge breathes, so a closed dock is not silence */
+.dock-badge:not(.is-dot) { animation: pulse 1.6s ease-in-out infinite; }
+
 .dock-badge.is-dot {
   width: 7px; height: 7px; min-width: 7px; padding: 0;
   top: 5px; right: 5px;

@@ -1058,7 +1058,10 @@
       dom.queueBadge.hidden = !show;
       dom.queueBadge.classList.toggle("is-dot", active === 0 && show);
     }
-    if (count > 0 && lastQueueCount === 0 && window.innerWidth > 720) setDock(true);
+    // Any screen: a download with no visible feedback reads as a broken button.
+    // Opening on every *new* item (not just the first) matters because clicking
+    // fetch counts as an outside click, which closes the dock first.
+    if (count > lastQueueCount && !dockOpen) setDock(true);
     lastQueueCount = count;
 
     dom.queueCount.textContent = String(count);
@@ -1434,6 +1437,7 @@
   }
 
   const IS_IOS = isIOS(navigator.userAgent, navigator.platform, navigator.maxTouchPoints);
+  const IS_TOUCH = (navigator.maxTouchPoints || 0) > 0 || "ontouchstart" in window;
 
   function handOffToBrowser(item, note) {
     item.blob = null;
@@ -2286,6 +2290,14 @@
     });
 
     dom.pasteBtn.addEventListener("click", async () => {
+      const blocked = IS_TOUCH
+        ? "Clipboard is blocked here — tap and hold the field to paste."
+        : "Clipboard is blocked here — press ⌘V to paste.";
+      if (!navigator.clipboard || typeof navigator.clipboard.readText !== "function") {
+        toast(blocked, "warn");
+        focusForPaste();
+        return;
+      }
       try {
         const text = await navigator.clipboard.readText();
         if (!text) { toast("Clipboard is empty.", "warn"); return; }
@@ -2293,10 +2305,17 @@
         updateComposerState();
         if (parseUrls(text).length === 1) submitUrls(text);
       } catch {
-        toast("Clipboard access was blocked — press ⌘V instead.", "warn");
-        dom.input.focus();
+        toast(blocked, "warn");
+        focusForPaste();
       }
     });
+
+    /* put the caret where the paste should land, and select whatever is there
+       so a long-press paste replaces it instead of appending */
+    function focusForPaste() {
+      dom.input.focus();
+      try { dom.input.select(); } catch { /* not selectable */ }
+    }
 
     dom.modes.forEach((btn) => {
       btn.addEventListener("click", () => {

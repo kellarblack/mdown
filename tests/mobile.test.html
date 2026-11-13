@@ -53,6 +53,19 @@ const DEVICES = [
   { name: "iphone max (430)", w: 430, h: 932 }
 ];
 
+async function loadWithMock(width, height) {
+  const frame = await load(width, height);
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320", savingMethod: "download" }));
+  frame.src = "../index.html?mock=" + Date.now();
+  await waitFor(() => {
+    const d = frame.contentDocument;
+    return d && d.querySelector("#url-input") && frame.contentWindow.md;
+  }, 20000);
+  await sleep(350);
+  return frame;
+}
+
 async function load(width, height) {
   const frame = document.getElementById("stage");
   frame.width = width;
@@ -124,6 +137,95 @@ async function main() {
       record(device.name + ": toolbar menu does not overflow", over2 <= 1, over2 + "px over");
       tools.open = false;
     }
+  }
+
+  // a download must show itself on a phone: this is the bug that started it
+  {
+    const frame = await loadWithMock(390, 800);
+    const doc = frame.contentDocument;
+    const win = frame.contentWindow;
+    const input = doc.querySelector("#url-input");
+    input.value = "https://youtube.com/watch?v=slowtest";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    doc.querySelector("#fetch-form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+    const opened = await waitFor(() => {
+      const panel = doc.querySelector("#queue-panel");
+      return panel && !panel.hidden;
+    }, 10000);
+    record("a download opens the queue on a phone", opened,
+      "hidden=" + (doc.querySelector("#queue-panel") || {}).hidden);
+
+    const appeared = await waitFor(() => !!doc.querySelector(".qitem"), 10000);
+    record("the queue item appears", appeared);
+
+    const spinner = doc.querySelector(".qitem .spinner");
+    const anim = spinner ? win.getComputedStyle(spinner).animationName : "none";
+    record("it spins while working", !!spinner && anim !== "none", anim);
+
+    await waitFor(() => {
+      const items = win.md.state().items;
+      return items.length && items[items.length - 1].status === "downloading";
+    }, 10000);
+    const fill = doc.querySelector(".qitem .q-progress-fill");
+    const before = fill ? parseFloat(fill.style.width || "0") : 0;
+    await sleep(500);
+    const after = fill ? parseFloat(fill.style.width || "0") : 0;
+    record("the progress bar advances", after > before, before + "% -> " + after + "%");
+
+    // the panel itself must fit on the narrowest phone
+    const panel = doc.querySelector("#queue-panel");
+    if (panel) {
+      const r = panel.getBoundingClientRect();
+      record("the queue panel fits the screen",
+        r.width > 200 && r.left >= -1 && r.right <= frame.width + 1,
+        Math.round(r.left) + ".." + Math.round(r.right) + " of " + frame.width);
+    }
+
+    const badge = doc.querySelector(".dock-badge");
+    record("the dock badge shows the active job", !!badge && !badge.hidden, badge ? badge.textContent : "(none)");
+
+    // a second download must reopen it too: the fetch click closes the dock
+    doc.querySelector("#queue-toggle").click();       // user closes it by hand
+    await sleep(150);
+    const closed = doc.querySelector("#queue-panel").hidden;
+    input.value = "https://youtube.com/watch?v=slowtest";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    doc.querySelector("#fetch-form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    const reopened = await waitFor(() => !doc.querySelector("#queue-panel").hidden, 8000);
+    record("a second download opens it again", closed && reopened, "closed-before=" + closed);
+  }
+
+  // the narrowest phone, with the queue open
+  {
+    const frame = await loadWithMock(320, 640);
+    const doc = frame.contentDocument;
+    doc.querySelector("#queue-toggle").click();
+    await sleep(250);
+    const panel = doc.querySelector("#queue-panel");
+    const r = panel ? panel.getBoundingClientRect() : null;
+    record("the queue panel fits at 320px", !!r && r.width > 180 && r.right <= 320 + 1,
+      r ? Math.round(r.left) + ".." + Math.round(r.right) : "(missing)");
+    const over = doc.documentElement.scrollWidth - frame.contentWindow.innerWidth;
+    record("an open queue does not scroll the page sideways", over <= 1, over + "px over");
+  }
+
+  // paste: a blocked clipboard has to teach instead of failing silently
+  {
+    const frame = await load(390, 800);
+    const win = frame.contentWindow;
+    const doc = frame.contentDocument;
+    Object.defineProperty(win.navigator, "clipboard", {
+      configurable: true,
+      value: { readText: () => Promise.reject(new Error("blocked")) }
+    });
+    doc.querySelector("#paste-btn").click();
+    await sleep(350);
+    const toasts = doc.querySelector("#toasts");
+    const text = ((toasts && toasts.textContent) || "").toLowerCase();
+    record("a blocked clipboard explains itself", /clipboard/.test(text) && /paste/.test(text), text.slice(0, 60));
+    record("and puts the caret in the field", doc.activeElement && doc.activeElement.id === "url-input",
+      (doc.activeElement && doc.activeElement.id) || "(none)");
   }
 
   // iOS detection decides whether Safari or the blob path handles a download,
