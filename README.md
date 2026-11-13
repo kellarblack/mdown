@@ -220,7 +220,7 @@ open http://127.0.0.1:4331/tests/status.test.html  # 10 assertions (needs mock-a
 ```
 
 **Everything at once:** `./tests/run-all.sh` — backend plus every browser suite
-(91 · 38 · 90 · 13 · 15 · 10 · 8 · 8 · 8). It starts the mock and a static server itself.
+(91 · 38 · 90 · 13 · 15 · 10 · 8 · 8 · 8 · 8). It starts the mock and a static server itself.
 
 Backend alone: `cd server && python3 -m unittest discover -s tests`.
 

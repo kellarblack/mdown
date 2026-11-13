@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>setup note test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 620px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The note under the composer must tell "no API configured" apart from
+  "an API is configured but unreachable". Silence in the second case is what
+  makes a site look broken.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu \
+      "http://127.0.0.1:4331/tests/setup.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(120);
+  }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  // no saved settings: the built-in default must be the real API
+  frame.src = "../index.html?t=" + Date.now();
+
+  const doc = () => frame.contentDocument;
+  const win = () => frame.contentWindow;
+  const ready = await waitFor(() => doc() && doc().querySelector("#url-input") && win().md, 20000);
+  record("app loads", ready);
+  if (!ready) { window.__results = { total: results.length, failures, results }; return; }
+
+  record("a default instance is built in",
+    win().md.settings().instance === "https://api.mdown.cc",
+    win().md.settings().instance);
+
+  // let the automatic first check finish so it cannot race the assertions
+  await waitFor(() => doc().querySelector("#instance-pill").dataset.state !== "checking", 20000);
+
+  const note = () => doc().querySelector("#setup-note");
+  const lead = () => doc().querySelector("#setup-lead").textContent;
+  const button = () => doc().querySelector("#setup-open-settings").textContent;
+
+  // point it at a port nothing listens on
+  doc().querySelector("#open-settings").click();
+  await sleep(250);
+  doc().querySelector('[data-section="instance"]').click();
+  await sleep(150);
+  const field = doc().querySelector("#instance-url");
+  field.value = "http://127.0.0.1:45999";
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  field.dispatchEvent(new Event("blur", { bubbles: true }));
+
+  const failed = await waitFor(() => doc().querySelector("#instance-pill").dataset.state === "bad", 15000);
+  record("an unreachable instance is detected", failed,
+    doc().querySelector("#instance-pill").dataset.state);
+
+  record("the note stays visible", !note().hidden, "hidden=" + note().hidden);
+  record("and says it cannot be reached",
+    /can't reach/i.test(lead()), (lead() + button()).slice(0, 70));
+  record("the button offers to fix it",
+    /address|instance/i.test(button()), button());
+
+  // now a reachable one: the note must go away
+  field.value = "http://127.0.0.1:4320";
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  field.dispatchEvent(new Event("blur", { bubbles: true }));
+  const ok = await waitFor(() => doc().querySelector("#instance-pill").dataset.state === "ok", 15000);
+  record("a reachable instance connects", ok,
+    doc().querySelector("#instance-pill").dataset.state);
+  record("the note disappears again", note().hidden, "hidden=" + note().hidden);
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+<script>
+/* With ?report, POST results so run-all.sh can read them without devtools. */
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 90000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

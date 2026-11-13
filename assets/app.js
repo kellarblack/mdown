@@ -21,7 +21,7 @@
 
   /* When you deploy, put your own API base URL here so visitors don't have to
      connect one themselves. Leave empty to require it. */
-  const DEFAULT_INSTANCE = "";
+  const DEFAULT_INSTANCE = "https://api.mdown.cc";
 
   /* deliberate ceilings: the top tiers are the ones services paywall */
   const VIDEO_QUALITIES = ["4320", "2160", "1440", "1080", "720", "480", "360", "240", "144"];
@@ -253,7 +253,13 @@
   function loadSettings() {
     try {
       const raw = localStorage.getItem(SETTINGS_KEY) || migrateLegacy(LEGACY_SETTINGS_KEYS, SETTINGS_KEY);
-      if (!raw) return Object.assign({}, DEFAULT_SETTINGS);
+      if (!raw) {
+        // first visit, and the only case where the built-in instance matters:
+        // without this line the default never applies to anyone new
+        const fresh = Object.assign({}, DEFAULT_SETTINGS);
+        if (DEFAULT_INSTANCE) fresh.instance = DEFAULT_INSTANCE;
+        return fresh;
+      }
       const parsed = JSON.parse(raw);
       const merged = Object.assign({}, DEFAULT_SETTINGS, parsed && typeof parsed === "object" ? parsed : {});
       if (!merged.instance && DEFAULT_INSTANCE) merged.instance = DEFAULT_INSTANCE;
@@ -345,6 +351,9 @@
     serviceName: $("#service-name"),
     composer: $("#composer"),
     setupNote: $("#setup-note"),
+    setupLead: $("#setup-lead"),
+    setupTail: $("#setup-tail"),
+    setupButton: $("#setup-open-settings"),
     setupOpenSettings: $("#setup-open-settings"),
     quickpick: $("#quickpick"),
     quickpickService: $("#quickpick-service"),
@@ -1743,10 +1752,31 @@
     dom.instanceError.textContent = errorText || "";
   }
 
+  /* The note under the composer answers one question: why can't I download?
+     "not set up" and "configured but down" look identical to a visitor, so
+     they must not look identical on screen. */
+  function setSetupNote(kind) {
+    if (!dom.setupNote) return;
+    if (!kind) {
+      dom.setupNote.hidden = true;
+      return;
+    }
+    dom.setupNote.hidden = false;
+    if (kind === "unreachable") {
+      dom.setupLead.textContent = "Can't reach the API — ";
+      dom.setupButton.textContent = "check the address";
+      dom.setupTail.textContent = " or try again in a moment.";
+    } else {
+      dom.setupLead.textContent = "Not connected — ";
+      dom.setupButton.textContent = "connect an API";
+      dom.setupTail.textContent = " to download.";
+    }
+  }
+
   async function checkInstance(options) {
     const opts = options || {};
     const base = normalizeInstance(settings.instance);
-    dom.setupNote.hidden = !!base;
+    setSetupNote(base ? null : "empty");
 
     if (!base) {
       instanceInfo = null;
@@ -1791,6 +1821,7 @@
         ["commit", git.commit ? String(git.commit).slice(0, 8) : "unknown"]
       ]);
 
+      setSetupNote(null);
       renderServices(instanceInfo.services);
       updateComposerState();
       return true;
@@ -1801,6 +1832,7 @@
       instanceInfo = null;
       setInstancePill("bad", "unreachable", message);
       setInstanceDetail("bad", "Can't reach this instance", [], message);
+      setSetupNote("unreachable");
       dom.servicesCard.hidden = true;
       return false;
     } finally {
@@ -1868,7 +1900,7 @@
     updateFileNamePreview();
     updateRequestPreview();
     applyTheme();
-    dom.setupNote.hidden = !!normalizeInstance(settings.instance);
+    setSetupNote(normalizeInstance(settings.instance) ? null : "empty");
   }
 
   function updateFileNamePreview() {
@@ -1915,7 +1947,7 @@
     dom.instanceUrl.addEventListener("input", () => {
       settings.instance = dom.instanceUrl.value.trim();
       saveSettings();
-      dom.setupNote.hidden = !!normalizeInstance(settings.instance);
+      setSetupNote(normalizeInstance(settings.instance) ? null : "empty");
       updateComposerState();
     });
     dom.instanceUrl.addEventListener("blur", () => {
