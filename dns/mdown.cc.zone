@@ -1,0 +1,10 @@
+; mdown.cc — import this into Porkbun's DNS (BIND Zone File, beta)
+; Everything is DNS-only: no proxy, no CDN.
+$ORIGIN mdown.cc.
+$TTL 600
+@       IN  A       185.199.108.153
+@       IN  A       185.199.109.153
+@       IN  A       185.199.110.153
+@       IN  A       185.199.111.153
+api     IN  A       136.0.57.157
+www     IN  CNAME   kellarblack.github.io.
