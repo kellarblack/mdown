@@ -49,7 +49,17 @@ Six records, all **DNS only** (no proxy):
 | `A` | *(blank)* | `185.199.109.153` | GitHub Pages |
 | `A` | *(blank)* | `185.199.110.153` | GitHub Pages |
 | `A` | *(blank)* | `185.199.111.153` | GitHub Pages |
+| `AAAA` | *(blank)* | `2606:50c0:8000::153` | GitHub Pages over IPv6 |
+| `AAAA` | *(blank)* | `2606:50c0:8001::153` | GitHub Pages over IPv6 |
+| `AAAA` | *(blank)* | `2606:50c0:8002::153` | GitHub Pages over IPv6 |
+| `AAAA` | *(blank)* | `2606:50c0:8003::153` | GitHub Pages over IPv6 |
 | `CNAME` | `www` | `<user>.github.io` | GitHub Pages |
+
+An `ALIAS`/`ANAME` at the apex pointing at `<user>.github.io` is equivalent if
+your provider supports it, but the explicit A + AAAA set is what GitHub's own
+DNS checker expects. Do **not** add `AAAA` for `api` unless the VPS actually
+answers on IPv6 from the public internet — an unreachable AAAA makes
+v6-preferring phones fail to load the API at all.
 
 **The trap:** if the domain's DNS is hosted by a registrar that runs on
 Cloudflare (Porkbun does — "DNS powered by Cloudflare"), that zone is already

@@ -6,7 +6,7 @@
 | --- | --- |
 | site | https://mdown.cc (GitHub Pages, Enforce HTTPS on) |
 | api | https://api.mdown.cc (VPS 136.0.57.157, Let's Encrypt, auto-renew) |
-| dns | Porkbun — `ALIAS @` → GitHub Pages, `A api` → VPS, `CNAME www` → apex redirect |
+| dns | Porkbun — apex `A`+`AAAA` → GitHub Pages, `A api` → VPS, `www` → apex |
 | monitoring | local watchdog every 2 min; GitHub `uptime` workflow every 30 min |
 | lighthouse | accessibility 100 · best practices 100 · seo 100 |
 
