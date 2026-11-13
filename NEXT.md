@@ -1,4 +1,21 @@
-# What's left
+# Next
+
+## Where DNS stands (13 Nov)
+
+`mdown.cc` is delegated to `andy.ns.cloudflare.com` / `opal.ns.cloudflare.com`,
+but those nameservers serve **Porkbun's** zone, not the one in your Cloudflare
+account — the account's `mdown.cc` zone sits on `Initializing` and will not
+activate. On Porkbun's side the domain showed a Cloudflare-backed zone with
+parking records.
+
+To finish, either put the six records from `DEPLOY.md` §0 into Porkbun's DNS
+panel, or get Cloudflare support to move the zone. Then:
+
+```sh
+ssh -i ~/.ssh/mdown_oracle root@136.0.57.157 'systemctl reload caddy'   # forces a fresh cert
+API=https://api.mdown.cc ORIGIN=https://mdown.cc python3 server/deploy/verify.py
+```
+
 
 **Status:** the API is live on `136.0.57.157` and downloads real media.
 Verified tonight: a real YouTube link → valid 10 MB mp3 in 26 s, ffprobe clean.

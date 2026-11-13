@@ -38,6 +38,37 @@ Avoid anything IPv6-only: browsers need IPv4 to reach `api.mdown.cc`.
 
 ---
 
+## 0. DNS: the records, and one trap
+
+Six records, all **DNS only** (no proxy):
+
+| type | host | value | why |
+| --- | --- | --- | --- |
+| `A` | `api` | your VPS IP | the API and its certificate |
+| `A` | *(blank)* | `185.199.108.153` | GitHub Pages |
+| `A` | *(blank)* | `185.199.109.153` | GitHub Pages |
+| `A` | *(blank)* | `185.199.110.153` | GitHub Pages |
+| `A` | *(blank)* | `185.199.111.153` | GitHub Pages |
+| `CNAME` | `www` | `<user>.github.io` | GitHub Pages |
+
+**The trap:** if the domain's DNS is hosted by a registrar that runs on
+Cloudflare (Porkbun does — "DNS powered by Cloudflare"), that zone is already
+active on Cloudflare under the registrar's account, using the *same* nameserver
+pair Cloudflare assigns to your own account. Adding the domain to your own
+Cloudflare account leaves it stuck on **Initializing**, and your records never
+get served. Two ways out:
+
+1. **Keep the registrar's DNS** and put the six records above in its panel.
+   Functionally identical here, because everything is DNS-only anyway.
+2. **Ask Cloudflare support to move the zone** into your account. Takes days.
+
+Verify which zone is live before chasing certificates:
+
+```sh
+dig +short @andy.ns.cloudflare.com A api.mdown.cc   # your records?
+dig +short NS mdown.cc                              # registry delegation
+```
+
 ## 1. Create the instance
 
 Any provider: pick **Ubuntu 24.04**, one IPv4, and paste your public key at
