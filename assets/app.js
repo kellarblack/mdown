@@ -1300,6 +1300,17 @@
     item.indeterminate = !item.size;
     setStatus(item, "downloading", "downloading");
 
+    if (IS_IOS && settings.savingMethod === "download") {
+      try {
+        if (res.body) await res.body.cancel();
+      } catch (err) { /* Safari owns it now */ }
+      item.sourceUrl = url;
+      item.filename = filenameFromHeaders(res) || filename;
+      item.received = 0;
+      handOffToBrowser(item, "Safari is saving it");
+      return;
+    }
+
     if (item.size > LARGE_FILE_BYTES) {
       try {
         if (res.body) await res.body.cancel();
@@ -1410,6 +1421,13 @@
      is killed long before it finishes. Past this size the tunnel URL goes
      straight to the browser, which streams to disk and can resume. */
   const LARGE_FILE_BYTES = 200 * 1024 * 1024;
+
+  /* iOS has no "save this blob" affordance: a blob URL opens in a viewer and
+     the file never reaches Files. Handing the tunnel URL to Safari uses its
+     download manager instead. Share is different — that path needs the blob,
+     so it keeps the normal flow (with the size cap above). */
+  const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
   function handOffToBrowser(item, note) {
     item.blob = null;

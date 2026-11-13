@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mobile test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  #stage { display: block; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Phone-width regressions. Each width reloads the real site in an iframe sized
+  to that device and measures the things that actually break on iOS/Android:
+  horizontal overflow, fields that make iOS zoom, tap targets under 40px, and
+  the modal/sheet fitting the screen.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu \
+      "http://127.0.0.1:4331/tests/mobile.test.html?report=1"
+-->
+<iframe id="stage" src="../index.html" width="390" height="844"></iframe>
+<pre id="log">starting…</pre>
+
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitFor(fn, ms = 20000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(120);
+  }
+  return false;
+}
+
+const DEVICES = [
+  { name: "small android (320)", w: 320, h: 640 },
+  { name: "android (360)", w: 360, h: 800 },
+  { name: "iphone (390)", w: 390, h: 844 },
+  { name: "iphone max (430)", w: 430, h: 932 }
+];
+
+async function load(width, height) {
+  const frame = document.getElementById("stage");
+  frame.width = width;
+  frame.height = height;
+  frame.src = "../index.html?w=" + width + "&t=" + Date.now();
+  await waitFor(() => {
+    const d = frame.contentDocument;
+    return d && d.querySelector("#url-input") && frame.contentWindow.md;
+  }, 20000);
+  await sleep(250);
+  return frame;
+}
+
+async function main() {
+  for (const device of DEVICES) {
+    const frame = await load(device.w, device.h);
+    const doc = frame.contentDocument;
+    const win = frame.contentWindow;
+    const root = doc.documentElement;
+
+    const overflow = root.scrollWidth - win.innerWidth;
+    record(device.name + ": no sideways scroll", overflow <= 1, overflow + "px over");
+
+    // iOS zooms the page when a focused field is under 16px
+    const small = [...doc.querySelectorAll("input.text-input, select, #url-input")]
+      .filter((el) => el.offsetParent !== null)
+      .map((el) => ({ id: el.id || el.className, size: parseFloat(getComputedStyle(el).fontSize) }))
+      .filter((f) => f.size < 16);
+    record(device.name + ": fields are 16px (no iOS zoom)", small.length === 0,
+      small.length ? small.map((f) => f.id + "=" + f.size + "px").join(", ") : "ok");
+
+    // the composer must be reachable without pinch-zoom
+    const input = doc.querySelector("#url-input");
+    const rect = input.getBoundingClientRect();
+    record(device.name + ": the link field fits the screen",
+      rect.width > device.w * 0.5 && rect.right <= device.w + 1,
+      Math.round(rect.width) + "px wide");
+
+    // thumb targets
+    const tiny = [...doc.querySelectorAll(".icon-btn, .mode, .primary-btn")]
+      .filter((el) => el.offsetParent !== null)
+      .map((el) => {
+        const r = el.getBoundingClientRect();
+        return { id: el.id || el.className.split(" ")[0], w: Math.round(r.width), h: Math.round(r.height) };
+      })
+      .filter((t) => t.h < 34 || t.w < 30);
+    record(device.name + ": tap targets are big enough", tiny.length === 0,
+      tiny.length ? tiny.map((t) => t.id + " " + t.w + "x" + t.h).join(", ") : "ok");
+
+    // a real download row + the donate-style dialog must not overflow
+    win.md.state();
+    const sheet = doc.querySelector("#settings");
+    const openSettings = doc.querySelector("#open-settings");
+    openSettings.click();
+    await sleep(300);
+    const panel = doc.querySelector(".sheet-panel");
+    const pRect = panel.getBoundingClientRect();
+    record(device.name + ": settings sheet fits", pRect.width <= device.w + 1 && !sheet.hidden,
+      Math.round(pRect.width) + "px wide");
+    doc.querySelector("[data-close-settings]").click();
+    await sleep(200);
+
+    // the tool panels are the tallest content on the page
+    const tools = doc.querySelector("#nav-tools");
+    if (tools) {
+      tools.open = true;
+      await sleep(150);
+      const over2 = root.scrollWidth - win.innerWidth;
+      record(device.name + ": toolbar menu does not overflow", over2 <= 1, over2 + "px over");
+      tools.open = false;
+    }
+  }
+
+  // the three tool panels are the densest UI on the page
+  {
+    const frame = await load(320, 700);
+    const doc = frame.contentDocument;
+    const win = frame.contentWindow;
+    for (const [tool, view] of [["remux", "remux"], ["subtitles", "subs"], ["metadata", "clean"]]) {
+      const trigger = doc.querySelector('#nav-tools a[data-view="' + view + '"]');
+      if (!trigger) { record("tool " + tool + " at 320px: trigger exists", false, "missing"); continue; }
+      const menu = doc.querySelector("#nav-tools");
+      if (menu) menu.open = true;
+      await sleep(120);
+      trigger.click();
+      await sleep(350);
+      const over = doc.documentElement.scrollWidth - win.innerWidth;
+      record("tool " + tool + " at 320px: no sideways scroll", over <= 1, over + "px over");
+      const panel = doc.querySelector(".tool-panel:not([hidden]), .panel:not([hidden]), [id$='-view']:not([hidden])");
+      if (panel) {
+        const r = panel.getBoundingClientRect();
+        record("tool " + tool + " at 320px: panel fits", r.width <= win.innerWidth + 1, Math.round(r.width) + "px");
+      }
+      if (menu) menu.open = false;
+    }
+  }
+
+  // the other two pages ship to phones as well
+  for (const page of ["status.html", "terms.html"]) {
+    for (const width of [320, 390]) {
+      const frame = document.getElementById("stage");
+      frame.width = width;
+      frame.height = 700;
+      frame.src = "../" + page + "?t=" + Date.now();
+      await waitFor(() => frame.contentDocument && frame.contentDocument.readyState === "complete", 15000);
+      await sleep(300);
+      const doc = frame.contentDocument;
+      const over = doc.documentElement.scrollWidth - frame.contentWindow.innerWidth;
+      record(page + " at " + width + "px: no sideways scroll", over <= 1, over + "px over");
+    }
+  }
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 120000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

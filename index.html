@@ -25,6 +25,8 @@
 <meta name="twitter:description" content="A media downloader for video and audio, capped at 1440p and 30 minutes. Subtitle extractor, remux and metadata cleaner run in your browser — nothing is uploaded.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
+<!-- iOS ignores manifest icons and screenshots the page instead -->
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="mdown">
 <meta name="format-detection" content="telephone=no">
@@ -39,7 +41,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=35">
+<link rel="stylesheet" href="assets/app.css?v=41">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -873,7 +875,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=1" defer></script>
-<script src="assets/app.js?v=23" defer></script>
+<script src="assets/app.js?v=24" defer></script>
 <script type="module" src="assets/nav.js?v=8"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>
