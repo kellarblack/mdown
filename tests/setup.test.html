@@ -122,8 +122,6 @@ async function main() {
   await sleep(250);
   doc().querySelector('[data-section="instance"]').click();
   await sleep(200);
-  doc().querySelector("#open-health").click();
-  await sleep(100);
   const expectedHealth = win().md.settings().instance.replace(/\/+$/, "") + "/health";
   record("Connection links the instance's health",
     doc().querySelector("#open-health").getAttribute("href") === expectedHealth,

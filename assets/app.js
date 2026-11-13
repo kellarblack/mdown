@@ -1928,6 +1928,8 @@
       instanceInfo = { services: Array.isArray(cobalt.services) ? cobalt.services : [], version: cobalt.version || "" };
       if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
       const host = hostOf(base) || base;
+      // keep the Connection pane's health link pointing at the live instance
+      if (dom.openHealth) dom.openHealth.href = base.replace(/\/+$/, "") + "/health";
       const usingDefault = normalizeInstance(settings.instance) === normalizeInstance(DEFAULT_INSTANCE);
       const detail = base + (cobalt.version ? " · api " + cobalt.version : "");
       setInstancePill("ok", usingDefault ? "online" : host, detail);
