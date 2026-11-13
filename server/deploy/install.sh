@@ -165,6 +165,11 @@ echo "==> systemd"
 install -m 0644 "$SRC_DIR/deploy/mdown-api.service" /etc/systemd/system/mdown-api.service
 install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.service" /etc/systemd/system/mdown-ytdlp-update.service
 install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.timer" /etc/systemd/system/mdown-ytdlp-update.timer
+install -m 0644 "$SRC_DIR/deploy/mdown-health.service" /etc/systemd/system/mdown-health.service
+install -m 0644 "$SRC_DIR/deploy/mdown-health.timer" /etc/systemd/system/mdown-health.timer
+# systemd restarts a crashed process, not a wedged one: this restarts on a
+# failed /health, at most once every ten minutes
+install -m 0755 "$SRC_DIR/deploy/mdown-health.sh" /usr/local/sbin/mdown-health
 systemctl daemon-reload
 # enable on boot, then RESTART — `enable --now` is a no-op on a running service,
 # which means a redeploy would keep executing the old code
@@ -172,6 +177,7 @@ systemctl enable mdown-api.service >/dev/null 2>&1 || true
 systemctl restart mdown-api.service
 # keep yt-dlp current: a site change is the most common way this breaks
 systemctl enable --now mdown-ytdlp-update.timer
+systemctl enable --now mdown-health.timer
 sleep 1
 systemctl --no-pager --lines=5 status mdown-api.service || true
 systemctl --no-pager list-timers mdown-ytdlp-update.timer --all || true

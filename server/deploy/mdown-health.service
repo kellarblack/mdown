@@ -1,0 +1,7 @@
+[Unit]
+Description=mdown API health check
+After=mdown-api.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mdown-health
