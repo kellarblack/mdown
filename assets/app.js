@@ -764,7 +764,54 @@
     return true;
   }
 
-  function submitUrls(text, mode) {
+  const XL_BYTES = 250 * 1024 * 1024;
+
+  /* A 1.5 GB download on a phone plan should be a decision, not a surprise.
+     The estimate comes from the probe the preview already runs. */
+  function confirmLarge(entries) {
+    return new Promise((resolve) => {
+      const total = entries.reduce((sum, e) => sum + (e.bytes || 0), 0);
+      const wrap = el("div", { class: "confirm" });
+      wrap.appendChild(el("p", {
+        class: "confirm-lede",
+        text: entries.length === 1 ? "This one is big." : "These are big."
+      }));
+      const list = el("ul", { class: "confirm-list" });
+      entries.forEach((entry) => {
+        list.appendChild(el("li", {
+          text: (entry.title ? entry.title.slice(0, 54) + " — " : "") + "≈ " + formatBytes(entry.bytes)
+        }));
+      });
+      wrap.appendChild(list);
+      wrap.appendChild(el("p", {
+        class: "confirm-note",
+        text: "It will use ≈ " + formatBytes(total) + " of data and take longer on a slow connection. Cancel and pick a lower quality if that is not what you want."
+      }));
+
+      let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        closeModal();
+        resolve(value);
+      };
+      const cancel = el("button", { type: "button", class: "ghost-btn", text: "cancel" });
+      const go = el("button", { type: "button", class: "primary-btn", text: "download ≈ " + formatBytes(total) });
+      cancel.addEventListener("click", () => finish(false));
+      go.addEventListener("click", () => finish(true));
+      dom.modal.querySelectorAll("[data-close-modal]").forEach((node) => {
+        node.addEventListener("click", () => finish(false), { once: true });
+      });
+      dom.modal.addEventListener("click", (event) => {
+        if (event.target === dom.modal) finish(false);
+      }, { once: true });
+
+      openModal("That's a big file", wrap, [cancel, go]);
+      setTimeout(() => go.focus({ preventScroll: true }), 60);
+    });
+  }
+
+  async function submitUrls(text, mode) {
     const urls = parseUrls(text);
     if (!urls.length) {
       if (text.trim()) toast("That doesn't look like a link.", "warn");
@@ -797,6 +844,26 @@
     }
 
     const batch = fresh.slice(0, MAX_URLS_PER_SUBMIT);
+
+    /* measure before queueing, but only when the number is actually known */
+    const big = [];
+    batch.forEach((url) => {
+      const known = readProbe(probeKey(url, mode));
+      if (known && known.estimate && known.estimate.bytes >= XL_BYTES) {
+        big.push({ url, bytes: known.estimate.bytes, title: known.title });
+      }
+    });
+    if (!big.length && batch.length === 1 && probeSupported()) {
+      const data = await fetchProbe(batch[0], mode).catch(() => null);
+      if (data && data.estimate && data.estimate.bytes >= XL_BYTES) {
+        big.push({ url: batch[0], bytes: data.estimate.bytes, title: data.title });
+      }
+    }
+    if (big.length) {
+      const proceed = await confirmLarge(big);
+      if (!proceed) return;   /* the field keeps what they pasted */
+    }
+
     batch.forEach((url) => {
       enqueue(url, mode);
       addHistory(url);
@@ -1980,24 +2047,39 @@
     if (!key) return "";
     try {
       const loaded = await loadTurnstile();
-      if (!loaded) return "";
+      if (!loaded || !window.turnstile) return "";
+
+      /* the widget must be able to lay itself out: a display:none container
+         never completes the challenge, which is exactly how the check looked
+         broken while the server side was fine */
+      await new Promise((resolve) => {
+        let done = false;
+        const ready = () => { if (!done) { done = true; resolve(); } };
+        setTimeout(ready, 1500);
+        if (typeof window.turnstile.ready === "function") window.turnstile.ready(ready);
+        else ready();
+      });
+
       if (!turnstileWidget) {
         const holder = document.createElement("div");
-        holder.hidden = true;
         holder.id = "turnstile-holder";
+        holder.style.cssText = [
+          "position:fixed", "bottom:14px", "right:14px", "z-index:90",
+          "width:300px", "height:70px", "opacity:0", "pointer-events:none"
+        ].join(";");
         document.body.appendChild(holder);
-        // current Turnstile has no "invisible" size: the widget stays out of
-        // the way until it is executed, and only shows itself if it must ask
         turnstileWidget = window.turnstile.render(holder, {
           sitekey: key,
           appearance: "interaction-only",
           execution: "execute",
           callback: (token) => { turnstileToken = token; },
-          "error-callback": () => { turnstileToken = ""; }
+          "error-callback": () => { turnstileToken = ""; },
+          "expired-callback": () => { turnstileToken = ""; }
         });
       }
+
       turnstileToken = "";
-      window.turnstile.execute(turnstileWidget);
+      try { window.turnstile.execute(turnstileWidget); } catch (e) { /* retried below */ }
       for (let i = 0; i < 200 && !turnstileToken; i += 1) {
         await new Promise((r) => setTimeout(r, 50));
       }
@@ -2009,6 +2091,7 @@
       return "";
     }
   }
+
 
   /* ----------------------------------------------------------
      probe: what the file will be, before fetching it

@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import re
+import socket
 import socketserver
 import threading
 import time
@@ -38,7 +39,7 @@ from .security import header_safe, validate_url
 log = logging.getLogger("mdown.api")
 
 MAX_BODY = 16 * 1024
-CHUNK = 64 * 1024
+CHUNK = 256 * 1024
 
 _RANGE_INVALID = object()
 
@@ -399,6 +400,11 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
+        try:
+            self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError:
+            pass
+
         start, end = span if span is not None else (0, size - 1)
         length = end - start + 1
         partial = span is not None
@@ -419,15 +425,23 @@ class Handler(BaseHTTPRequestHandler):
             if self.command == "HEAD":
                 return
 
-            if start:
-                handle.seek(start)
-            remaining = length
-            while remaining > 0:
-                chunk = handle.read(min(CHUNK, remaining))
-                if not chunk:
-                    break
-                self.wfile.write(chunk)
-                remaining -= len(chunk)
+            # the socket is loopback into Caddy: small writes there are pure
+            # overhead, and sendfile moves the file without a Python copy
+            self.wfile.flush()
+            sent = 0
+            try:
+                sent = os.sendfile(self.connection.fileno(), handle.fileno(), start, length)
+            except (OSError, AttributeError):
+                sent = 0
+            remaining = length - sent
+            if remaining > 0:
+                handle.seek(start + sent)
+                while remaining > 0:
+                    chunk = handle.read(min(CHUNK, remaining))
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    remaining -= len(chunk)
 
         self.jobs.mark_served(token)
 
