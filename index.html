@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=77">
+<link rel="stylesheet" href="assets/app.css?v=78">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -277,8 +277,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
           </button>
           <p class="hint" id="composer-hint"></p>
-          <button type="submit" class="primary-btn" id="fetch-btn">
-            <span>fetch</span>
+          <button type="submit" class="primary-btn" id="fetch-btn" data-armed="false" aria-label="paste a link first">
+            <span class="fetch-word">fetch</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>
           </button>
         </div>
@@ -915,8 +915,8 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=43" defer></script>
-<script type="module" src="assets/nav.js?v=8"></script>
+<script src="assets/app.js?v=44" defer></script>
+<script type="module" src="assets/nav.js?v=9"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>
 </body>

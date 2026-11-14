@@ -166,6 +166,8 @@
   let active = 0;
   let rateRemaining = null;
   let instanceInfo = null;
+  let lastService = null;
+  let queueTicker = null;
   let idCounter = 0;
 
   /* ----------------------------------------------------------
@@ -468,6 +470,27 @@
     const detected = first ? detectService(first) : null;
     const service = detected && detected.id ? detected.id : null;
 
+    /* the arrow stays quiet until there is something to fetch. it never
+       appears or disappears, only arms, so the footer does not move */
+    const armed = urls.length >= 1;
+    if (dom.fetchBtn) {
+      if (dom.fetchBtn.dataset.armed !== String(armed)) {
+        dom.fetchBtn.dataset.armed = armed ? "true" : "false";
+        dom.fetchBtn.setAttribute("aria-label", armed ? "fetch" : "paste a link first");
+      }
+    }
+    if (service && service !== lastService && dom.serviceMark) {
+      lastService = service;
+      if (typeof dom.serviceMark.animate === "function") {
+        dom.serviceMark.animate(
+          [{ transform: "scale(.72)", opacity: 0.35 }, { transform: "none", opacity: 1 }],
+          { duration: 220, easing: "cubic-bezier(.22,.8,.3,1)" }
+        );
+      }
+    } else if (!service) {
+      lastService = null;
+    }
+
     dom.badge.dataset.empty = service ? "false" : "true";
     if (dom.serviceMark) {
       const mark = markForService(service);
@@ -756,6 +779,7 @@
       blob: null,
       controller: null,
       running: false,
+      started: 0,
       node: null,
       thumb: "",
       estimate: null,
@@ -922,6 +946,9 @@
       parts.push("• " + item.error);
     } else if (item.detail) {
       parts.push(item.detail);
+      if (item.started && (item.status === "working" || item.status === "downloading")) {
+        parts.push(Math.max(1, Math.round((Date.now() - item.started) / 1000)) + "s");
+      }
       const estimate = item.estimate;
       if (estimate && estimate.bytes && !item.size) {
         parts.push((estimate.exact ? "~" : "≈") + " " + formatBytes(estimate.bytes));
@@ -992,7 +1019,7 @@
 
     let pct = item.size ? Math.min(100, (item.received / item.size) * 100) : 0;
     if (item.status === "done" || item.status === "ready") pct = 100;
-    fill.style.width = pct + "%";
+    fill.style.transform = "scaleX(" + (pct / 100).toFixed(4) + ")";
 
     const actionsKey = item.status + "|" + item.error + "|" + (item.blob ? "blob" : "noblob") + (item.sourceUrl ? "|src" : "");
     if (item.refs.actionsKey !== actionsKey) {
@@ -1079,15 +1106,42 @@
   let lastQueueCount = 0;
   let dockOpen = false;
 
+  let dockTimer = null;
+
   function setDock(open) {
     if (!dom.queueDock || !dom.queuePanel) return;
     dockOpen = open;
-    dom.queuePanel.hidden = !open;
+    clearTimeout(dockTimer);
+    if (open) {
+      dom.queuePanel.hidden = false;
+      dom.queuePanel.classList.remove("is-closing");
+    } else if (!dom.queuePanel.hidden) {
+      dom.queuePanel.classList.add("is-closing");
+      dockTimer = setTimeout(() => {
+        dom.queuePanel.hidden = true;
+        dom.queuePanel.classList.remove("is-closing");
+      }, 120);
+    }
     dom.queueToggle.setAttribute("aria-expanded", open ? "true" : "false");
     dom.queueDock.classList.toggle("is-open", open);
   }
 
+  function ensureTicker() {
+    const active = queue.some((i) => i.status === "working" || i.status === "downloading");
+    if (active && !queueTicker) {
+      queueTicker = setInterval(() => {
+        queue.forEach((item) => {
+          if (item.status === "working" || item.status === "downloading") updateItem(item);
+        });
+      }, 1000);
+    } else if (!active && queueTicker) {
+      clearInterval(queueTicker);
+      queueTicker = null;
+    }
+  }
+
   function updateQueueMeta() {
+    ensureTicker();
     const count = queue.length;
     const active = queue.filter((i) => ["queued", "working", "downloading"].includes(i.status)).length;
 
@@ -1176,6 +1230,7 @@
 
     if (item.direct) {
       try {
+        if (!item.started) item.started = Date.now();
         setStatus(item, "working", "starting transfer");
         await downloadTunnel(item, item.directUrl, item.filename || guessFilename(item.url, item.mode));
       } catch (err) {
@@ -1190,6 +1245,7 @@
       return;
     }
 
+    if (!item.started) item.started = Date.now();
     setStatus(item, "working", "requesting");
 
     try {

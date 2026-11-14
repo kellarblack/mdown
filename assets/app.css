@@ -343,6 +343,22 @@ a.ghost-btn { text-decoration: none; }
 .primary-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .primary-btn[data-busy="true"] svg { animation: spin 900ms linear infinite; }
 
+/* On a desktop the fetch button is an arrow, not a word: 34px, no label, and
+   quiet until the field holds a link. It arms rather than appearing, so the
+   footer never shifts by a pixel. */
+#fetch-btn {
+  width: 34px; padding: 0; justify-content: center;
+  transition: background var(--speed), color var(--speed),
+              border-color var(--speed), filter var(--speed), transform var(--speed);
+}
+#fetch-btn .fetch-word { display: none; }
+#fetch-btn[data-armed="false"] {
+  background: transparent; color: var(--text-3); border-color: var(--stroke);
+}
+#fetch-btn[data-armed="false"]:hover { background: var(--surface); color: var(--text-2); }
+#fetch-btn[data-armed="false"] svg { opacity: 0.7; }
+#fetch-btn[data-armed="true"] svg { opacity: 1; }
+
 .setup-note {
   margin: 0; padding: 10px 12px 11px;
   border-top: 1px solid var(--stroke);
@@ -426,18 +442,28 @@ a.ghost-btn { text-decoration: none; }
 .q-actions .icon-btn svg { width: 13px; height: 13px; }
 
 .q-progress {
-  grid-column: 1 / -1; height: 2px; border-radius: 0;
-  background: var(--surface-2); overflow: hidden; margin-top: 2px;
+  grid-column: 1 / -1; height: 3px; border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden; margin-top: 3px;
   display: none;
 }
 .qitem[data-status="working"] .q-progress,
 .qitem[data-status="downloading"] .q-progress { display: block; }
 .q-progress-fill {
-  height: 100%; width: 0%;
-  background: var(--text);
-  transition: width 160ms linear;
+  height: 100%; width: 100%; border-radius: inherit;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--text) 55%, transparent), var(--text));
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.qitem[data-indeterminate="true"] .q-progress-fill { width: 30% !important; animation: slide 1.5s var(--ease) infinite; }
+.qitem[data-indeterminate="true"] .q-progress-fill {
+  animation: glide 1.35s var(--ease) infinite;
+  opacity: 0.6;
+}
+@keyframes glide {
+  from { transform: translateX(-130%) scaleX(0.34); }
+  to   { transform: translateX(360%) scaleX(0.34); }
+}
 
 .spinner {
   width: 12px; height: 12px; border-radius: 50%;
@@ -838,6 +864,12 @@ a.ghost-btn { text-decoration: none; }
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes drop-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+.nav-menu.is-closing { animation: drop-out 120ms var(--ease) both; }
+.dock-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
 @keyframes slide-in { from { transform: translateX(20px); } to { transform: none; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
@@ -918,6 +950,8 @@ a.ghost-btn { text-decoration: none; }
   .composer-cta .format-note { margin-right: auto; }
   .composer-cta .hint { order: 4; width: 100%; max-width: none; text-align: left; font-size: 0.72rem; }
   .composer-cta .primary-btn { order: 5; flex: 1 1 100%; height: 48px; font-size: 0.88rem; }
+  .composer-cta #fetch-btn { width: 100%; padding: 0 14px; gap: 8px; }
+  .composer-cta #fetch-btn .fetch-word { display: inline; }
   .composer-cta .ghost-btn { height: 48px; }
   #tune-mode { width: 40px; height: 40px; }
   .chip, .link-btn { min-height: 32px; display: inline-flex; align-items: center; }

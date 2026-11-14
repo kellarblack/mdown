@@ -75,6 +75,7 @@ function apply() {
 }
 
 const toolsMenu = document.querySelector("#nav-tools");
+let toolsTimer = null;
 
 function syncToolsMenu() {
   if (!toolsMenu) return;
@@ -82,16 +83,44 @@ function syncToolsMenu() {
   if (summary) summary.setAttribute("aria-expanded", toolsMenu.open ? "true" : "false");
 }
 
+/* <details> hides its content the instant it closes, so the exit runs first and
+   the element is removed 120ms later. Opening is native: the menu mounts and
+   its drop-in animation plays. */
+function closeTools(restoreFocus) {
+  if (!toolsMenu || !toolsMenu.open) return;
+  const menu = toolsMenu.querySelector(".nav-menu");
+  const summary = toolsMenu.querySelector("summary");
+  if (menu) menu.classList.add("is-closing");
+  clearTimeout(toolsTimer);
+  toolsTimer = setTimeout(() => {
+    toolsMenu.open = false;
+    if (menu) menu.classList.remove("is-closing");
+    syncToolsMenu();
+    if (restoreFocus && summary) summary.focus();
+  }, 120);
+  if (summary) summary.setAttribute("aria-expanded", "false");
+}
+
 if (toolsMenu) {
+  const summary = toolsMenu.querySelector("summary");
+  if (summary) {
+    summary.addEventListener("click", (event) => {
+      event.preventDefault();
+      clearTimeout(toolsTimer);
+      const menu = toolsMenu.querySelector(".nav-menu");
+      if (menu) menu.classList.remove("is-closing");
+      if (toolsMenu.open) closeTools(false);
+      else {
+        toolsMenu.open = true;
+        syncToolsMenu();
+      }
+    });
+  }
   toolsMenu.addEventListener("toggle", syncToolsMenu);
   syncToolsMenu();
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && toolsMenu.open) {
-      toolsMenu.open = false;
-      const summary = toolsMenu.querySelector("summary");
-      if (summary) summary.focus();
-    }
+    if (event.key === "Escape" && toolsMenu.open) closeTools(true);
   });
 }
 
@@ -104,8 +133,8 @@ document.addEventListener("click", (event) => {
   const menu = document.querySelector("#nav-tools");
   if (!menu || !menu.open) return;
   if (menu.contains(event.target) && event.target.closest(".nav-menu a")) {
-    menu.open = false;
+    closeTools(false);
   } else if (!menu.contains(event.target)) {
-    menu.open = false;
+    closeTools(false);
   }
 });

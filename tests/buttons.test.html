@@ -66,6 +66,30 @@ async function main() {
     doc.activeElement && doc.activeElement.id === "url-input",
     (doc.activeElement && (doc.activeElement.id || doc.activeElement.tagName)) || "none");
 
+  const fetchBtn = doc.querySelector("#fetch-btn");
+  record("the fetch control is quiet before a link",
+    !!fetchBtn && fetchBtn.dataset.armed === "false",
+    fetchBtn ? fetchBtn.dataset.armed : "missing");
+
+  const field = doc.querySelector("#url-input");
+  const setField = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, "value").set;
+  setField.call(field, "https://youtu.be/armedcheck");
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+  await sleep(120);
+  record("pasting a link arms it",
+    fetchBtn.dataset.armed === "true" && fetchBtn.getAttribute("aria-label") === "fetch",
+    fetchBtn.dataset.armed + " · " + fetchBtn.getAttribute("aria-label"));
+
+  // the phone keeps a full-width target; a desktop gets the small arrow
+  frame.style.width = "900px";
+  await sleep(250);
+  const arrow = fetchBtn.getBoundingClientRect();
+  record("on a desktop it shrinks to an arrow",
+    arrow.width <= 40 && arrow.height <= 40,
+    Math.round(arrow.width) + "x" + Math.round(arrow.height));
+  frame.style.width = "390px";
+  await sleep(150);
+
   // click every one, re-reading the list because panels come and go
   let clicked = 0;
   for (let i = 0; i < buttons.length; i++) {

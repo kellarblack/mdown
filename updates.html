@@ -28,7 +28,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=77">
+<link rel="stylesheet" href="assets/app.css?v=78">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -81,6 +81,9 @@
       <div class="cl-body">
         <h2>Phones, properly</h2>
         <ul>
+          <li>There is no fetch button on a desktop any more — there is a small arrow that lights up the moment the field holds a link, and stays quiet otherwise. The service mark pops in when a link is recognised. On a phone the full-width target stays, because a thumb needs one.</li>
+          <li>The download bar is a 3px hairline that glides on the compositor instead of a block that jumps, and a waiting job counts its own seconds so it never looks stuck.</li>
+          <li>A dropdown now leaves as cleanly as it arrives: tools, downloads and sources all play a 4px, 120ms exit before they disappear, instead of vanishing under the pointer.</li>
           <li>Paste a link and the field now tells you what you are about to get: a size estimate, the running time, the resolution and a thumbnail, before anything is fetched. It folds away when the field is empty, so the composer never moves.</li>
           <li>The queue uses that picture too — the row shows the thumbnail and the estimated size while the download is still running, instead of a generic glyph and the word "requesting".</li>
           <li>Cover art is a setting: embed the thumbnail in mp3, ogg and opus files, or leave the file clean. <code>source</code> and wav are never touched.</li>

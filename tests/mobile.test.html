@@ -197,10 +197,14 @@ async function main() {
       return items.length && items[items.length - 1].status === "downloading";
     }, 10000);
     const fill = doc.querySelector(".qitem .q-progress-fill");
-    const before = fill ? parseFloat(fill.style.width || "0") : 0;
+    const scaleOf = (el) => {
+      const m = /scaleX\(([\d.]+)\)/.exec((el && el.style.transform) || "");
+      return m ? parseFloat(m[1]) * 100 : 0;
+    };
+    const before = scaleOf(fill);
     await sleep(500);
-    const after = fill ? parseFloat(fill.style.width || "0") : 0;
-    record("the progress bar advances", after > before, before + "% -> " + after + "%");
+    const after = scaleOf(fill);
+    record("the progress bar advances", after > before, before.toFixed(1) + "% -> " + after.toFixed(1) + "%");
 
     // the panel itself must fit on the narrowest phone
     const panel = doc.querySelector("#queue-panel");
