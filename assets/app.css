@@ -149,7 +149,6 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .brand:hover .brand-mark svg,
 .brand:focus-visible .brand-mark svg {
   animation: mark-in 520ms var(--ease) both;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 55%, transparent));
 }
 .brand:active .brand-mark svg { transform: translateY(1px); }
 .brand-text {
@@ -326,7 +325,6 @@ a.ghost-btn { text-decoration: none; }
 .hint[data-tone="err"] { color: var(--err); }
 
 .primary-btn {
-  position: relative; overflow: hidden;
   display: inline-flex; align-items: center; gap: 7px;
   height: 32px; padding: 0 14px; border-radius: var(--r-sm);
   background: var(--btn); color: var(--accent-ink);
@@ -335,16 +333,9 @@ a.ghost-btn { text-decoration: none; }
   transition: filter var(--speed), transform var(--speed);
 }
 .primary-btn svg { width: 13px; height: 13px; transition: transform var(--speed) var(--ease); }
-.primary-btn::after {
-  content: ""; position: absolute; top: 0; bottom: 0; width: 60%;
-  background: linear-gradient(100deg, transparent, rgba(0, 0, 0, 0.055), transparent);
-  transform: translateX(-140%); pointer-events: none;
-}
-.primary-btn:hover::after { animation: btn-sheen 520ms ease-out; }
-.primary-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28); }
+.primary-btn:hover { filter: brightness(1.06); }
 .primary-btn:hover svg { transform: translateX(2px); }
-.primary-btn:active { transform: translateY(0) scale(0.995); }
-@keyframes btn-sheen { to { transform: translateX(240%); } }
+.primary-btn:active { filter: brightness(0.96); }
 .primary-btn:hover { background: var(--btn-hover); }
 .primary-btn:hover svg { transform: translateX(2px); }
 .primary-btn:active { transform: translateY(1px); }
