@@ -2,6 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
+<style>html{background:#0a0a0b}html[data-theme="light"]{background:#fff}[hidden]{display:none!important}</style>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -37,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=107">
+<link rel="stylesheet" href="assets/app.css?v=112">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -280,6 +281,43 @@
     stampEl.textContent = "checked " + new Date().toLocaleTimeString();
   }
 
+  /* The server keeps one sample a minute in daily buckets; this is the real
+     number, not one browser's memory of its own checks. */
+  async function renderServerUptime(base) {
+    try {
+      const res = await fetch(base + "/uptime", { headers: { Accept: "application/json" }, cache: "no-store" });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data || !Array.isArray(data.days) || !data.days.length) return false;
+      const wrap = $("#uptime");
+      const strip = $("#uptime-strip");
+      wrap.hidden = false;
+      strip.innerHTML = "";
+      data.days.forEach((day, i) => {
+        const bar = document.createElement("span");
+        bar.className = "uptime-bar";
+        const pct = day.total ? day.up / day.total : null;
+        bar.dataset.ok = pct === null ? "unknown" : (pct >= 0.99 ? "true" : "false");
+        bar.title = pct === null
+          ? day.date + " · no checks"
+          : day.date + " · " + Math.round(pct * 1000) / 10 + "% of " + day.total + " checks";
+        if (!CALM) {
+          bar.animate(
+            [{ transform: "scaleY(0.2)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
+            { duration: 260, delay: Math.min(i, 10) * 12, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
+          );
+        }
+        strip.appendChild(bar);
+      });
+      const pctEl = $("#uptime-pct");
+      pctEl.textContent = data.uptime === null ? "—" : data.uptime.toFixed(1) + "% up";
+      $("#uptime-meta").textContent = "· " + data.checks + " checks over 30 days, measured by the server";
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   async function check() {
     const base = apiBase();
     stampEl.textContent = "";
@@ -374,6 +412,7 @@
     last = { api: base, state: healthy ? "up" : "degraded", status: response.status, ms, checks, body };
     stamp();
     renderHistory(pushHistory(healthy));
+    renderServerUptime(base);
   }
 
   function reportText() {

@@ -395,6 +395,11 @@
     queueBadge: $("#queue-badge"),
     queueCount: $("#queue-count"),
     queueStats: $("#queue-stats"),
+    queueClose: $("#queue-close"),
+    miniDock: $("#mini-dock"),
+    miniTitle: $("#mini-title"),
+    miniMeta: $("#mini-meta"),
+    miniFill: $("#mini-fill"),
     emptyState: $("#empty-state"),
     clearFinished: $("#clear-finished"),
     servicesCard: $("#services-card"),
@@ -1194,6 +1199,13 @@
     let pct = item.size ? Math.min(100, (item.received / item.size) * 100) : 0;
     if (item.status === "done" || item.status === "ready") pct = 100;
     fill.style.transform = "scaleX(" + (pct / 100).toFixed(4) + ")";
+    if (dom.miniDock && !dom.miniDock.hidden && item === queue.find((i) => ["downloading", "working", "queued"].includes(i.status))) {
+      const shown = item.size ? Math.min(100, Math.round((item.received / item.size) * 100)) : 0;
+      dom.miniMeta.textContent = item.size
+        ? formatBytes(item.received) + " / " + formatBytes(item.size) + " · " + shown + "%"
+        : (item.detail || "starting");
+      dom.miniFill.style.transform = "scaleX(" + (item.size ? shown / 100 : 0.12) + ")";
+    }
 
     const actionsKey = item.status + "|" + item.error + "|" + (item.blob ? "blob" : "noblob") + (item.sourceUrl ? "|src" : "");
     if (item.refs.actionsKey !== actionsKey) {
@@ -1329,13 +1341,33 @@
     // Any screen: a download with no visible feedback reads as a broken button.
     // Opening on every *new* item (not just the first) matters because clicking
     // fetch counts as an outside click, which closes the dock first.
-    if (count > lastQueueCount && !dockOpen) setDock(true);
+    /* a new job opens the panel on a desktop, where it is a corner panel.
+       On a phone it would cover the composer, so the mini bar tells the
+       story and the full list is one tap away. */
+    const wide = !window.matchMedia("(max-width: 720px)").matches;
+    if (count > lastQueueCount && !dockOpen && wide) setDock(true);
     lastQueueCount = count;
 
     dom.queueCount.textContent = String(count);
     dom.queueCount.hidden = count === 0;
     dom.emptyState.hidden = count > 0;
     dom.clearFinished.hidden = !queue.some((i) => ["done", "error", "cancelled"].includes(i.status));
+
+    const live = queue.find((i) => ["downloading", "working", "queued"].includes(i.status));
+    if (dom.miniDock) {
+      const show = !!live && !dockOpen;
+      dom.miniDock.hidden = !show;
+      if (show) {
+        const pct = live.size ? Math.min(100, Math.round((live.received / live.size) * 100)) : 0;
+        const title = live.filename || live.previewTitle || live.host || "download";
+        dom.miniTitle.textContent = title.length > 34 ? title.slice(0, 33) + "…" : title;
+        dom.miniMeta.textContent = live.size
+          ? formatBytes(live.received) + " / " + formatBytes(live.size) + " · " + pct + "%"
+          : (live.detail || "starting");
+        dom.miniFill.style.transform = "scaleX(" + (live.size ? pct / 100 : 0.12) + ")";
+        dom.miniDock.dataset.live = live.size ? "true" : "false";
+      }
+    }
 
     const saved = queue.filter((i) => i.status === "done");
     const bytes = saved.reduce((total, i) => total + (i.size || 0), 0);
@@ -3079,6 +3111,7 @@
       closeHealthPop();
     });
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && dockOpen) setDock(false);
       if (event.key === "Escape" && healthOpen) {
         closeHealthPop();
         dom.instancePill.focus();
@@ -3241,6 +3274,12 @@
     });
 
     dom.clearFinished.addEventListener("click", clearFinished);
+
+    if (dom.queueClose) dom.queueClose.addEventListener("click", () => setDock(false));
+    if (dom.miniDock) dom.miniDock.addEventListener("click", (event) => {
+      event.stopPropagation();
+      setDock(true);
+    });
 
     if (dom.queueToggle) {
       dom.queueToggle.addEventListener("click", (event) => {

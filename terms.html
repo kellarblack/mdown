@@ -2,6 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
+<style>html{background:#0a0a0b}html[data-theme="light"]{background:#fff}[hidden]{display:none!important}</style>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -37,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=107">
+<link rel="stylesheet" href="assets/app.css?v=112">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -95,6 +96,7 @@
 
     <h2>4. The API</h2>
     <p>mdown.cc talks to one server, and that server is sized for this page. It checks where requests come from, rate-limits by address, and has a finite daily budget. Pointing another app, bot or reseller at it is not permitted and will be blocked without notice.</p>
+    <p>the full policy, with the numbers, is at <a href="api.html">api.html</a> (also as a <a href="assets/api-policy.pdf" download>pdf</a>).</p>
     <p>The protocol is open and the server code is in the same MIT repository. If you need an API, run your own — that is the intended path, and it costs less than a coffee a month.</p>
 
     <h2>5. No warranty</h2>

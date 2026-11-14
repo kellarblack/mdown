@@ -2,6 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
+<style>html{background:#0a0a0b}html[data-theme="light"]{background:#fff}[hidden]{display:none!important}</style>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -46,7 +47,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=107">
+<link rel="stylesheet" href="assets/app.css?v=112">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -177,6 +178,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#url-input">skip to the link field</a>
+
 <div class="backdrop" aria-hidden="true">
   <div class="glow glow-a"></div>
   <div class="glow glow-b"></div>
@@ -237,6 +240,9 @@
           <span class="section-actions">
             <span class="qstats" id="queue-stats"></span>
             <button type="button" class="ghost-btn small" id="clear-finished" hidden>clear finished</button>
+            <button type="button" class="icon-btn" id="queue-close" aria-label="close downloads" title="close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
           </span>
         </div>
         <div class="queue-list" id="queue-list"></div>
@@ -318,7 +324,7 @@
           <button type="button" class="icon-btn tune" id="tune-mode" title="format settings" aria-label="format settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
           </button>
-          <p class="hint" id="composer-hint"></p>
+          <p class="hint" id="composer-hint" role="status" aria-live="polite"></p>
           <button type="submit" class="primary-btn" id="fetch-btn" data-armed="false" aria-label="paste a link first">
             <span class="fetch-word">fetch</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>
@@ -369,13 +375,13 @@
   <nav class="tool-strip" aria-label="Tools that run in your browser">
     <a class="tool-card" href="#remux" data-view="remux">
       <span class="tool-card-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 9h10M7 15h6"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7.5 9.5h4a2 2 0 0 1 0 4h-4"/><path d="m9 11.5-2 2 2 2"/><path d="M16.5 14.5h-4a2 2 0 0 1 0-4h4"/><path d="m15 8.5 2 2-2 2"/></svg>
       </span>
       <span class="tool-card-body"><b>remux</b><span>new container, no re-encode</span></span>
     </a>
     <a class="tool-card" href="#subs" data-view="subs">
       <span class="tool-card-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 11h4M13 11h4M7 15h7"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z"/><path d="M8 10h8M8 13.5h5"/></svg>
       </span>
       <span class="tool-card-body"><b>subtitles</b><span>pull the SRT out of a file</span></span>
     </a>
@@ -395,7 +401,7 @@
 </main>
 
 <main class="wrap" data-view-panel="remux" id="remux-view" hidden>
-  <h1 class="page-h1">Remux</h1>
+  <h2 class="page-h1">Remux</h2>
   <p class="page-lede">Repackage a file without touching the encoded audio or video. Use it when a player refuses to open something, seeking is broken, or you need a different container.</p>
 
   <section class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose or drop media files">
@@ -453,7 +459,7 @@
 </main>
 
 <main class="wrap" data-view-panel="subs" hidden>
-  <h1 class="page-h1">Subtitles</h1>
+  <h2 class="page-h1">Subtitles</h2>
   <p class="page-lede">Pull the subtitle tracks out of a video as separate <code>.srt</code> files. Text tracks convert cleanly; image-based ones (PGS, VobSub) can't be turned into text without OCR. The <code>.cc</code> in the domain is for closed captions — this is that tool.</p>
 
   <section class="dropzone" id="subs-drop" tabindex="0" role="button" aria-label="Choose a video file">
@@ -478,7 +484,7 @@
 </main>
 
 <main class="wrap" data-view-panel="clean" hidden>
-  <h1 class="page-h1">Metadata</h1>
+  <h2 class="page-h1">Metadata</h2>
   <p class="page-lede">Remove titles, comments, creation dates and location tags from a file. The audio and video are copied untouched, so nothing is re-encoded.</p>
 
   <section class="dropzone" id="clean-drop" tabindex="0" role="button" aria-label="Choose a media file">
@@ -519,7 +525,7 @@
     <header class="sheet-head">
       <div>
         <h2 id="settings-title">Settings</h2>
-        <p class="sheet-sub">Stored locally. Applied to every request.</p>
+        <p class="sheet-sub">Stored in this browser only.</p>
       </div>
       <button type="button" class="icon-btn" data-close-settings aria-label="Close settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
@@ -945,6 +951,16 @@
   </div>
 </noscript>
 
+<button type="button" class="mini-dock" id="mini-dock" hidden aria-label="open downloads">
+  <span class="mini-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg>
+  </span>
+  <span class="mini-body">
+    <span class="mini-line"><b id="mini-title">downloading</b><span id="mini-meta"></span></span>
+    <span class="mini-track"><span id="mini-fill"></span></span>
+  </span>
+</button>
+
 <nav class="mobile-bar" aria-label="Quick actions">
   <button type="button" class="mbar-item" id="mbar-queue">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg>
@@ -967,7 +983,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=65" defer></script>
+<script src="assets/app.js?v=67" defer></script>
 <script type="module" src="assets/nav.js?v=10"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

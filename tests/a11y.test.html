@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>a11y test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 800px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Accessibility is a feature, not a badge. One h1, a skip link, announced
+  hints, and small text that a person can actually read.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/a11y.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+function luminance(rgb) {
+  const [r, g, b] = rgb.map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+function contrast(fg, bg) {
+  const a = luminance(fg), b = luminance(bg);
+  const hi = Math.max(a, b), lo = Math.min(a, b);
+  return (hi + 0.05) / (lo + 0.05);
+}
+function rgb(str) {
+  const m = str.match(/\d+/g);
+  return m ? m.slice(0, 3).map(Number) : [0, 0, 0];
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  frame.src = "../index.html?a11y=" + Date.now();
+  const booted = await waitFor(() => frame.contentDocument && frame.contentDocument.querySelector("#url-input"), 20000);
+  record("the page loads", booted);
+  if (!booted) { window.__results = { total: results.length, failures, results }; return; }
+
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  await sleep(600);
+
+  record("exactly one h1 on the page", doc.querySelectorAll("h1").length === 1,
+    [...doc.querySelectorAll("h1")].map((h) => h.textContent.trim()).join(" | "));
+
+  const skip = doc.querySelector(".skip-link");
+  record("a skip link jumps to the field",
+    !!skip && skip.getAttribute("href") === "#url-input", skip ? skip.getAttribute("href") : "missing");
+
+  const hint = doc.querySelector("#composer-hint");
+  record("hints are announced to screen readers",
+    hint.getAttribute("role") === "status" && hint.getAttribute("aria-live") === "polite",
+    hint.getAttribute("role") + "/" + hint.getAttribute("aria-live"));
+
+  const size = parseFloat(win.getComputedStyle(hint).fontSize);
+  record("hint text is at least 13px", size >= 13, size + "px");
+
+  const fg = rgb(win.getComputedStyle(hint).color);
+  const bg = rgb(win.getComputedStyle(doc.body).backgroundColor);
+  const ratio = contrast(fg, bg);
+  record("hint contrast passes AA", ratio >= 4.5, ratio.toFixed(2) + ":1");
+
+  const icons = [...doc.querySelectorAll(".tool-card-icon svg")].map((s) => s.innerHTML);
+  record("tools have different icons", new Set(icons).size === icons.length,
+    icons.length + " icons, " + new Set(icons).size + " unique");
+
+  record("the settings subtitle says where it lives",
+    /browser only/i.test(doc.body.textContent), "stored in this browser only");
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<style>html{background:#0a0a0b}html[data-theme="light"]{background:#fff}[hidden]{display:none!important}</style>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>API use — mdown.cc</title>
+<meta name="description" content="api.mdown.cc is one small server for this page. Who may call it, what the limits are, and how to run your own.">
+<link rel="canonical" href="https://mdown.cc/api.html">
+<meta name="robots" content="index, follow">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a0a0b">
+<link rel="stylesheet" href="assets/app.css?v=112">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="./" aria-label="mdown home">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+      </svg>
+    </span>
+    <span class="brand-text">mdown<span class="brand-dot">.</span><span class="brand-sub">cc</span></span>
+  </a>
+</header>
+
+<main class="wrap">
+  <h1 class="page-h1">API use</h1>
+  <p class="page-lede">api.mdown.cc is one small server, run for this page. Not a public API.</p>
+
+  <section class="terms">
+    <h2>what it is for</h2>
+    <p>the mdown.cc page. that is the whole client. one person, at human speed.</p>
+
+    <h2>what it is not</h2>
+    <ul>
+      <li>not a public API. there is no key, no quota and no contract.</li>
+      <li>not for other apps, bots, scrapers, resale, or "unlimited downloader" sites.</li>
+      <li>not an endpoint to be indexed, mirrored or pointed at in bulk.</li>
+    </ul>
+
+    <h2>limits, enforced</h2>
+    <ul>
+      <li>2 downloads at once, 6 waiting.</li>
+      <li>30 requests per minute, 60 downloads per 5 minutes, 500 jobs per day, per address.</li>
+      <li>2 GB per file, 30 minutes, up to 8K.</li>
+      <li>requests from other origins are refused. a 429 means stop, not retry harder.</li>
+    </ul>
+
+    <h2>if you need an API</h2>
+    <p>run your own. the code is MIT, the server is one Python process with yt-dlp and ffmpeg, and it runs on the smallest VPS you can buy. see <a href="terms.html#source">the terms</a>.</p>
+
+    <h2>changes</h2>
+    <p>these numbers can change without notice. blocking is automatic and permanent for repeat offenders.</p>
+  </section>
+
+  <p class="updates-foot"><a href="assets/api-policy.pdf" download>download this as a pdf</a> · <a href="./">back to the downloader</a></p>
+</main>
+
+<footer class="footer">
+  <nav class="footer-meta" aria-label="Footer">
+    <a href="./">mdown.cc</a>
+    <a href="terms.html">terms</a>
+    <a href="status.html">status</a>
+    <a href="donate.html">donate</a>
+  </nav>
+</footer>
+</body>
+</html>

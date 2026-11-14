@@ -20,6 +20,7 @@ import logging
 import os
 import re
 import socket
+import shutil
 import socketserver
 import threading
 import time
@@ -35,6 +36,7 @@ from .config import Config
 from .errors import ApiError
 from .jobs import JobManager, PickerNeeded, RateLimiter
 from .security import header_safe, validate_url
+from .uptime import UptimeLog
 
 log = logging.getLogger("mdown.api")
 
@@ -178,6 +180,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
+        # the API is for the page, not for search results
+        self.send_header("X-Robots-Tag", "noindex")
         for key, value in (extra or {}).items():
             self.send_header(key, header_safe(value))
         for key, value in self._cors_headers().items():
@@ -307,6 +311,9 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/health":
             self._limit_get()
             self._health()
+        elif path == "/uptime":
+            self._limit_get()
+            self._uptime()
         elif path == "/tunnel" or path.startswith("/tunnel/"):
             token = path[len("/tunnel/"):] if path.startswith("/tunnel/") else ""
             if not token:
@@ -351,6 +358,9 @@ class Handler(BaseHTTPRequestHandler):
             },
         }
         self._json(200, payload)
+
+    def _uptime(self) -> None:
+        self._json(200, self.uptime.summary(30), {"Cache-Control": "no-store"})
 
     def _health(self) -> None:
         tools = self.tools.read()
@@ -674,6 +684,7 @@ class ApiServer(ThreadingHTTPServer):
             "job_limiter": RateLimiter(config.job_rate_max, config.job_rate_window),
             "probe_limiter": RateLimiter(config.probe_rate_max, config.probe_rate_window),
             "read_limiter": RateLimiter(config.read_rate_max, config.read_rate_window),
+            "uptime": UptimeLog(os.path.join(config.work_dir, "uptime.json")),
             "tools": ToolState(),
             "started_at": time.time(),
         })
@@ -682,6 +693,19 @@ class ApiServer(ThreadingHTTPServer):
         # a scanner with a million addresses would otherwise leave a million
         # entries behind; expired windows are swept even when nobody asks
         threading.Thread(target=self._prune_loop, name="limiter-prune", daemon=True).start()
+        threading.Thread(target=self._uptime_loop, name="uptime", daemon=True).start()
+
+    def _uptime_loop(self) -> None:
+        while True:
+            try:
+                handler = self.RequestHandlerClass
+                tools = handler.tools.read()
+                free = shutil.disk_usage(self.config.work_dir).free
+                ok = all(tools.values()) and free >= self.config.min_free_bytes
+                handler.uptime.record(ok)
+            except Exception:
+                pass
+            time.sleep(60)
 
     def _prune_loop(self) -> None:
         limiter = self.RequestHandlerClass.limiter

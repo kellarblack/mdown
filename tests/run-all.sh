@@ -103,13 +103,14 @@ report_suite apikey "http://127.0.0.1:$WEB_PORT/tests/apikey.test.html?report=1"
 report_suite setup  "http://127.0.0.1:$WEB_PORT/tests/setup.test.html?report=1" 13
 report_suite donate "http://127.0.0.1:$WEB_PORT/tests/donate.test.html?report=1" 11
 report_suite donopg "http://127.0.0.1:$WEB_PORT/tests/donate-page.test.html?report=1" 14
-report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 64
+report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 65
 report_suite buttons "http://127.0.0.1:$WEB_PORT/tests/buttons.test.html?report=1" 18
 report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 13
 report_suite probe   "http://127.0.0.1:$WEB_PORT/tests/probe.test.html?report=1" 18
 report_suite health  "http://127.0.0.1:$WEB_PORT/tests/health.test.html?report=1" 11
 report_suite spam    "http://127.0.0.1:$WEB_PORT/tests/spam.test.html?report=1" 7
 dom_suite    meta    "http://127.0.0.1:$WEB_PORT/tests/meta.test.html" 10
+report_suite a11y    "http://127.0.0.1:$WEB_PORT/tests/a11y.test.html?report=1" 8
 
 printf '\n'
 [ $fail -eq 0 ] && echo "all good" || echo "something failed"
