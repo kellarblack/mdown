@@ -283,11 +283,28 @@ class Handler(BaseHTTPRequestHandler):
             log.error("unhandled POST error\n%s", traceback.format_exc())
             self._error(ApiError.internal())
 
+    def _limit_get(self) -> None:
+        """Reads are cheap, but they are not free: a scraper asking for the
+        instance info in a loop gets the same window as a downloader."""
+        verdict = self.limiter.check(self._client_ip())
+        if verdict["allowed"]:
+            return
+        error = ApiError.rate_limit(0)
+        error.context["retry"] = verdict["retry"]
+        self._json(429, error.payload(), {
+            "RateLimit-Limit": str(self.config.rate_limit_max),
+            "RateLimit-Remaining": "0",
+            "RateLimit-Reset": str(verdict["retry"]),
+            "Retry-After": str(verdict["retry"]),
+        })
+
     def _route_get(self) -> None:
         path, query = self._split()
         if path in ("/", ""):
+            self._limit_get()
             self._instance_info()
         elif path == "/health":
+            self._limit_get()
             self._health()
         elif path == "/tunnel" or path.startswith("/tunnel/"):
             token = path[len("/tunnel/"):] if path.startswith("/tunnel/") else ""

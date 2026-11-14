@@ -160,6 +160,14 @@ class ServerTest(unittest.TestCase):
         self.assertTrue(data["checks"]["downloader"])
         self.assertNotIn("path", json.dumps(data).lower())
 
+    def test_reads_are_rate_limited(self):
+        for _ in range(self.config.rate_limit_max):
+            self.call("GET", "/health")
+        status, headers, raw = self.call("GET", "/health")
+        self.assertEqual(status, 429)
+        self.assertIn("Retry-After", headers)
+        self.assertEqual(json.loads(raw)["error"]["code"], "api.rate_limit")
+
     # -- probe: size and picture before any download -----------------------
     def probe(self, body, headers=None):
         status, hdrs, raw = self.call("POST", "/probe", body, headers)
