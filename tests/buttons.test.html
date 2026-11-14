@@ -80,6 +80,24 @@ async function main() {
     fetchBtn.dataset.armed === "true" && fetchBtn.getAttribute("aria-label") === "fetch",
     fetchBtn.dataset.armed + " · " + fetchBtn.getAttribute("aria-label"));
 
+  // one control, two jobs: paste when the field is empty, download when it is not
+  await sleep(300);
+  const morph = doc.querySelector("#paste-btn");
+  const morphLabel = () => morph.querySelector(".pb-label").textContent;
+  const morphWidth = () => Math.round(morph.getBoundingClientRect().width);
+  const widthArmed = morphWidth();
+  record("paste becomes download when a link lands",
+    morph.dataset.state === "get" && morphLabel() === "download",
+    morph.dataset.state + " / " + morphLabel());
+  setField.call(field, "");
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+  await sleep(300);
+  record("and goes back to paste when the field empties",
+    morph.dataset.state === "paste" && morphLabel() === "paste",
+    morph.dataset.state + " / " + morphLabel());
+  record("the swap does not resize the control",
+    morphWidth() === widthArmed, morphWidth() + "px vs " + widthArmed + "px");
+
   // the phone keeps a full-width target; a desktop gets the small arrow
   frame.style.width = "900px";
   await sleep(250);

@@ -327,6 +327,29 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 #url-input::placeholder { color: var(--text-3); opacity: 0.9; }
 .composer-tools { display: flex; align-items: center; gap: 5px; flex: none; }
 
+/* paste becomes download in place. the control keeps its width so the field
+   never jumps; only the icon and the word cross-fade */
+/* one fixed width for both words, so nothing shifts when it changes job */
+#paste-btn { width: 100px; padding: 0 8px; justify-content: center; }
+#paste-btn .pb-label { white-space: nowrap; }
+.pb-icons { position: relative; width: 13px; height: 13px; flex: none; }
+.pb-icons svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transition: opacity 170ms var(--ease), transform 240ms var(--ease);
+}
+.pb-get { opacity: 0; transform: translateY(-4px) scale(0.75); }
+#paste-btn[data-state="get"] .pb-paste { opacity: 0; transform: translateY(4px) scale(0.75); }
+#paste-btn[data-state="get"] .pb-get { opacity: 1; transform: none; }
+.pb-label { display: inline-block; transition: opacity 120ms ease-out, transform 200ms var(--ease); }
+.pb-label.is-out { opacity: 0; transform: translateY(3px); }
+#paste-btn[data-state="get"] {
+  color: var(--text); background: var(--surface-3); border-color: var(--stroke-2);
+}
+#paste-btn[data-state="get"]:hover { background: var(--surface-2); color: var(--text); }
+@media (prefers-reduced-motion: reduce) {
+  .pb-icons svg, .pb-label { transition: none; }
+}
+
 .ghost-btn {
   display: inline-flex; align-items: center; gap: 6px;
   height: var(--h); padding: 0 10px; border-radius: var(--r-sm);
@@ -698,6 +721,11 @@ a.ghost-btn { text-decoration: none; }
   background: transparent; color: var(--text-2); font: inherit; cursor: pointer;
   text-decoration: none;
   transition: color 120ms, background 120ms, border-color 120ms;
+}
+.footer-meta .footer-q {
+  display: inline-grid; place-items: center;
+  min-width: 24px; padding: 3px 6px; line-height: 1;
+  font-weight: 700; color: var(--text-2);
 }
 .footer-meta a:hover, .footer-meta .footer-link:hover {
   color: var(--text); background: var(--surface-2); border-color: var(--stroke-2);
@@ -1402,19 +1430,29 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-panel {
   position: absolute; z-index: 60; top: calc(100% + 6px); left: 50%; right: auto;
   transform: translateX(-50%);
-  width: min(480px, calc(100vw - 90px));
-  aspect-ratio: 16 / 9;
-  max-height: none;
-  overflow: visible;
-  padding: 7px 9px; text-align: left;
+  /* the panel is as big as what is in it: a fixed aspect ratio left a band of
+     empty panel under the last row of chips */
+  width: min(480px, calc(100vw - 40px));
+  /* on a normal screen this never bites; on an absurdly short one it keeps the
+     panel on screen instead of letting it hang off the top */
+  max-height: calc(100dvh - 130px);
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  padding: 9px 10px 8px; text-align: left;
   border: 1px solid var(--stroke-2); border-radius: 9px;
   background: var(--bg-elev); box-shadow: var(--shadow-2);
   transform-origin: top center;
 }
 /* the chips are a block, not a ragged wrap: same columns, same rhythm */
 .sources-panel .source-chips {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-  gap: 3px;
+  /* wide enough for "dailymotion" and "xiaohongshu" at this size, so no chip
+     is ever cut down to "xiaohongs…" */
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 4px;
+}
+.sources-panel .source-chip {
+  padding: 4px 9px; line-height: 1.5;
+  /* scales down just enough on a 320px phone that no name is cut */
+  font-size: clamp(0.56rem, 2.7vw, 0.66rem);
 }
 .sources-panel { animation: panel-center-in 150ms var(--ease) both; }
 .sources-panel.is-closing { animation: panel-center-out 120ms var(--ease) both; }
@@ -1433,15 +1471,16 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   /* a sheet above the bottom bar, aligned to the screen, never the wordmark */
   .sources-panel {
     position: fixed; left: 6px; right: 6px; top: auto; width: auto;
-    aspect-ratio: 16 / 9;
     bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-    max-height: none; overflow: visible;
+    max-height: calc(100dvh - 150px);
+    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
     transform: none; transform-origin: bottom center;
     animation: drop-in 150ms var(--ease) both;
   }
   .sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
   .sources-panel .sources-note { font-size: 0.6rem; }
-  .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 3px; }
+  .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 3px; }
+  .sources-panel .source-chip { padding: 3px 8px; }
 }
 .sources-count { font-family: var(--mono); font-size: 0.6rem; color: var(--text-3); opacity: 0.7; }
 .source-chips { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -1557,10 +1596,21 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .donate-note { color: var(--text-3); font-size: 0.76rem; margin: 0 0 14px; }
 .donate-list { display: flex; flex-direction: column; gap: 8px; margin: 0 0 14px; }
 .donate-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  display: grid; grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center; gap: 10px;
   padding: 9px 11px; border: 1px solid var(--stroke); border-radius: var(--r-sm);
   background: var(--surface);
 }
+/* one glyph per coin, monochrome: a coloured logo would be the only saturated
+   thing on the page */
+.coin-icon {
+  display: grid; place-items: center; flex: none;
+  width: 26px; height: 26px; border-radius: 999px;
+  border: 1px solid var(--stroke); color: var(--text-2);
+  transition: color 140ms, border-color 140ms;
+}
+.coin-icon svg { width: 14px; height: 14px; display: block; }
+.donate-row:hover .coin-icon { color: var(--text); border-color: var(--stroke-2); }
 .donate-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .donate-label {
   font-family: var(--mono); font-size: 0.7rem; color: var(--text-3);
@@ -1573,18 +1623,86 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 a.donate-value { color: var(--accent); }
 a.donate-value:hover { text-decoration: underline; }
 .donate-hint { font-size: 0.7rem; color: var(--text-3); }
-.donate-stripe {
-  display: grid; gap: 2px; margin: 0 0 12px; padding: 11px 12px;
-  border: 1px solid var(--stroke-2); border-radius: var(--r-md);
-  background: var(--surface);
-  transition: border-color 120ms, background 120ms;
+.donate-value[data-address], .addr-value[data-address] {
+  cursor: pointer; user-select: all; letter-spacing: 0.04em; border-radius: 3px;
 }
-.donate-stripe:hover { border-color: var(--text); background: var(--surface-2); }
-.donate-stripe b { font-size: 0.86rem; font-weight: 600; }
-.donate-stripe span { color: var(--text-3); font-size: 0.74rem; }
+.donate-value[data-address]:hover, .addr-value[data-address]:hover { color: var(--text); }
+.donate-value[data-address]:focus-visible, .addr-value[data-address]:focus-visible {
+  outline: 2px solid var(--ring); outline-offset: 2px;
+}
+.donate-value.is-revealed, .addr-value.is-revealed { letter-spacing: 0; color: var(--text); }
+/* the card is the one option that needs no wallet, so it leads and looks
+   like a control: icon, two lines, an arrow that leans on hover */
+.donate-card {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr) 20px;
+  align-items: center; gap: 11px;
+  margin: 0 0 10px; padding: 11px 12px;
+  border: 1px solid var(--stroke-2); border-radius: var(--r-md);
+  background: var(--surface); text-decoration: none;
+  transition: border-color 140ms, background 140ms;
+}
+.donate-card:hover { border-color: var(--text); background: var(--surface-2); }
+.donate-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.donate-card-icon {
+  width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--stroke);
+  color: var(--text-2);
+}
+.donate-card:hover .donate-card-icon { color: var(--text); border-color: var(--stroke-2); }
+.donate-card-copy { display: grid; gap: 2px; min-width: 0; }
+.donate-card-copy b { color: var(--text); font-size: 0.86rem; font-weight: 600; }
+.donate-card-copy span { color: var(--text-3); font-size: 0.74rem; }
+.donate-card-go { color: var(--text-3); transition: transform 160ms var(--ease), color 140ms; }
+.donate-card-go svg { width: 15px; height: 15px; }
+.donate-card:hover .donate-card-go { transform: translateX(3px); color: var(--text); }
+.donate-or {
+  margin: 14px 0 8px; text-align: center;
+  font-family: var(--mono); font-size: 0.66rem; color: var(--text-3);
+}
+@media (prefers-reduced-motion: reduce) {
+  .donate-card:hover .donate-card-go { transform: none; }
+}
 .donate-hint { margin: 10px 0 0; font-size: 0.72rem; color: var(--text-3); }
 .donate-hint a { color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
 .donate-fine { color: var(--text-3); font-size: 0.72rem; line-height: 1.6; margin: 0; }
+
+/* ---------- tip jar in the corner ---------- */
+.coin-jar {
+  position: fixed; z-index: 40; left: 18px; bottom: 18px;
+  width: 38px; height: 38px; display: grid; place-items: center;
+  border-radius: 999px; border: 1px solid var(--stroke);
+  background: var(--bg-elev); color: var(--text-3);
+  cursor: pointer; touch-action: manipulation;
+  transition: color 160ms, border-color 160ms, background 160ms,
+              transform 220ms var(--ease);
+}
+.coin-jar[hidden] { display: none; }
+.coin-jar:hover {
+  color: var(--text); border-color: var(--stroke-2);
+  background: var(--surface-2); transform: translateY(-2px);
+}
+.coin-jar:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.coin-jar-glyph svg { width: 17px; height: 17px; display: block; }
+/* a coin falls in every few seconds: enough to catch the eye once, not a loop
+   that pulls at the corner of the screen */
+.coin-jar-drop {
+  position: absolute; left: 50%; top: 5px;
+  width: 5px; height: 5px; margin-left: -2.5px; border-radius: 999px;
+  border: 1px solid currentColor; opacity: 0;
+  animation: coin-drop 7200ms cubic-bezier(.3,.7,.4,1) infinite;
+}
+@keyframes coin-drop {
+  0%, 64% { opacity: 0; transform: translateY(-5px); }
+  68%     { opacity: 0.85; }
+  78%     { opacity: 0.85; transform: translateY(12px); }
+  82%,100%{ opacity: 0; transform: translateY(13px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coin-jar-drop { animation: none; }
+  .coin-jar:hover { transform: none; }
+}
+/* on a phone the bar already carries donate; a second floating button would
+   sit in the thumb's way */
+@media (max-width: 720px) { .coin-jar { display: none; } }
 
 /* ---------- terms page ---------- */
 .terms { max-width: 64ch; margin: 22px auto 0; }
@@ -2158,12 +2276,14 @@ a.donate-value:hover { text-decoration: underline; }
 /* three addresses, one row on anything wider than a phone */
 @media (min-width: 560px) {
   .addr-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
-  .addr { flex-direction: column; align-items: stretch; gap: 9px; }
-  .addr-copy { align-self: flex-start; }
+  .addr { grid-template-columns: 26px minmax(0, 1fr); gap: 9px 10px; }
+  .addr .coin-icon { grid-row: 1 / span 2; align-self: start; }
+  .addr-copy { grid-column: 2; justify-self: start; }
   .addr-value { font-size: 0.7rem; line-height: 1.45; }
 }
 .addr {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: grid; grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center; gap: 10px;
   padding: 10px 12px;
   border: 1px solid var(--stroke); border-radius: var(--r-md); background: var(--bg);
   transition: border-color 140ms;

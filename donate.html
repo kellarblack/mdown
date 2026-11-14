@@ -38,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=134">
+<link rel="stylesheet" href="assets/app.css?v=139">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -194,7 +194,7 @@
   <nav class="footer-meta" aria-label="Footer"><a href="./">mdown.cc</a><a href="terms.html">terms</a><a href="status.html">status</a><a href="donate.html">donate</a></nav>
 </footer>
 
-<script src="assets/donate.js?v=4"></script>
+<script src="assets/donate.js?v=5"></script>
 <script>
 (function () {
   var cfg = window.MDOWN_DONATE || {};
@@ -275,6 +275,15 @@
     var grid = document.getElementById("addr-grid");
     methods.forEach(function (m) {
       var row = el("div", "addr");
+
+      var coin = (window.MDOWN_COIN || {})[m.id];
+      if (coin) {
+        var badge = el("span", "coin-icon");
+        badge.setAttribute("aria-hidden", "true");
+        badge.innerHTML = coin;
+        row.appendChild(badge);
+      }
+
       var left = el("div", "addr-left");
       left.appendChild(el("span", "addr-label", String(m.label || m.id || "tip")));
       if (m.href) {
@@ -284,7 +293,32 @@
         a.rel = "noopener noreferrer";
         left.appendChild(a);
       } else {
-        left.appendChild(el("code", "addr-value", String(m.value)));
+        /* the last six characters are visible because that is what a person
+           actually checks; the copy button carries the whole address */
+        var full = String(m.value);
+        var mask = window.MDOWN_MASK || function (v) { return v; };
+        var code = el("code", "addr-value", mask(full));
+        code.dataset.address = full;
+        code.title = "click to show the whole address";
+        code.tabIndex = 0;
+        code.setAttribute("role", "button");
+        code.setAttribute("aria-pressed", "false");
+        var toggle = function () {
+          var shown = code.dataset.revealed === "1";
+          code.textContent = shown ? mask(full) : full;
+          code.dataset.revealed = shown ? "0" : "1";
+          code.classList.toggle("is-revealed", !shown);
+          code.setAttribute("aria-pressed", shown ? "false" : "true");
+          code.title = shown ? "click to show the whole address" : "click to hide the address";
+        };
+        code.addEventListener("click", toggle);
+        code.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggle();
+          }
+        });
+        left.appendChild(code);
       }
       if (m.note) left.appendChild(el("span", "addr-note", String(m.note)));
       row.appendChild(left);

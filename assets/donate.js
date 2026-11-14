@@ -51,3 +51,24 @@ window.MDOWN_DONATE = {
     { id: "eth", label: "ethereum", value: "0x5daE2C9048a8d4AF00A948bc2FAdBf7885689197", note: "eth and erc-20 tokens" }
   ]
 };
+
+/* ---------------------------------------------------------------
+   Coin glyphs and address masking, in one place because the dialog and
+   donate.html both draw the same rows. Everything is inline, monochrome and
+   currentColor: no icon fonts, no requests, no brand colours fighting the
+   page. The last six characters stay visible because that is what a person
+   checks before sending; the rest is what malware swaps.
+   --------------------------------------------------------------- */
+window.MDOWN_COIN = {
+  xmr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M8 16.2V9.4l4 4.6 4-4.6v6.8"/></svg>',
+  btc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M10.4 7.6h3.1a2.2 2.2 0 0 1 0 4.4h-3.1z"/><path d="M10.4 12h3.3a2.2 2.2 0 0 1 0 4.6h-3.3z"/><path d="M10.4 7.6v9M12 6.4v1.2M12 16.6v1.2"/></svg>',
+  eth: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 6.5 16 12.3l-4 2.3-4-2.3z"/><path d="m8 13.5 4 4.1 4-4.1"/></svg>',
+  card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="2.6" y="5.4" width="18.8" height="13.2" rx="2.6"/><path d="M2.6 10h18.8"/><path d="M6.4 15h3.2"/></svg>',
+  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>'
+};
+
+window.MDOWN_MASK = function (value) {
+  var v = String(value == null ? "" : value);
+  if (v.length <= 10) return v;
+  return "******" + v.slice(-6);
+};

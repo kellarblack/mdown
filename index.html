@@ -47,7 +47,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=134">
+<link rel="stylesheet" href="assets/app.css?v=139">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -301,9 +301,13 @@
           <button type="button" class="icon-btn" id="clear-btn" title="Clear" aria-label="Clear input" hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
           </button>
-          <button type="button" class="ghost-btn" id="paste-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="12" height="16" rx="2.5"/><path d="M16 4V3.2A1.2 1.2 0 0 0 14.8 2H9.2A1.2 1.2 0 0 0 8 3.2V4"/><path d="M4 8v11.5A1.5 1.5 0 0 0 5.5 21H13"/></svg>
-            <span>paste</span>
+          <button type="button" class="ghost-btn" id="paste-btn" data-state="paste"
+                  aria-label="paste from clipboard" title="paste">
+            <span class="pb-icons" aria-hidden="true">
+              <svg class="pb-paste" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="12" height="16" rx="2.5"/><path d="M16 4V3.2A1.2 1.2 0 0 0 14.8 2H9.2A1.2 1.2 0 0 0 8 3.2V4"/><path d="M4 8v11.5A1.5 1.5 0 0 0 5.5 21H13"/></svg>
+              <svg class="pb-get" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.8 10.2 4.2 4.2 4.2-4.2"/><path d="M5 19h14"/></svg>
+            </span>
+            <span class="pb-label">paste</span>
           </button>
         </div>
       </div>
@@ -505,13 +509,14 @@
 <footer class="footer">
   <nav class="footer-meta" aria-label="Footer">
     <a href="terms.html">terms</a>
-    <button type="button" class="footer-link" id="open-help">how it works</button>
+    <button type="button" class="footer-link footer-q" id="open-help" aria-label="how it works" title="how it works">?</button>
     <a href="updates.html">updates</a>
     <button type="button" class="footer-link" id="open-about">open source</button>
     <a id="repo-link" hidden rel="noopener">repository</a>
     <a id="view-source" hidden rel="noopener">view source</a>
     <span id="donate-wrap" hidden><a href="#" id="donate-link">donate</a></span>
   </nav>
+
   <p class="footer-proof">
     <a href="terms.html#privacy">0 cookies</a><span aria-hidden="true">·</span>
     <a href="terms.html#privacy">0 trackers</a><span aria-hidden="true">·</span>
@@ -992,10 +997,22 @@
   </a>
 </nav>
 
+  <button type="button" class="coin-jar" id="coin-jar" hidden
+          aria-label="tip jar" title="tip jar">
+    <span class="coin-jar-glyph" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5.4 9.4h13.2l-1.2 8.7A1.8 1.8 0 0 1 15.6 19.7H8.4a1.8 1.8 0 0 1-1.8-1.6z"/>
+        <path d="M8.2 9.4V7.2A2.2 2.2 0 0 1 10.4 5h3.2a2.2 2.2 0 0 1 2.2 2.2v2.2"/>
+        <path d="M9.8 13.6h4.4"/>
+      </svg>
+    </span>
+    <span class="coin-jar-drop" aria-hidden="true"></span>
+  </button>
+
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
-<script src="assets/donate.js?v=4" defer></script>
-<script src="assets/app.js?v=81" defer></script>
+<script src="assets/donate.js?v=5" defer></script>
+<script src="assets/app.js?v=83" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

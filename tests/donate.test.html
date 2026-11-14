@@ -82,8 +82,19 @@ async function main() {
   record("both methods render", rows.length === 2, rows.length + " rows");
 
   const code = body.querySelector("code.donate-value");
-  record("crypto is shown as copyable text, not an image",
-    !!code && /^4AdUnd/.test(code.textContent), code ? code.textContent.slice(0, 12) + "…" : "(none)");
+  record("crypto is text, masked to its last six characters",
+    !!code && /^\*{3,}/.test(code.textContent) && /4Rge$/.test(code.textContent) &&
+      !body.querySelector("img"),
+    code ? code.textContent : "(none)");
+  code.click();
+  await sleep(60);
+  record("one click shows the whole address",
+    code.textContent === code.dataset.address && code.getAttribute("aria-pressed") === "true",
+    code.textContent.length + " chars");
+  code.click();
+  await sleep(60);
+  record("and one click hides it again", /^\*{3,}/.test(code.textContent),
+    code.textContent);
 
   const copyBtn = [...body.querySelectorAll("button")].find(b => /copy/i.test(b.textContent || ""));
   record("the address has a copy button", !!copyBtn, copyBtn ? copyBtn.textContent : "(none)");

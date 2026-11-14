@@ -535,6 +535,27 @@
     return out;
   }
 
+  let morphTimer = 0;
+  /* paste while the field is empty, download once it holds a link: one control
+     that changes job instead of two that compete */
+  function updatePasteButton(armed) {
+    const button = dom.pasteBtn;
+    if (!button) return;
+    const state = armed ? "get" : "paste";
+    if (button.dataset.state === state) return;
+    button.dataset.state = state;
+    button.setAttribute("aria-label", armed ? "download" : "paste from clipboard");
+    button.title = armed ? "download" : "paste";
+    const label = button.querySelector(".pb-label");
+    if (!label) return;
+    label.classList.add("is-out");
+    clearTimeout(morphTimer);
+    morphTimer = setTimeout(() => {
+      label.textContent = armed ? "download" : "paste";
+      label.classList.remove("is-out");
+    }, 110);
+  }
+
   function updateComposerState() {
     const text = dom.input.value;
     scheduleProbe();
@@ -550,6 +571,7 @@
     /* the arrow stays quiet until there is something to fetch. it never
        appears or disappears, only arms, so the footer does not move */
     const armed = urls.length >= 1;
+    updatePasteButton(armed);
     if (dom.fetchBtn) {
       if (dom.fetchBtn.dataset.armed !== String(armed)) {
         dom.fetchBtn.dataset.armed = armed ? "true" : "false";
@@ -2416,6 +2438,14 @@
     });
     const settingsDonate = $("#open-donate-settings");
     if (settingsDonate) settingsDonate.hidden = !cfg;
+    const jar = $("#coin-jar");
+    if (jar) {
+      jar.hidden = !cfg;
+      if (cfg && jar.dataset.bound !== "1") {
+        jar.dataset.bound = "1";
+        jar.addEventListener("click", () => openDonate());
+      }
+    }
     if (!dom.donateLink || !dom.donateWrap) return;
     /* the wrapper carries the leading separator, so hide that rather than
        leaving a dangling " · " when donations are off */
@@ -2431,6 +2461,46 @@
     dom.donateLink.removeAttribute("aria-disabled");
   }
 
+  function coinGlyph(id) {
+    const set = window.MDOWN_COIN || {};
+    if (!set[id]) return null;
+    const box = el("span", { class: "coin-icon", "aria-hidden": "true" });
+    box.innerHTML = set[id];
+    return box;
+  }
+
+  function masked(value) {
+    return typeof window.MDOWN_MASK === "function" ? window.MDOWN_MASK(value) : String(value);
+  }
+
+  /* the full address is one click away and always in the DOM attribute, so a
+     copy never depends on what is currently painted on screen */
+  function addressCode(method) {
+    const full = String(method.value);
+    const code = el("code", { class: "donate-value", text: masked(full) });
+    code.dataset.address = full;
+    code.title = "click to show the whole address";
+    code.tabIndex = 0;
+    code.setAttribute("role", "button");
+    code.setAttribute("aria-pressed", "false");
+    const toggle = () => {
+      const shown = code.dataset.revealed === "1";
+      code.textContent = shown ? masked(full) : full;
+      code.dataset.revealed = shown ? "0" : "1";
+      code.classList.toggle("is-revealed", !shown);
+      code.setAttribute("aria-pressed", shown ? "false" : "true");
+      code.title = shown ? "click to show the whole address" : "click to hide the address";
+    };
+    code.addEventListener("click", toggle);
+    code.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggle();
+      }
+    });
+    return code;
+  }
+
   function openDonate() {
     const cfg = donateConfig();
     if (!cfg) return;
@@ -2444,19 +2514,31 @@
 
     if (cfg.stripe) {
       const card = el("a", {
-        class: "donate-stripe",
+        class: "donate-card",
         href: cfg.stripe,
         rel: "noopener noreferrer",
         target: "_blank"
       });
-      card.appendChild(el("b", { text: "card" }));
-      card.appendChild(el("span", { text: "apple pay · google pay · one-time" }));
+      const badge = coinGlyph("card");
+      badge.classList.add("donate-card-icon");
+      card.appendChild(badge);
+      const copy = el("span", { class: "donate-card-copy" });
+      copy.appendChild(el("b", { text: "card" }));
+      copy.appendChild(el("span", { text: "apple pay · google pay · one-time" }));
+      card.appendChild(copy);
+      const go = el("span", { class: "donate-card-go", "aria-hidden": "true" });
+      go.innerHTML = (window.MDOWN_COIN || {}).arrow || "";
+      card.appendChild(go);
       wrap.appendChild(card);
+      wrap.appendChild(el("p", { class: "donate-or", text: "or send it straight to an address" }));
     }
 
     const list = el("div", { class: "donate-list" });
     cfg.methods.forEach((method) => {
       const row = el("div", { class: "donate-row" });
+      const badge = coinGlyph(method.id);
+      if (badge) row.appendChild(badge);
+
       const left = el("div", { class: "donate-id" });
       left.appendChild(el("span", { class: "donate-label", text: String(method.label || method.id || "tip") }));
 
@@ -2470,7 +2552,7 @@
         });
         left.appendChild(link);
       } else {
-        left.appendChild(el("code", { class: "donate-value", text: String(method.value) }));
+        left.appendChild(addressCode(method));
       }
       if (method.note) left.appendChild(el("span", { class: "donate-hint", text: String(method.note) }));
       row.appendChild(left);
@@ -2480,6 +2562,7 @@
           type: "button",
           class: "ghost-btn small",
           text: "copy",
+          "aria-label": "copy " + String(method.label || "address"),
           onclick: () => copyText(String(method.value), "Address copied")
         }));
       }
@@ -3273,6 +3356,11 @@
     });
 
     dom.pasteBtn.addEventListener("click", async () => {
+      /* once there is a link the same button is the download button */
+      if (dom.pasteBtn.dataset.state === "get") {
+        submitUrls(dom.input.value);
+        return;
+      }
       const blocked = IS_TOUCH
         ? "Clipboard is blocked here — tap and hold the field to paste."
         : "Clipboard is blocked here — press ⌘V to paste.";
@@ -3437,7 +3525,13 @@
     });
     const close = el("button", { type: "button", class: "ghost-btn", text: "close" });
     close.addEventListener("click", () => closeModal());
-    openModal("About", wrap, [close]);
+    const buttons = [close];
+    if (donateConfig()) {
+      const tip = el("button", { type: "button", class: "ghost-btn", text: "tip jar" });
+      tip.addEventListener("click", () => { closeModal(); openDonate(); });
+      buttons.unshift(tip);
+    }
+    openModal("About", wrap, buttons);
   }
 
   function boot() {
