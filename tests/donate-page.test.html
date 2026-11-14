@@ -54,8 +54,20 @@ async function main() {
 
   record("sharing still works", !!doc.querySelector("#copy-link"), "copy link button");
 
-  const external = [...doc.querySelectorAll("a[href^='http']")].map(a => a.getAttribute("href"));
-  record("no third-party links in the shipped state", external.length === 0, external.join(", ") || "none");
+  // nothing may load from a third party; share links are outgoing only
+  // a canonical <link> points at the URL, it does not fetch anything
+  const loads = [...doc.querySelectorAll("script[src^='http'], img[src^='http'], iframe[src^='http'], link[href^='http']")]
+    .filter(n => !/^(canonical|alternate)$/i.test(n.getAttribute("rel") || ""));
+  record("nothing loads from a third party", loads.length === 0, loads.length + " foreign nodes");
+
+  const share = [...doc.querySelectorAll("[data-share]")];
+  record("share chips exist for the usual places", share.length === 4, share.map(a => a.dataset.share).join(", "));
+  const badShare = share.filter(a => !a.href || !/^https:\/\//.test(a.href) || a.rel !== "noopener noreferrer");
+  record("every share chip is a safe outgoing link", badShare.length === 0,
+    badShare.map(a => a.dataset.share).join(", ") || "all encoded + noopener");
+  record("sharing carries the site, not a referral tag",
+    share.every(a => a.href.indexOf("mdown.cc") >= 0),
+    (share[0] && share[0].href.slice(0, 60)) || "");
 
   // and the main app must not advertise a closed tip jar
   const appFrame = document.getElementById("app");

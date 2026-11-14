@@ -1466,6 +1466,8 @@ a.donate-value:hover { text-decoration: underline; }
   .nav-link[data-view="download"],
   .nav-link[href="updates.html"],
   .nav-link[href="donate.html"] { display: none; }
+  /* the "you are here" dot costs 12px, which the 320px topbar does not have */
+  .nav-link.is-active::before { display: none; }
 }
 /* while jobs are running the badge breathes, so a closed dock is not silence */
 .dock-badge:not(.is-dot) { animation: pulse 1.6s ease-in-out infinite; }
