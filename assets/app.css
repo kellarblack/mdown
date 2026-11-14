@@ -213,6 +213,32 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 
 /* ---------- composer ---------- */
 .composer:focus-within { border-color: var(--stroke-2); }
+/* One light travels the perimeter of the field when the page opens, completes
+   the rectangle and is gone. It is a conic gradient masked to a 1px ring, so
+   nothing moves and nothing can overflow. */
+@property --sweep { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+.composer::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  padding: 1px; pointer-events: none; opacity: 0;
+  background: conic-gradient(from var(--sweep),
+    transparent 0 300deg,
+    color-mix(in srgb, var(--accent) 45%, transparent) 338deg,
+    color-mix(in srgb, var(--accent) 90%, white) 353deg,
+    transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation:
+    composer-ring-in 240ms ease-out 120ms both,
+    composer-sweep 1500ms cubic-bezier(.4, 0, .2, 1) 200ms 1 both,
+    composer-ring-out 420ms ease-out 1750ms forwards;
+}
+@keyframes composer-ring-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes composer-sweep { from { --sweep: 0deg } to { --sweep: 360deg } }
+@keyframes composer-ring-out { from { opacity: 1 } to { opacity: 0 } }
+
 .composer {
   position: relative;
   padding: 0;
@@ -300,6 +326,7 @@ a.ghost-btn { text-decoration: none; }
 .hint[data-tone="err"] { color: var(--err); }
 
 .primary-btn {
+  position: relative; overflow: hidden;
   display: inline-flex; align-items: center; gap: 7px;
   height: 32px; padding: 0 14px; border-radius: var(--r-sm);
   background: var(--btn); color: var(--accent-ink);
@@ -308,6 +335,16 @@ a.ghost-btn { text-decoration: none; }
   transition: filter var(--speed), transform var(--speed);
 }
 .primary-btn svg { width: 13px; height: 13px; transition: transform var(--speed) var(--ease); }
+.primary-btn::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 60%;
+  background: linear-gradient(100deg, transparent, rgba(0, 0, 0, 0.055), transparent);
+  transform: translateX(-140%); pointer-events: none;
+}
+.primary-btn:hover::after { animation: btn-sheen 520ms ease-out; }
+.primary-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28); }
+.primary-btn:hover svg { transform: translateX(2px); }
+.primary-btn:active { transform: translateY(0) scale(0.995); }
+@keyframes btn-sheen { to { transform: translateX(240%); } }
 .primary-btn:hover { background: var(--btn-hover); }
 .primary-btn:hover svg { transform: translateX(2px); }
 .primary-btn:active { transform: translateY(1px); }
