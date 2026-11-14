@@ -195,7 +195,12 @@ def probe(url: str, timeout: int, cache_dir: Optional[str] = None) -> Dict[str, 
         failure = classify(err)
         if failure is not None:
             raise failure
-        raise EngineError("metadata extraction failed", err)
+        # youtube's bot wall is intermittent, not permanent: one retry turns a
+        # "video didn't work" into a download
+        time.sleep(1.0)
+        code, out, err = run(cmd, timeout, cache_dir)
+        if code != 0 or not out.strip():
+            raise EngineError("metadata extraction failed", err)
 
     try:
         info = json.loads(out)

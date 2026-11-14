@@ -393,8 +393,12 @@ a.ghost-btn { text-decoration: none; }
 /* 0fr → 1fr is a height transition that costs no layout thrash: the row is
    the only thing that changes, and the composer above it never moves. */
 .composer-note {
-  margin: 10px 0 0; text-align: center;
-  color: var(--hint-ink); font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5;
+  width: fit-content; max-width: calc(100vw - 32px);
+  margin: 10px auto 0; padding: 5px 12px;
+  border: 1px solid var(--stroke); border-radius: 8px;
+  background: var(--surface);
+  text-align: center;
+  color: var(--hint-ink); font-family: var(--mono); font-size: 0.78rem; line-height: 1.45;
 }
 .composer-note b { color: var(--text-2); font-weight: 500; }
 .composer-note .bracket { color: var(--text-3); }

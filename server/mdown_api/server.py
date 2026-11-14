@@ -567,6 +567,9 @@ class Handler(BaseHTTPRequestHandler):
                     "error": {"code": "api.instance.timed_out"},
                 }, headers)
                 return
+            if "metadata extraction failed" in str(failure):
+                raise ApiError("api.content.video.unavailable", 503,
+                               detail="the source refused, try again")
             raise ApiError.internal(str(failure))
 
         tunnel = self.config.api_url.rstrip("/") + "/tunnel/" + job.token
