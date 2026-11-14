@@ -420,16 +420,64 @@
   /* ----------------------------------------------------------
      toasts
      ---------------------------------------------------------- */
+  /* Toasts are a queue with a ceiling, not a log. The same message twice in a
+     row is one message that lasts longer; the stack never exceeds three; and a
+     message that keeps arriving cannot outlive its welcome. */
+  const TOAST_LIMIT = 3;
+  const TOAST_REPEAT_MS = 2400;
+  const toastState = { key: "", at: 0, node: null, timer: null };
+
+  function dismissToast(node) {
+    if (!node || !node.isConnected) return;
+    node.classList.add("is-leaving");
+    setTimeout(() => node.remove(), 200);
+  }
+
   function toast(message, tone) {
-    const node = el("div", { class: "toast", "data-tone": tone || "info" });
+    const kind = tone || "info";
+    const key = kind + "|" + message;
+    const now = Date.now();
+    const life = kind === "err" ? 6000 : 3800;
+
+    if (key === toastState.key && now - toastState.at < TOAST_REPEAT_MS &&
+        toastState.node && toastState.node.isConnected) {
+      toastState.at = now;
+      const node = toastState.node;
+      node.classList.remove("is-pulse");
+      void node.offsetWidth;  /* restart the pulse without a timer */
+      node.classList.add("is-pulse");
+      clearTimeout(toastState.timer);
+      toastState.timer = setTimeout(() => dismissToast(node), life);
+      return;
+    }
+
+    while (dom.toasts.children.length >= TOAST_LIMIT) {
+      dom.toasts.firstElementChild.remove();
+    }
+
+    const node = el("div", { class: "toast", "data-tone": kind });
     node.appendChild(el("span", { class: "dot" }));
     node.appendChild(el("span", { text: message }));
     dom.toasts.appendChild(node);
-    const remove = () => {
-      node.classList.add("is-leaving");
-      setTimeout(() => node.remove(), 220);
-    };
-    setTimeout(remove, tone === "err" ? 6000 : 3800);
+
+    toastState.key = key;
+    toastState.at = now;
+    toastState.node = node;
+    clearTimeout(toastState.timer);
+    toastState.timer = setTimeout(() => dismissToast(node), life);
+  }
+
+  /* The field says no without a crowd: one short shake, never two at once. */
+  let nudgeAt = 0;
+  function nudgeComposer() {
+    if (!dom.composer) return;
+    const now = Date.now();
+    if (now - nudgeAt < 500) return;
+    nudgeAt = now;
+    dom.composer.classList.remove("is-nudging");
+    void dom.composer.offsetWidth;
+    dom.composer.classList.add("is-nudging");
+    setTimeout(() => dom.composer.classList.remove("is-nudging"), 300);
   }
 
   /* ----------------------------------------------------------
@@ -682,13 +730,15 @@
   function submitUrls(text, mode) {
     const urls = parseUrls(text);
     if (!urls.length) {
-      toast("Paste at least one valid http(s) link.", "warn");
+      if (text.trim()) toast("That doesn't look like a link.", "warn");
+      else toast("Paste a link first.", "warn");
+      nudgeComposer();
       dom.input.focus();
       return;
     }
     if (!apiEndpoint()) {
-      toast("Connect an API first.", "warn");
-      openSettings("instance");
+      toast("Connect a server first.", "warn");
+      nudgeComposer();
       return;
     }
     const usable = [];
