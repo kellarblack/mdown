@@ -54,12 +54,13 @@ async function main() {
   record("it does not quote what the site costs to run",
     !/\$\s?\d|a year|VPS|per month/i.test(doc.body.textContent),
     (doc.body.textContent.match(/\$\s?\d+|a year|VPS/i) || [""])[0] || "no figures");
-  record("the jar says it is closed", /closed/i.test(doc.querySelector("#support-state").textContent),
+  record("the jar says it is open", /open/i.test(doc.querySelector("#support-state").textContent),
     doc.querySelector("#support-state").textContent);
-
-  record("closed donations say so", !doc.querySelector("#dormant").hidden, "dormant visible");
-  record("no payment cards while closed", doc.querySelector("#funding").hidden, "funding hidden");
-  record("no addresses while closed", doc.querySelector("#alt").hidden, "alt hidden");
+  record("the closed notice is gone", doc.querySelector("#dormant").hidden, "dormant hidden");
+  record("no card row without stripe", doc.querySelector("#funding").hidden, "funding hidden");
+  record("crypto addresses render", !doc.querySelector("#alt").hidden &&
+    doc.querySelectorAll(".addr").length === 3,
+    doc.querySelectorAll(".addr").length + " addresses");
 
   record("sharing still works", !!doc.querySelector("#copy-link"), "copy link button");
 

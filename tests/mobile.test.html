@@ -302,7 +302,7 @@ async function main() {
     const doc = frame.contentDocument;
     const win = frame.contentWindow;
     for (const [tool, view] of [["remux", "remux"], ["subtitles", "subs"], ["metadata", "clean"]]) {
-      const trigger = doc.querySelector('.tool-card[data-view="' + view + '"]');
+      const trigger = doc.querySelector('.tool-strip a[data-view="' + view + '"]');
       if (!trigger) { record("tool " + tool + " at 320px: trigger exists", false, "missing"); continue; }
       trigger.click();
       await sleep(350);

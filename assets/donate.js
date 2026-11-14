@@ -23,7 +23,7 @@
    payout — that is the trade, not a bug.
    --------------------------------------------------------------- */
 window.MDOWN_DONATE = {
-  enabled: false,
+  enabled: true,
 
   /* one line under the headline, optional */
   note: "",
@@ -46,8 +46,8 @@ window.MDOWN_DONATE = {
   /* `value` renders as copyable monospace text; `href` renders as a link.
      Anything left out is simply not shown. */
   methods: [
-    // { id: "xmr", label: "Monero", value: "", note: "no memo, no email" },
-    // { id: "btc", label: "Bitcoin", value: "" },
-    // { id: "ltc", label: "Litecoin", value: "" }
+    { id: "btc", label: "bitcoin", value: "bc1qxcfuxt84ksr2sxh6ee65c5qs8mpsuxvqw8u242", note: "native segwit · lowest fees" },
+    { id: "eth", label: "ethereum", value: "0x5daE2C9048a8d4AF00A948bc2FAdBf7885689197", note: "eth and erc-20 tokens" },
+    { id: "sol", label: "solana", value: "GzKLkPVaHkx7fbEqJ4tirGxUSYHV8VmQyERN8cYPqRm5", note: "sol · usdc · usdt on solana" }
   ]
 };

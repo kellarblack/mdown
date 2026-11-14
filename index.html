@@ -47,7 +47,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=116">
+<link rel="stylesheet" href="assets/app.css?v=121">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -350,7 +350,7 @@
 
 
 
-  <p class="composer-note" id="composer-note">paste a link from youtube, soundcloud or tiktok — or put <b>mdown.cc/</b> in front of one</p>
+  <p class="composer-note" id="composer-note">paste a link — or prefix it with <b>mdown.cc/</b></p>
 
   <!-- what the file will be, before anything is fetched. Collapses to zero
        height rather than appearing, so the composer never jumps. -->
@@ -376,24 +376,10 @@
   </div>
 
   <nav class="tool-strip" aria-label="Tools that run in your browser">
-    <a class="tool-card" href="#remux" data-view="remux">
-      <span class="tool-card-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7.5 9.5h4a2 2 0 0 1 0 4h-4"/><path d="m9 11.5-2 2 2 2"/><path d="M16.5 14.5h-4a2 2 0 0 1 0-4h4"/><path d="m15 8.5 2 2-2 2"/></svg>
-      </span>
-      <span class="tool-card-body"><b>remux</b><span>new container, no re-encode</span></span>
-    </a>
-    <a class="tool-card" href="#subs" data-view="subs">
-      <span class="tool-card-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z"/><path d="M8 10h8M8 13.5h5"/></svg>
-      </span>
-      <span class="tool-card-body"><b>subtitles</b><span>pull the SRT out of a file</span></span>
-    </a>
-    <a class="tool-card" href="#clean" data-view="clean">
-      <span class="tool-card-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
-      </span>
-      <span class="tool-card-body"><b>metadata</b><span>strip tags, keep the streams</span></span>
-    </a>
+    <span class="tool-strip-label">tools</span>
+    <a href="#remux" data-view="remux">remux</a>
+    <a href="#subs" data-view="subs">subtitles</a>
+    <a href="#clean" data-view="clean">metadata</a>
   </nav>
 
   <p class="recent-line" id="recent" hidden></p>
@@ -994,7 +980,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=72" defer></script>
+<script src="assets/app.js?v=74" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

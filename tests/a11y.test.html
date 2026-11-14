@@ -85,9 +85,10 @@ async function main() {
   const ratio = contrast(fg, bg);
   record("hint contrast passes AA", ratio >= 4.5, ratio.toFixed(2) + ":1");
 
-  const icons = [...doc.querySelectorAll(".tool-card-icon svg")].map((s) => s.innerHTML);
-  record("tools have different icons", new Set(icons).size === icons.length,
-    icons.length + " icons, " + new Set(icons).size + " unique");
+  const tools = [...doc.querySelectorAll(".tool-strip a")];
+  record("the three tools are real links", tools.length === 3 &&
+    tools.every((a) => a.getAttribute("href") && a.textContent.trim()),
+    tools.map((a) => a.textContent.trim()).join(", "));
 
   record("the settings subtitle says where it lives",
     /browser only/i.test(doc.body.textContent), "stored in this browser only");

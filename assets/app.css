@@ -584,38 +584,19 @@ a.ghost-btn { text-decoration: none; }
 .empty-tip { color: var(--text-3); font-family: var(--mono); font-size: 0.64rem; opacity: 0.85; }
 
 /* ---------- tools strip ---------- */
-/* the tools exist, and nothing on the front page said so. Three lines, not a
-   marketing section. */
 .tool-strip {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px; margin-top: 14px;
+  display: flex; align-items: baseline; justify-content: center;
+  flex-wrap: wrap; gap: 4px 14px; margin-top: 12px;
+  font-family: var(--mono); font-size: 0.72rem;
 }
-.tool-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 11px; border-radius: var(--r-md);
-  border: 1px solid var(--stroke); background: transparent;
-  transition: border-color var(--speed), background var(--speed);
-}
-.tool-card:hover { border-color: var(--stroke-2); background: var(--surface); }
-.tool-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-.tool-card-icon {
-  display: grid; place-items: center; flex: none;
-  width: 28px; height: 28px; border-radius: 7px;
-  border: 1px solid var(--stroke); color: var(--text-3);
-  transition: color var(--speed), border-color var(--speed);
-}
-.tool-card-icon svg { width: 15px; height: 15px; }
-.tool-card:hover .tool-card-icon { color: var(--text-2); border-color: var(--stroke-2); }
-.tool-card-body { display: grid; gap: 1px; min-width: 0; }
-.tool-card-body b {
-  font-family: var(--mono); font-size: 0.72rem; font-weight: 500; color: var(--text-2);
-}
-.tool-card-body span {
-  font-size: 0.68rem; color: var(--text-3);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+.tool-strip-label { color: var(--text-3); font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.tool-strip a { color: var(--text-2); text-decoration: none; border-bottom: 1px solid transparent; transition: color 120ms, border-color 120ms; }
+.tool-strip a:hover { color: var(--text); border-bottom-color: var(--stroke-2); }
+.tool-strip a:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; border-radius: 3px; }
 
 /* ---------- recent ---------- */
+.recent-mark { display: inline-grid; place-items: center; flex: none; }
+.recent-mark svg { width: 12px; height: 12px; }
 .recent-line {
   display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px;
   margin-top: 12px;
@@ -628,6 +609,7 @@ a.ghost-btn { text-decoration: none; }
 .recent-item {
   color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
   transition: color var(--speed);
+ display: inline-flex; align-items: center; gap: 6px;
 }
 .recent-item:hover { color: var(--text-2); text-decoration: underline; text-underline-offset: 2px; }
 
@@ -1191,9 +1173,6 @@ a.ghost-btn { text-decoration: none; }
   .probe-title { font-size: 0.72rem; }
   .probe-meta { font-size: 0.66rem; }
   .q-actions { grid-column: 1 / -1; justify-content: flex-end; }
-  .tool-strip { grid-template-columns: 1fr; gap: 6px; }
-  .tool-card { padding: 8px 10px; }
-  .tool-card-body span { white-space: normal; }
     .sheet-panel { width: 100%; }
   .modal {
     width: 100%; max-height: 92dvh;
@@ -1289,6 +1268,16 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .status-note { margin: 12px 0 0; color: var(--text-3); font-size: 0.76rem; line-height: 1.6; white-space: pre-wrap; }
 .status-cta { margin: 12px 0 0; }
 .status-card[data-state="no-instance"] .status-dot { background: var(--text-3); }
+.report-panel {
+  margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm);
+  border: 1px solid var(--stroke); background: var(--surface);
+}
+.report-text {
+  margin: 8px 0; padding: 10px; max-height: 200px; overflow: auto;
+  border-radius: 6px; background: var(--bg); border: 1px solid var(--stroke);
+  font-family: var(--mono); font-size: 0.68rem; line-height: 1.5; white-space: pre-wrap;
+  user-select: text;
+}
 .status-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 
 /* everything diagnostic hides in here until you ask for it */
@@ -1350,9 +1339,9 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 
 .sources-panel {
   position: absolute; z-index: 60; top: calc(100% + 8px); right: 0; left: auto;
-  width: min(340px, calc(100vw - 100px));
-  max-height: min(40vh, 180px);
-  overflow-y: auto; overscroll-behavior: contain;
+  width: min(460px, calc(100vw - 90px));
+  max-height: none;
+  overflow: visible;
   padding: 7px 9px; text-align: left;
   border: 1px solid var(--stroke-2); border-radius: 9px;
   background: var(--bg-elev); box-shadow: var(--shadow-2);
@@ -1360,8 +1349,8 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 /* the chips are a block, not a ragged wrap: same columns, same rhythm */
 .sources-panel .source-chips {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 4px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 3px;
 }
 .sources-panel { animation: drop-in 150ms var(--ease) both; }
 .sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
@@ -1370,22 +1359,32 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources { display: grid; gap: 5px; min-width: 0; }
 .sources-search { width: 100%; }
 @media (max-width: 720px) { .sources-search { font-size: 16px; } }
+@media (max-height: 780px) and (min-width: 721px) {
+  /* on a short window the dropdown would sit on the wordmark, so it becomes a
+     corner sheet instead: same list, no scroll, nothing covered */
+  .sources-panel {
+    position: fixed; top: auto; left: auto; right: 24px; bottom: 24px;
+    width: 420px; max-height: none; overflow: visible;
+    transform-origin: bottom right;
+  }
+}
+
 @media (max-width: 720px) {
   /* a sheet above the bottom bar, aligned to the screen, never the wordmark */
   .sources-panel {
     position: fixed; left: 8px; right: 8px; top: auto; width: auto;
     bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-    max-height: min(56vh, 420px); overflow-y: auto;
+    max-height: none; overflow: visible;
     transform-origin: bottom center;
   }
   .sources-panel .sources-note { font-size: 0.6rem; }
-  .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 4px; }
+  .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 3px; }
 }
 .sources-count { font-family: var(--mono); font-size: 0.6rem; color: var(--text-3); opacity: 0.7; }
 .source-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .source-chip {
   padding: 2px 7px; border: 1px solid var(--stroke); border-radius: 4px;
-  font-family: var(--mono); font-size: 0.63rem; line-height: 1.5;
+  font-family: var(--mono); font-size: 0.58rem; line-height: 1.4;
   color: var(--text-2); text-align: left;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   transition: color var(--speed), border-color var(--speed), background var(--speed);
@@ -2083,6 +2082,13 @@ a.donate-value:hover { text-decoration: underline; }
   text-transform: uppercase; color: var(--text-3);
 }
 .addr-grid { display: grid; gap: 6px; }
+/* three addresses, one row on anything wider than a phone */
+@media (min-width: 560px) {
+  .addr-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .addr { flex-direction: column; align-items: stretch; gap: 9px; }
+  .addr-copy { align-self: flex-start; }
+  .addr-value { font-size: 0.7rem; line-height: 1.45; }
+}
 .addr {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 10px 12px;

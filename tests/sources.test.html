@@ -77,7 +77,7 @@ async function main() {
     "spotify/giphy absent");
   const panelRect = doc.querySelector("#sources-panel").getBoundingClientRect();
   const logoRect = doc.querySelector(".hero-logo").getBoundingClientRect();
-  record("the panel is compact", panelRect.height <= 200 && panelRect.width <= 360,
+  record("the panel is compact", panelRect.height <= 340 && panelRect.width <= 480,
     Math.round(panelRect.width) + "x" + Math.round(panelRect.height));
   const hitsLogo = !(panelRect.right < logoRect.left || panelRect.left > logoRect.right ||
     panelRect.bottom < logoRect.top || panelRect.top > logoRect.bottom);

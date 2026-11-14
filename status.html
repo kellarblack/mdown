@@ -38,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=116">
+<link rel="stylesheet" href="assets/app.css?v=121">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -60,16 +60,6 @@
   </a>
   <nav class="nav" aria-label="Sections">
     <a class="nav-link is-active" href="./">download</a>
-    <details class="nav-tools">
-      <summary class="nav-link">tools <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></summary>
-      <div class="nav-menu">
-        <a href="./#remux">remux</a>
-        <a href="./#subs">subtitles</a>
-        <a href="./#clean">metadata</a>
-      </div>
-    <a class="nav-link" href="updates.html">updates</a>
-    <a class="nav-link nav-donate" href="donate.html">donate</a>
-    </details>
   </nav>
 </header>
 
@@ -95,7 +85,13 @@
 
     <div class="status-actions">
       <button type="button" class="ghost-btn small" id="status-refresh">check again</button>
-      <button type="button" class="ghost-btn small" id="status-report">report a problem</button>
+      <button type="button" class="ghost-btn small" id="status-report" aria-expanded="false" aria-controls="report-panel">report a problem</button>
+    </div>
+
+    <div class="report-panel" id="report-panel" hidden>
+      <p class="status-note">copy this and send it to whoever shared mdown with you. there is no public tracker yet.</p>
+      <pre class="report-text" id="report-text"></pre>
+      <button type="button" class="ghost-btn small" id="report-copy">copy report</button>
     </div>
 
     <details class="status-more">
@@ -430,17 +426,34 @@
     return lines.join("\n");
   }
 
-  async function copyReport() {
+  function openReport() {
+    const panel = $("#report-panel");
     const text = reportText();
+    $("#report-text").textContent = text;
+    panel.hidden = false;
+    $("#status-report").setAttribute("aria-expanded", "true");
+    if (REPORT_URL) {
+      window.open(REPORT_URL, "_blank", "noopener");
+      return;
+    }
+    copyText(text, "report copied — send it to whoever shared mdown with you");
+  }
+
+  async function copyText(text, message) {
     try {
       await navigator.clipboard.writeText(text);
-      toast("Report copied — paste it wherever you report the problem.");
+      toast(message || "copied");
+      return true;
     } catch (e) {
-      toast("Couldn't copy automatically. Select the text below instead.", "warn");
-      noteEl.hidden = false;
-      noteEl.textContent = text;
+      const range = document.createRange();
+      const node = $("#report-text");
+      range.selectNodeContents(node);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      toast("select the text and copy it", "warn");
+      return false;
     }
-    if (REPORT_URL) window.open(REPORT_URL, "_blank", "noopener");
   }
 
   function toast(message, tone) {
@@ -459,7 +472,8 @@
 
   renderHistory(readHistory());
   $("#status-refresh").addEventListener("click", check);
-  $("#status-report").addEventListener("click", copyReport);
+  $("#status-report").addEventListener("click", openReport);
+  $("#report-copy").addEventListener("click", () => copyText(reportText(), "report copied"));
   check();
 
   /* polling a hidden tab is wasted requests; resume the moment it is visible */

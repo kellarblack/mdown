@@ -38,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=116">
+<link rel="stylesheet" href="assets/app.css?v=121">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -60,14 +60,6 @@
   </a>
   <nav class="nav" aria-label="Sections">
     <a class="nav-link" href="./">download</a>
-    <details class="nav-tools">
-      <summary class="nav-link">tools <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></summary>
-      <div class="nav-menu">
-        <a href="./#remux">remux</a>
-        <a href="./#subs">subtitles</a>
-        <a href="./#clean">metadata</a>
-      </div>
-    </details>
     <a class="nav-link" href="updates.html">updates</a>
   </nav>
 </header>
@@ -151,7 +143,7 @@
     <div class="support-alt" id="alt" hidden>
       <p class="support-alt-lede">or send it straight to an address</p>
       <div class="addr-grid" id="addr-grid"></div>
-      <p class="support-fine">monero hides the amount and both sides. the rest are public ledgers, so treat a tip there as public.</p>
+      <p class="support-fine">every address here is a public ledger — treat a tip as public. send only the asset named on the row.</p>
     </div>
 
     <div class="support-foot" id="support-foot" hidden>
@@ -257,11 +249,11 @@
   var state = document.getElementById("support-state");
   var foot = document.getElementById("support-foot");
 
-  if (on && (stripe || liberapay)) {
-    funding.hidden = false;
+  if (on && (stripe || liberapay || methods.length)) {
     foot.hidden = false;
     state.textContent = "open";
     state.classList.add("is-open");
+    if (stripe || liberapay) funding.hidden = false;
     if (stripe) {
       var s = document.getElementById("stripe-card");
       s.href = stripe;

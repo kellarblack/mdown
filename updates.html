@@ -38,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=116">
+<link rel="stylesheet" href="assets/app.css?v=121">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -60,14 +60,6 @@
   </a>
   <nav class="nav" aria-label="Sections">
     <a class="nav-link" href="./">download</a>
-    <details class="nav-tools">
-      <summary class="nav-link">tools <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></summary>
-      <div class="nav-menu">
-        <a href="./#remux">remux</a>
-        <a href="./#subs">subtitles</a>
-        <a href="./#clean">metadata</a>
-      </div>
-    </details>
     <a class="nav-link is-active" href="updates.html" aria-current="page">updates</a>
   </nav>
 </header>
@@ -84,29 +76,38 @@
 
     <article class="cl-entry" data-latest="true">
       <div class="cl-meta">
-        <span class="cl-version">1.3</span>
+        <span class="cl-version">1.1</span>
         <time class="cl-date" datetime="2026-11-14">14 nov 2026</time>
         <span class="cl-tag">latest</span>
       </div>
       <div class="cl-body">
-        <h2>Phones, properly</h2>
+        <h2>Mobile optimization</h2>
         <ul>
-          <li><b>auto</b> reads the link: a music service gets audio, everything else gets video. <b>audio</b> and <b>video</b> force it, and <b>no sound</b> is a switch rather than a fourth button nobody understood.</li>
-          <li>Paste a link and the field shows the size, the running time, the resolution and a thumbnail before anything is fetched. The queue keeps the picture.</li>
-          <li>On a phone there is a bottom bar now — <b>downloads</b>, <b>remux</b>, <b>settings</b>, <b>updates</b> — within thumb reach, with the queue opening as a sheet above it. The top bar keeps only the name and the green dot.</li>
-          <li>A file over <b>250 MB</b> now asks first: the estimated size, how much data it will use, and a cancel button. Small files start straight away.</li>
-          <li>Downloads move through the socket with zero-copy <code>sendfile</code> and 256 KB writes instead of 64 KB, so the box spends less time copying and more time sending.</li>
-          <li>The sources panel says what it is: listed for technical compatibility only, with no affiliation, endorsement or partnership. The same sentence is in the <a href="terms.html">terms</a>.</li>
-          <li>On a phone the sources trigger sits under the field, so its panel opens over the hint and the tools — never across the wordmark.</li>
-          <li>The sources list is one small panel: all 33, even columns, measured against the wordmark so it never touches it, denser on a phone.</li>
-          <li>The field is simply there on load. The arrow drops into the tray, the name types itself once, and the green dot breathes without a glow.</li>
-          <li>A link that won't go gets a short shake and a red outline. Notices cap at three, and hammering fetch can't bury the page or clear what you typed.</li>
-          <li>Settings open with the two choices you actually make; codec, dubbing, subtitles and the API key sit behind a <b>+</b>. Server is one field, one card, one <b>Check</b>.</li>
-          <li>The three browser tools are under the field — <b>remux</b>, <b>subtitles</b>, <b>metadata</b> — instead of inside a menu nobody opened.</li>
-          <li>The file preview in Settings is the file: name, container, quality, and whether it has sound.</li>
-          <li>Mobile: 16px fields, a full-width fetch, no double-tap zoom, no pull-to-refresh, and a saved-file message that names Files → Downloads or Downloads.</li>
-          <li>There is no ad slot in the code, and there never will be. The privacy check now fails the build if advertising markup appears. Donations or nothing.</li>
-          <li>Link previews got a 1200×630 card for Discord, X, Reddit, iMessage and Android. The footer is real buttons, and the changelog is linked from the page it describes.</li>
+          <li><b>auto</b> picks from the link: audio for a music service, video for everything else. <b>audio</b> and <b>video</b> force it, and <b>no sound</b> is a switch instead of a fourth button.</li>
+          <li>Paste a link and see the size, running time, resolution and a thumbnail before anything starts. The queue keeps the picture.</li>
+          <li>The sources list lives in the top bar: a dropdown on a desktop, a sheet on a phone, every supported service, no inner scroll.</li>
+          <li>A bottom bar on phones — <b>downloads</b>, <b>remux</b>, <b>settings</b>, <b>updates</b> — and a small progress bar above it, so the queue never covers the page.</li>
+          <li>A file over <b>250 MB</b> asks before it starts.</li>
+          <li>The field is simply there. The arrow drops, the name types itself, and the green dot breathes.</li>
+          <li>A bad link gets a red outline and one short shake. Notices cap at three, and hammering fetch can't bury the page.</li>
+          <li>Settings open with the two choices you actually make; the rest sits behind a <b>+</b>. Server is one field, one card, one <b>Check</b>.</li>
+          <li>The three browser tools are under the field, the file preview is the file itself, and the footer carries the build and the privacy line.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="cl-entry">
+      <div class="cl-meta">
+        <span class="cl-version">1.0</span>
+        <time class="cl-date" datetime="2026-11-12">12 nov 2026</time>
+      </div>
+      <div class="cl-body">
+        <h2>First release</h2>
+        <ul>
+          <li>One page: paste a link, choose a mode, keep the file. No account, no ads.</li>
+          <li>Its own API, with limits on duration, resolution and size.</li>
+          <li>Remux, subtitle extraction and metadata cleaning run in the browser. Those files never leave the device.</li>
+          <li>Pickers for playlists, subtitle tracks, silent video and untouched source audio.</li>
         </ul>
       </div>
     </article>

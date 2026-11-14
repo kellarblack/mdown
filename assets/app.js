@@ -2165,7 +2165,7 @@
     if (cached) return cached;
     const endpoint = apiEndpoint();
     if (!endpoint) return null;
-    const res = await fetch(endpoint + "probe", {
+    const request = () => fetch(endpoint + "probe", {
       method: "POST",
       headers: Object.assign({
         "Content-Type": "application/json",
@@ -2179,11 +2179,36 @@
         audioBitrate: clampBitrate(settings.audioBitrate)
       })
     });
-    if (!res.ok) return null;
+
+    let res = await request();
+    if (res.status === 403) {
+      /* a challenge that expired is worth one silent retry */
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      res = await request();
+    }
+    if (!res.ok) {
+      throw Object.assign(new Error("probe failed"), { status: res.status });
+    }
     const data = await res.json();
-    if (!data || data.status !== "ok") return null;
+    if (!data || data.status !== "ok") {
+      throw Object.assign(new Error("probe rejected"), { status: 422 });
+    }
     storeProbe(key, data);
     return data;
+  }
+
+  function showProbeError(status) {
+    const known = {
+      403: "the server refused this request. reload and try again.",
+      404: "this link does not work. check the link, or try audio only.",
+      422: "this link does not work. check the link, or try audio only.",
+      429: "too many requests. wait a minute and try again."
+    };
+    const text = known[status] || "the server did not respond.";
+    const withLink = !known[status] || status >= 500;
+    dom.hint.innerHTML = escapeHtml(text) + (withLink ? ' <a href="status.html">status page</a>' : "");
+    dom.hint.dataset.tone = "warn";
+    nudgeComposer();
   }
 
   function clockTime(seconds) {
@@ -2302,20 +2327,9 @@
   /* The panel hangs from the top of the page and the wordmark sits a short
      drop below it. Rather than guess a height that overlaps on one screen and
      wastes space on another, measure the gap and cap to it. */
-  function fitSources() {
-    const panel = dom.sourcesPanel;
-    if (!panel || panel.hidden) return;
-    if (window.innerWidth <= 720) {
-      panel.style.maxHeight = "min(56vh, 420px)";
-      return;
-    }
-    /* right-aligned under the bar, and never tall enough to sit on the name */
-    const logo = document.querySelector(".hero-logo");
-    const top = panel.getBoundingClientRect().top;
-    const stop = logo ? logo.getBoundingClientRect().top : window.innerHeight;
-    const room = Math.round(Math.min(180, Math.max(70, stop - top - 10)));
-    panel.style.maxHeight = room + "px";
-  }
+  /* the panel shows everything; no inner scroll */
+  function fitSources() {}
+
 
   function toggleSources() {
     if (sourcesOpen) { closeSources(); return; }
@@ -2360,7 +2374,7 @@
 
     wrap.appendChild(el("p", {
       class: "sources-note",
-      text: "listed for technical compatibility only — no affiliation, endorsement or partnership"
+      text: "compatibility only — no affiliation or endorsement"
     }));
     const row = el("div", { class: "source-chips" });
     const chips = shown.map(([id, note]) => {
@@ -3203,7 +3217,10 @@
       const host = hostOf(url) || url;
       if (seen.has(host) || seen.size >= 5) return;
       seen.add(host);
-      const item = el("button", { type: "button", class: "recent-item", text: host });
+      const detected = detectService(url);
+      const mark = markForService(detected && detected.id);
+      const item = el("button", { type: "button", class: "recent-item" });
+      item.innerHTML = '<span class="recent-mark">' + mark + "</span><span>" + escapeHtml(host) + "</span>";
       item.title = url;
       item.addEventListener("click", () => {
         dom.input.value = url;

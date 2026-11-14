@@ -57,7 +57,7 @@ async function main() {
   const wrap = doc().querySelector("#donate-wrap");
   const link = doc().querySelector("#donate-link");
 
-  record("donations are off by default", wrap.hidden === true, "hidden=" + wrap.hidden);
+  record("donations are on by default", wrap.hidden === false, "hidden=" + wrap.hidden);
 
   // flip the config on, the way donate.js would
   win().MDOWN_DONATE = {
