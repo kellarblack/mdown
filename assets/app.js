@@ -2628,6 +2628,21 @@
   /* ----------------------------------------------------------
      boot
      ---------------------------------------------------------- */
+  /* The field is the only thing this page is for, so it owns the caret. Select,
+     not just focus: typing replaces whatever is there instead of appending. */
+  function focusComposer() {
+    if (!dom.input) return;
+    if (dom.modal && !dom.modal.hidden) return;
+    if (dom.sheet && !dom.sheet.hidden) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active !== dom.input) return;
+    if (active === dom.input) { try { dom.input.select(); } catch (e) {} return; }
+    try {
+      dom.input.focus({ preventScroll: true });
+      dom.input.select();
+    } catch (e) {}
+  }
+
   function boot() {
     renderDonate();
     applyTheme();
@@ -2640,7 +2655,13 @@
     updateComposerState();
     checkInstance({ silent: true });
     autosize();
-    dom.input.focus({ preventScroll: true });
+    focusComposer();
+
+    /* coming back to the tab puts the caret back where you left it — the same
+       thing as arriving for the first time */
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") focusComposer();
+    });
 
     if (location.protocol === "file:") {
       const note = $("#file-note");

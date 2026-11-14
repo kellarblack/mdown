@@ -62,6 +62,10 @@ async function main() {
   const buttons = visible();
   record("there are buttons to test", buttons.length >= 8, buttons.length + " visible");
 
+  record("the link field owns the caret on arrival",
+    doc.activeElement && doc.activeElement.id === "url-input",
+    (doc.activeElement && (doc.activeElement.id || doc.activeElement.tagName)) || "none");
+
   // click every one, re-reading the list because panels come and go
   let clicked = 0;
   for (let i = 0; i < buttons.length; i++) {
