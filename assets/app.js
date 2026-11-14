@@ -545,6 +545,7 @@
     const first = urls[0] || "";
     const detected = first ? detectService(first) : null;
     const service = detected && detected.id ? detected.id : null;
+    updateFormatNote();
 
     /* the arrow stays quiet until there is something to fetch. it never
        appears or disappears, only arms, so the footer does not move */
@@ -647,8 +648,18 @@
     if (mode === "audio") return audioLabel();
     const container = settings.youtubeVideoContainer === "auto" ? "mp4" : settings.youtubeVideoContainer;
     if (mode === "mute" || settings.muteVideo) return container + " · " + qualityLabel() + " · no sound";
-    if (mode === "auto") return container + " · " + qualityLabel() + " · auto";
     return container + " · " + qualityLabel();
+  }
+
+  /* nothing until a link says what it is */
+  function updateFormatNote() {
+    if (!dom.formatNote) return;
+    const urls = parseUrls(dom.input.value);
+    const detected = urls.length ? detectService(urls[0]) : null;
+    const service = detected && detected.id ? detected.id : "";
+    dom.formatNote.textContent = urls.length
+      ? (service ? service + " · " : "") + modeSummary(effectiveMode(urls[0], settings.downloadMode))
+      : "";
   }
 
   function renderModes() {
@@ -658,7 +669,7 @@
       btn.setAttribute("aria-checked", on ? "true" : "false");
       
     });
-    if (dom.formatNote) dom.formatNote.textContent = modeSummary(settings.downloadMode);
+    updateFormatNote();
     updateFileNamePreview();
     $$('[data-setting="downloadMode"] button').forEach((btn) => {
       btn.setAttribute("aria-checked", btn.dataset.value === settings.downloadMode ? "true" : "false");
