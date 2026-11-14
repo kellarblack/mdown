@@ -1513,7 +1513,9 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .hero-word-dot { color: var(--accent); }
 .hero-word-sub {
-  font-size: 0.62em; font-weight: 400; color: var(--text-3);
+  /* same size as the name, a shade quieter: it reads as mdown.cc rather than
+     mdowncc, and the dot still does the separating */
+  font-size: 1em; font-weight: 400; color: var(--text-2);
   letter-spacing: -0.02em; margin-left: 1px;
 }
 
