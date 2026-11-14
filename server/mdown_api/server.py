@@ -22,6 +22,8 @@ import socketserver
 import threading
 import time
 import traceback
+import urllib.parse
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict, Optional, Tuple
 from urllib.parse import parse_qs, unquote, urlsplit
@@ -190,6 +192,30 @@ class Handler(BaseHTTPRequestHandler):
         self._json(error.status, error.payload(), headers)
 
     # -- auth --------------------------------------------------------------
+    def _check_turnstile(self, token: str) -> None:
+        """Verify the widget token with Cloudflare. No secret, no check."""
+        secret = self.config.turnstile_secret
+        if not secret:
+            return
+        if not token:
+            raise ApiError("api.auth.turnstile.missing", 403)
+        body = urllib.parse.urlencode({
+            "secret": secret,
+            "response": token,
+            "remoteip": self._client_ip(),
+        }).encode()
+        request = urllib.request.Request(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data=body, method="POST")
+        try:
+            with urllib.request.urlopen(request, timeout=8) as response:
+                payload = json.loads(response.read() or b"{}")
+        except Exception:
+            # Cloudflare unreachable: refuse rather than silently let bots in
+            raise ApiError("api.auth.turnstile.invalid", 403)
+        if not payload.get("success"):
+            raise ApiError("api.auth.turnstile.invalid", 403)
+
     def _check_auth(self) -> None:
         if not self.config.api_key:
             return
@@ -277,7 +303,7 @@ class Handler(BaseHTTPRequestHandler):
                 "version": self.config.version,
                 "url": self.config.api_url,
                 "startTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(self.started_at)),
-                "turnstileSitekey": None,
+                "turnstileSitekey": self.config.turnstile_sitekey or None,
                 "apiKeyRequired": bool(self.config.api_key),
                 "services": SERVICES,
             },
@@ -421,6 +447,7 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         body = self._read_json()
+        self._check_turnstile(str(body.get("turnstileToken") or ""))
         url = body.get("url")
         if not isinstance(url, str) or not url.strip():
             raise ApiError.url_missing()

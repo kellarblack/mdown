@@ -1159,13 +1159,17 @@
     setStatus(item, "working", "requesting");
 
     try {
+      const token = await getTurnstileToken();
+      const payload = buildBody(item.url, item.mode);
+      if (token) payload.turnstileToken = token;
+
       const res = await fetch(apiEndpoint(), {
         method: "POST",
         headers: Object.assign({
           Accept: "application/json",
           "Content-Type": "application/json"
         }, authHeaders()),
-        body: JSON.stringify(buildBody(item.url, item.mode)),
+        body: JSON.stringify(payload),
         signal: controller.signal
       });
 
@@ -1751,6 +1755,55 @@
   }
 
   /* ----------------------------------------------------------
+     turnstile: only if the instance advertises a sitekey
+     ---------------------------------------------------------- */
+  let turnstileWidget = null;
+  let turnstileToken = "";
+
+  function loadTurnstile() {
+    if (window.turnstile) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    });
+  }
+
+  async function getTurnstileToken() {
+    const key = instanceInfo && instanceInfo.turnstileSiteKey;
+    if (!key) return "";
+    try {
+      const loaded = await loadTurnstile();
+      if (!loaded) return "";
+      if (!turnstileWidget) {
+        const holder = document.createElement("div");
+        holder.hidden = true;
+        holder.id = "turnstile-holder";
+        document.body.appendChild(holder);
+        turnstileWidget = window.turnstile.render(holder, {
+          sitekey: key,
+          size: "invisible",
+          callback: (token) => { turnstileToken = token; }
+        });
+      }
+      turnstileToken = "";
+      window.turnstile.execute(turnstileWidget);
+      for (let i = 0; i < 200 && !turnstileToken; i += 1) {
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      const token = turnstileToken;
+      turnstileToken = "";
+      try { window.turnstile.reset(turnstileWidget); } catch (e) { /* fine */ }
+      return token;
+    } catch (e) {
+      return "";
+    }
+  }
+
+  /* ----------------------------------------------------------
      sources: what this instance can actually reach
      ---------------------------------------------------------- */
 
@@ -2052,7 +2105,11 @@
       const cobalt = data && data.cobalt ? data.cobalt : {};
       const git = data && data.git ? data.git : {};
 
-      instanceInfo = { services: Array.isArray(cobalt.services) ? cobalt.services : [], version: cobalt.version || "" };
+      instanceInfo = {
+        services: Array.isArray(cobalt.services) ? cobalt.services : [],
+        version: cobalt.version || "",
+        turnstileSiteKey: typeof cobalt.turnstileSitekey === "string" ? cobalt.turnstileSitekey : ""
+      };
       // keep the trigger and an open panel agreeing about the count
       if (dom.sourcesCount) dom.sourcesCount.textContent = String(SOURCES.length);
       if (sourcesOpen) renderSources();

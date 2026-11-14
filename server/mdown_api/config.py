@@ -54,6 +54,10 @@ class Config:
 
     # ---- auth (optional; off by default for a friends-scale instance) ----
     api_key: str = ""
+    # turnstile: sitekey is public and shipped to the browser, the secret never
+    # leaves the box. Empty either one disables the check entirely.
+    turnstile_sitekey: str = ""
+    turnstile_secret: str = ""
 
     # ---- media limits ---------------------------------------------------
     max_height: int = 4320
@@ -109,6 +113,8 @@ class Config:
             require_origin=os.environ.get("MDOWN_REQUIRE_ORIGIN", "1").strip() not in ("0", "false", "no"),
             cors_origins=origins,
             api_key=os.environ.get("MDOWN_API_KEY", "").strip(),
+            turnstile_sitekey=os.environ.get("MDOWN_TURNSTILE_SITEKEY", "").strip(),
+            turnstile_secret=os.environ.get("MDOWN_TURNSTILE_SECRET", "").strip(),
             max_height=_int("MDOWN_MAX_HEIGHT", 4320, 144, 4320),
             max_duration=_int("MDOWN_MAX_DURATION", 1800, 30, 86400),
             max_output_bytes=_int("MDOWN_MAX_OUTPUT_MB", 2048, 16, 8192) * MB,
