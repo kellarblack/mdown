@@ -303,7 +303,11 @@ class Handler(BaseHTTPRequestHandler):
                 "version": self.config.version,
                 "url": self.config.api_url,
                 "startTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(self.started_at)),
-                "turnstileSitekey": self.config.turnstile_sitekey or None,
+                # only advertise the widget when the check is actually on, or the
+                # front-end would load Cloudflare's script and wait for a token
+                # that nothing is going to require
+                "turnstileSitekey": (self.config.turnstile_sitekey
+                                     if self.config.turnstile_secret else None),
                 "apiKeyRequired": bool(self.config.api_key),
                 "services": SERVICES,
             },
