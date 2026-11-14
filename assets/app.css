@@ -203,6 +203,59 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 
 .instance-pill-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
+/* the dot opens a miniature of the status page: one line, one bar graph, two
+   links. Nothing else fits in a popover this size. */
+.health { position: relative; }
+.health-pop {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 80;
+  width: min(296px, calc(100vw - 20px));
+  padding: 12px 12px 10px;
+  border: 1px solid var(--stroke-2); border-radius: var(--r-md);
+  background: var(--bg-elev); box-shadow: var(--shadow-2);
+  transform-origin: top right;
+  animation: drop-in 150ms var(--ease) both;
+}
+.health-pop.is-closing { animation: drop-out 120ms var(--ease) both; }
+.hp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.hp-state {
+  display: inline-flex; align-items: center; gap: 7px; min-width: 0;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--text-2);
+}
+.hp-state b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hp-state .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); flex: none; }
+.health-pop[data-state="ok"] .hp-state .dot { background: var(--ok); }
+.health-pop[data-state="bad"] .hp-state .dot { background: var(--err); }
+.health-pop[data-state="checking"] .hp-state .dot { background: var(--warn); animation: pulse 1.2s infinite; }
+.hp-uptime {
+  flex: none; font-family: var(--mono); font-size: 0.64rem; color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.hp-strip {
+  display: flex; align-items: flex-end; gap: 2px;
+  height: 30px; margin: 11px 0 9px;
+}
+.hp-bar {
+  flex: 1 1 0; height: 100%; border-radius: 2px;
+  background: color-mix(in srgb, var(--ok) 60%, transparent);
+}
+.hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 70%, transparent); }
+.hp-bar[data-empty="true"] { height: 38%; background: var(--surface-3); }
+.hp-foot {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 0.64rem; color: var(--text-3);
+}
+.hp-links { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
+.hp-link {
+  padding: 0; border: 0; background: none;
+  color: var(--text-3); font: inherit; text-decoration: none; cursor: pointer;
+  transition: color 120ms;
+}
+.hp-link:hover { color: var(--text); }
+
+@media (max-width: 720px) {
+  .health-pop { width: min(280px, calc(100vw - 16px)); }
+}
+
 
 .icon-btn {
   display: inline-grid; place-items: center;
@@ -684,6 +737,9 @@ a.ghost-btn { text-decoration: none; }
 .pane.is-active { display: flex; }
 
 .field { display: flex; flex-direction: column; gap: 7px; }
+/* a button inside a field keeps its own width; stretching makes it read as an
+   input, which the bookmarklet is not */
+.field > .ghost-btn { align-self: flex-start; }
 .field-label {
   display: block; font-size: 0.8rem; font-weight: 600; letter-spacing: -0.005em;
 }

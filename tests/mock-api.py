@@ -83,6 +83,11 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.startswith("/thumb.png"):
             self._thumb()
             return
+        if self.path.startswith("/health"):
+            # deliberately bare: no checks, no uptime. The status suite asserts
+            # that a server reporting nothing is still read as up.
+            self._json({"status": "ok"})
+            return
         if self.path.startswith("/tunnel"):
             query = parse_qs(urlparse(self.path).query)
             name = (query.get("name") or ["mock.bin"])[0]

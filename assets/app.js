@@ -143,8 +143,8 @@
     "api.content.post.region": "The post is region-locked.",
     "api.content.short_link.unsupported": "Short links from this service aren't supported.",
     "api.rate_limit": "Rate limit reached. Try again in a moment.",
-    "api.auth.apikey.missing": "This instance needs an API key — add it in Settings → Connection.",
-    "api.auth.apikey.invalid": "That API key was rejected. Check it in Settings → Connection.",
+    "api.auth.apikey.missing": "This instance needs an API key — add it in Settings → Server.",
+    "api.auth.apikey.invalid": "That API key was rejected. Check it in Settings → Server.",
     "api.auth.bearer.missing": "This instance requires a session token.",
     "api.auth.bearer.invalid": "The session token was rejected.",
     "api.auth.turnstile.missing": "This instance requires a turnstile challenge.",
@@ -391,6 +391,12 @@
     refreshInstance: $("#refresh-instance"),
     instancePill: $("#instance-pill"),
     instancePillLabel: $("#instance-pill-label"),
+    healthPop: $("#health-pop"),
+    hpState: $("#hp-state"),
+    hpUptime: $("#hp-uptime"),
+    hpStrip: $("#hp-strip"),
+    hpPct: $("#hp-pct"),
+    hpSettings: $("#hp-settings"),
     sheet: $("#settings"),
     sheetBody: $("#sheet-body"),
     instanceUrl: $("#instance-url"),
@@ -2335,7 +2341,7 @@
         signal: controller.signal
       });
       if (res.status === 401 || res.status === 403) {
-        throw new Error("The API refused the request (HTTP " + res.status + "). Add or check the API key in Settings → Connection.");
+        throw new Error("The API refused the request (HTTP " + res.status + "). Add or check the API key in Settings → Server.");
       }
       if (!res.ok) throw new Error("The API answered HTTP " + res.status + ".");
       const data = await res.json();
@@ -2356,11 +2362,12 @@
       if (sourcesOpen) renderSources();
       if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
       const host = hostOf(base) || base;
-      // keep the Connection pane's health link pointing at the live instance
+      // keep the Server pane's health link pointing at the live instance
       if (dom.openHealth) dom.openHealth.href = base.replace(/\/+$/, "") + "/health";
       const usingDefault = normalizeInstance(settings.instance) === normalizeInstance(DEFAULT_INSTANCE);
       const detail = base + (cobalt.version ? " · api " + cobalt.version : "");
       setInstancePill("ok", usingDefault ? "online" : host, detail);
+      recordHealth(true);
 
       const uptime = cobalt.startTime ? formatUptime(Number(cobalt.startTime)) : "unknown";
       setInstanceDetail("ok", "Connected", [
@@ -2375,6 +2382,7 @@
       updateComposerState();
       return true;
     } catch (err) {
+      recordHealth(false);
       const message = err && err.name === "AbortError"
         ? "The API didn't respond within 12 seconds."
         : friendlyError(err);
@@ -2595,6 +2603,7 @@
   let lastFocused = null;
 
   function openSettings(section) {
+    if (healthOpen) closeHealthPop();
     lastFocused = document.activeElement;
     dom.sheet.hidden = false;
     document.body.style.overflow = "hidden";
@@ -2620,12 +2629,165 @@
     updateRequestPreview();
   }
 
+  /* ----------------------------------------------------------
+     health: the dot opens a miniature of the status page
+     ---------------------------------------------------------- */
+  const HEALTH_KEY = "mdown.uptime";
+  const HEALTH_BARS = 36;
+  let healthOpen = false;
+  let healthTimer = null;
+  let healthCloseTimer = null;
+
+  function readHealth() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(HEALTH_KEY) || "[]");
+      return Array.isArray(parsed) ? parsed.filter((x) => x && typeof x.ok === "boolean") : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /* a successful instance check is a health sample too, so the graph fills in
+     over visits without a single extra request. One sample a minute is enough. */
+  function recordHealth(ok) {
+    const history = readHealth();
+    const last = history[history.length - 1];
+    if (last && Date.now() - last.t < 60000 && last.ok === !!ok) return history;
+    return pushHealth(ok);
+  }
+
+  function pushHealth(ok) {
+    const history = readHealth();
+    history.push({ t: Date.now(), ok: !!ok });
+    while (history.length > 480) history.shift();
+    try { localStorage.setItem(HEALTH_KEY, JSON.stringify(history)); } catch (e) {}
+    return history;
+  }
+
+  function renderHealthBars(history) {
+    const strip = dom.hpStrip;
+    if (!strip) return;
+    const recent = history.slice(-HEALTH_BARS);
+    const pad = Math.max(0, HEALTH_BARS - recent.length);
+    strip.innerHTML = "";
+    for (let i = 0; i < pad; i += 1) {
+      strip.appendChild(el("span", { class: "hp-bar", "data-empty": "true" }));
+    }
+    recent.forEach((entry, i) => {
+      const bar = el("span", { class: "hp-bar" });
+      bar.dataset.ok = entry.ok ? "true" : "false";
+      if (typeof bar.animate === "function") {
+        bar.animate(
+          [{ transform: "scaleY(0.25)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
+          { duration: 280, delay: Math.min(i, 10) * 14, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
+        );
+      }
+      strip.appendChild(bar);
+    });
+
+    const total = history.length;
+    const up = history.filter((x) => x.ok).length;
+    if (dom.hpPct) {
+      dom.hpPct.textContent = total
+        ? Math.round((up / total) * 1000) / 10 + "% up · " + total + " check" + (total === 1 ? "" : "s")
+        : "no checks yet";
+    }
+  }
+
+  function setHealthState(state, label, uptime) {
+    if (!dom.healthPop) return;
+    dom.healthPop.dataset.state = state;
+    if (dom.hpState) dom.hpState.textContent = label;
+    if (dom.hpUptime && uptime !== undefined) dom.hpUptime.textContent = uptime || "";
+    if (dom.instancePill && (state === "ok" || state === "bad" || state === "checking")) {
+      dom.instancePill.dataset.state = state;
+    }
+  }
+
+  async function checkHealth() {
+    const endpoint = apiEndpoint();
+    if (!endpoint) {
+      setHealthState("bad", "not connected", "");
+      renderHealthBars(readHealth());
+      return;
+    }
+    setHealthState("checking", "checking…", "");
+    try {
+      const res = await fetch(endpoint + "health", {
+        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
+        cache: "no-store"
+      });
+      const body = await res.json().catch(() => null);
+      const ok = res.ok && (!body || body.status !== "degraded");
+      renderHealthBars(pushHealth(ok));
+      const up = body && Number(body.uptimeSeconds)
+        ? formatUptime(Date.now() - Number(body.uptimeSeconds) * 1000)
+        : "";
+      setHealthState(ok ? "ok" : "bad", ok ? "online" : "down", up);
+    } catch (e) {
+      renderHealthBars(pushHealth(false));
+      setHealthState("bad", "unreachable", "");
+    }
+  }
+
+  function startHealthTimer() {
+    if (healthTimer) return;
+    healthTimer = setInterval(() => {
+      if (!healthOpen || document.hidden) return;
+      checkHealth();
+    }, 60000);
+  }
+
+  function openHealthPop() {
+    if (!dom.healthPop || healthOpen) return;
+    healthOpen = true;
+    clearTimeout(healthCloseTimer);
+    dom.healthPop.hidden = false;
+    dom.healthPop.classList.remove("is-closing");
+    dom.instancePill.setAttribute("aria-expanded", "true");
+    renderHealthBars(readHealth());
+    checkHealth();
+    startHealthTimer();
+  }
+
+  function closeHealthPop() {
+    if (!dom.healthPop || !healthOpen) return;
+    healthOpen = false;
+    dom.instancePill.setAttribute("aria-expanded", "false");
+    dom.healthPop.classList.add("is-closing");
+    healthCloseTimer = setTimeout(() => {
+      dom.healthPop.hidden = true;
+      dom.healthPop.classList.remove("is-closing");
+    }, 120);
+  }
+
   function bindSheet() {
     $("#open-settings").addEventListener("click", () => openSettings());
     dom.setupOpenSettings.addEventListener("click", () => openSettings("instance"));
-    /* the pill is the connection, nothing else — it opens the pane that shows
-       the address, the health link and the status page */
-    dom.instancePill.addEventListener("click", () => openSettings("instance"));
+    /* the dot is the connection: click for a miniature of the status page,
+       the gear is still the way into the settings */
+    dom.instancePill.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (healthOpen) closeHealthPop();
+      else openHealthPop();
+    });
+    if (dom.hpSettings) {
+      dom.hpSettings.addEventListener("click", () => {
+        closeHealthPop();
+        openSettings("instance");
+      });
+    }
+    document.addEventListener("click", (event) => {
+      if (!healthOpen) return;
+      if (event.target.closest("#health")) return;
+      closeHealthPop();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && healthOpen) {
+        closeHealthPop();
+        dom.instancePill.focus();
+      }
+    });
 
     if (dom.openSources) {
       dom.openSources.addEventListener("click", (event) => {

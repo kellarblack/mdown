@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>health popover test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 700px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The green dot opens a miniature of the status page: one line of state, a bar
+  graph of recent checks, and two links. It must behave like every other
+  dropdown on the site — open on click, leave on Escape, on an outside click,
+  and when settings opens.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/health.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 12000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  frame.src = "../index.html?health=" + Date.now();
+
+  const booted = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
+  record("the app boots", booted);
+  if (!booted) { window.__results = { total: results.length, failures, results }; return; }
+
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  const $ = (sel) => doc.querySelector(sel);
+  await sleep(500);
+
+  const dot = $("#instance-pill");
+  const pop = $("#health-pop");
+  record("the dot starts closed", pop.hidden && dot.getAttribute("aria-expanded") === "false",
+    "hidden=" + pop.hidden);
+
+  dot.click();
+  const opened = await waitFor(() => !pop.hidden, 5000);
+  record("clicking it opens the health panel", opened);
+  record("and reports its state", dot.getAttribute("aria-expanded") === "true",
+    dot.getAttribute("aria-expanded"));
+
+  const bars = doc.querySelectorAll("#hp-strip .hp-bar");
+  record("it draws a bar per recent check", bars.length === 36, bars.length + " bars");
+
+  const online = await waitFor(() => pop.dataset.state === "ok", 10000);
+  record("it checks the server on open", online, "state=" + pop.dataset.state);
+  record("and says something about uptime",
+    /% up|no checks/.test($("#hp-pct").textContent), $("#hp-pct").textContent);
+
+  // outside click closes it
+  doc.body.click();
+  const closed = await waitFor(() => pop.hidden, 4000);
+  record("an outside click closes it", closed, "hidden=" + pop.hidden);
+
+  // Escape closes it too
+  dot.click();
+  await waitFor(() => !pop.hidden, 4000);
+  doc.dispatchEvent(new win.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  const escaped = await waitFor(() => pop.hidden, 4000);
+  record("Escape closes it", escaped);
+
+  // the settings button hands over and folds the panel away
+  dot.click();
+  await waitFor(() => !pop.hidden, 4000);
+  $("#hp-settings").click();
+  const handedOver = await waitFor(() => !$("#settings").hidden, 4000);
+  const folded = await waitFor(() => pop.hidden, 4000);
+  record("settings opens from it and the panel leaves", handedOver && folded,
+    "settings=" + !$("#settings").hidden + " pop=" + pop.hidden);
+
+  // and it has to fit a phone, since it hangs off the right edge
+  doc.querySelector("[data-close-settings]").click();
+  await sleep(200);
+  frame.style.width = "390px";
+  await sleep(200);
+  dot.click();
+  await waitFor(() => !pop.hidden, 4000);
+  await sleep(200);
+  const r = pop.getBoundingClientRect();
+  record("it fits a phone screen", r.left >= 0 && r.right <= 391,
+    Math.round(r.left) + " → " + Math.round(r.right));
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

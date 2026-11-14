@@ -70,7 +70,7 @@ async function main() {
 
   const detail = doc().querySelector("#instance-error").textContent || "";
   record("the error names the api key", /api key/i.test(detail), detail.slice(0, 90));
-  record("it says where to put the key", /settings . connection/i.test(detail), detail.slice(0, 90));
+  record("it says where to put the key", /settings . server/i.test(detail), detail.slice(0, 90));
 
   // a download against the locked instance must say the same thing
   doc().querySelector("[data-close-settings]").click();

@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=79">
+<link rel="stylesheet" href="assets/app.css?v=81">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -118,7 +118,7 @@
         {
           "@type": "Question",
           "name": "What does it work with?",
-          "acceptedAnswer": { "@type": "Answer", "text": "The list is whatever the connected API supports, shown in Settings under Connection. The reference API covers about thirty services, including YouTube, Vimeo, TikTok, Instagram, Reddit, Twitch, SoundCloud, Bandcamp, Mixcloud, Bilibili and Dailymotion." }
+          "acceptedAnswer": { "@type": "Answer", "text": "The list is whatever the connected API supports, shown in Settings under Server. The reference API covers about thirty services, including YouTube, Vimeo, TikTok, Instagram, Reddit, Twitch, SoundCloud, Bandcamp, Mixcloud, Bilibili and Dailymotion." }
         },
         {
           "@type": "Question",
@@ -170,11 +170,29 @@
   <div class="topbar-actions">
     <!-- one control for state and downloads: the dot is the API, the number is
          the queue. Splitting them into two buttons was two things to read. -->
-    <button class="instance-pill" id="instance-pill" type="button" data-state="unknown"
-            title="connection — click for settings" aria-label="connection: not connected">
-      <span class="dot" aria-hidden="true"></span>
-      <span class="instance-pill-label sr-only" id="instance-pill-label">not connected</span>
-    </button>
+    <div class="health" id="health">
+      <button class="instance-pill" id="instance-pill" type="button" data-state="unknown"
+              title="connection — click for health" aria-label="connection: not connected"
+              aria-expanded="false" aria-controls="health-pop">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="instance-pill-label sr-only" id="instance-pill-label">not connected</span>
+      </button>
+
+      <div class="health-pop" id="health-pop" data-state="unknown" hidden aria-label="server health">
+        <div class="hp-head">
+          <span class="hp-state"><span class="dot" aria-hidden="true"></span><b id="hp-state">not connected</b></span>
+          <span class="hp-uptime" id="hp-uptime"></span>
+        </div>
+        <div class="hp-strip" id="hp-strip" aria-hidden="true"></div>
+        <div class="hp-foot">
+          <span id="hp-pct"></span>
+          <span class="hp-links">
+            <a href="status.html" class="hp-link">status</a>
+            <button type="button" class="hp-link" id="hp-settings">settings</button>
+          </span>
+        </div>
+      </div>
+    </div>
 
     <div class="dock" id="queue-dock">
       <button class="icon-btn dock-btn" id="queue-toggle" type="button"
@@ -481,7 +499,7 @@
       </section>
 
       <section class="pane" data-pane="instance">
-        <p class="pane-lede">Downloads run on a server, not in this tab.</p>
+        <p class="pane-lede">Downloads happen on a server.</p>
         <div class="field">
           <label class="field-label" for="instance-url">Server</label>
           <div class="field-row">
@@ -618,16 +636,18 @@
             <button type="button" data-value="8">8</button>
             <span class="seg-suffix">kb/s</span>
           </div>
-          <p class="field-help">Above 128 there is nothing audible to gain.</p>
+          <p class="field-help">128 is already more than most sources serve.</p>
         </div>
 
-        <label class="switch-row" for="audio-covers">
-          <span>
-            <span class="field-label">Cover art</span>
-            <span class="field-help">Adds the thumbnail to mp3, ogg and opus.</span>
-          </span>
-          <input type="checkbox" id="audio-covers" class="switch" data-setting="audioCovers">
-        </label>
+        <div class="field">
+          <label class="switch-row" for="audio-covers">
+            <span>
+              <span class="field-label">Cover art</span>
+              <span class="field-help">Adds the thumbnail to mp3, ogg and opus.</span>
+            </span>
+            <input type="checkbox" id="audio-covers" class="switch" data-setting="audioCovers">
+          </label>
+        </div>
 
         <details class="pane-more">
           <summary>Dubs and TikTok sound</summary>
@@ -842,25 +862,25 @@
 
 <template id="help-template">
   <div class="help">
-    <p class="help-lede">A downloader with no server of its own. It hands the link to an API you point it at, streams the file back, and keeps nothing.</p>
+    <p class="help-lede">A downloader with no server of its own. It hands the link to a server you point it at, streams the file back, and keeps nothing.</p>
 
     <ol class="steps">
       <li>
         <div>
           <strong>Drop a link</strong>
-          <span>Paste it above, or put it straight after the address: <code>mdown.cc/&lt;link&gt;</code>. Both start fetching on their own. On a phone the saved file lands in <b>Files → Downloads</b> on iOS, or <b>Downloads</b> on Android — the queue row says where once it finishes.</span>
+          <span>Paste it above, or put it after the address: <code>mdown.cc/&lt;link&gt;</code>. Both start on their own.</span>
         </div>
       </li>
       <li>
         <div>
           <strong>Pick the output</strong>
-          <span>auto takes video with sound at your preferred quality. audio takes just the track — mp3, wav, ogg, opus, or the untouched source. mute takes video without sound.</span>
+          <span>video with sound, audio only, or silent video. The row under the field shows the size before you commit.</span>
         </div>
       </li>
       <li>
         <div>
           <strong>Keep the file</strong>
-          <span>It streams straight into your downloads with live progress and speed. Cancel mid-transfer and nothing half-written is kept.</span>
+          <span>It lands in your downloads. On iOS that is <b>Files → Downloads</b>, on Android <b>Downloads</b>. Cancel and nothing half-written is kept.</span>
         </div>
       </li>
     </ol>
@@ -868,56 +888,39 @@
     <h3 class="help-sub">Questions</h3>
     <div class="faq">
       <details>
-        <summary>Why does it ask for an API address?</summary>
-        <p>Because this page has no server. A browser can’t fetch video from most sites by itself, so it borrows an API server that can. Paste that server’s address in <b>Settings → Connection</b>, press check, and it’s done once. If the API needs a key, it will tell you.</p>
+        <summary>Why does it need a server?</summary>
+        <p>A browser can't fetch video from most sites on its own. mdown borrows a server that can. The default one comes with the site; you only touch <b>Settings → Server</b> to use your own.</p>
       </details>
       <details>
         <summary>Where do my files go?</summary>
-        <p>Into your browser's normal downloads. Nothing is stored on a server, and the queue disappears when you close the tab.</p>
-      </details>
-      <details>
-        <summary>Which formats can I get?</summary>
-        <p>Video as <code>mp4</code>, <code>webm</code> or <code>mkv</code> depending on the codec you pick. Audio as <code>mp3</code>, <code>wav</code>, <code>ogg</code> or <code>opus</code>. The mode row sets it per download.</p>
+        <p>Your normal downloads. The queue disappears when you close the tab, and nothing is stored on the server.</p>
       </details>
       <details>
         <summary>Does it work on my phone?</summary>
-        <p>Yes — same page, same queue. You can also skip the paste step: put the media link after the domain, <code>mdown.cc/&lt;link&gt;</code>, then bookmark or message that URL. Opening it starts the download straight away, and refreshing won't fetch it twice.</p>
+        <p>Yes — same page, same queue. Bookmark or send <code>mdown.cc/&lt;link&gt;</code> and opening it starts the download.</p>
       </details>
       <details>
-        <summary>Why does it end in .cc?</summary>
-        <p>Closed captions. It's the country code for the Cocos Islands, but here it's a nod to the subtitle extractor — the tool that pulls captions out of a file.</p>
-      </details>
-      <details>
-        <summary>What does it keep?</summary>
-        <p>Your settings and a short list of recent links, in this browser only. No account, no cookies, no analytics.</p>
-      </details>
-      <details>
-        <summary>What does it work with?</summary>
-        <p>The list is whatever the connected API supports, not a marketing page — open <b>Settings → Connection</b> and it's right there as a row of names. With the reference API that's about thirty: YouTube, Vimeo, TikTok, Instagram, Reddit, Twitch, SoundCloud, Bandcamp, Mixcloud, Bilibili, Dailymotion and more. Paste a link and the composer tells you if the service isn't on that list before you fetch.</p>
-      </details>
-      <details>
-        <summary>Can it download from Spotify?</summary>
-        <p>No — and neither can anything else without breaking encryption. Spotify, Deezer, Tidal and Apple Music encrypt their audio, so the downloader refuses them and says so. The same track is usually on YouTube or SoundCloud, which do work.</p>
+        <summary>Spotify?</summary>
+        <p>No. Spotify, Deezer, Tidal and Apple Music encrypt their audio, so mdown refuses them and says so. The same track is usually on YouTube or SoundCloud.</p>
       </details>
       <details>
         <summary>A link failed — why?</summary>
-        <p>Usually one of three things: the post is private, region-locked or age-gated; the API doesn't support that service; or it's rate limiting. The error on the row says which, and retry re-sends it.</p>
+        <p>Usually private, region-locked, age-gated, or rate limited. The row says which, and retry re-sends it.</p>
+      </details>
+      <details>
+        <summary>What does it keep?</summary>
+        <p>Settings and a short list of recent links, in this browser only. No account, no analytics.</p>
       </details>
     </div>
 
-    <p class="help-note">
-      <b>Respect copyright.</b> mdown saves files; it doesn't grant rights to them.
-      Use it for content you own, content that's licensed for reuse, or where the
-      service's terms allow it.
-    </p>
+    <p class="help-note"><b>Respect copyright.</b> Use it for what you own, what is licensed for reuse, or what the service allows.</p>
   </div>
-
 </template>
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=45" defer></script>
+<script src="assets/app.js?v=46" defer></script>
 <script type="module" src="assets/nav.js?v=9"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>
