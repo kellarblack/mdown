@@ -47,7 +47,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=131">
+<link rel="stylesheet" href="assets/app.css?v=133">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -507,7 +507,7 @@
     <a href="terms.html">terms</a>
     <button type="button" class="footer-link" id="open-help">how it works</button>
     <a href="updates.html">updates</a>
-    <a href="terms.html#source">open source</a>
+    <button type="button" class="footer-link" id="open-about">open source</button>
     <a id="repo-link" hidden rel="noopener">repository</a>
     <a id="view-source" hidden rel="noopener">view source</a>
     <span id="donate-wrap" hidden><a href="#" id="donate-link">donate</a></span>
@@ -555,6 +555,12 @@
             <button type="button" data-value="light">light</button>
             <button type="button" data-value="dark">dark</button>
           </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Support</span>
+          <button type="button" class="ghost-btn" id="open-donate-settings" hidden>tip jar</button>
+          <p class="field-help">no ads, ever. if mdown earned it, you can leave something.</p>
         </div>
       </section>
 
@@ -988,8 +994,8 @@
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
-<script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=78" defer></script>
+<script src="assets/donate.js?v=4" defer></script>
+<script src="assets/app.js?v=81" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

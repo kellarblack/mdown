@@ -55,8 +55,8 @@
   --surface: rgba(0, 0, 0, 0.02);
   --surface-2: rgba(0, 0, 0, 0.045);
   --surface-3: rgba(0, 0, 0, 0.075);
-  --stroke: rgba(0, 0, 0, 0.09);
-  --stroke-2: rgba(0, 0, 0, 0.2);
+  --stroke: rgba(0, 0, 0, 0.13);
+  --stroke-2: rgba(0, 0, 0, 0.27);
   --text: #121213;
   --text-2: #5c5c61;
   --text-3: #6f6f76;
@@ -690,14 +690,13 @@ a.ghost-btn { text-decoration: none; }
   font-family: var(--mono); font-size: 0.66rem; color: var(--text-3);
 }
 .footer-meta a, .footer-meta .footer-link {
-  padding: 2px 0; border: 0; background: none;
-  color: var(--text-3); font: inherit; cursor: pointer;
-  text-decoration: underline; text-underline-offset: 3px;
-  text-decoration-color: var(--stroke-2);
-  transition: color 120ms, text-decoration-color 120ms;
+  padding: 3px 10px; border: 1px solid var(--stroke); border-radius: 999px;
+  background: transparent; color: var(--text-2); font: inherit; cursor: pointer;
+  text-decoration: none;
+  transition: color 120ms, background 120ms, border-color 120ms;
 }
 .footer-meta a:hover, .footer-meta .footer-link:hover {
-  color: var(--text); text-decoration-color: var(--text);
+  color: var(--text); background: var(--surface-2); border-color: var(--stroke-2);
 }
 .footer-meta .footer-link:focus-visible, .footer-meta a:focus-visible {
   outline: 2px solid var(--ring); outline-offset: 3px; border-radius: 3px;
@@ -707,7 +706,7 @@ a.ghost-btn { text-decoration: none; }
 .footer-meta #donate-wrap a {
   display: inline-block; padding: 3px 10px;
   border: 1px solid var(--stroke-2); border-radius: 999px;
-  color: var(--text-2); text-decoration: none;
+  color: var(--text); text-decoration: none;
   transition: color 120ms, background 120ms, border-color 120ms;
 }
 .footer-meta #donate-wrap a:hover { color: var(--bg); background: var(--text); border-color: var(--text); }
@@ -763,6 +762,20 @@ a.ghost-btn { text-decoration: none; }
   animation: fade 180ms var(--ease) both;
 }
 [data-theme="light"] .sheet-backdrop { background: rgba(0, 0, 0, 0.22); }
+/* selected controls read as selected in daylight, not as slightly-greyer grey */
+[data-theme="light"] .mode[aria-checked="true"],
+[data-theme="light"] .seg button[aria-checked="true"] {
+  background: var(--text); color: var(--bg);
+}
+[data-theme="light"] .ghost-btn:hover,
+[data-theme="light"] .icon-btn:hover,
+[data-theme="light"] .nav-link:hover,
+[data-theme="light"] .chip:hover {
+  background: var(--surface-2); border-color: var(--stroke-2);
+}
+[data-theme="light"] .tool-card,
+[data-theme="light"] .file-preview,
+[data-theme="light"] .addr { background: #fff; }
 .sheet-panel {
   position: absolute; top: 0; right: 0; bottom: 0;
   width: min(640px, 100%);
@@ -1213,6 +1226,10 @@ a.ghost-btn { text-decoration: none; }
   .toasts { bottom: 12px; }
 }
 
+/* ---------- about / shortcuts ---------- */
+.about-line { margin: 0; color: var(--text-2); font-size: 0.8rem; line-height: 1.55; }
+.about-link { color: var(--text); font-size: 0.78rem; font-family: var(--mono); text-decoration: underline; text-underline-offset: 3px; }
+.about-link:hover { color: var(--text-2); }
 /* ---------- shortcuts ---------- */
 .shortcuts { display: grid; gap: 8px; }
 .shortcut-row { display: flex; align-items: center; gap: 12px; font-size: 0.8rem; color: var(--text-2); }
@@ -1552,6 +1569,17 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 a.donate-value { color: var(--accent); }
 a.donate-value:hover { text-decoration: underline; }
 .donate-hint { font-size: 0.7rem; color: var(--text-3); }
+.donate-stripe {
+  display: grid; gap: 2px; margin: 0 0 12px; padding: 11px 12px;
+  border: 1px solid var(--stroke-2); border-radius: var(--r-md);
+  background: var(--surface);
+  transition: border-color 120ms, background 120ms;
+}
+.donate-stripe:hover { border-color: var(--text); background: var(--surface-2); }
+.donate-stripe b { font-size: 0.86rem; font-weight: 600; }
+.donate-stripe span { color: var(--text-3); font-size: 0.74rem; }
+.donate-hint { margin: 10px 0 0; font-size: 0.72rem; color: var(--text-3); }
+.donate-hint a { color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
 .donate-fine { color: var(--text-3); font-size: 0.72rem; line-height: 1.6; margin: 0; }
 
 /* ---------- terms page ---------- */

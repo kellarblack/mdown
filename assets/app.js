@@ -2397,7 +2397,15 @@
     const methods = Array.isArray(cfg.methods)
       ? cfg.methods.filter((m) => m && typeof m === "object" && (m.value || m.href))
       : [];
-    return methods.length ? { methods, note: typeof cfg.note === "string" ? cfg.note : "" } : null;
+    const stripe = typeof cfg.stripe === "string" ? cfg.stripe.trim() : "";
+    const liberapay = typeof cfg.liberapay === "string" ? cfg.liberapay.trim() : "";
+    if (!methods.length && !stripe && !liberapay) return null;
+    return {
+      methods,
+      stripe,
+      liberapay,
+      note: typeof cfg.note === "string" ? cfg.note : ""
+    };
   }
 
   function renderDonate() {
@@ -2406,6 +2414,8 @@
     document.querySelectorAll(".nav-donate").forEach((link) => {
       link.hidden = !cfg;
     });
+    const settingsDonate = $("#open-donate-settings");
+    if (settingsDonate) settingsDonate.hidden = !cfg;
     if (!dom.donateLink || !dom.donateWrap) return;
     /* the wrapper carries the leading separator, so hide that rather than
        leaving a dangling " · " when donations are off */
@@ -2431,6 +2441,18 @@
       text: "mdown is free, has no ads, and keeps nothing about you. Nothing here unlocks anything — it is just a tip jar."
     }));
     if (cfg.note) wrap.appendChild(el("p", { class: "donate-note", text: cfg.note }));
+
+    if (cfg.stripe) {
+      const card = el("a", {
+        class: "donate-stripe",
+        href: cfg.stripe,
+        rel: "noopener noreferrer",
+        target: "_blank"
+      });
+      card.appendChild(el("b", { text: "card" }));
+      card.appendChild(el("span", { text: "apple pay · google pay · one-time" }));
+      wrap.appendChild(card);
+    }
 
     const list = el("div", { class: "donate-list" });
     cfg.methods.forEach((method) => {
@@ -2469,6 +2491,9 @@
       class: "donate-fine",
       text: "No receipts, no accounts, no tracking, and donating does not buy priority. If a tip page is listed, it shows whatever name that account uses."
     }));
+
+    wrap.appendChild(el("p", { class: "donate-hint" }));
+    wrap.lastChild.appendChild(el("a", { href: "donate.html", text: "all the ways to give" }));
 
     const close = el("button", { type: "button", class: "ghost-btn small", text: "close", onclick: () => closeModal() });
     openModal("Donate", wrap, [close]);
@@ -2876,7 +2901,13 @@
     const body = template.content.cloneNode(true);
     const close = el("button", { type: "button", class: "primary-btn", text: "got it" });
     close.addEventListener("click", () => closeModal());
-    openModal("How it works", body, [close]);
+    const buttons = [close];
+    if (donateConfig()) {
+      const tip = el("button", { type: "button", class: "ghost-btn", text: "tip jar" });
+      tip.addEventListener("click", () => { closeModal(); openDonate(); });
+      buttons.unshift(tip);
+    }
+    openModal("How it works", body, buttons);
   }
 
   /* ----------------------------------------------------------
@@ -3081,6 +3112,13 @@
     dom.setupOpenSettings.addEventListener("click", () => openSettings("instance"));
     /* the dot is the connection: click for a miniature of the status page,
        the gear is still the way into the settings */
+    const settingsDonate = $("#open-donate-settings");
+    if (settingsDonate) settingsDonate.addEventListener("click", () => {
+      closeSettings();
+      openDonate();
+    });
+    const aboutButton = $("#open-about");
+    if (aboutButton) aboutButton.addEventListener("click", openAbout);
     const mbarSettings = $("#mbar-settings");
     if (mbarSettings) mbarSettings.addEventListener("click", () => openSettings());
     const mbarQueue = $("#mbar-queue");
@@ -3376,8 +3414,15 @@
     } catch (e) {}
   }
 
-  function openShortcuts() {
+  function openAbout() {
     const wrap = el("div", { class: "shortcuts" });
+    wrap.appendChild(el("p", {
+      class: "about-line",
+      text: "open source under the mit licence. fork it, run it, change it."
+    }));
+    const terms = el("a", { class: "about-link", href: "terms.html#source", text: "read the terms" });
+    wrap.appendChild(terms);
+    wrap.appendChild(el("p", { class: "about-line", text: "keyboard" }));
     const rows = [
       ["/", "focus the link field"],
       ["enter", "start the download"],
@@ -3392,7 +3437,7 @@
     });
     const close = el("button", { type: "button", class: "ghost-btn", text: "close" });
     close.addEventListener("click", () => closeModal());
-    openModal("Keyboard", wrap, [close]);
+    openModal("About", wrap, [close]);
   }
 
   function boot() {
@@ -3422,7 +3467,7 @@
       }
       if (event.key === "?" && !typing) {
         event.preventDefault();
-        openShortcuts();
+        openAbout();
       }
     });
 
