@@ -71,7 +71,8 @@ async function main() {
 
   // and the main app must not advertise a closed tip jar
   const appFrame = document.getElementById("app");
-  await waitFor(() => appFrame.contentDocument && appFrame.contentDocument.querySelector("#url-input"), 15000);
+  await waitFor(() => appFrame.contentDocument && appFrame.contentWindow.md, 15000);
+  await sleep(200);
   const appDoc = appFrame.contentDocument;
   const navDonate = appDoc.querySelector(".nav-donate");
   record("the nav hides donate while it is closed", !navDonate || navDonate.hidden, navDonate ? "hidden=" + navDonate.hidden : "no link");

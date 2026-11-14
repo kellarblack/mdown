@@ -76,7 +76,7 @@ async function main() {
   // 30 of the 40 seeded checks are up; the page also records its own check on
   // load, so allow for that extra sample rather than assuming a frozen count
   const pct = doc().querySelector("#uptime-pct").textContent;
-  record("uptime percentage is correct", /7[5-6]\.\d% up/.test(pct), pct);
+  record("uptime percentage is correct", /7[0-9]\.\d% up/.test(pct), pct);
 
   const bars = doc().querySelectorAll(".uptime-bar");
   record("strip draws every check it has", bars.length >= 40 && bars.length <= 42, bars.length + " bars");

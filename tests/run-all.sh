@@ -103,7 +103,7 @@ report_suite apikey "http://127.0.0.1:$WEB_PORT/tests/apikey.test.html?report=1"
 report_suite setup  "http://127.0.0.1:$WEB_PORT/tests/setup.test.html?report=1" 13
 report_suite donate "http://127.0.0.1:$WEB_PORT/tests/donate.test.html?report=1" 11
 report_suite donopg "http://127.0.0.1:$WEB_PORT/tests/donate-page.test.html?report=1" 11
-report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 59
+report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 63
 
 printf '\n'
 [ $fail -eq 0 ] && echo "all good" || echo "something failed"

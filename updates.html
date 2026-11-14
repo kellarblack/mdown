@@ -28,7 +28,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=54">
+<link rel="stylesheet" href="assets/app.css?v=56">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -59,76 +59,103 @@
       </div>
     </details>
     <a class="nav-link is-active" href="updates.html" aria-current="page">updates</a>
-    <a class="nav-link nav-donate" href="donate.html">donate</a>
   </nav>
 </header>
 
 <main class="wrap">
-  <h1 class="page-h1">Updates</h1>
-  <p class="page-lede">Newest first. Every entry is something you can check on this site or in the code — no roadmap promises.</p>
 
-  <div class="changelog">
+  <header class="updates-head">
+    <span class="updates-kicker">changelog</span>
+    <h1 class="page-h1 updates-title">Updates</h1>
+    <p class="page-lede">Newest first. Every line is something you can check on this site — no roadmap promises.</p>
+  </header>
 
-    <article class="changelog-entry">
-      <span class="changelog-date">14 nov 2026 · 1.3</span>
-      <h2>Phones, properly</h2>
-      <ul>
-        <li>A download now shows itself: the queue opens on any screen, the bar fills with real percentages, speed and time left, and the badge pulses while work is running. It used to open only above 720px, so phones saw nothing until the file arrived.</li>
-        <li>Paste tells you what to do when the clipboard is blocked on iOS or Android, instead of naming a Mac shortcut.</li>
-        <li>iOS hands downloads to Safari's downloader — a blob opens in a viewer there and never reaches Files.</li>
-        <li><code>fetch</code> is a full-width 48px target on phones, and the modes split the row evenly.</li>
-        <li>Fields are 16px on phones so iOS stops zooming the page when you tap them.</li>
-        <li>No accidental pull-to-refresh mid-download. No sideways scroll at 320px.</li>
-        <li>The status pill says <b>online</b> instead of a hostname, with the address in its tooltip.</li>
-        <li>The hero label was undersized lowercase mono; it's now a tracked caps label at a readable size.</li>
-        <li>A <a href="donate.html">donate page</a> that states what the site costs to run instead of asking vaguely, with card, recurring and plain-address options, and nothing at all loaded from a third party.</li>
-        <li>An updates page (this one), a grid for supported services, and a one-line explanation at the top of every settings pane. "Output" is now "Files", because that's what it holds.</li>
-        <li>The active nav item stopped looking like a button — it names where you are now.</li>
-        <li>Sharing moved onto the donate page: copy the link, or post it straight to x, threads, reddit or bluesky. Each one is an ordinary link with no referrer, so nothing is requested until you press it.</li>
-      </ul>
+  <div class="timeline">
+
+    <article class="cl-entry" data-latest="true">
+      <div class="cl-meta">
+        <span class="cl-version">1.3</span>
+        <time class="cl-date" datetime="2026-11-14">14 nov 2026</time>
+        <span class="cl-tag">latest</span>
+      </div>
+      <div class="cl-body">
+        <h2>Phones, properly</h2>
+        <ul>
+          <li>A download now shows itself: the queue opens on any screen, the bar fills with real percentages, speed and time left, and the badge pulses while work is running. It used to open only above 720px, so phones saw nothing until the file arrived.</li>
+          <li>Paste tells you what to do when the clipboard is blocked on iOS or Android, instead of naming a Mac shortcut.</li>
+          <li>iOS hands downloads to Safari's downloader — a blob opens in a viewer there and never reaches Files.</li>
+          <li><code>fetch</code> is a full-width 48px target on phones, and the modes split the row evenly.</li>
+          <li>Fields are 16px on phones so iOS stops zooming the page when you tap them.</li>
+          <li>No accidental pull-to-refresh mid-download. No sideways scroll at 320px.</li>
+          <li>The status pill says <b>online</b> instead of a hostname, with the address in its tooltip.</li>
+          <li>The hero label was undersized lowercase mono; it's now a tracked caps label at a readable size.</li>
+          <li>A <a href="donate.html">donate page</a> that states what the site costs to run instead of asking vaguely, with card, recurring and plain-address options, and nothing at all loaded from a third party.</li>
+          <li>An updates page (this one), a grid for supported services, and a one-line explanation at the top of every settings pane. "Output" is now "Files", because that's what it holds.</li>
+          <li>The active nav item stopped looking like a button — it names where you are now.</li>
+          <li>Sharing moved onto the donate page: copy the link, or post it straight to x, threads, reddit or bluesky. Each one is an ordinary link with no referrer, so nothing is requested until you press it.</li>
+        </ul>
+      </div>
     </article>
 
-    <article class="changelog-entry">
-      <span class="changelog-date">13 nov 2026 · 1.2</span>
-      <h2>It's live</h2>
-      <ul>
-        <li><b>mdown.cc</b> served statically with a real certificate and HTTPS enforced; <b>api.mdown.cc</b> on the box, Let's Encrypt, renewing itself.</li>
-        <li>8 parallel range requests per download instead of 4 — measured 39% faster on a 900 MB 4K file. 16 was slower on one core.</li>
-        <li>Output cap raised to 2 GB. The old 800 MB ceiling rejected a 966 MB 4K file, which meant the highest quality was advertised and then refused.</li>
-        <li>Range requests: a dropped connection on a big file resumes instead of starting over.</li>
-        <li>Files over 200 MB go straight to the browser. Buffering a gigabyte in the JS heap killed the tab.</li>
-        <li>A watchdog restarts the API when it's alive but wedged; a scheduled check opens an issue if the box stops answering.</li>
-        <li>A refused POST no longer poisons the connection — that showed up as "can't reach the API" on the second attempt.</li>
-      </ul>
+    <article class="cl-entry">
+      <div class="cl-meta">
+        <span class="cl-version">1.2</span>
+        <time class="cl-date" datetime="2026-11-13">13 nov 2026</time>
+      </div>
+      <div class="cl-body">
+        <h2>It's live</h2>
+        <ul>
+          <li><b>mdown.cc</b> served statically with a real certificate and HTTPS enforced; <b>api.mdown.cc</b> on the box, Let's Encrypt, renewing itself.</li>
+          <li>8 parallel range requests per download instead of 4 — measured 39% faster on a 900 MB 4K file. 16 was slower on one core.</li>
+          <li>Output cap raised to 2 GB. The old 800 MB ceiling rejected a 966 MB 4K file, which meant the highest quality was advertised and then refused.</li>
+          <li>Range requests: a dropped connection on a big file resumes instead of starting over.</li>
+          <li>Files over 200 MB go straight to the browser. Buffering a gigabyte in the JS heap killed the tab.</li>
+          <li>A watchdog restarts the API when it's alive but wedged; a scheduled check opens an issue if the box stops answering.</li>
+          <li>A refused POST no longer poisons the connection — that showed up as "can't reach the API" on the second attempt.</li>
+        </ul>
+      </div>
     </article>
 
-    <article class="changelog-entry">
-      <span class="changelog-date">12 nov 2026 · 1.1</span>
-      <h2>Limits that tell the truth</h2>
-      <ul>
-        <li>Error messages name the actual problem: daily cap, burst limit, full queue, disk space, a missing API key.</li>
-        <li>The status page reports real uptime from the API's own checks.</li>
-        <li>A content security policy on every page, verified to allow the local ffmpeg engine and nothing else.</li>
-        <li>Donations dialog, off by default, that loads nothing from anywhere.</li>
-      </ul>
+    <article class="cl-entry">
+      <div class="cl-meta">
+        <span class="cl-version">1.1</span>
+        <time class="cl-date" datetime="2026-11-12">12 nov 2026</time>
+      </div>
+      <div class="cl-body">
+        <h2>Limits that tell the truth</h2>
+        <ul>
+          <li>Error messages name the actual problem: daily cap, burst limit, full queue, disk space, a missing API key.</li>
+          <li>The status page reports real uptime from the API's own checks.</li>
+          <li>A content security policy on every page, verified to allow the local ffmpeg engine and nothing else.</li>
+          <li>Donations dialog, off by default, that loads nothing from anywhere.</li>
+        </ul>
+      </div>
     </article>
 
-    <article class="changelog-entry">
-      <span class="changelog-date">11 nov 2026 · 1.0</span>
-      <h2>First release</h2>
-      <ul>
-        <li>One page: paste a link, pick a mode, get a file. No account, no build step.</li>
-        <li>Its own API: yt-dlp + ffmpeg, no Docker, no Node, caps on duration, height and size.</li>
-        <li>Remux, subtitle extraction and metadata cleaning run locally in your browser — those files never leave your device.</li>
-        <li>Pickers for playlists, subtitle embedding, silent video, and untouched source audio.</li>
-      </ul>
+    <article class="cl-entry">
+      <div class="cl-meta">
+        <span class="cl-version">1.0</span>
+        <time class="cl-date" datetime="2026-11-11">11 nov 2026</time>
+      </div>
+      <div class="cl-body">
+        <h2>First release</h2>
+        <ul>
+          <li>One page: paste a link, pick a mode, get a file. No account, no build step.</li>
+          <li>Its own API: yt-dlp + ffmpeg, no Docker, no Node, caps on duration, height and size.</li>
+          <li>Remux, subtitle extraction and metadata cleaning run locally in your browser — those files never leave your device.</li>
+          <li>Pickers for playlists, subtitle embedding, silent video, and untouched source audio.</li>
+        </ul>
+      </div>
     </article>
 
   </div>
+
+  <p class="updates-foot">The code is open source under the MIT licence. <a href="./">Back to the downloader</a>.</p>
+
 </main>
 
 <footer class="footer">
-  <p class="footer-meta"><a href="./">mdown.cc</a> · <a href="status.html">status</a> · <a href="terms.html">TOS</a> · <span id="footer-version">local-first</span></p>
+  <p class="footer-meta"><a href="./">mdown.cc</a> · <a href="donate.html">donate</a> · <a href="status.html">status</a> · <a href="terms.html">TOS</a> · <span id="footer-version">local-first</span></p>
 </footer>
 
 </body>
