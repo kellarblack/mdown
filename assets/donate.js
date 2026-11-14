@@ -30,7 +30,7 @@ window.MDOWN_DONATE = {
 
   /* Stripe Payment Link, e.g. "https://buy.stripe.com/xxxxxxxx"
      Only the URL — the page shows the tier buttons only when this exists. */
-  stripe: "",
+  stripe: "https://donate.stripe.com/bJe00jcEDg27fReaG55Ne00",
 
   /* Liberapay profile, e.g. "https://liberapay.com/yourname" */
   liberapay: "",

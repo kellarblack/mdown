@@ -12,7 +12,7 @@ const PANELS = {
 
 const META = {
   download: {
-    title: "mdown.cc — a media downloader",
+    title: "mdown.cc — an ad-free download tool",
     desc: "No ads, no account. Paste a link and keep the video or audio. Remux, subtitles and metadata tools run in your browser."
   },
   remux: {

@@ -57,7 +57,9 @@ async function main() {
   record("the jar says it is open", /open/i.test(doc.querySelector("#support-state").textContent),
     doc.querySelector("#support-state").textContent);
   record("the closed notice is gone", doc.querySelector("#dormant").hidden, "dormant hidden");
-  record("no card row without stripe", doc.querySelector("#funding").hidden, "funding hidden");
+  record("the card row appears", !doc.querySelector("#funding").hidden &&
+    /stripe\.com/.test(doc.querySelector("#stripe-card").getAttribute("href") || ""),
+    doc.querySelector("#stripe-card").getAttribute("href") || "no href");
   record("crypto addresses render", !doc.querySelector("#alt").hidden &&
     doc.querySelectorAll(".addr").length === 3,
     doc.querySelectorAll(".addr").length + " addresses");

@@ -168,7 +168,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   font-family: var(--mono); font-size: 0.82rem; font-weight: 500;
   letter-spacing: -0.02em; white-space: nowrap;
 }
-.brand-dot { color: var(--text-2); }
+.brand-dot { color: var(--text-2); margin: 0 -0.1em; }
 .brand-sub {
   margin-left: 0; font-size: inherit; font-weight: 400;
   color: var(--text-3); letter-spacing: -0.02em;
@@ -586,14 +586,37 @@ a.ghost-btn { text-decoration: none; }
 
 /* ---------- tools strip ---------- */
 .tool-strip {
-  display: flex; align-items: baseline; justify-content: center;
-  flex-wrap: wrap; gap: 4px 14px; margin-top: 12px;
-  font-family: var(--mono); font-size: 0.72rem;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px; margin-top: 14px;
 }
-.tool-strip-label { color: var(--text-3); font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; }
-.tool-strip a { color: var(--text-2); text-decoration: none; border-bottom: 1px solid transparent; transition: color 120ms, border-color 120ms; }
-.tool-strip a:hover { color: var(--text); border-bottom-color: var(--stroke-2); }
-.tool-strip a:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; border-radius: 3px; }
+.tool-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 11px; border-radius: var(--r-md);
+  border: 1px solid var(--stroke); background: transparent;
+  transition: border-color var(--speed), background var(--speed);
+}
+.tool-card:hover { border-color: var(--stroke-2); background: var(--surface); }
+.tool-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.tool-card-icon {
+  display: grid; place-items: center; flex: none;
+  width: 28px; height: 28px; border-radius: 7px;
+  border: 1px solid var(--stroke); color: var(--text-3);
+  transition: color var(--speed), border-color var(--speed);
+}
+.tool-card-icon svg { width: 15px; height: 15px; }
+.tool-card:hover .tool-card-icon { color: var(--text-2); border-color: var(--stroke-2); }
+.tool-card-body { display: grid; gap: 1px; min-width: 0; }
+.tool-card-body b { font-family: var(--mono); font-size: 0.72rem; font-weight: 500; color: var(--text-2); }
+.tool-card-body span {
+  font-size: 0.68rem; color: var(--text-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@media (max-width: 720px) {
+  .tool-strip { gap: 6px; }
+  .tool-card { flex-direction: column; justify-content: center; gap: 6px; padding: 9px 6px; }
+  .tool-card-body { justify-items: center; }
+  .tool-card-body span { display: none; }
+}
 
 /* ---------- recent ---------- */
 .recent-mark { display: inline-grid; place-items: center; flex: none; }
@@ -1314,10 +1337,13 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 /* pinned to the top centre of the screen, not dragged around by the centred
    column the composer lives in */
 .sources-wrap {
-  position: absolute; left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  display: inline-flex;
+  position: fixed; z-index: 45;
+  top: max(9px, env(safe-area-inset-top, 0px));
+  left: 0; right: 0; height: 34px;
+  display: flex; justify-content: center; align-items: center;
+  pointer-events: none;
 }
+.sources-wrap > * { pointer-events: auto; }
 /* a count and a chevron: the chevron turns over when the panel is open. no
    plus, no circle, nothing borrowed. */
 .sources-toggle {
@@ -1343,7 +1369,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-toggle[aria-expanded="true"] .sources-count { color: var(--text); }
 
 .sources-panel {
-  position: absolute; z-index: 60; top: calc(100% + 8px); left: 50%; right: auto;
+  position: absolute; z-index: 60; top: calc(100% + 6px); left: 50%; right: auto;
   transform: translateX(-50%);
   width: min(460px, calc(100vw - 90px));
   max-height: none;
@@ -1372,7 +1398,10 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 /* ---------- sources panel (shared) ---------- */
 .sources { display: grid; gap: 5px; min-width: 0; }
 .sources-search { width: 100%; }
-@media (max-width: 720px) { .sources-search { font-size: 16px; } }
+@media (max-width: 720px) {
+  .sources-search { display: none; }
+  .sources { gap: 0; }
+}
 @media (max-height: 780px) and (min-width: 721px) {
   /* on a short window the dropdown would sit on the wordmark, so it becomes a
      corner sheet instead: same list, no scroll, nothing covered */
@@ -1844,7 +1873,7 @@ a.donate-value:hover { text-decoration: underline; }
   58%  { transform: translateY(0.012em); opacity: 1; }
   100% { transform: translateY(0); opacity: 1; }
 }
-.hero-word-dot { color: var(--accent); }
+.hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
 .hero-word-sub {
   /* same size as the name, a shade quieter: it reads as mdown.cc rather than
      mdowncc, and the dot still does the separating */
@@ -2248,7 +2277,7 @@ a.addr-value:hover { color: var(--text); }
 .mobile-bar { display: none; }
 @media (max-width: 720px) {
   .mobile-bar {
-    display: grid; grid-template-columns: repeat(4, 1fr);
+    display: grid; grid-template-columns: repeat(5, 1fr);
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
     background: var(--bg); border-top: 1px solid var(--stroke);
     padding: 5px 6px calc(5px + env(safe-area-inset-bottom, 0px));

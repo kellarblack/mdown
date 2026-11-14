@@ -51,8 +51,9 @@ async function main() {
   const doc = frame.contentDocument;
   const win = frame.contentWindow;
   const button = doc.querySelector("#open-sources");
-  record("there is a sources trigger in the top bar",
-    !!button && !!button.closest(".topbar-actions"),
+  record("there is a sources trigger at the top",
+    !!button && Math.abs(button.getBoundingClientRect().left + button.getBoundingClientRect().width / 2 -
+      frame.contentWindow.innerWidth / 2) < 4,
     button ? button.textContent.trim() : "missing");
 
   const plusBefore = win.getComputedStyle(doc.querySelector(".sources-chev")).transform;
