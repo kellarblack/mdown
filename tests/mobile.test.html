@@ -317,7 +317,8 @@ async function main() {
       frame.width = width;
       frame.height = 700;
       frame.src = "../" + page + "?t=" + Date.now();
-      await waitFor(() => frame.contentDocument && frame.contentDocument.readyState === "complete", 15000);
+      await waitFor(() => frame.contentDocument && frame.contentDocument.documentElement &&
+        frame.contentDocument.readyState === "complete", 15000);
       await sleep(300);
       const doc = frame.contentDocument;
       const over = doc.documentElement.scrollWidth - frame.contentWindow.innerWidth;

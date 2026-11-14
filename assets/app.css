@@ -2179,3 +2179,35 @@ a.addr-value:hover { color: var(--text); }
 @media (prefers-reduced-motion: reduce) {
   .donate-orbit { animation: none; }
 }
+
+/* ---------- mobile bar ---------- */
+/* one thumb-reachable row for the four things a phone actually needs */
+.mobile-bar { display: none; }
+@media (max-width: 720px) {
+  .mobile-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
+    background: var(--bg); border-top: 1px solid var(--stroke);
+    padding: 5px 6px calc(5px + env(safe-area-inset-bottom, 0px));
+  }
+  .mbar-item {
+    display: grid; justify-items: center; gap: 3px;
+    padding: 6px 0 5px; border-radius: 8px;
+    color: var(--text-3); font-family: var(--mono); font-size: 0.6rem;
+    transition: color 120ms, background 120ms;
+  }
+  .mbar-item svg { width: 19px; height: 19px; }
+  .mbar-item:hover, .mbar-item:active { color: var(--text-2); background: var(--surface); }
+  .mbar-item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  /* the bar replaces the two actions it duplicates */
+  .topbar-actions #queue-toggle, .topbar-actions #open-settings { display: none; }
+  /* the queue is a sheet above the bar, because its old anchor is gone */
+  .dock-panel {
+    position: fixed; left: 8px; right: 8px; top: auto; width: auto;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    transform-origin: bottom center;
+    max-height: min(60vh, 460px); overflow-y: auto;
+  }
+  body { padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
+  .footer { padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px)); }
+}

@@ -103,6 +103,20 @@ async function main() {
     doc.querySelector("#composer").classList.contains("is-nudging"),
     doc.querySelector("#composer").className);
 
+  // a big file asks before it starts
+  setField.call(field, "https://youtu.be/xltest");
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+  await sleep(120);
+  doc.querySelector("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+  const asked = await waitFor(() => !doc.querySelector("#modal").hidden, 6000);
+  record("a big file asks first", asked && /big/i.test(doc.querySelector("#modal-title").textContent),
+    doc.querySelector("#modal-title").textContent);
+  const cancelBig = [...doc.querySelectorAll("#modal-foot button")].find((b) => /cancel/i.test(b.textContent));
+  if (cancelBig) cancelBig.click();
+  await sleep(300);
+  record("cancelling it queues nothing", doc.querySelectorAll("#queue-list .qitem").length === 0,
+    doc.querySelectorAll("#queue-list .qitem").length + " queued");
+
   const cards = [...doc.querySelectorAll(".tool-card")];
   record("the front page says the browser tools exist",
     cards.length === 3 && cards.every((c) => c.getAttribute("data-view")),

@@ -3054,6 +3054,14 @@
     dom.setupOpenSettings.addEventListener("click", () => openSettings("instance"));
     /* the dot is the connection: click for a miniature of the status page,
        the gear is still the way into the settings */
+    const mbarSettings = $("#mbar-settings");
+    if (mbarSettings) mbarSettings.addEventListener("click", () => openSettings());
+    const mbarQueue = $("#mbar-queue");
+    if (mbarQueue) mbarQueue.addEventListener("click", (event) => {
+      event.stopPropagation();   /* or the outside-click handler closes it again */
+      setDock(!dockOpen);
+    });
+
     dom.instancePill.addEventListener("click", (event) => {
       event.stopPropagation();
       if (healthOpen) closeHealthPop();

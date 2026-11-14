@@ -37,7 +37,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=105">
+<link rel="stylesheet" href="assets/app.css?v=107">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -92,6 +92,7 @@
         <ul>
           <li><b>auto</b> reads the link: a music service gets audio, everything else gets video. <b>audio</b> and <b>video</b> force it, and <b>no sound</b> is a switch rather than a fourth button nobody understood.</li>
           <li>Paste a link and the field shows the size, the running time, the resolution and a thumbnail before anything is fetched. The queue keeps the picture.</li>
+          <li>On a phone there is a bottom bar now — <b>downloads</b>, <b>remux</b>, <b>settings</b>, <b>updates</b> — within thumb reach, with the queue opening as a sheet above it. The top bar keeps only the name and the green dot.</li>
           <li>A file over <b>250 MB</b> now asks first: the estimated size, how much data it will use, and a cancel button. Small files start straight away.</li>
           <li>Downloads move through the socket with zero-copy <code>sendfile</code> and 256 KB writes instead of 64 KB, so the box spends less time copying and more time sending.</li>
           <li>The sources panel says what it is: listed for technical compatibility only, with no affiliation, endorsement or partnership. The same sentence is in the <a href="terms.html">terms</a>.</li>

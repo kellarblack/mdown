@@ -155,7 +155,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"status": "error",
                             "error": {"code": "api.content.video.private"}}, 422)
                 return
-            big = "big" in url
+            big = "xl" in url
             self._json({
                 "status": "ok",
                 "title": "a mock clip",

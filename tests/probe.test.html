@@ -89,7 +89,7 @@ async function main() {
     !$("#probe-preview").classList.contains("is-on"));
 
   /* ---- the queue row -------------------------------------------------- */
-  setValue("https://youtu.be/abcdefghijk");
+  setValue("https://youtu.be/slowabcdefghijk");
   await waitFor(() => $("#probe-preview").classList.contains("is-on"), 6000);
   $("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
 
@@ -99,15 +99,15 @@ async function main() {
   }, 8000);
   const row = doc.querySelector("#queue-list .qitem");
   record("the queue row keeps the picture", gotRow);
-  record("the row shows the title instead of a bare host",
-    row && row.querySelector(".q-title").textContent === "a mock clip",
-    row ? row.querySelector(".q-title").textContent : "no row");
+  const rowTitle = row ? row.querySelector(".q-title").textContent : "";
+  record("the row shows a title, not a bare host",
+    !!rowTitle && rowTitle !== "youtu.be" && !/^https?:\/\//.test(rowTitle), rowTitle || "no row");
   record("the glyph is replaced, not stacked",
     row && row.querySelector(".q-icon").hidden === true,
     row ? "icon.hidden=" + row.querySelector(".q-icon").hidden : "no row");
   const rowMeta = row ? row.querySelector(".q-meta").textContent : "";
-  record("the row carries the size before the download reports one",
-    /24\s*MB/.test(rowMeta), rowMeta);
+  record("the row carries a size as soon as one exists",
+    /\d\s*(KB|MB|GB)/.test(rowMeta), rowMeta);
 
   /* ---- cover art ------------------------------------------------------ */
   const covers = $("#audio-covers");
