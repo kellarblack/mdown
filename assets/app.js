@@ -531,7 +531,7 @@
   function modeSummary(mode) {
     if (mode === "audio") return audioLabel();
     const container = settings.youtubeVideoContainer === "auto" ? "mp4" : settings.youtubeVideoContainer;
-    if (mode === "mute") return container + " · muted";
+    if (mode === "mute") return container + " · no audio";
     return container + " · " + qualityLabel();
   }
 
