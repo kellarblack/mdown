@@ -686,7 +686,7 @@ a.ghost-btn { text-decoration: none; }
 .footer a:hover { color: var(--text-2); }
 .footer-meta {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-  gap: 6px 16px; margin: 0;
+  gap: 4px 12px; margin: 0;
   font-family: var(--mono); font-size: 0.66rem; color: var(--text-3);
 }
 .footer-meta a, .footer-meta .footer-link {
@@ -1216,12 +1216,13 @@ a.ghost-btn { text-decoration: none; }
 
 /* ---------- footer proof ---------- */
 .footer-proof {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px;
-  margin: 8px 0 0; font-family: var(--mono); font-size: 0.62rem; color: var(--hint-ink);
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 3px 9px; margin: 6px 0 0;
+  font-family: var(--mono); font-size: 0.58rem; color: var(--hint-ink);
 }
+.footer-proof #build-info { color: var(--text-3); }
 .footer-proof a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--stroke-2); }
 .footer-proof a:hover { color: var(--text); text-decoration-color: var(--text); }
-.footer-build { margin: 5px 0 0; text-align: center; font-family: var(--mono); font-size: 0.58rem; color: var(--text-3); }
 
 /* ---------- navigation ---------- */
 .nav { display: flex; align-items: center; gap: 2px; margin-right: auto; margin-left: 18px; }
@@ -1397,11 +1398,6 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 
 /* ---------- sources panel (shared) ---------- */
 .sources { display: grid; gap: 5px; min-width: 0; }
-.sources-search { width: 100%; }
-@media (max-width: 720px) {
-  .sources-search { display: none; }
-  .sources { gap: 0; }
-}
 @media (max-width: 720px) {
   /* a sheet above the bottom bar, aligned to the screen, never the wordmark */
   .sources-panel {
@@ -1429,7 +1425,6 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 .source-chip.is-muted { color: var(--text-3); border-style: dashed; opacity: 0.8; }
 .sources-foot { margin: 0; color: var(--text-3); font-size: 0.6rem; line-height: 1.4; }
-.sources-search { height: 24px; font-size: 0.7rem; padding: 0 8px; }
 .sources-empty { margin: 0; color: var(--text-3); font-size: 0.70rem; text-align: center; }
 .sources-note {
   margin: 1px 0 0; color: var(--text-3); font-size: 0.6rem; line-height: 1.45;

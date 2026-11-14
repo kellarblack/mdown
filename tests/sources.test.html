@@ -85,13 +85,7 @@ async function main() {
     "panel top " + Math.round(panelRect.top) + " vs button bottom " + Math.round(buttonRect.bottom));
 
 
-  const search = doc.querySelector("#sources-search");
-  search.value = "sound";
-  search.dispatchEvent(new Event("input", { bubbles: true }));
-  await sleep(200);
-  const visible = rows().filter((r) => !r.hidden).map((r) => r.textContent);
-  record("filtering narrows the list", visible.length > 0 && visible.length < 5, visible.join(", "));
-  record("and finds the right one", visible.indexOf("soundcloud") >= 0, visible.join(", "));
+  record("there is no filter to maintain", !doc.querySelector("#sources-search"), "no search field");
 
   doc.body.click();
   await sleep(200);

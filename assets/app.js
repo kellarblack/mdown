@@ -2340,8 +2340,6 @@
     dom.openSources.setAttribute("aria-expanded", "true");
     dom.sourcesPanel.hidden = false;
     fitSources();
-    const field = dom.sourcesPanel.querySelector("#sources-search");
-    if (field) setTimeout(() => field.focus(), 40);
     requestAnimationFrame(fitSources);
   }
 
@@ -2362,47 +2360,18 @@
 
     const wrap = el("div", { class: "sources" });
 
-    const search = el("input", {
-      type: "search",
-      class: "text-input sources-search",
-      id: "sources-search",
-      placeholder: "filter",
-      autocomplete: "off",
-      "aria-label": "filter supported sources"
-    });
-    wrap.appendChild(search);
-
     wrap.appendChild(el("p", {
       class: "sources-note",
       text: "compatibility only — no affiliation or endorsement"
     }));
     const row = el("div", { class: "source-chips" });
-    const chips = shown.map(([id, note]) => {
+    shown.forEach(([id, note]) => {
       const chip = el("span", { class: "source-chip" });
       chip.textContent = id;
-      chip.dataset.search = (id + " " + note).toLowerCase();
       if (note) chip.title = id + " — " + note;
       row.appendChild(chip);
-      return chip;
     });
     wrap.appendChild(row);
-
-    const empty = el("p", { class: "sources-empty", text: "nothing matches that" });
-    empty.hidden = true;
-    wrap.appendChild(empty);
-
-
-
-    search.addEventListener("input", () => {
-      const q = search.value.trim().toLowerCase();
-      let hits = 0;
-      chips.forEach((chip) => {
-        const hit = !q || chip.dataset.search.indexOf(q) >= 0;
-        chip.hidden = !hit;
-        if (hit) hits++;
-      });
-      empty.hidden = hits > 0;
-    });
 
     dom.sourcesPanel.innerHTML = "";
     dom.sourcesPanel.appendChild(wrap);
