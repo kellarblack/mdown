@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>spam test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 900px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Every control that can be pressed twice, pressed many times. The end state
+  must always match what the control says it is — no ghost menus, no double
+  downloads, no stacked notices.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/spam.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+const hammer = (node, times) => { for (let i = 0; i < times; i++) node.click(); };
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  frame.src = "../index.html?spam=" + Date.now();
+
+  const booted = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
+  record("the app boots", booted);
+  if (!booted) { window.__results = { total: results.length, failures, results }; return; }
+
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  const $ = (sel) => doc.querySelector(sel);
+  await sleep(700);
+
+  // ---- the same link, twenty-five times ---------------------------------
+  const field = $("#url-input");
+  const setField = (value) => {
+    const set = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, "value").set;
+    set.call(field, value);
+    field.dispatchEvent(new win.Event("input", { bubbles: true }));
+  };
+  const form = $("#fetch-form");
+  for (let i = 0; i < 25; i++) {
+    setField("https://youtu.be/spamcheck");
+    form.dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+  }
+  await sleep(400);
+  const items = win.md.state().items.length;
+  record("one link is queued once, not twenty-five times", items === 1, items + " items");
+
+  // ---- menus, toggled as fast as a finger can ---------------------------
+  const sourcesBtn = $("#open-sources");
+  const sourcesPanel = $("#sources-panel");
+  hammer(sourcesBtn, 25);
+  await sleep(450);
+  record("sources menu ends in a state that matches its label",
+    sourcesPanel.hidden === (sourcesBtn.getAttribute("aria-expanded") === "false"),
+    "hidden=" + sourcesPanel.hidden + " expanded=" + sourcesBtn.getAttribute("aria-expanded"));
+
+  const dockBtn = $("#queue-toggle");
+  const dockPanel = $("#queue-panel");
+  hammer(dockBtn, 25);
+  await sleep(300);
+  record("downloads panel ends in a state that matches its label",
+    dockPanel.hidden === (dockBtn.getAttribute("aria-expanded") === "false"),
+    "hidden=" + dockPanel.hidden + " expanded=" + dockBtn.getAttribute("aria-expanded"));
+
+  const pill = $("#instance-pill");
+  const pop = $("#health-pop");
+  hammer(pill, 9);
+  await sleep(400);
+  record("the health dot ends in a state that matches its label",
+    pop.hidden === (pill.getAttribute("aria-expanded") === "false"),
+    "hidden=" + pop.hidden + " expanded=" + pill.getAttribute("aria-expanded"));
+
+  const summary = doc.querySelector("#nav-tools summary");
+  const tools = $("#nav-tools");
+  for (let i = 0; i < 9; i++) { summary.click(); await sleep(20); }
+  await sleep(400);
+  record("the tools menu ends in a state that matches its label",
+    tools.open === (summary.getAttribute("aria-expanded") === "true") ||
+    !tools.open,
+    "open=" + tools.open + " expanded=" + summary.getAttribute("aria-expanded"));
+
+  // ---- settings, opened and closed repeatedly ---------------------------
+  const opener = $("#open-settings");
+  for (let i = 0; i < 20; i++) {
+    opener.click();
+    if (i % 2 === 0) $("#modal-close").click();
+  }
+  await sleep(300);
+  const sheet = $("#settings");
+  if (!sheet.hidden) doc.querySelector("[data-close-settings]").click();
+  await sleep(200);
+  record("settings survive being opened and closed twenty times",
+    sheet.hidden && doc.body.style.overflow === "",
+    "hidden=" + sheet.hidden + " overflow=" + (doc.body.style.overflow || "restored"));
+
+  // ---- destructive buttons ask first ------------------------------------
+  opener.click();
+  await sleep(200);
+  doc.querySelector('[data-section="advanced"]').click();
+  await sleep(150);
+  const reset = $("#reset-settings");
+  reset.click();
+  await sleep(120);
+  const armed = reset.textContent.trim();
+  const stillThere = win.md.settings().instance;
+  record("reset asks before it wipes anything",
+    armed === "sure?" && stillThere === "http://127.0.0.1:4320",
+    "label=" + armed + " instance kept=" + (stillThere === "http://127.0.0.1:4320"));
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

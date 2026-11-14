@@ -32,7 +32,7 @@ class FakeEngine:
             "title": "A Test Clip",
             "duration": 60,
             "is_live": False,
-            "thumbnail": "https://i.example.test/clip.jpg",
+            "thumbnail": "https://i.ytimg.com/vi/clip.jpg",
             "formats": [
                 {"format_id": "18", "height": 360, "vcodec": "avc1", "acodec": "mp4a",
                  "filesize": 1000000},
@@ -176,7 +176,7 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(data["estimate"]["bytes"], 9000000)
         self.assertTrue(data["estimate"]["exact"])
         self.assertTrue(data["thumbnail"].startswith("data:image/jpeg;base64,"))
-        self.assertEqual(self.thumb_calls, ["https://i.example.test/clip.jpg"])
+        self.assertEqual(self.thumb_calls, ["https://i.ytimg.com/vi/clip.jpg"])
         self.assertEqual(headers.get("RateLimit-Limit"), "60")
 
     def test_probe_estimates_audio_from_the_target_bitrate(self):
@@ -184,6 +184,13 @@ class ServerTest(unittest.TestCase):
             "url": URL, "downloadMode": "audio", "audioFormat": "mp3", "audioBitrate": "96"})
         self.assertEqual(data["estimate"]["bytes"], 96 * 125 * 60)
         self.assertIsNone(data["estimate"]["height"])
+
+    def test_probe_refuses_a_private_thumbnail(self):
+        self.fake.info["thumbnail"] = "http://169.254.169.254/latest/meta-data/"
+        status, _, data = self.probe({"url": URL})
+        self.assertEqual(status, 200)
+        self.assertEqual(data["thumbnail"], "")
+        self.assertEqual(self.thumb_calls, [])
 
     def test_probe_can_skip_the_picture(self):
         status, _, data = self.probe({"url": URL, "thumbnail": False})
@@ -205,6 +212,21 @@ class ServerTest(unittest.TestCase):
         status, _, data = self.probe({"downloadMode": "auto"})
         self.assertEqual(status, 400)
         self.assertIn("error", data)
+
+    # -- proxy headers -----------------------------------------------------
+    def test_forwarded_for_uses_the_address_the_proxy_appended(self):
+        original = self.server.RequestHandlerClass.config
+        self.server.RequestHandlerClass.config = dataclasses.replace(
+            self.config, trust_proxy=True)
+        try:
+            _, first, _ = self.call("POST", "/probe", {"url": URL}, {
+                "X-Forwarded-For": "1.1.1.1, 203.0.113.9"})
+            _, second, _ = self.call("POST", "/probe", {"url": URL}, {
+                "X-Forwarded-For": "2.2.2.2, 203.0.113.9"})
+        finally:
+            self.server.RequestHandlerClass.config = original
+        self.assertEqual(int(second["RateLimit-Remaining"]),
+                         int(first["RateLimit-Remaining"]) - 1)
 
     def test_unknown_route(self):
         status, _, raw = self.call("GET", "/nope")

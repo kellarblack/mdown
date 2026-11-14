@@ -108,6 +108,7 @@ report_suite buttons "http://127.0.0.1:$WEB_PORT/tests/buttons.test.html?report=
 report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 13
 report_suite probe   "http://127.0.0.1:$WEB_PORT/tests/probe.test.html?report=1" 18
 report_suite health  "http://127.0.0.1:$WEB_PORT/tests/health.test.html?report=1" 11
+report_suite spam    "http://127.0.0.1:$WEB_PORT/tests/spam.test.html?report=1" 8
 dom_suite    meta    "http://127.0.0.1:$WEB_PORT/tests/meta.test.html" 10
 
 printf '\n'

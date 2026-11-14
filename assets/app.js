@@ -731,6 +731,19 @@
     if (url) submitUrls(url, mode);
   }
 
+  const recentSubmits = new Map();
+
+  function admitSubmit(url) {
+    const now = Date.now();
+    for (const [key, at] of recentSubmits) {
+      if (now - at > 4000) recentSubmits.delete(key);
+    }
+    const last = recentSubmits.get(url) || 0;
+    if (now - last < 1500) return false;
+    recentSubmits.set(url, now);
+    return true;
+  }
+
   function submitUrls(text, mode) {
     const urls = parseUrls(text);
     if (!urls.length) {
@@ -754,18 +767,22 @@
       }
       usable.push(url);
     });
-    if (!usable.length) {
+    const fresh = usable.filter(admitSubmit);
+    if (!fresh.length) {
+      /* a double tap on fetch, or the same link hammered: nothing to say,
+         nothing to queue, just a shrug of the field */
+      if (usable.length) nudgeComposer();
       dom.input.value = "";
       updateComposerState();
       return;
     }
 
-    const batch = usable.slice(0, MAX_URLS_PER_SUBMIT);
+    const batch = fresh.slice(0, MAX_URLS_PER_SUBMIT);
     batch.forEach((url) => {
       enqueue(url, mode);
       addHistory(url);
     });
-    if (usable.length > batch.length) toast("Only the first " + batch.length + " links were queued.", "warn");
+    if (fresh.length > batch.length) toast("Only the first " + batch.length + " links were queued.", "warn");
 
     dom.input.value = "";
     updateComposerState();
@@ -1652,6 +1669,9 @@
 
   function saveBlob(item) {
     if (!item.blob || !item.blobUrl) return;
+    if (item.saving) return;
+    item.saving = true;
+    setTimeout(() => { item.saving = false; }, 900);
     const link = document.createElement("a");
     link.href = item.blobUrl;
     link.download = item.filename || "download";
@@ -1665,6 +1685,9 @@
   }
 
   async function shareItem(item, silentFallback) {
+    if (item.sharing) return false;
+    item.sharing = true;
+    setTimeout(() => { item.sharing = false; }, 900);
     if (item.blob && navigator.canShare) {
       const file = new File([item.blob], item.filename || "download", { type: item.blob.type || "application/octet-stream" });
       if (navigator.canShare({ files: [file] })) {
@@ -2110,6 +2133,7 @@
   ];
 
   let sourcesOpen = false;
+  let sourcesSeq = 0;
 
   function closeSources() {
     if (!sourcesOpen) return;
@@ -2118,7 +2142,11 @@
     const panel = dom.sourcesPanel;
     if (!panel || panel.hidden) return;
     panel.classList.add("is-closing");
+    const stamp = ++sourcesSeq;
     const done = () => {
+      /* a reopen in the 220ms window bumps the sequence: the close that was
+         already scheduled must not hide the panel the user just opened */
+      if (stamp !== sourcesSeq) return;
       panel.classList.remove("is-closing");
       panel.hidden = true;
     };
@@ -2141,6 +2169,7 @@
 
   function toggleSources() {
     if (sourcesOpen) { closeSources(); return; }
+    sourcesSeq += 1;
     sourcesOpen = true;
     dom.sourcesPanel.classList.remove("is-closing");
     renderSources();
@@ -2379,8 +2408,11 @@
     }
   }
 
+  let instanceSeq = 0;
+
   async function checkInstance(options) {
     const opts = options || {};
+    const stamp = ++instanceSeq;
     const base = normalizeInstance(settings.instance);
     setSetupNote(base ? null : "empty");
 
@@ -2414,6 +2446,7 @@
       const cobalt = data && data.cobalt ? data.cobalt : {};
       const git = data && data.git ? data.git : {};
 
+      if (stamp !== instanceSeq) return false;
       instanceInfo = {
         services: Array.isArray(cobalt.services) ? cobalt.services : [],
         version: cobalt.version || "",
@@ -2608,7 +2641,10 @@
     });
     dom.checkInstance.addEventListener("click", () => checkInstance());
 
+    let exportedAt = 0;
     $("#export-settings").addEventListener("click", () => {
+      if (Date.now() - exportedAt < 1000) return;
+      exportedAt = Date.now();
       const payload = JSON.stringify(settings, null, 2);
       const blob = new Blob([payload], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -2639,7 +2675,23 @@
       event.target.value = "";
     });
 
-    $("#reset-settings").addEventListener("click", () => {
+    let resetArmed = 0;
+    $("#reset-settings").addEventListener("click", (event) => {
+      const button = event.currentTarget;
+      if (Date.now() - resetArmed > 3000) {
+        resetArmed = Date.now();
+        const label = button.textContent;
+        button.textContent = "sure?";
+        clearTimeout(button._disarm);
+        button._disarm = setTimeout(() => {
+          button.textContent = label;
+          resetArmed = 0;
+        }, 3000);
+        return;
+      }
+      resetArmed = 0;
+      clearTimeout(button._disarm);
+      button.textContent = "reset all";
       const theme = settings.theme;
       settings = Object.assign({}, DEFAULT_SETTINGS, { theme });
       saveSettings();
@@ -2691,6 +2743,8 @@
     if (section) showSettingsSection(section);
     reflectSettings();
     setTimeout(() => {
+      /* closing before the timer lands must not focus a hidden field */
+      if (dom.sheet.hidden) return;
       const pane = $('.pane.is-active [data-setting], .pane.is-active input, .pane.is-active select');
       const target = section === "instance" ? dom.instanceUrl : pane;
       if (target && typeof target.focus === "function") target.focus();

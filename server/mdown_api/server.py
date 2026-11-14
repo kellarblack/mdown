@@ -14,6 +14,7 @@ and the file behind it is deleted shortly after it is served.
 from __future__ import annotations
 
 import hmac
+import ipaddress
 import json
 import logging
 import os
@@ -138,10 +139,18 @@ class Handler(BaseHTTPRequestHandler):
         log.info("%s %s", self.address_string(), fmt % args)
 
     def _client_ip(self) -> str:
+        # A proxy *appends* the address it saw to any header the client sent.
+        # Taking the first entry would let one header spoof a fresh identity on
+        # every request and walk straight through the rate limiter.
         if self.config.trust_proxy:
             forwarded = self.headers.get("X-Forwarded-For", "")
             if forwarded:
-                return forwarded.split(",")[0].strip()
+                candidate = forwarded.split(",")[-1].strip()
+                try:
+                    ipaddress.ip_address(candidate)
+                    return candidate
+                except ValueError:
+                    pass
         return self.client_address[0]
 
     def _cors_headers(self) -> Dict[str, str]:
@@ -565,10 +574,17 @@ class Handler(BaseHTTPRequestHandler):
         duration = float(duration) if isinstance(duration, (int, float)) and duration > 0 else 0.0
 
         thumbnail = ""
-        if body.get("thumbnail", True) is not False:
+        thumb_url = info.get("thumbnail") or ""
+        if thumb_url:
+            # the extractor hands us a URL; it is not trusted just because the
+            # metadata came from a known service
             try:
-                thumbnail = engine.thumb_data_url(info.get("thumbnail") or "",
-                                                  cache_dir=cache, timeout=8)
+                validate_url(thumb_url)
+            except ApiError:
+                thumb_url = ""
+        if thumb_url and body.get("thumbnail", True) is not False:
+            try:
+                thumbnail = engine.thumb_data_url(thumb_url, cache_dir=cache, timeout=8)
             except Exception:  # a missing picture is never a failed request
                 log.debug("thumbnail failed", exc_info=True)
 
@@ -631,6 +647,18 @@ class ApiServer(ThreadingHTTPServer):
         })
         super().__init__((config.host, config.port), handler)
         self.config = config
+        # a scanner with a million addresses would otherwise leave a million
+        # entries behind; expired windows are swept even when nobody asks
+        threading.Thread(target=self._prune_loop, name="limiter-prune", daemon=True).start()
+
+    def _prune_loop(self) -> None:
+        limiter = self.RequestHandlerClass.limiter
+        jobs = self.RequestHandlerClass.job_limiter
+        probes = self.RequestHandlerClass.probe_limiter
+        while True:
+            time.sleep(120)
+            for item in (limiter, jobs, probes):
+                item.prune()
 
     def server_bind(self) -> None:
         # skip HTTPServer's getfqdn() call, which blocks for seconds on a host
