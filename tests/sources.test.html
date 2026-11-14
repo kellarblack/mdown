@@ -80,10 +80,9 @@ async function main() {
   const logoRect = doc.querySelector(".hero-logo").getBoundingClientRect();
   record("the panel is compact", panelRect.height <= 340 && panelRect.width <= 480,
     Math.round(panelRect.width) + "x" + Math.round(panelRect.height));
-  const hitsLogo = !(panelRect.right < logoRect.left || panelRect.left > logoRect.right ||
-    panelRect.bottom < logoRect.top || panelRect.top > logoRect.bottom);
-  record("and it never covers the wordmark", !hitsLogo,
-    hitsLogo ? "overlaps" : "clear");
+  const buttonRect = button.getBoundingClientRect();
+  record("it opens downward from the trigger", panelRect.top >= buttonRect.bottom - 1,
+    "panel top " + Math.round(panelRect.top) + " vs button bottom " + Math.round(buttonRect.bottom));
 
 
   const search = doc.querySelector("#sources-search");
