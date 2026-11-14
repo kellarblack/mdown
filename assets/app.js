@@ -2190,7 +2190,8 @@
     const panel = dom.sourcesPanel;
     if (!panel || panel.hidden) return;
     if (window.matchMedia("(max-width: 720px)").matches) {
-      panel.style.maxHeight = "min(46vh, 360px)";
+      /* everything visible: 33 chips fit in five columns, so no inner scroll */
+      panel.style.maxHeight = "none";
       return;
     }
     const logo = document.querySelector(".hero-logo");
@@ -2241,6 +2242,10 @@
     });
     wrap.appendChild(search);
 
+    wrap.appendChild(el("p", {
+      class: "sources-note",
+      text: "listed for technical compatibility only — no affiliation, endorsement or partnership"
+    }));
     const row = el("div", { class: "source-chips" });
     const chips = shown.map(([id, note]) => {
       const chip = el("span", { class: "source-chip" });
@@ -2255,6 +2260,7 @@
     const empty = el("p", { class: "sources-empty", text: "nothing matches that" });
     empty.hidden = true;
     wrap.appendChild(empty);
+
 
 
     search.addEventListener("input", () => {
