@@ -1441,6 +1441,21 @@
 
   const IS_IOS = isIOS(navigator.userAgent, navigator.platform, navigator.maxTouchPoints);
   const IS_TOUCH = (navigator.maxTouchPoints || 0) > 0 || "ontouchstart" in window;
+  const IS_ANDROID = /Android/i.test(navigator.userAgent);
+
+  /* "saved" is useless on a phone if you do not know where. iOS puts downloads
+     behind the toolbar button (Files → Downloads); Android drops a notification
+     and the file lands in Downloads; desktop has a Downloads folder. */
+  const SAVED_WHERE = IS_IOS ? "Files → Downloads"
+    : IS_ANDROID ? "Downloads"
+    : "your downloads folder";
+  let toldWhere = false;
+
+  function tellWhereItWent() {
+    if (toldWhere) return;
+    toldWhere = true;
+    toast("Saved to " + SAVED_WHERE, "ok");
+  }
 
   function handOffToBrowser(item, note) {
     item.blob = null;
@@ -1473,7 +1488,8 @@
     document.body.appendChild(link);
     link.click();
     link.remove();
-    setStatus(item, "done", "saved by browser");
+    setStatus(item, "done", "saved · " + SAVED_WHERE);
+    tellWhereItWent();
   }
 
   function saveBlob(item) {
@@ -1485,7 +1501,8 @@
     document.body.appendChild(link);
     link.click();
     link.remove();
-    setStatus(item, "done", "saved");
+    setStatus(item, "done", "saved · " + SAVED_WHERE);
+    tellWhereItWent();
     setTimeout(() => { if (item.status === "done") updateItem(item); }, 1200);
   }
 

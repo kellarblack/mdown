@@ -200,6 +200,14 @@ async function main() {
         Math.round(r.left) + ".." + Math.round(r.right) + " of " + frame.width);
     }
 
+    // "saved" alone is useless: the row must say where the file went
+    await waitFor(() => {
+      const items = win.md.state().items;
+      return items.length && ["done", "ready"].includes(items[items.length - 1].status);
+    }, 20000);
+    const finishedDetail = (win.md.state().items.slice(-1)[0] || {}).detail || "";
+    record("it says where the file landed", /download|files/i.test(finishedDetail), finishedDetail);
+
     const badge = doc.querySelector(".dock-badge");
     record("the dock badge shows the active job", !!badge && !badge.hidden, badge ? badge.textContent : "(none)");
 

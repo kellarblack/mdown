@@ -103,7 +103,7 @@ report_suite apikey "http://127.0.0.1:$WEB_PORT/tests/apikey.test.html?report=1"
 report_suite setup  "http://127.0.0.1:$WEB_PORT/tests/setup.test.html?report=1" 13
 report_suite donate "http://127.0.0.1:$WEB_PORT/tests/donate.test.html?report=1" 11
 report_suite donopg "http://127.0.0.1:$WEB_PORT/tests/donate-page.test.html?report=1" 11
-report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 67
+report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 68
 report_suite buttons "http://127.0.0.1:$WEB_PORT/tests/buttons.test.html?report=1" 8
 report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 10
 
