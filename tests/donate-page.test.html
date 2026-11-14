@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>donate page test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 700px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The donate page must be honest in its shipped state: donations closed means
+  a plain "nothing to donate to" message, no payment links, no half-rendered
+  sections — and the app must not link to it.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/donate-page.test.html?report=1"
+-->
+<iframe id="donate" src="../donate.html"></iframe>
+<iframe id="app" src="../index.html" style="display:none"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("donate");
+  const ready = await waitFor(() => frame.contentDocument && frame.contentDocument.querySelector(".donate-hero"), 15000);
+  record("the page loads", ready);
+  if (!ready) { window.__results = { total: results.length, failures, results }; return; }
+  const doc = frame.contentDocument;
+
+  record("it explains what the money is for",
+    /22 a year|about \$22/i.test(doc.body.textContent), (doc.body.textContent.match(/about \$22[^.]*/) || [""])[0]);
+
+  record("closed donations say so", !doc.querySelector("#dormant").hidden, "dormant visible");
+  record("no payment cards while closed", doc.querySelector("#funding").hidden, "funding hidden");
+  record("no addresses while closed", doc.querySelector("#alt").hidden, "alt hidden");
+
+  record("sharing still works", !!doc.querySelector("#copy-link"), "copy link button");
+
+  const external = [...doc.querySelectorAll("a[href^='http']")].map(a => a.getAttribute("href"));
+  record("no third-party links in the shipped state", external.length === 0, external.join(", ") || "none");
+
+  // and the main app must not advertise a closed tip jar
+  const appFrame = document.getElementById("app");
+  await waitFor(() => appFrame.contentDocument && appFrame.contentDocument.querySelector("#url-input"), 15000);
+  const appDoc = appFrame.contentDocument;
+  const navDonate = appDoc.querySelector(".nav-donate");
+  record("the nav hides donate while it is closed", !navDonate || navDonate.hidden, navDonate ? "hidden=" + navDonate.hidden : "no link");
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

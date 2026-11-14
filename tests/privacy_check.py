@@ -17,7 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # exactly what .github/workflows/pages.yml copies into _site
 SITE = [
-    "index.html", "404.html", "terms.html", "status.html", "updates.html",
+    "index.html", "404.html", "terms.html", "status.html", "updates.html", "donate.html",
     "robots.txt", "sitemap.xml", "llms.txt", "manifest.webmanifest", "_headers",
 ]
 

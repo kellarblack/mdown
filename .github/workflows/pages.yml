@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p _site
           # everything the browser needs, and nothing else
-          cp index.html 404.html terms.html status.html updates.html _site/
+          cp index.html 404.html terms.html status.html updates.html donate.html _site/
           cp robots.txt sitemap.xml llms.txt manifest.webmanifest _headers _site/
           cp -r assets _site/
           # the API, tests and dev shots are not part of the published site

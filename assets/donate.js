@@ -11,29 +11,43 @@
    2. Never put an email, a real name or a link to a personal site here.
       This file is public — it ships to every visitor's browser.
 
-   3. Use a donation-specific address if you want to keep it unlinkable
+   3. Use a donation-specific wallet if you want to keep it unlinkable
       from anything else you own. One address reused across the internet
       can be clustered; a fresh one cannot.
 
-   To turn it on: set enabled: true and fill methods. Each method is one
-   of two shapes:
+   enabled: false hides the footer link, the donate page's controls, and the
+   dialog. `/donate.html` still resolves, and says donations are closed.
 
-     { id: "xmr", label: "Monero", value: "4...", note: "no memo needed" }
-     { id: "kofi", label: "Ko-fi", href: "https://ko-fi.com/xxx", note: "shows the account name" }
-
-   `value` renders as copyable monospace text. `href` renders as a link
-   that opens in a new tab with no referrer. Anything you leave out is
-   simply not shown.
+   Card payments need a Stripe Payment Link (one-time) and/or a Liberapay
+   profile (recurring). Both are optional and both expose your name at
+   payout — that is the trade, not a bug.
    --------------------------------------------------------------- */
 window.MDOWN_DONATE = {
   enabled: false,
 
-  /* shown above the methods, keep it short */
+  /* one line under the headline, optional */
   note: "",
 
+  /* Stripe Payment Link, e.g. "https://buy.stripe.com/xxxxxxxx"
+     Only the URL — the page shows the tier buttons only when this exists. */
+  stripe: "",
+
+  /* Liberapay profile, e.g. "https://liberapay.com/yourname" */
+  liberapay: "",
+
+  /* suggested one-time amounts; shown only when `stripe` is set */
+  tiers: [
+    { amount: 5, label: "cup of coffee" },
+    { amount: 10, label: "full size pizza" },
+    { amount: 15, label: "full lunch" },
+    { amount: 30, label: "lunch for two" }
+  ],
+
+  /* `value` renders as copyable monospace text; `href` renders as a link.
+     Anything left out is simply not shown. */
   methods: [
     // { id: "xmr", label: "Monero", value: "", note: "no memo, no email" },
     // { id: "btc", label: "Bitcoin", value: "" },
-    // { id: "ln",  label: "Lightning", value: "" }
+    // { id: "ltc", label: "Litecoin", value: "" }
   ]
 };

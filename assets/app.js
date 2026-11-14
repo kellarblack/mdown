@@ -1739,8 +1739,12 @@
   }
 
   function renderDonate() {
-    if (!dom.donateLink || !dom.donateWrap) return;
     const cfg = donateConfig();
+    /* a nav link to a closed tip jar is just a dead end */
+    document.querySelectorAll(".nav-donate").forEach((link) => {
+      link.hidden = !cfg;
+    });
+    if (!dom.donateLink || !dom.donateWrap) return;
     /* the wrapper carries the leading separator, so hide that rather than
        leaving a dangling " · " when donations are off */
     dom.donateWrap.hidden = !cfg;
