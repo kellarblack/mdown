@@ -46,7 +46,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=100">
+<link rel="stylesheet" href="assets/app.css?v=103">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -259,14 +259,7 @@
 
 <main class="wrap" data-view-panel="download" id="download-view">
 
-  <div class="sources-wrap" id="sources-wrap">
-    <button type="button" class="sources-toggle" id="open-sources"
-            aria-expanded="false" aria-controls="sources-panel">
-      <span class="sources-count" id="sources-count">32</span>
-      <span class="sources-label">sources</span>
-      <svg class="sources-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-    </button>
-    <div class="sources-panel" id="sources-panel" hidden></div>
+
   </div>
 
   <div class="hero">
@@ -305,17 +298,17 @@
       <div class="composer-foot">
         <div class="mode-group">
         <div class="modes" role="radiogroup" aria-label="Download mode">
-          <button type="button" class="mode" data-mode="auto" role="radio" aria-checked="true" title="video and audio">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/></svg>
-            <span class="mode-name">video</span>
+          <button type="button" class="mode" data-mode="auto" role="radio" aria-checked="true" title="pick what suits the link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>
+            <span class="mode-name">auto</span>
           </button>
           <button type="button" class="mode" data-mode="audio" role="radio" aria-checked="false" title="audio only">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6.5l9-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="15.5" cy="16" r="2.5"/></svg>
             <span class="mode-name">audio</span>
           </button>
-          <button type="button" class="mode" data-mode="mute" role="radio" aria-checked="false" title="video only, no sound">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="m3 19 18-14"/></svg>
-            <span class="mode-name">silent</span>
+          <button type="button" class="mode" data-mode="video" role="radio" aria-checked="false" title="video with sound">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/></svg>
+            <span class="mode-name">video</span>
           </button>
         </div>
         </div>
@@ -338,6 +331,15 @@
       <p><span id="setup-lead">Not connected — </span><button type="button" class="link-btn" id="setup-open-settings">connect an API</button><span id="setup-tail"> to download.</span></p>
     </div>
   </section>
+
+  <div class="sources-wrap" id="sources-wrap">
+    <button type="button" class="sources-toggle" id="open-sources"
+            aria-expanded="false" aria-controls="sources-panel">
+      <span class="sources-count" id="sources-count">32</span>
+      <span class="sources-label">sources</span>
+      <svg class="sources-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="sources-panel" id="sources-panel" hidden></div>
 
   <p class="composer-note" id="composer-note">paste a link from youtube, soundcloud or tiktok — or put <b>mdown.cc/</b> in front of one</p>
 
@@ -386,15 +388,6 @@
   </nav>
 
   <p class="recent-line" id="recent" hidden></p>
-
-  <!-- One sponsor slot. Off by default: delete `hidden` and put something in it.
-       It is deliberately small and labelled so it never reads as part of the app.
-       AdSense will not accept a media downloader; the networks that do are the
-       ones that serve fake download buttons. Self-sold or nothing. -->
-  <aside class="slot" id="slot" hidden aria-label="Sponsor">
-    <span class="slot-label">sponsor</span>
-    <span class="slot-body">your one line here</span>
-  </aside>
 
 
 
@@ -510,7 +503,13 @@
 </main>
 
 <footer class="footer">
-  <p class="footer-meta"><a href="terms.html">terms</a> · <button type="button" class="link-btn" id="open-help">how it works</button> · <a href="updates.html">updates</a> · <span class="footer-licence">open source (MIT)</span><span id="donate-wrap" hidden> · <a href="#" id="donate-link">donate</a></span></p>
+  <nav class="footer-meta" aria-label="Footer">
+    <a href="terms.html">terms</a>
+    <button type="button" class="footer-link" id="open-help">how it works</button>
+    <a href="updates.html">updates</a>
+    <a href="terms.html#source">open source</a>
+    <span id="donate-wrap" hidden><a href="#" id="donate-link">donate</a></span>
+  </nav>
 </footer>
 
 <!-- ======================= settings sheet ======================= -->
@@ -596,10 +595,11 @@
         <div class="field">
           <span class="field-label">Default</span>
           <div class="seg" data-setting="downloadMode" role="radiogroup" aria-label="Default download mode">
-            <button type="button" data-value="auto">video</button>
+            <button type="button" data-value="auto">auto</button>
             <button type="button" data-value="audio">audio</button>
-            <button type="button" data-value="mute">silent</button>
+            <button type="button" data-value="video">video</button>
           </div>
+          <p class="field-help"><b>auto</b> takes audio from a music link and video from everything else.</p>
         </div>
 
         <div class="field">
@@ -615,54 +615,18 @@
             <button type="button" data-value="240">240p</button>
             <button type="button" data-value="144">144p</button>
           </div>
-          <p class="field-help">The server gives you the closest it can serve.</p>
+          <p class="field-help">The server gives you the closest it can serve. 1080p is the default.</p>
         </div>
 
-        <details class="pane-more">
-          <summary>Codec and container</summary>
-          <div class="field">
-            <span class="field-label">YouTube codec</span>
-            <div class="seg wrap" data-setting="youtubeVideoCodec" role="radiogroup" aria-label="YouTube codec">
-              <button type="button" data-value="h264">h264</button>
-              <button type="button" data-value="av1">av1</button>
-              <button type="button" data-value="vp9">vp9</button>
-            </div>
-            <p class="field-help">h264 plays everywhere. av1 is smaller at the same quality, on newer devices.</p>
-          </div>
-
-          <div class="field">
-            <label class="field-label" for="yt-container">Container</label>
-            <div class="field-row">
-              <select id="yt-container" class="select" data-setting="youtubeVideoContainer">
-                <option value="auto">auto</option>
-                <option value="mp4">mp4</option>
-                <option value="webm">webm</option>
-                <option value="mkv">mkv</option>
-              </select>
-            </div>
-            <p class="field-help">auto is right unless your player refuses the file.</p>
-          </div>
-
-          <div class="field">
-            <label class="switch-row" for="allow-h265">
-              <span>
-                <span class="field-label">Allow h265</span>
-                <span class="field-help">Smaller files, but some players and editors cannot open them.</span>
-              </span>
-              <input type="checkbox" id="allow-h265" class="switch" data-setting="allowH265">
-            </label>
-          </div>
-
-          <div class="field">
-            <label class="switch-row" for="convert-gif">
-              <span>
-                <span class="field-label">Turn loops into GIF</span>
-                <span class="field-help">For X/Twitter loops. Larger files, worse quality.</span>
-              </span>
-              <input type="checkbox" id="convert-gif" class="switch" data-setting="convertGif">
-            </label>
-          </div>
-        </details>
+        <div class="field">
+          <label class="switch-row" for="mute-video">
+            <span>
+              <span class="field-label">No sound</span>
+              <span class="field-help">Video mode without the audio track, for loops and b-roll.</span>
+            </span>
+            <input type="checkbox" id="mute-video" class="switch" data-setting="muteVideo">
+          </label>
+        </div>
       </section>
 
       <section class="pane" data-pane="audio">
@@ -984,7 +948,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=57" defer></script>
+<script src="assets/app.js?v=60" defer></script>
 <script type="module" src="assets/nav.js?v=10"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

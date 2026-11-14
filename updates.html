@@ -37,7 +37,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=100">
+<link rel="stylesheet" href="assets/app.css?v=103">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -90,130 +90,30 @@
       <div class="cl-body">
         <h2>Phones, properly</h2>
         <ul>
-          <li>The uptime graph stopped inventing outages: a rate-limit reply counts as the server being alive, one failed check is retried before it is drawn, and a genuinely unknown check is grey rather than red.</li>
-          <li>Disk housekeeping: cached thumbnails are capped at 400 files and 7 days, so a busy month cannot slowly eat the VM. Downloads were already deleted 15 minutes after they are served.</li>
-          <li>When a link won't go, the field says so: a short shake and a <b>red outline</b> for a second, one calm line, and a stack that never exceeds three notices.</li>
-          <li>The paste field is simply there on load — no slide, no fade, and no border change when the caret lands in it.</li>
-          <li>The hero arrow is the thing that moves now, not a box around it. It drops into the tray once, the name types itself, and that's it. Clicking the wordmark does nothing on purpose: it is not a link, cannot be selected, and the cursor does not change.</li>
-          <li>The green dot pulses a little more (0.38 → 1) without a glow.</li>
-          <li>The <b>tools</b> dropdown is gone from the top bar. The three tools live under the field, where a first-time visitor can actually see them.</li>
-          <li>A line under the field says the thing nobody knows on their first visit: <i>paste a link from youtube, soundcloud or tiktok — or put mdown.cc/ in front of one</i>. It disappears the moment you type.</li>
-          <li>The Server card is two rows and a link, not four rows: the address, and <i>33 services · up 2d</i>.</li>
-          <li>Pressing things as fast as you can no longer breaks the page: one link queues once however many times <b>fetch</b> is hit, menus always end in the state their label claims, settings survive twenty open/close cycles, <b>save</b> and <b>share</b> ignore a second tap, and <b>reset all</b> asks first.</li>
-          <li>The API got harder to abuse: the rate limiter reads the address your proxy actually appended (a spoofed <code>X-Forwarded-For</code> no longer buys a fresh identity), thumbnail URLs from a source are checked before anything fetches them, and limiter state is swept instead of growing forever.</li>
-          <li>The Server pane had two buttons that both re-checked the instance, and the second one was stranded under the service list. There is one now — <b>Check</b>, next to the field where you type the address.</li>
-          <li>The file preview in Settings is the file now: a row with the icon, the exact name, the container, the quality and a <b>video</b>/<b>audio</b>/<b>silent</b> tag, and it follows whichever mode is selected.</li>
-          <li>The front page finally says the other tools exist: three lines for <b>remux</b>, <b>subtitles</b> and <b>metadata</b>, each a real link with one sentence about what it does.</li>
-          <li>The logo is a tile now, and the name <b>types itself</b> once on arrival — eight steps, a 2px caret, then the caret leaves and the "down" settles. Nothing moves after that.</li>
-          <li>The fetch arrow's slot is always visible; only the arrow arrives when a link does, so the footer never changes shape.</li>
-          <li>For the crawlers and the answer engines: a plain-text summary for anyone without JavaScript, the three tools in structured data, a link to <code>llms.txt</code>, and the changelog plus the MIT licence in the footer.</li>
-          <li>The <a href="terms.html">terms</a> now say what the API is: one server, sized for this page, origin-checked and rate-limited, not for other clients or resale. Run your own if you need one.</li>
-          <li>The sources panel got smaller and stopped leaning on the wordmark: 540 wide, six even columns, a taller-than-it-looks scroll area, and the height is measured against the logo when it opens so it always clears it. Chips answer to the pointer.</li>
-          <li>No glow left anywhere. The green dot breathes instead of throwing a ring, status dots are flat, and focus is a crisp 1px line rather than a halo.</li>
-          <li>The page opens as one gesture: the mark and wordmark drop and settle, the field rises under them, and the arrow is the last thing to arrive — and it drops in again each time a link comes back.</li>
-          <li>Spamming the fetch key can no longer bury the page. The same message twice is one message, three is the ceiling, and a link that isn't a link shakes the field once instead of filing a complaint for every tap.</li>
-          <li>Link previews got a proper card: a 1200×630 image with the wordmark and <i>paste a link. keep the file.</i>, three claims and no fine print, large-format cards on X, and the same image on Discord, Reddit, iMessage and Android. Every page has its own title, description and alt text.</li>
-          <li>The name on the tin is now <b>mdown.cc — paste a link, keep the file</b> instead of a generic "media downloader", and the queue uses the same words as the buttons: video, audio, silent.</li>
-          <li>The <b>down</b> in the wordmark falls the last few pixels and settles once when the page opens — the same gesture as the mark, and only that half of the name.</li>
-          <li>The composer no longer lights up with a halo when the page loads. Focus is a hairline that gets a shade brighter, nothing more; the glow is gone from the site entirely.</li>
-          <li>The green dot opens a miniature of the status page: <b>online</b>, how long the server has been up, a bar per recent check, the uptime percentage, and two links. It fills in as you use the site — every connection check is a sample — so it is a real graph, not a placeholder.</li>
-          <li>The help and settings copy got shorter again: three steps, six questions, one line of explanation per control, and the rest is folded away. "Connection" is now "Server" everywhere.</li>
-          <li>Settings stopped explaining itself. <b>Video</b> and <b>Audio</b> open with the two choices people actually make — what to download, and how big — and the codec, container, dubbing and TikTok switches sit behind a <b>+</b>. <b>Files</b>, <b>Privacy</b> and <b>Advanced</b> got the same treatment: plain labels, one line of help, everything rare folded away.</li>
-          <li><b>Connection</b> is now <b>Server</b>: one field, one card that says <i>connected</i> with the host, the service count and how long it has been up, and the API key and the service list behind disclosures. No more paragraph explaining what an API is.</li>
-          <li>The connection pill is a green dot with a soft pulse you can click, not a word in a box. Red when the server is down, amber while checking, and the host moved into its tooltip.</li>
-          <li>There is no fetch button on a desktop any more — the arrow only exists once the field holds a link, and a rejected link answers with one short shake, not a notification. The service mark pops in when a link is recognised. On a phone the full-width target stays, because a thumb needs one.</li>
-          <li>The download bar is a 3px hairline that glides on the compositor instead of a block that jumps, and a waiting job counts its own seconds so it never looks stuck.</li>
-          <li>A dropdown now leaves as cleanly as it arrives: tools, downloads and sources all play a 4px, 120ms exit before they disappear, instead of vanishing under the pointer.</li>
-          <li>Paste a link and the field now tells you what you are about to get: a size estimate, the running time, the resolution and a thumbnail, before anything is fetched. It folds away when the field is empty, so the composer never moves.</li>
-          <li>The queue uses that picture too — the row shows the thumbnail and the estimated size while the download is still running, instead of a generic glyph and the word "requesting".</li>
-          <li>Cover art is a setting: embed the thumbnail in mp3, ogg and opus files, or leave the file clean. <code>source</code> and wav are never touched.</li>
-          <li>A download now shows itself: the queue opens on any screen, the bar fills with real percentages, speed and time left, and the badge pulses while work is running. It used to open only above 720px, so phones saw nothing until the file arrived.</li>
-          <li>Paste tells you what to do when the clipboard is blocked on iOS or Android, instead of naming a Mac shortcut.</li>
-          <li>iOS hands downloads to Safari's downloader — a blob opens in a viewer there and never reaches Files.</li>
-          <li><code>fetch</code> is a full-width 48px target on phones, and the modes split the row evenly.</li>
-          <li>Fields are 16px on phones so iOS stops zooming the page when you tap them.</li>
-          <li>No accidental pull-to-refresh mid-download. No sideways scroll at 320px.</li>
-          <li>The status pill says <b>online</b> instead of a hostname, with the address in its tooltip.</li>
-          <li>The hero is a mark and a wordmark, <b>mdown.cc</b>, with the <b>cc</b> the same size as the name and a shade quieter so the wordmark still reads as a name.</li>
-          <li>A test taps every visible button on a 390px screen and fails if any of them throws.</li>
-          <li>The top bar is brand + tools on the left, the connection dot and the queue on the right, and nothing else. The connection pill means connection again — it opens the pane with the address, the health link and the status page — and the queue has its own small button.</li>
-          <li>The footer is <i>terms · how it works</i>; the help moved down there so the top bar has three things at most, and <i>status</i> lives inside the connection pill.</li>
-          <li>Inside a tool, the way back is <b>← download</b>, and on a phone it collapses to just <b>←</b> because the word cost 47px of top bar.</li>
-          <li>Arriving on the page puts the caret in the link field, with whatever is there selected, so typing replaces it. Returning to the tab does the same when nothing else has focus. (iOS still won't raise the keyboard without a tap — Safari's rule, not ours.)</li>
-          <li>Every dropdown — tools, sources, the queue — drops with the same 4px, 150ms motion on the same curve, and the panel it belongs to is the point it grows out of. One family instead of three implementations.</li>
-          <li>The mark drops into the tray on load and replays when you point at the name; the fetch button brightens on hover. Nothing animates inside the button itself — that version re-rasterised the whole control on every hover and felt slower than the one it replaced.</li>
-          <li>The sources list is pinned to the top centre of the screen rather than floating wherever the centred column put it, and it hangs off the count with a chevron that turns over.</li>
-          <li>The sources list is one flat alphabetical wrap of everything mdown accepts — 33 services, including imgur — plus anything the connected instance advertises that the list has not learned yet. No group headers, no encrypted services, 660px wide, and it leaves with the same short slide it arrives with.</li>
-          <li>Double-tap no longer zooms anything on a phone. Pinch still works — only the accidental gesture is gone.</li>
-          <li>A finished download says where it went: <b>Files → Downloads</b> on iOS, <b>Downloads</b> on Android, your downloads folder on a desktop. "Saved" on its own left you hunting.</li>
-          <li>The 404 page — the one every bare <code>mdown.cc/link</code> lands on — now carries a content security policy like every other page, and a narrower one than the app needs.</li>
-          <li>A rebuilt <a href="donate.html">donate page</a>: one card that says whether the tip jar is open, copy buttons that answer when you press them, and sharing treated as the real option instead of a footnote. It no longer quotes what the site costs to run — that is nobody's business but ours. Nothing on it loads from a third party.</li>
-          <li>An updates page (this one) and a one-line explanation at the top of every settings pane. "Output" is now "Files", because that's what it holds.</li>
-          <li>The active nav item stopped looking like a button — it names where you are now.</li>
-          <li>Sharing moved onto the donate page: copy the link, or post it straight to x, threads, reddit or bluesky. Each one is an ordinary link with no referrer, so nothing is requested until you press it.</li>
-        </ul>
-      </div>
-    </article>
-
-    <article class="cl-entry">
-      <div class="cl-meta">
-        <span class="cl-version">1.2</span>
-        <time class="cl-date" datetime="2026-11-13">13 nov 2026</time>
-      </div>
-      <div class="cl-body">
-        <h2>It's live</h2>
-        <ul>
-          <li><b>mdown.cc</b> served statically with a real certificate and HTTPS enforced; <b>api.mdown.cc</b> on the box, Let's Encrypt, renewing itself.</li>
-          <li>8 parallel range requests per download instead of 4 — measured 39% faster on a 900 MB 4K file. 16 was slower on one core.</li>
-          <li>Output cap raised to 2 GB. The old 800 MB ceiling rejected a 966 MB 4K file, which meant the highest quality was advertised and then refused.</li>
-          <li>Range requests: a dropped connection on a big file resumes instead of starting over.</li>
-          <li>Files over 200 MB go straight to the browser. Buffering a gigabyte in the JS heap killed the tab.</li>
-          <li>A watchdog restarts the API when it's alive but wedged; a scheduled check opens an issue if the box stops answering.</li>
-          <li>A refused POST no longer poisons the connection — that showed up as "can't reach the API" on the second attempt.</li>
-        </ul>
-      </div>
-    </article>
-
-    <article class="cl-entry">
-      <div class="cl-meta">
-        <span class="cl-version">1.1</span>
-        <time class="cl-date" datetime="2026-11-12">12 nov 2026</time>
-      </div>
-      <div class="cl-body">
-        <h2>Limits that tell the truth</h2>
-        <ul>
-          <li>Error messages name the actual problem: daily cap, burst limit, full queue, disk space, a missing API key.</li>
-          <li>The status page reports real uptime from the API's own checks.</li>
-          <li>A content security policy on every page, verified to allow the local ffmpeg engine and nothing else.</li>
-          <li>Donations dialog, off by default, that loads nothing from anywhere.</li>
-        </ul>
-      </div>
-    </article>
-
-    <article class="cl-entry">
-      <div class="cl-meta">
-        <span class="cl-version">1.0</span>
-        <time class="cl-date" datetime="2026-11-11">11 nov 2026</time>
-      </div>
-      <div class="cl-body">
-        <h2>First release</h2>
-        <ul>
-          <li>One page: paste a link, pick a mode, get a file. No account, no build step.</li>
-          <li>Its own API: yt-dlp + ffmpeg, no Docker, no Node, caps on duration, height and size.</li>
-          <li>Remux, subtitle extraction and metadata cleaning run locally in your browser — those files never leave your device.</li>
-          <li>Pickers for playlists, subtitle embedding, silent video, and untouched source audio.</li>
+          <li><b>auto</b> reads the link: a music service gets audio, everything else gets video. <b>audio</b> and <b>video</b> force it, and <b>no sound</b> is a switch rather than a fourth button nobody understood.</li>
+          <li>Paste a link and the field shows the size, the running time, the resolution and a thumbnail before anything is fetched. The queue keeps the picture.</li>
+          <li>On a phone the sources trigger sits under the field, so its panel opens over the hint and the tools — never across the wordmark.</li>
+          <li>The sources list is one small panel: all 33, even columns, measured against the wordmark so it never touches it, denser on a phone.</li>
+          <li>The field is simply there on load. The arrow drops into the tray, the name types itself once, and the green dot breathes without a glow.</li>
+          <li>A link that won't go gets a short shake and a red outline. Notices cap at three, and hammering fetch can't bury the page or clear what you typed.</li>
+          <li>Settings open with the two choices you actually make; codec, dubbing, subtitles and the API key sit behind a <b>+</b>. Server is one field, one card, one <b>Check</b>.</li>
+          <li>The three browser tools are under the field — <b>remux</b>, <b>subtitles</b>, <b>metadata</b> — instead of inside a menu nobody opened.</li>
+          <li>The file preview in Settings is the file: name, container, quality, and whether it has sound.</li>
+          <li>Mobile: 16px fields, a full-width fetch, no double-tap zoom, no pull-to-refresh, and a saved-file message that names Files → Downloads or Downloads.</li>
+          <li>There is no ad slot in the code, and there never will be. The privacy check now fails the build if advertising markup appears. Donations or nothing.</li>
+          <li>Link previews got a 1200×630 card for Discord, X, Reddit, iMessage and Android. The footer is real buttons, and the changelog is linked from the page it describes.</li>
         </ul>
       </div>
     </article>
 
   </div>
 
-  <p class="updates-foot">The code is open source under the MIT licence. <a href="./">Back to the downloader</a>.</p>
+  <p class="updates-foot">The code is open source — fork it, run it yourself. <a href="./">Back to the downloader</a>.</p>
 
 </main>
 
 <footer class="footer">
-  <p class="footer-meta"><a href="./">mdown.cc</a> · <a href="donate.html">donate</a> · <a href="status.html">status</a> · <a href="terms.html">TOS</a> · <span id="footer-version">local-first</span></p>
+  <nav class="footer-meta" aria-label="Footer"><a href="./">mdown.cc</a><a href="terms.html">terms</a><a href="status.html">status</a><a href="donate.html">donate</a></nav>
 </footer>
 
 </body>

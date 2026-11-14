@@ -36,6 +36,7 @@
     instance: "",
     apiKey: "",
     downloadMode: "auto",
+    muteVideo: false,
     videoQuality: "1080",
     audioFormat: "mp3",
     audioBitrate: "128",
@@ -272,6 +273,17 @@
       if (!merged.schema || merged.schema < 2) {
         if (!merged.subtitleLang || merged.subtitleLang === "none") merged.subtitleLang = "en";
         merged.schema = 2;
+      }
+
+      /* v4: the mode row is auto/audio/video; silent is a switch on video */
+      if (!merged.schema || merged.schema < 4) {
+        if (merged.downloadMode === "mute") {
+          merged.downloadMode = "video";
+          merged.muteVideo = true;
+        }
+        if (["auto", "audio", "video"].indexOf(merged.downloadMode) < 0) merged.downloadMode = "auto";
+        merged.muteVideo = !!merged.muteVideo;
+        merged.schema = 4;
       }
 
       /* v3: 1080p / 128 kb/s ceilings, no untouched-source audio */
@@ -628,7 +640,8 @@
   function modeSummary(mode) {
     if (mode === "audio") return audioLabel();
     const container = settings.youtubeVideoContainer === "auto" ? "mp4" : settings.youtubeVideoContainer;
-    if (mode === "mute") return container + " · no audio";
+    if (mode === "mute" || settings.muteVideo) return container + " · " + qualityLabel() + " · no sound";
+    if (mode === "auto") return container + " · " + qualityLabel() + " · auto";
     return container + " · " + qualityLabel();
   }
 
@@ -776,11 +789,10 @@
     });
     const fresh = usable.filter(admitSubmit);
     if (!fresh.length) {
-      /* a double tap on fetch, or the same link hammered: nothing to say,
-         nothing to queue, just a shrug of the field */
-      if (usable.length) nudgeComposer();
-      dom.input.value = "";
-      updateComposerState();
+      /* a second tap, or the same link hammered: leave what they typed where
+         it is, keep the keyboard down, and say it once */
+      toast("Already queued — wait for it to finish.", "warn");
+      nudgeComposer();
       return;
     }
 
@@ -793,7 +805,7 @@
 
     dom.input.value = "";
     updateComposerState();
-    dom.input.focus();
+    if (IS_TOUCH) { try { dom.input.blur(); } catch (e) {} }
     renderQueue();
     const firstQueued = queue.find((item) => item.status === "queued");
     if (firstQueued && firstQueued.node) firstQueued.node.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -829,18 +841,28 @@
   function updateRequestPreview() {
     if (!dom.requestPreview) return;
     const sample = queue.length ? queue[queue.length - 1].url : "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-    dom.requestPreview.textContent = JSON.stringify(buildBody(sample, settings.downloadMode), null, 2);
+    dom.requestPreview.textContent = JSON.stringify(buildBody(sample, effectiveMode(sample, settings.downloadMode)), null, 2);
   }
 
   /* ----------------------------------------------------------
      queue: model
      ---------------------------------------------------------- */
+  /* What the API is actually asked for. auto means "read the link": a music
+     service gets audio, everything else gets video. The no-sound switch only
+     ever applies to video, because muting an audio download is nonsense. */
+  function effectiveMode(url, mode) {
+    const wanted = mode || settings.downloadMode;
+    if (wanted === "audio") return "audio";
+    if (wanted === "mute") return "mute";
+    const detected = detectService(url);
+    const music = detected && AUDIO_FIRST.has(detected.id);
+    if (wanted === "auto" && music) return "audio";
+    return settings.muteVideo ? "mute" : "auto";
+  }
+
   function enqueue(url, mode) {
     const detected = detectService(url);
-    /* audio-first services default to audio unless a mode was chosen explicitly */
-    if (!mode && settings.downloadMode === "auto" && detected && AUDIO_FIRST.has(detected.id)) {
-      mode = "audio";
-    }
+    const resolved = effectiveMode(url, mode);
     const item = {
       id: "q" + ++idCounter,
       url,
@@ -848,7 +870,7 @@
       directUrl: "",
       service: detected && detected.id ? detected.id : (detected ? detected.host : "link"),
       host: detected ? detected.host : hostOf(url),
-      mode: mode || settings.downloadMode,
+      mode: resolved,
       status: "queued",
       detail: "queued",
       filename: "",
@@ -2167,10 +2189,14 @@
   function fitSources() {
     const panel = dom.sourcesPanel;
     if (!panel || panel.hidden) return;
+    if (window.matchMedia("(max-width: 720px)").matches) {
+      panel.style.maxHeight = "min(46vh, 360px)";
+      return;
+    }
     const logo = document.querySelector(".hero-logo");
     const top = panel.getBoundingClientRect().top;
     const stop = logo ? logo.getBoundingClientRect().top : window.innerHeight;
-    const room = Math.round(Math.min(200, Math.max(88, stop - top - 14)));
+    const room = Math.round(Math.min(200, Math.max(44, stop - top - 14)));
     panel.style.maxHeight = room + "px";
   }
 

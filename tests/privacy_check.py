@@ -47,6 +47,13 @@ TRACKERS = re.compile(
     re.I,
 )
 
+# no advertisements, ever. The site is funded by donations or not at all.
+ADS = re.compile(
+    r"adsbygoogle|googlesyndication|/pagead/|data-ad-slot"
+    r"|class=[\"'][^\"']*\bslot\b|id=[\"']slot[\"']",
+    re.I,
+)
+
 # a request to a third party from the page itself
 EXTERNAL_LOAD = re.compile(
     r"""<(?:script|img|iframe|video|audio|source)\b[^>]*\b(?:src|href)\s*=\s*["']https?://"""
@@ -89,6 +96,9 @@ def main():
         # so only flag tracker hosts and real requests
         if TRACKERS.search(text):
             findings.append((rel, "analytics/tracking reference"))
+
+        if ADS.search(text):
+            findings.append((rel, "advertising markup — donations only"))
 
         if rel.endswith(".html"):
             for match in EXTERNAL_LOAD.finditer(text):
