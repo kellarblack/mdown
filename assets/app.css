@@ -431,7 +431,7 @@ a.ghost-btn { text-decoration: none; }
 #fetch-btn[data-armed="false"] {
   background: transparent; color: var(--text-3); border-color: var(--stroke);
 }
-#fetch-btn[data-armed="false"] svg { opacity: 0.28; }
+#fetch-btn[data-armed="false"] svg { opacity: 0.42; }
 #fetch-btn[data-armed="false"]:hover { background: var(--surface); color: var(--text-2); }
 #fetch-btn[data-armed="true"] svg { opacity: 1; }
 /* it drops in rather than switching on: the last beat of the choreography,
