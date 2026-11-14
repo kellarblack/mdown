@@ -530,6 +530,9 @@
       if (dom.fetchBtn.dataset.armed !== String(armed)) {
         dom.fetchBtn.dataset.armed = armed ? "true" : "false";
         dom.fetchBtn.setAttribute("aria-label", armed ? "fetch" : "paste a link first");
+        /* an invisible control must not be a tab stop */
+        dom.fetchBtn.tabIndex = armed ? 0 : -1;
+        dom.fetchBtn.setAttribute("aria-hidden", armed ? "false" : "true");
       }
     }
     if (service && service !== lastService && dom.serviceMark) {

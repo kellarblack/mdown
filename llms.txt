@@ -1,8 +1,7 @@
 # mdown
 
 > mdown.cc is a media downloader that runs in the browser: paste a link, keep
-> the file. No ads, no account. Capped at 8K and 30 minutes per item, with
-> nothing stored on a server.
+> the file. No ads, no account, no tracking. Nothing is stored on a server.
 
 ## What it does
 

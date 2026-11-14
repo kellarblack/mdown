@@ -90,6 +90,19 @@ async function main() {
   frame.style.width = "390px";
   await sleep(150);
 
+  // hammering submit must not be able to stack notifications
+  setField.call(field, "");
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+  for (let i = 0; i < 25; i++) {
+    doc.querySelector("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+  }
+  await sleep(160);
+  const stacked = doc.querySelectorAll(".toast").length;
+  record("spamming submit cannot stack notifications", stacked <= 3, stacked + " on screen");
+  record("an empty field says no with one short shake",
+    doc.querySelector("#composer").classList.contains("is-nudging"),
+    doc.querySelector("#composer").className);
+
   // click every one, re-reading the list because panels come and go
   let clicked = 0;
   for (let i = 0; i < buttons.length; i++) {
