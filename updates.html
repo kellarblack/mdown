@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Updates — mdown</title>
+<meta name="description" content="What changed in mdown, newest first: new formats, mobile fixes, limits, and the things that broke and got fixed.">
+<link rel="canonical" href="https://mdown.cc/updates.html">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="mdown">
+<meta property="og:url" content="https://mdown.cc/updates.html">
+<meta property="og:title" content="Updates — mdown">
+<meta property="og:description" content="What changed in mdown, newest first.">
+<meta name="twitter:card" content="summary">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a0a0b">
+<link rel="manifest" href="manifest.webmanifest">
+<script>
+  try {
+    var saved = JSON.parse(localStorage.getItem("mdown.settings") || "{}");
+    var pick = saved.theme;
+    if (pick !== "light" && pick !== "dark") {
+      pick = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    document.documentElement.dataset.theme = pick;
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="assets/app.css?v=50">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div class="backdrop" aria-hidden="true">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="grain"></div>
+</div>
+
+<header class="topbar">
+  <a class="brand" href="./" aria-label="mdown home">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+      </svg>
+    </span>
+    <span class="brand-text">mdown<span class="brand-dot">.</span><span class="brand-sub">cc</span></span>
+  </a>
+  <nav class="nav" aria-label="Sections">
+    <a class="nav-link" href="./">download</a>
+    <details class="nav-tools">
+      <summary class="nav-link">tools <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></summary>
+      <div class="nav-menu">
+        <a href="./#remux">remux</a>
+        <a href="./#subs">subtitles</a>
+        <a href="./#clean">metadata</a>
+      </div>
+    </details>
+    <a class="nav-link is-active" href="updates.html" aria-current="page">updates</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <h1 class="page-h1">Updates</h1>
+  <p class="page-lede">Newest first. Every entry is something you can check on this site or in the code — no roadmap promises.</p>
+
+  <div class="changelog">
+
+    <article class="changelog-entry">
+      <span class="changelog-date">14 nov 2026 · 1.3</span>
+      <h2>Phones, properly</h2>
+      <ul>
+        <li>A download now shows itself: the queue opens on any screen, the bar fills with real percentages, speed and time left, and the badge pulses while work is running. It used to open only above 720px, so phones saw nothing until the file arrived.</li>
+        <li>Paste tells you what to do when the clipboard is blocked on iOS or Android, instead of naming a Mac shortcut.</li>
+        <li>iOS hands downloads to Safari's downloader — a blob opens in a viewer there and never reaches Files.</li>
+        <li><code>fetch</code> is a full-width 48px target on phones, and the modes split the row evenly.</li>
+        <li>Fields are 16px on phones so iOS stops zooming the page when you tap them.</li>
+        <li>No accidental pull-to-refresh mid-download. No sideways scroll at 320px.</li>
+        <li>The status pill says <b>online</b> instead of a hostname, with the address in its tooltip.</li>
+        <li>The hero label was undersized lowercase mono; it's now a tracked caps label at a readable size.</li>
+      </ul>
+    </article>
+
+    <article class="changelog-entry">
+      <span class="changelog-date">13 nov 2026 · 1.2</span>
+      <h2>It's live</h2>
+      <ul>
+        <li><b>mdown.cc</b> on GitHub Pages with a real certificate and HTTPS enforced; <b>api.mdown.cc</b> on the box, Let's Encrypt, renewing itself.</li>
+        <li>8 parallel range requests per download instead of 4 — measured 39% faster on a 900 MB 4K file. 16 was slower on one core.</li>
+        <li>Output cap raised to 2 GB. The old 800 MB ceiling rejected a 966 MB 4K file, which meant the highest quality was advertised and then refused.</li>
+        <li>Range requests: a dropped connection on a big file resumes instead of starting over.</li>
+        <li>Files over 200 MB go straight to the browser. Buffering a gigabyte in the JS heap killed the tab.</li>
+        <li>A watchdog restarts the API when it's alive but wedged; a scheduled check opens an issue if the box stops answering.</li>
+        <li>A refused POST no longer poisons the connection — that showed up as "can't reach the API" on the second attempt.</li>
+      </ul>
+    </article>
+
+    <article class="changelog-entry">
+      <span class="changelog-date">12 nov 2026 · 1.1</span>
+      <h2>Limits that tell the truth</h2>
+      <ul>
+        <li>Error messages name the actual problem: daily cap, burst limit, full queue, disk space, a missing API key.</li>
+        <li>The status page reports real uptime from the API's own checks.</li>
+        <li>A content security policy on every page, verified to allow the local ffmpeg engine and nothing else.</li>
+        <li>Donations dialog, off by default, that loads nothing from anywhere.</li>
+      </ul>
+    </article>
+
+    <article class="changelog-entry">
+      <span class="changelog-date">11 nov 2026 · 1.0</span>
+      <h2>First release</h2>
+      <ul>
+        <li>Cobalt-style front-end: paste a link, pick a mode, get a file.</li>
+        <li>Its own API: yt-dlp + ffmpeg, no Docker, no Node, caps on duration, height and size.</li>
+        <li>Remux, subtitle extraction and metadata cleaning run locally in your browser — those files never leave your device.</li>
+        <li>Pickers for playlists, subtitle embedding, silent video, and untouched source audio.</li>
+      </ul>
+    </article>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <p class="footer-meta"><a href="./">mdown.cc</a> · <a href="status.html">status</a> · <a href="terms.html">TOS</a> · <span id="footer-version">local-first</span></p>
+</footer>
+
+</body>
+</html>

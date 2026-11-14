@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=49">
+<link rel="stylesheet" href="assets/app.css?v=50">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -164,6 +164,7 @@
         <a href="#subs" data-view="subs">subtitles</a>
         <a href="#clean" data-view="clean">metadata</a>
       </div>
+    <a class="nav-link" href="updates.html">updates</a>
     </details>
   </nav>
 
@@ -418,7 +419,7 @@
 </main>
 
 <footer class="footer">
-  <p class="footer-meta">by continuing, you agree to <a href="terms.html">our TOS</a> · <a href="status.html">status</a> · <span id="footer-version">mdown.cc</span> · local-first<span id="donate-wrap" hidden> · <a href="#" id="donate-link">donate</a></span></p>
+  <p class="footer-meta">by continuing, you agree to <a href="terms.html">our TOS</a> · <a href="updates.html">updates</a> · <a href="status.html">status</a> · <span id="footer-version">mdown.cc</span> · local-first<span id="donate-wrap" hidden> · <a href="#" id="donate-link">donate</a></span></p>
 </footer>
 
 <!-- ======================= settings sheet ======================= -->
@@ -439,7 +440,7 @@
       <button type="button" class="sheet-nav-item is-active" data-section="appearance">Appearance</button>
       <button type="button" class="sheet-nav-item" data-section="video">Video</button>
       <button type="button" class="sheet-nav-item" data-section="audio">Audio</button>
-      <button type="button" class="sheet-nav-item" data-section="output">Output</button>
+      <button type="button" class="sheet-nav-item" data-section="output">Files</button>
       <button type="button" class="sheet-nav-item" data-section="privacy">Privacy</button>
       <button type="button" class="sheet-nav-item" data-section="advanced">Advanced</button>
       <button type="button" class="sheet-nav-item" data-section="instance">Connection</button>
@@ -448,6 +449,7 @@
     <div class="sheet-body" id="sheet-body">
 
       <section class="pane is-active" data-pane="appearance">
+        <p class="pane-lede">How the site looks. Follows your system unless you choose otherwise.</p>
         <div class="field">
           <span class="field-label">Theme</span>
           <p class="field-help">Follows your system setting unless you choose otherwise.</p>
@@ -460,6 +462,7 @@
       </section>
 
       <section class="pane" data-pane="instance">
+        <p class="pane-lede">Which API this page talks to. The download runs on that server, not in this tab.</p>
         <div class="field">
           <label class="field-label" for="instance-url">API address</label>
           <p class="field-help">The download runs on an API server, not on this page. Paste its address — whoever runs it gives you the URL. Usually something like <code>https://api.example.com</code>.</p>
@@ -500,6 +503,7 @@
       </section>
 
       <section class="pane" data-pane="video">
+        <p class="pane-lede">What you get when the link has video: height, container, codec.</p>
         <div class="field">
           <span class="field-label">Default download mode</span>
           <div class="seg" data-setting="downloadMode" role="radiogroup" aria-label="Default download mode">
@@ -571,6 +575,7 @@
               </section>
 
       <section class="pane" data-pane="audio">
+        <p class="pane-lede">What you get when you ask for sound only.</p>
         <div class="field">
           <span class="field-label">Audio format</span>
           <p class="field-help"><code>source</code> keeps the stream untouched (usually <code>.m4a</code> or <code>.webm</code>) — no re-encode, best quality. mp3, ogg, opus and wav are re-encoded by the API; wav is uncompressed and large.</p>
@@ -630,6 +635,7 @@
       </section>
 
       <section class="pane" data-pane="output">
+        <p class="pane-lede">How files are named and saved on your device.</p>
         <div class="field">
           <span class="field-label">Saved file name</span>
           <div class="seg" data-setting="filenameStyle" role="radiogroup" aria-label="Filename style">
@@ -701,6 +707,7 @@
       </section>
 
       <section class="pane" data-pane="privacy">
+        <p class="pane-lede">What this page keeps, and what it sends.</p>
         <div class="field">
           <label class="switch-row" for="always-proxy">
             <span>
@@ -730,6 +737,7 @@
       </section>
 
       <section class="pane" data-pane="advanced">
+        <p class="pane-lede">Rarely needed. Safe to leave alone.</p>
         <div class="field">
           <span class="field-label">Grab the page you're on</span>
           <p class="field-help">Drag this to your bookmarks bar. On any media page, click it and the link opens here and starts fetching.</p>

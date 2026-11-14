@@ -224,8 +224,9 @@ async function main() {
   {
     const frame = await loadWithMock(320, 640);
     const doc = frame.contentDocument;
-    doc.querySelector("#queue-toggle").click();
-    await sleep(250);
+    // open it only if it is closed, and wait for the state instead of sleeping
+    if (doc.querySelector("#queue-panel").hidden) doc.querySelector("#queue-toggle").click();
+    await waitFor(() => !doc.querySelector("#queue-panel").hidden, 4000);
     const panel = doc.querySelector("#queue-panel");
     const r = panel ? panel.getBoundingClientRect() : null;
     record("the queue panel fits at 320px", !!r && r.width > 180 && r.right <= 320 + 1,

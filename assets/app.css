@@ -432,7 +432,7 @@ a.ghost-btn { text-decoration: none; }
 .services summary:hover { color: var(--text-2); }
 .services[open] summary { margin-bottom: 10px; }
 .services-refresh { margin-top: 10px; }
-.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 5px; }
 .chip {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 8px; border-radius: 5px;
@@ -518,6 +518,11 @@ a.ghost-btn { text-decoration: none; }
   border-left: 1px solid var(--stroke);
   animation: slide-in 220ms var(--ease) both;
 }
+.pane-lede {
+  margin: 0 0 16px; color: var(--text-3); font-size: 0.78rem; line-height: 1.55;
+  max-width: 54ch;
+}
+
 .sheet-head {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
   padding: 16px 18px 11px;
@@ -956,6 +961,21 @@ a.ghost-btn { text-decoration: none; }
 .back-btn svg { width: 14px; height: 14px; }
 .back-btn:hover, .back-btn:focus-visible {
   color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
+}
+
+/* ---------- updates / changelog ---------- */
+.changelog { max-width: 62ch; margin: 30px auto 0; display: grid; gap: 34px; }
+.changelog-entry { display: grid; gap: 8px; }
+.changelog-date {
+  font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.changelog-entry h2 { margin: 0; font-size: 0.98rem; font-weight: 500; }
+.changelog-entry ul { margin: 0; padding-left: 17px; color: var(--text-2); font-size: 0.84rem; line-height: 1.7; }
+.changelog-entry li { margin: 4px 0; }
+.changelog-entry code {
+  padding: 1px 5px; border-radius: 4px; background: var(--surface-2);
+  color: var(--text); font-size: 0.92em;
 }
 
 /* ---------- donations ---------- */
