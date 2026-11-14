@@ -432,7 +432,8 @@
     modalFoot: $("#modal-foot"),
     modalClose: $("#modal-close"),
     toasts: $("#toasts"),
-    footerVersion: $("#footer-version")
+    footerVersion: $("#footer-version"),
+    buildInfo: $("#build-info")
   };
 
   /* ----------------------------------------------------------
@@ -2304,15 +2305,15 @@
   function fitSources() {
     const panel = dom.sourcesPanel;
     if (!panel || panel.hidden) return;
-    if (window.matchMedia("(max-width: 720px)").matches) {
-      /* everything visible: 33 chips fit in five columns, so no inner scroll */
-      panel.style.maxHeight = "none";
+    if (window.innerWidth <= 720) {
+      panel.style.maxHeight = "min(56vh, 420px)";
       return;
     }
+    /* right-aligned under the bar, and never tall enough to sit on the name */
     const logo = document.querySelector(".hero-logo");
     const top = panel.getBoundingClientRect().top;
     const stop = logo ? logo.getBoundingClientRect().top : window.innerHeight;
-    const room = Math.round(Math.min(200, Math.max(44, stop - top - 14)));
+    const room = Math.round(Math.min(180, Math.max(70, stop - top - 10)));
     panel.style.maxHeight = room + "px";
   }
 
@@ -3376,6 +3377,25 @@
     } catch (e) {}
   }
 
+  function openShortcuts() {
+    const wrap = el("div", { class: "shortcuts" });
+    const rows = [
+      ["/", "focus the link field"],
+      ["enter", "start the download"],
+      ["esc", "close menus, dialogs and the queue"],
+      ["?", "this list"]
+    ];
+    rows.forEach(([key, what]) => {
+      const row = el("div", { class: "shortcut-row" });
+      row.appendChild(el("kbd", { text: key }));
+      row.appendChild(el("span", { text: what }));
+      wrap.appendChild(row);
+    });
+    const close = el("button", { type: "button", class: "ghost-btn", text: "close" });
+    close.addEventListener("click", () => closeModal());
+    openModal("Keyboard", wrap, [close]);
+  }
+
   function boot() {
     renderDonate();
     applyTheme();
@@ -3392,6 +3412,21 @@
 
     /* coming back to the tab puts the caret back where you left it — the same
        thing as arriving for the first time */
+    document.addEventListener("keydown", (event) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const tag = (document.activeElement && document.activeElement.tagName) || "";
+      const typing = /INPUT|TEXTAREA|SELECT/.test(tag);
+      if (event.key === "/" && !typing) {
+        event.preventDefault();
+        focusComposer();
+        return;
+      }
+      if (event.key === "?" && !typing) {
+        event.preventDefault();
+        openShortcuts();
+      }
+    });
+
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") focusComposer();
     });
@@ -3399,6 +3434,17 @@
     if (location.protocol === "file:") {
       const note = $("#file-note");
       if (note) note.hidden = false;
+    }
+
+    if (dom.buildInfo) {
+      fetch("assets/build.json", { cache: "no-store" })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!data || !data.commit) return;
+          dom.buildInfo.textContent = "build " + String(data.commit).slice(0, 7) + " · " + (data.date || "");
+          dom.buildInfo.hidden = false;
+        })
+        .catch(() => {});
     }
 
     const bookmarklet = $("#bookmarklet");

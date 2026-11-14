@@ -31,6 +31,10 @@ const META = {
 
 const BASE_URL = "https://mdown.cc/";
 
+/* set this to the public repository URL to light up the two source links.
+   it stays hidden while it is the placeholder, so nothing links nowhere. */
+const REPO_URL = "REPO_URL_HERE";
+
 function setMeta(selector, value) {
   const node = document.querySelector(selector);
   if (node) node.setAttribute("content", value);
@@ -121,6 +125,19 @@ if (toolsMenu) {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && toolsMenu.open) closeTools(true);
+  });
+}
+
+if (REPO_URL.indexOf("http") === 0) {
+  document.querySelectorAll("#repo-link").forEach((link) => {
+    link.href = REPO_URL;
+    link.rel = "noopener";
+    link.hidden = false;
+  });
+  document.querySelectorAll("#view-source").forEach((link) => {
+    link.href = REPO_URL.replace(/\/+$/, "") + "/blob/main/assets/app.js";
+    link.rel = "noopener";
+    link.hidden = false;
   });
 }
 

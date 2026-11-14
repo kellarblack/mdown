@@ -47,7 +47,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=112">
+<link rel="stylesheet" href="assets/app.css?v=116">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -203,6 +203,16 @@
   <div class="topbar-actions">
     <!-- one control for state and downloads: the dot is the API, the number is
          the queue. Splitting them into two buttons was two things to read. -->
+    <div class="sources-wrap" id="sources-wrap">
+    <button type="button" class="sources-toggle" id="open-sources"
+            aria-expanded="false" aria-controls="sources-panel">
+      <span class="sources-count" id="sources-count">32</span>
+      <span class="sources-label">sources</span>
+      <svg class="sources-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+      <div class="sources-panel" id="sources-panel" hidden></div>
+    </div>
+
     <div class="health" id="health">
       <button class="instance-pill" id="instance-pill" type="button" data-state="unknown"
               title="connection — click for health" aria-label="connection: not connected"
@@ -338,14 +348,7 @@
     </div>
   </section>
 
-  <div class="sources-wrap" id="sources-wrap">
-    <button type="button" class="sources-toggle" id="open-sources"
-            aria-expanded="false" aria-controls="sources-panel">
-      <span class="sources-count" id="sources-count">32</span>
-      <span class="sources-label">sources</span>
-      <svg class="sources-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-    </button>
-    <div class="sources-panel" id="sources-panel" hidden></div>
+
 
   <p class="composer-note" id="composer-note">paste a link from youtube, soundcloud or tiktok — or put <b>mdown.cc/</b> in front of one</p>
 
@@ -514,8 +517,16 @@
     <button type="button" class="footer-link" id="open-help">how it works</button>
     <a href="updates.html">updates</a>
     <a href="terms.html#source">open source</a>
+    <a id="repo-link" hidden rel="noopener">repository</a>
+    <a id="view-source" hidden rel="noopener">view source</a>
     <span id="donate-wrap" hidden><a href="#" id="donate-link">donate</a></span>
   </nav>
+  <p class="footer-proof">
+    <a href="terms.html#privacy">0 cookies</a><span aria-hidden="true">·</span>
+    <a href="terms.html#privacy">0 trackers</a><span aria-hidden="true">·</span>
+    <a href="terms.html#privacy">0 third-party requests</a>
+  </p>
+  <p class="footer-build"><span id="build-info" hidden></span></p>
 </footer>
 
 <!-- ======================= settings sheet ======================= -->
@@ -983,8 +994,8 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=67" defer></script>
-<script type="module" src="assets/nav.js?v=10"></script>
+<script src="assets/app.js?v=72" defer></script>
+<script type="module" src="assets/nav.js?v=11"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>
 </body>

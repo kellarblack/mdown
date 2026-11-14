@@ -1202,6 +1202,24 @@ a.ghost-btn { text-decoration: none; }
   .toasts { bottom: 12px; }
 }
 
+/* ---------- shortcuts ---------- */
+.shortcuts { display: grid; gap: 8px; }
+.shortcut-row { display: flex; align-items: center; gap: 12px; font-size: 0.8rem; color: var(--text-2); }
+.shortcut-row kbd {
+  min-width: 44px; padding: 3px 8px; border-radius: 5px; text-align: center;
+  border: 1px solid var(--stroke-2); background: var(--surface);
+  font-family: var(--mono); font-size: 0.7rem; color: var(--text);
+}
+
+/* ---------- footer proof ---------- */
+.footer-proof {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px;
+  margin: 8px 0 0; font-family: var(--mono); font-size: 0.62rem; color: var(--hint-ink);
+}
+.footer-proof a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--stroke-2); }
+.footer-proof a:hover { color: var(--text); text-decoration-color: var(--text); }
+.footer-build { margin: 5px 0 0; text-align: center; font-family: var(--mono); font-size: 0.58rem; color: var(--text-3); }
+
 /* ---------- navigation ---------- */
 .nav { display: flex; align-items: center; gap: 2px; margin-right: auto; margin-left: 18px; }
 /* the way back out of a tool, shown only while a tool is open */
@@ -1305,14 +1323,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 /* ---------- sources trigger + panel ---------- */
 /* pinned to the top centre of the screen, not dragged around by the centred
    column the composer lives in */
-.sources-wrap {
-  position: fixed; z-index: 45;
-  top: calc(52px + env(safe-area-inset-top, 0px) + 12px);
-  left: 50%; transform: translateX(-50%);
-  display: grid; justify-items: center;
-  pointer-events: none;
-}
-.sources-wrap > * { pointer-events: auto; }
+.sources-wrap { position: relative; display: inline-flex; }
 /* a count and a chevron: the chevron turns over when the panel is open. no
    plus, no circle, nothing borrowed. */
 .sources-toggle {
@@ -1338,52 +1349,37 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-toggle[aria-expanded="true"] .sources-count { color: var(--text); }
 
 .sources-panel {
-  position: absolute; z-index: 60; top: calc(100% + 7px); left: 50%;
-  transform: translateX(-50%);
-  width: min(540px, calc(100vw - 24px));
-  /* the real ceiling is measured against the wordmark when it opens (app.js);
-     this is the fallback for the first frame */
-  max-height: 168px;
+  position: absolute; z-index: 60; top: calc(100% + 8px); right: 0; left: auto;
+  width: min(340px, calc(100vw - 100px));
+  max-height: min(40vh, 180px);
   overflow-y: auto; overscroll-behavior: contain;
   padding: 7px 9px; text-align: left;
   border: 1px solid var(--stroke-2); border-radius: 9px;
   background: var(--bg-elev); box-shadow: var(--shadow-2);
+  transform-origin: top right;
 }
 /* the chips are a block, not a ragged wrap: same columns, same rhythm */
 .sources-panel .source-chips {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 4px;
 }
-.sources-panel { animation: panel-drop-in 150ms var(--ease) both; }
-.sources-panel.is-closing { animation: panel-drop-out 140ms var(--ease) both; }
-@keyframes panel-drop-in {
-  from { opacity: 0; transform: translate(-50%, -4px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
-}
-@keyframes panel-drop-out {
-  from { opacity: 1; transform: translate(-50%, 0); }
-  to   { opacity: 0; transform: translate(-50%, -4px); }
-}
+.sources-panel { animation: drop-in 150ms var(--ease) both; }
+.sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
 
 /* ---------- sources panel (shared) ---------- */
 .sources { display: grid; gap: 5px; min-width: 0; }
 .sources-search { width: 100%; }
 @media (max-width: 720px) { .sources-search { font-size: 16px; } }
 @media (max-width: 720px) {
-  /* on a phone the trigger sits under the field instead of pinned to the top:
-     the panel then opens over the hint and the tool cards, never the wordmark */
-  .sources-wrap {
-    position: relative; top: auto; left: auto; transform: none;
-    margin: 10px auto 0; justify-items: center;
-  }
+  /* a sheet above the bottom bar, aligned to the screen, never the wordmark */
   .sources-panel {
-    width: calc(100vw - 16px); max-height: none; overflow: visible;
-    padding: 6px 7px;
+    position: fixed; left: 8px; right: 8px; top: auto; width: auto;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    max-height: min(56vh, 420px); overflow-y: auto;
+    transform-origin: bottom center;
   }
-  .sources-panel .sources-note { font-size: 0.58rem; }
-  .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 3px; }
-  .sources-panel .source-chip { font-size: 0.56rem; padding: 1px 4px; border-radius: 3px; }
-  .sources-panel .source-chips { row-gap: 3px; }
+  .sources-panel .sources-note { font-size: 0.6rem; }
+  .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 4px; }
 }
 .sources-count { font-family: var(--mono); font-size: 0.6rem; color: var(--text-3); opacity: 0.7; }
 .source-chips { display: flex; flex-wrap: wrap; gap: 5px; }
