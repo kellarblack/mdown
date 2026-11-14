@@ -28,7 +28,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=76">
+<link rel="stylesheet" href="assets/app.css?v=77">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -96,7 +96,6 @@
           <li>The top bar is brand + tools on the left, the connection dot and the queue on the right, and nothing else. The connection pill means connection again — it opens the pane with the address, the health link and the status page — and the queue has its own small button.</li>
           <li>The footer is <i>terms · how it works</i>; the help moved down there so the top bar has three things at most, and <i>status</i> lives inside the connection pill.</li>
           <li>Inside a tool, the way back is <b>← download</b>, and on a phone it collapses to just <b>←</b> because the word cost 47px of top bar.</li>
-          <li>A single light travels the perimeter of the field when the page opens, finishes the rectangle and fades. One pass, 1.5 seconds, no loop — the kind of detail you notice once.</li>
           <li>Arriving on the page puts the caret in the link field, with whatever is there selected, so typing replaces it. Returning to the tab does the same when nothing else has focus. (iOS still won't raise the keyboard without a tap — Safari's rule, not ours.)</li>
           <li>Every dropdown — tools, sources, the queue — drops with the same 4px, 150ms motion on the same curve, and the panel it belongs to is the point it grows out of. One family instead of three implementations.</li>
           <li>The mark drops into the tray on load and replays when you point at the name; the fetch button brightens on hover. Nothing animates inside the button itself — that version re-rasterised the whole control on every hover and felt slower than the one it replaced.</li>
