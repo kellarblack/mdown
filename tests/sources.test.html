@@ -49,19 +49,26 @@ async function main() {
   await sleep(350);
 
   const doc = frame.contentDocument;
+  const win = frame.contentWindow;
   const button = doc.querySelector("#open-sources");
-  record("there is a sources button in the top bar", !!button, button ? button.textContent : "missing");
+  record("there is a sources trigger above the composer", !!button, button ? button.textContent.trim() : "missing");
 
+  const plusBefore = win.getComputedStyle(doc.querySelector(".sources-plus")).transform;
   button.click();
-  const opened = await waitFor(() => !doc.querySelector("#modal").hidden, 5000);
-  record("the panel opens", opened, doc.querySelector("#modal-title").textContent);
+  const opened = await waitFor(() => !doc.querySelector("#sources-panel").hidden, 5000);
+  record("the panel opens", opened, "aria-expanded=" + button.getAttribute("aria-expanded"));
 
-  const rows = () => [...doc.querySelectorAll(".source")];
+  const plusAfter = win.getComputedStyle(doc.querySelector(".sources-plus")).transform;
+  record("the plus rotates into an x", plusBefore !== plusAfter && /matrix/.test(plusAfter),
+    plusBefore + " -> " + plusAfter);
+  record("the trigger reports its state", button.getAttribute("aria-expanded") === "true", button.getAttribute("aria-expanded"));
+
+  const rows = () => [...doc.querySelectorAll(".source-chip")];
   record("it lists the sources it can reach", rows().length >= 10, rows().length + " sources");
 
   // the mock advertises ten services; anything it does not advertise must not
   // appear, or the panel is promising something the backend cannot fetch
-  const names = rows().map((r) => r.querySelector(".source-name").textContent);
+  const names = rows().map((r) => r.textContent);
   record("it only lists what the instance advertises",
     names.indexOf("youtube") >= 0 && names.indexOf("rumble") < 0, names.join(", ").slice(0, 80));
 
@@ -75,13 +82,15 @@ async function main() {
   search.value = "sound";
   search.dispatchEvent(new Event("input", { bubbles: true }));
   await sleep(200);
-  const visible = rows().filter((r) => !r.hidden).map((r) => r.querySelector(".source-name").textContent);
+  const visible = rows().filter((r) => !r.hidden).map((r) => r.textContent);
   record("filtering narrows the list", visible.length > 0 && visible.length < 5, visible.join(", "));
   record("and finds the right one", visible.indexOf("soundcloud") >= 0, visible.join(", "));
 
-  doc.querySelector("#modal [data-close-modal]").click();
-  await sleep(150);
-  record("it closes again", doc.querySelector("#modal").hidden === true);
+  doc.body.click();
+  await sleep(200);
+  record("it closes when you click away",
+    doc.querySelector("#sources-panel").hidden === true && button.getAttribute("aria-expanded") === "false",
+    "hidden=" + doc.querySelector("#sources-panel").hidden);
 
   window.__results = { total: results.length, failures, results };
 }

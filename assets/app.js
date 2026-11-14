@@ -358,6 +358,8 @@
     donateLink: $("#donate-link"),
     openHealth: $("#open-health"),
     openSources: $("#open-sources"),
+    sourcesPanel: $("#sources-panel"),
+    sourcesWrap: $("#sources-wrap"),
     donateWrap: $("#donate-wrap"),
     setupOpenSettings: $("#setup-open-settings"),
     quickpick: $("#quickpick"),
@@ -1733,6 +1735,8 @@
   let modalReturnFocus = null;
 
   function openModal(title, bodyNode, footButtons) {
+    const panel = dom.modal.querySelector(".modal-inner");
+    if (panel) panel.classList.remove("is-sources");
     dom.modalTitle.textContent = title;
     dom.modalBody.innerHTML = "";
     dom.modalBody.appendChild(bodyNode);
@@ -1774,7 +1778,26 @@
     ["tidal", "encrypted"], ["apple-music", "encrypted"]
   ];
 
-  function openSources() {
+  let sourcesOpen = false;
+
+  function closeSources() {
+    if (!sourcesOpen) return;
+    sourcesOpen = false;
+    dom.openSources.setAttribute("aria-expanded", "false");
+    dom.sourcesPanel.hidden = true;
+  }
+
+  function toggleSources() {
+    if (sourcesOpen) { closeSources(); return; }
+    sourcesOpen = true;
+    renderSources();
+    dom.openSources.setAttribute("aria-expanded", "true");
+    dom.sourcesPanel.hidden = false;
+    const field = dom.sourcesPanel.querySelector("#sources-search");
+    if (field) setTimeout(() => field.focus(), 40);
+  }
+
+  function renderSources() {
     const available = instanceInfo && Array.isArray(instanceInfo.services) && instanceInfo.services.length
       ? new Set(instanceInfo.services)
       : null;
@@ -1785,32 +1808,37 @@
       type: "search",
       class: "text-input sources-search",
       id: "sources-search",
-      placeholder: "filter sources",
-      autocomplete: "off"
+      placeholder: "filter",
+      autocomplete: "off",
+      "aria-label": "filter sources"
     });
     wrap.appendChild(search);
 
     const list = el("div", { class: "sources-list" });
-    const rows = [];
+    const chips = [];
 
-    function addGroup(name, items, { muted = false } = {}) {
+    function addGroup(name, items, opts) {
+      const muted = !!(opts && opts.muted);
       const shown = items.filter(([id]) => !available || available.has(id) || muted);
       if (!shown.length) return;
+
+      const block = el("section", { class: "sources-block" });
       const head = el("div", { class: "sources-head" });
       head.appendChild(el("span", { class: "sources-group", text: name }));
       head.appendChild(el("span", { class: "sources-count", text: String(shown.length) }));
-      list.appendChild(head);
-      const grid = el("div", { class: "sources-grid" });
+      block.appendChild(head);
+
+      const row = el("div", { class: "source-chips" });
       shown.forEach(([id, note]) => {
-        const row = el("div", { class: "source" + (muted ? " is-muted" : "") });
-        row.dataset.search = (id + " " + note).toLowerCase();
-        row.innerHTML = markForService(id);
-        row.appendChild(el("span", { class: "source-name", text: id }));
-        if (note) row.appendChild(el("span", { class: "source-note", text: note }));
-        grid.appendChild(row);
-        rows.push(row);
+        const chip = el("span", { class: "source-chip" + (muted ? " is-muted" : "") });
+        chip.textContent = id;
+        chip.dataset.search = (id + " " + (note || "")).toLowerCase();
+        if (note) chip.title = id + " — " + note;
+        row.appendChild(chip);
+        chips.push(chip);
       });
-      list.appendChild(grid);
+      block.appendChild(row);
+      list.appendChild(block);
     }
 
     SOURCE_GROUPS.forEach(([name, items]) => addGroup(name, items));
@@ -1820,8 +1848,8 @@
     wrap.appendChild(el("p", {
       class: "sources-foot",
       text: available
-        ? "This is what the API you are connected to says it can reach. Encrypted services are listed so you know they are refused, not broken."
-        : "Connect an API to see exactly which of these it supports."
+        ? "Support means technical compatibility, nothing more. Encrypted services are listed so they read as refused, not broken."
+        : "Connect an API and this list shrinks to exactly what it supports."
     }));
 
     const empty = el("p", { class: "sources-empty", text: "nothing matches that" });
@@ -1831,24 +1859,24 @@
     search.addEventListener("input", () => {
       const q = search.value.trim().toLowerCase();
       let shown = 0;
-      rows.forEach((row) => {
-        const hit = !q || row.dataset.search.indexOf(q) >= 0;
-        row.hidden = !hit;
+      chips.forEach((chip) => {
+        const hit = !q || chip.dataset.search.indexOf(q) >= 0;
+        chip.hidden = !hit;
         if (hit) shown++;
       });
-      // hide a group whose rows are all filtered out
-      list.querySelectorAll(".sources-grid").forEach((grid) => {
-        const any = [...grid.children].some((row) => !row.hidden);
-        grid.hidden = !any;
-        const head = grid.previousElementSibling;
-        if (head && head.classList.contains("sources-head")) head.hidden = !any;
+      list.querySelectorAll(".sources-block").forEach((block) => {
+        const any = [...block.querySelectorAll(".source-chip")].some((c) => !c.hidden);
+        block.hidden = !any;
       });
       empty.hidden = shown > 0;
     });
 
-    const close = el("button", { type: "button", class: "ghost-btn small", text: "close", onclick: () => closeModal() });
-    openModal("Sources", wrap, [close]);
-    setTimeout(() => search.focus(), 60);
+    dom.sourcesPanel.innerHTML = "";
+    dom.sourcesPanel.appendChild(wrap);
+    dom.sourcesPanel.appendChild(el("p", {
+      class: "sources-hint",
+      text: "click anywhere else, or press esc, to close"
+    }));
   }
 
   /* ----------------------------------------------------------
@@ -2326,7 +2354,15 @@
     if (dom.queuePanel) dom.queuePanel.hidden = true;
 
     if (dom.openSources) {
-      dom.openSources.addEventListener("click", () => openSources());
+      dom.openSources.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleSources();
+      });
+      document.addEventListener("click", (event) => {
+        if (!sourcesOpen) return;
+        if (dom.sourcesWrap && dom.sourcesWrap.contains(event.target)) return;
+        closeSources();
+      });
     }
 
     if (dom.openHealth) {
@@ -2351,6 +2387,8 @@
           closeModal();
         } else if (!dom.sheet.hidden) {
           closeSettings();
+        } else if (sourcesOpen) {
+          closeSources();
         } else if (dockOpen) {
           setDock(false);
         }
