@@ -150,10 +150,6 @@ class Handler(BaseHTTPRequestHandler):
         host = "http://127.0.0.1:%d" % PORT
         self._host = host
 
-        if self.path.startswith("/report"):
-            self._json({"status": "ok"})
-            return
-
         if self.path.startswith("/probe"):
             if "error" in url:
                 self._json({"status": "error",
