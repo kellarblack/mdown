@@ -1800,13 +1800,7 @@
   }
 
   function renderSources() {
-    const available = instanceInfo && Array.isArray(instanceInfo.services) && instanceInfo.services.length
-      ? new Set(instanceInfo.services)
-      : null;
-
-    const shown = SOURCES
-      .filter(([id]) => !available || available.has(id))
-      .sort((a, b) => a[0].localeCompare(b[0]));
+    const shown = SOURCES.slice().sort((a, b) => a[0].localeCompare(b[0]));
 
     const wrap = el("div", { class: "sources" });
 
@@ -2060,7 +2054,7 @@
 
       instanceInfo = { services: Array.isArray(cobalt.services) ? cobalt.services : [], version: cobalt.version || "" };
       // keep the trigger and an open panel agreeing about the count
-      if (dom.sourcesCount) dom.sourcesCount.textContent = String(instanceInfo.services.length || SOURCES.length);
+      if (dom.sourcesCount) dom.sourcesCount.textContent = String(SOURCES.length);
       if (sourcesOpen) renderSources();
       if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
       const host = hostOf(base) || base;

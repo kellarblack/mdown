@@ -66,17 +66,16 @@ async function main() {
   const rows = () => [...doc.querySelectorAll(".source-chip")];
   record("it lists the sources it can reach", rows().length >= 10, rows().length + " sources");
 
-  // the mock advertises ten services; anything it does not advertise must not
-  // appear, or the panel is promising something the backend cannot fetch
-  const names = rows().map((r) => r.textContent);
-  record("it only lists what the instance advertises",
-    names.indexOf("youtube") >= 0 && names.indexOf("rumble") < 0, names.join(", ").slice(0, 80));
-
+  const names = rows().map((r) => r.textContent.toLowerCase());
+  record("it lists every source we accept, not one server's subset",
+    names.length >= 30 && names.indexOf("youtube") >= 0 && names.indexOf("rumble") >= 0,
+    names.length + " sources, rumble=" + (names.indexOf("rumble") >= 0));
+  record("and nothing we refuse",
+    names.indexOf("spotify") < 0 && names.indexOf("giphy") < 0,
+    "spotify/giphy absent");
   record("the panel is compact", doc.querySelector("#sources-panel").getBoundingClientRect().height <= 340,
     Math.round(doc.querySelector("#sources-panel").getBoundingClientRect().height) + "px tall");
-  record("it only lists services we accept",
-    doc.body.textContent.indexOf("encrypted") < 0 && rows().every((r) => r.textContent !== "spotify"),
-    rows().map((r) => r.textContent).slice(0, 4).join(", "));
+
 
   const search = doc.querySelector("#sources-search");
   search.value = "sound";

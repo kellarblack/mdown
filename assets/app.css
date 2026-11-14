@@ -1047,8 +1047,8 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-panel {
   position: absolute; z-index: 60; top: calc(100% + 8px); left: 50%;
   transform: translateX(-50%);
-  width: min(430px, calc(100vw - 26px));
-  max-height: min(44vh, 330px); overflow-y: auto; overscroll-behavior: contain;
+  width: min(660px, calc(100vw - 24px));
+  max-height: min(30vh, 220px); overflow-y: auto; overscroll-behavior: contain;
   padding: 11px; text-align: left;
   border: 1px solid var(--stroke-2); border-radius: 10px;
   background: var(--bg-elev); box-shadow: var(--shadow-2);
