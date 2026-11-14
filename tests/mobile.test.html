@@ -157,15 +157,6 @@ async function main() {
     doc.querySelector("[data-close-settings]").click();
     await sleep(200);
 
-    // the tool panels are the tallest content on the page
-    const tools = doc.querySelector("#nav-tools");
-    if (tools) {
-      tools.open = true;
-      await sleep(150);
-      const over2 = root.scrollWidth - win.innerWidth;
-      record(device.name + ": toolbar menu does not overflow", over2 <= 1, over2 + "px over");
-      tools.open = false;
-    }
   }
 
   // a download must show itself on a phone: this is the bug that started it
@@ -305,11 +296,8 @@ async function main() {
     const doc = frame.contentDocument;
     const win = frame.contentWindow;
     for (const [tool, view] of [["remux", "remux"], ["subtitles", "subs"], ["metadata", "clean"]]) {
-      const trigger = doc.querySelector('#nav-tools a[data-view="' + view + '"]');
+      const trigger = doc.querySelector('.tool-card[data-view="' + view + '"]');
       if (!trigger) { record("tool " + tool + " at 320px: trigger exists", false, "missing"); continue; }
-      const menu = doc.querySelector("#nav-tools");
-      if (menu) menu.open = true;
-      await sleep(120);
       trigger.click();
       await sleep(350);
       const over = doc.documentElement.scrollWidth - win.innerWidth;
@@ -319,7 +307,6 @@ async function main() {
         const r = panel.getBoundingClientRect();
         record("tool " + tool + " at 320px: panel fits", r.width <= win.innerWidth + 1, Math.round(r.width) + "px");
       }
-      if (menu) menu.open = false;
     }
   }
 

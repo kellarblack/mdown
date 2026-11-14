@@ -94,20 +94,11 @@ async function main() {
     pop.hidden === (pill.getAttribute("aria-expanded") === "false"),
     "hidden=" + pop.hidden + " expanded=" + pill.getAttribute("aria-expanded"));
 
-  const summary = doc.querySelector("#nav-tools summary");
-  const tools = $("#nav-tools");
-  for (let i = 0; i < 9; i++) { summary.click(); await sleep(20); }
-  await sleep(400);
-  record("the tools menu ends in a state that matches its label",
-    tools.open === (summary.getAttribute("aria-expanded") === "true") ||
-    !tools.open,
-    "open=" + tools.open + " expanded=" + summary.getAttribute("aria-expanded"));
-
   // ---- settings, opened and closed repeatedly ---------------------------
   const opener = $("#open-settings");
   for (let i = 0; i < 20; i++) {
     opener.click();
-    if (i % 2 === 0) $("#modal-close").click();
+    if (i % 2 === 0) doc.querySelector("[data-close-settings]").click();
   }
   await sleep(300);
   const sheet = $("#settings");

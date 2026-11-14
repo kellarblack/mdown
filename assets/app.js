@@ -354,6 +354,7 @@
     serviceMark: $("#service-mark"),
     serviceName: $("#service-name"),
     composer: $("#composer"),
+    composerNote: $("#composer-note"),
     probePreview: $("#probe-preview"),
     probeThumb: $("#probe-thumb"),
     probeTitle: $("#probe-title"),
@@ -469,15 +470,19 @@
 
   /* The field says no without a crowd: one short shake, never two at once. */
   let nudgeAt = 0;
+  let nudgeTimer = null;
   function nudgeComposer() {
     if (!dom.composer) return;
     const now = Date.now();
     if (now - nudgeAt < 500) return;
     nudgeAt = now;
-    dom.composer.classList.remove("is-nudging");
+    dom.composer.classList.remove("is-nudging", "is-error");
     void dom.composer.offsetWidth;
-    dom.composer.classList.add("is-nudging");
-    setTimeout(() => dom.composer.classList.remove("is-nudging"), 300);
+    dom.composer.classList.add("is-nudging", "is-error");
+    clearTimeout(nudgeTimer);
+    nudgeTimer = setTimeout(() => {
+      dom.composer.classList.remove("is-nudging", "is-error");
+    }, 1400);
   }
 
   /* ----------------------------------------------------------
@@ -567,8 +572,10 @@
 
     if (!text.trim()) {
       if (urls.length > 1) dom.hint.textContent = urls.length + " links";
+      if (dom.composerNote) dom.composerNote.hidden = false;
       return;
     }
+    if (dom.composerNote) dom.composerNote.hidden = true;
     if (!urls.length) {
       dom.hint.textContent = "not a link";
       dom.hint.dataset.tone = "err";
@@ -2469,12 +2476,12 @@
       recordHealth(true);
 
       const uptime = cobalt.startTime ? formatUptime(Number(cobalt.startTime)) : "unknown";
+      const hostname = hostOf(base) || base;
       setInstanceDetail("ok", "Connected", [
-        ["server", hostOf(base) || base],
-        ["services", String(instanceInfo.services.length || "unknown")],
-        ["up", uptime],
-        ["version", cobalt.version || "unknown"]
+        ["server", hostname],
+        ["services", String(instanceInfo.services.length || "unknown") + " · up " + uptime]
       ]);
+      dom.instanceDetail.title = "version " + (cobalt.version || "unknown");
 
       setSetupNote(null);
       renderServices(instanceInfo.services);

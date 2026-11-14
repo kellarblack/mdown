@@ -153,7 +153,8 @@
         ]);
       }
     } else if (view === "menu") {
-      doc.querySelector("#nav-tools summary").click();
+      const card = doc.querySelector('.tool-card[data-view="remux"]');
+      if (card) card.click();
       await sleep(250);
     } else if (view === "help") {
       doc.querySelector("#open-help").click();
