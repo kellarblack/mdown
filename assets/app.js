@@ -3266,9 +3266,11 @@
       try {
         const text = await navigator.clipboard.readText();
         if (!text) { toast("Clipboard is empty.", "warn"); return; }
+        /* paste fills the field and stops there: there is time to check the
+           mode and quality before anything starts */
         dom.input.value = text;
         updateComposerState();
-        if (parseUrls(text).length === 1) submitUrls(text);
+        dom.input.focus();
       } catch {
         toast(blocked, "warn");
         focusForPaste();

@@ -397,6 +397,7 @@ a.ghost-btn { text-decoration: none; }
   color: var(--hint-ink); font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5;
 }
 .composer-note b { color: var(--text-2); font-weight: 500; }
+.composer-note .bracket { color: var(--text-3); }
 .composer-note[hidden] { display: none; }
 
 .probe-preview {
@@ -1312,7 +1313,11 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 /* ---------- sources trigger + panel ---------- */
 /* pinned to the top centre of the screen, not dragged around by the centred
    column the composer lives in */
-.sources-wrap { position: relative; display: inline-flex; }
+.sources-wrap {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+}
 /* a count and a chevron: the chevron turns over when the panel is open. no
    plus, no circle, nothing borrowed. */
 .sources-toggle {
@@ -1338,22 +1343,31 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-toggle[aria-expanded="true"] .sources-count { color: var(--text); }
 
 .sources-panel {
-  position: absolute; z-index: 60; top: calc(100% + 8px); right: 0; left: auto;
+  position: absolute; z-index: 60; top: calc(100% + 8px); left: 50%; right: auto;
+  transform: translateX(-50%);
   width: min(460px, calc(100vw - 90px));
   max-height: none;
   overflow: visible;
   padding: 7px 9px; text-align: left;
   border: 1px solid var(--stroke-2); border-radius: 9px;
   background: var(--bg-elev); box-shadow: var(--shadow-2);
-  transform-origin: top right;
+  transform-origin: top center;
 }
 /* the chips are a block, not a ragged wrap: same columns, same rhythm */
 .sources-panel .source-chips {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
   gap: 3px;
 }
-.sources-panel { animation: drop-in 150ms var(--ease) both; }
-.sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
+.sources-panel { animation: panel-center-in 150ms var(--ease) both; }
+.sources-panel.is-closing { animation: panel-center-out 120ms var(--ease) both; }
+@keyframes panel-center-in {
+  from { opacity: 0; transform: translate(-50%, -4px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes panel-center-out {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  to   { opacity: 0; transform: translate(-50%, -4px); }
+}
 
 /* ---------- sources panel (shared) ---------- */
 .sources { display: grid; gap: 5px; min-width: 0; }
@@ -1365,8 +1379,10 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   .sources-panel {
     position: fixed; top: auto; left: auto; right: 24px; bottom: 24px;
     width: 420px; max-height: none; overflow: visible;
-    transform-origin: bottom right;
+    transform: none; transform-origin: bottom right;
+    animation: drop-in 150ms var(--ease) both;
   }
+  .sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
 }
 
 @media (max-width: 720px) {
@@ -1375,8 +1391,10 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     position: fixed; left: 8px; right: 8px; top: auto; width: auto;
     bottom: calc(64px + env(safe-area-inset-bottom, 0px));
     max-height: none; overflow: visible;
-    transform-origin: bottom center;
+    transform: none; transform-origin: bottom center;
+    animation: drop-in 150ms var(--ease) both;
   }
+  .sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
   .sources-panel .sources-note { font-size: 0.6rem; }
   .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 3px; }
 }

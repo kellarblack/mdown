@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>mdown.cc — paste a link, keep the file</title>
+<title>mdown.cc — a media downloader</title>
 <meta name="description" content="No ads, no account, no tracking. Paste a link and keep the video or audio — plus remux, subtitle and metadata tools that run in your browser.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta name="keywords" content="media downloader, video downloader, audio downloader, mp4, mp3, remux, subtitle extractor, metadata cleaner, no ads, no account">
@@ -15,18 +15,18 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="mdown.cc">
 <meta property="og:url" content="https://mdown.cc/">
-<meta property="og:title" content="mdown.cc — paste a link, keep the file">
+<meta property="og:title" content="mdown.cc — a media downloader">
 <meta property="og:description" content="No ads, no account, no tracking. Paste a link and keep the video or audio.">
-<meta property="og:image" content="https://mdown.cc/assets/og-card.png">
+<meta property="og:image" content="https://mdown.cc/assets/og-card.png?v=2">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="mdown.cc — a monochrome wordmark with the line: paste a link. keep the file.">
+<meta property="og:image:alt" content="mdown.cc — a monochrome wordmark on a black card.">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://mdown.cc/assets/og-card.png">
-<meta name="twitter:image:alt" content="mdown.cc — a monochrome wordmark with the line: paste a link. keep the file.">
-<meta name="twitter:title" content="mdown.cc — paste a link, keep the file">
+<meta name="twitter:image" content="https://mdown.cc/assets/og-card.png?v=2">
+<meta name="twitter:image:alt" content="mdown.cc — a monochrome wordmark on a black card.">
+<meta name="twitter:title" content="mdown.cc — a media downloader">
 <meta name="twitter:description" content="No ads, no account, no tracking. Paste a link and keep the video or audio.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
@@ -47,7 +47,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=121">
+<link rel="stylesheet" href="assets/app.css?v=123">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -59,7 +59,7 @@
       "url": "https://mdown.cc/",
       "name": "mdown.cc",
       "alternateName": "mdown",
-      "description": "Paste a link, keep the file. A media downloader with no ads and no account, plus remux, subtitle and metadata tools that run in the browser.",
+      "description": "A media downloader with no ads and no account, plus remux, subtitle and metadata tools that run in the browser.",
       "inLanguage": "en"
     },
     {
@@ -350,7 +350,7 @@
 
 
 
-  <p class="composer-note" id="composer-note">paste a link — or prefix it with <b>mdown.cc/</b></p>
+  <p class="composer-note" id="composer-note">paste a link <span class="bracket">[</span> or prefix it with <b>mdown.cc/</b> <span class="bracket">]</span></p>
 
   <!-- what the file will be, before anything is fetched. Collapses to zero
        height rather than appearing, so the composer never jumps. -->
@@ -942,7 +942,7 @@
 
 <noscript>
   <div class="wrap" style="padding-bottom:32px">
-    <h2>mdown.cc — paste a link, keep the file</h2>
+    <h2>mdown.cc — a media downloader</h2>
     <p>mdown.cc is a media downloader for video and audio: no ads, no account, no tracking. It saves MP4, WebM, MKV, MP3, OGG, OPUS and WAV from about thirty services, and includes three tools that run in the browser: a remuxer, a subtitle extractor and a metadata cleaner.</p>
     <p>Downloading needs JavaScript. The <a href="updates.html">changelog</a>, <a href="terms.html">terms</a> and <a href="status.html">status</a> pages do not.</p>
   </div>
@@ -980,7 +980,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=74" defer></script>
+<script src="assets/app.js?v=75" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

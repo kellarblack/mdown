@@ -50,7 +50,7 @@ async function main() {
 
   const image = meta(doc, "property", "og:image");
   record("the card image is absolute",
-    /^https:\/\/mdown\.cc\/assets\/og-card\.png$/.test(image), image);
+    /^https:\/\/mdown\.cc\/assets\/og-card\.png\?v=2$/.test(image), image);
 
   record("it declares the size scrapers need",
     meta(doc, "property", "og:image:width") === "1200" &&
