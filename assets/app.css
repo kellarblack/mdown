@@ -132,7 +132,21 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   background: transparent; color: var(--accent);
   border: 1px solid var(--stroke-2);
 }
-.brand-mark svg { width: 15px; height: 15px; }
+.brand-mark svg { width: 15px; height: 15px; animation: mark-in 620ms var(--ease) both; }
+
+/* the arrow drops into the tray once on load, and lights up when you point at
+   the name — no infinite motion, nothing playing while you read */
+@keyframes mark-in {
+  0%   { transform: translateY(-4px); opacity: 0.35; }
+  55%  { transform: translateY(1.5px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.brand:hover .brand-mark svg,
+.brand:focus-visible .brand-mark svg {
+  animation: mark-in 520ms var(--ease) both;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 55%, transparent));
+}
+.brand:active .brand-mark svg { transform: translateY(1px); }
 .brand-text {
   font-family: var(--mono); font-size: 0.82rem; font-weight: 500;
   letter-spacing: -0.02em; white-space: nowrap;
