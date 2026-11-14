@@ -8,6 +8,8 @@
 <title>mdown.cc — paste a link, keep the file</title>
 <meta name="description" content="No ads, no account, no tracking. Paste a link and keep the video or audio — plus remux, subtitle and metadata tools that run in your browser.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="keywords" content="media downloader, video downloader, audio downloader, mp4, mp3, remux, subtitle extractor, metadata cleaner, no ads, no account">
+<link rel="alternate" type="text/plain" href="https://mdown.cc/llms.txt" title="llms.txt">
 <link rel="canonical" href="https://mdown.cc/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="mdown.cc">
@@ -44,7 +46,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=89">
+<link rel="stylesheet" href="assets/app.css?v=92">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -82,6 +84,40 @@
         "Local tools: files are never uploaded"
       ],
       "description": "No ads, no account, no tracking. Paste a link and keep the video or audio, with a remuxer, a subtitle extractor and a metadata cleaner that all run in the browser."
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://mdown.cc/#tools",
+      "name": "Tools that run in the browser",
+      "itemListElement": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "Remux",
+          "url": "https://mdown.cc/#remux",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Any (runs in a web browser)",
+          "description": "Repackage MP4, MKV or WebM into a different container without re-encoding, so quality is unchanged.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Subtitle extractor",
+          "url": "https://mdown.cc/#subs",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Any (runs in a web browser)",
+          "description": "Export embedded text subtitle tracks from a video as SRT, and say plainly when a track is image-based.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Metadata cleaner",
+          "url": "https://mdown.cc/#clean",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Any (runs in a web browser)",
+          "description": "Remove container tags such as title, artist and location while leaving the streams untouched.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        }
+      ]
     },
     {
       "@type": "FAQPage",
@@ -248,7 +284,7 @@
           <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
         </svg>
       </span>
-      <span class="hero-word"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+      <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span><span class="hero-caret" aria-hidden="true"></span></span>
       <span class="sr-only"> — a media downloader for video and audio</span>
     </h1>
 
@@ -333,6 +369,27 @@
   </div>
 
   </div>
+
+  <nav class="tool-strip" aria-label="Tools that run in your browser">
+    <a class="tool-card" href="#remux" data-view="remux">
+      <span class="tool-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 9h10M7 15h6"/></svg>
+      </span>
+      <span class="tool-card-body"><b>remux</b><span>new container, no re-encode</span></span>
+    </a>
+    <a class="tool-card" href="#subs" data-view="subs">
+      <span class="tool-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 11h4M13 11h4M7 15h7"/></svg>
+      </span>
+      <span class="tool-card-body"><b>subtitles</b><span>pull the SRT out of a file</span></span>
+    </a>
+    <a class="tool-card" href="#clean" data-view="clean">
+      <span class="tool-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
+      </span>
+      <span class="tool-card-body"><b>metadata</b><span>strip tags, keep the streams</span></span>
+    </a>
+  </nav>
 
   <p class="recent-line" id="recent" hidden></p>
 
@@ -459,7 +516,7 @@
 </main>
 
 <footer class="footer">
-  <p class="footer-meta"><a href="terms.html">terms</a> · <button type="button" class="link-btn" id="open-help">how it works</button><span id="donate-wrap" hidden> · <a href="#" id="donate-link">donate</a></span></p>
+  <p class="footer-meta"><a href="terms.html">terms</a> · <button type="button" class="link-btn" id="open-help">how it works</button> · <a href="updates.html">updates</a> · <span class="footer-licence">open source (MIT)</span><span id="donate-wrap" hidden> · <a href="#" id="donate-link">donate</a></span></p>
 </footer>
 
 <!-- ======================= settings sheet ======================= -->
@@ -697,11 +754,15 @@
             <button type="button" data-value="pretty">pretty</button>
             <button type="button" data-value="nerdy">nerdy</button>
           </div>
-          <div class="filename-preview">
-            <span class="preview-label">video</span>
-            <code id="preview-video">Video Title - Video Author (1080p, h264).mp4</code>
-            <span class="preview-label">audio</span>
-            <code id="preview-audio">Audio Title - Audio Author.mp3</code>
+          <div class="file-preview" id="file-preview" aria-live="polite">
+            <span class="fp-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z"/><path d="M13.5 3v5.5H19"/></svg>
+            </span>
+            <span class="fp-body">
+              <b id="preview-video">Video Title.mp4</b>
+              <span class="fp-meta" id="preview-meta">mp4 · 1080p · h264</span>
+            </span>
+            <span class="fp-tag" id="preview-tag">video</span>
           </div>
         </div>
 
@@ -919,10 +980,18 @@
   </div>
 </template>
 
+<noscript>
+  <div class="wrap" style="padding-bottom:32px">
+    <h2>mdown.cc — paste a link, keep the file</h2>
+    <p>mdown.cc is a media downloader for video and audio: no ads, no account, no tracking. It saves MP4, WebM, MKV, MP3, OGG, OPUS and WAV from about thirty services, and includes three tools that run in the browser: a remuxer, a subtitle extractor and a metadata cleaner.</p>
+    <p>Downloading needs JavaScript. The <a href="updates.html">changelog</a>, <a href="terms.html">terms</a> and <a href="status.html">status</a> pages do not.</p>
+  </div>
+</noscript>
+
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=51" defer></script>
+<script src="assets/app.js?v=52" defer></script>
 <script type="module" src="assets/nav.js?v=10"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

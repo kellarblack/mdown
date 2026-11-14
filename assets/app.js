@@ -406,7 +406,8 @@
     instanceMeta: $("#instance-meta"),
     instanceError: $("#instance-error"),
     previewVideo: $("#preview-video"),
-    previewAudio: $("#preview-audio"),
+    previewMeta: $("#preview-meta"),
+    previewTag: $("#preview-tag"),
     requestPreview: $("#request-preview"),
     modal: $("#modal"),
     modalTitle: $("#modal-title"),
@@ -633,6 +634,7 @@
       
     });
     if (dom.formatNote) dom.formatNote.textContent = modeSummary(settings.downloadMode);
+    updateFileNamePreview();
     $$('[data-setting="downloadMode"] button').forEach((btn) => {
       btn.setAttribute("aria-checked", btn.dataset.value === settings.downloadMode ? "true" : "false");
     });
@@ -2525,19 +2527,35 @@
     setSetupNote(normalizeInstance(settings.instance) ? null : "empty");
   }
 
+  /* The preview is the file, not a label for it: same name the queue will
+     show, the same container and the same quality, for the mode in force. */
   function updateFileNamePreview() {
-    const title = "Video Title";
-    const author = "Video Author";
+    const mode = settings.downloadMode;
     const quality = settings.videoQuality + "p";
     const codec = settings.youtubeVideoCodec;
-    const styles = {
-      classic: "Video Title.mp4",
-      basic: title + " - " + author + " (" + quality + ").mp4",
-      pretty: title + " (" + quality + ").mp4",
-      nerdy: title + "_" + quality + "_" + codec + "_" + author + ".mp4"
-    };
-    if (dom.previewVideo) dom.previewVideo.textContent = styles[settings.filenameStyle] || styles.basic;
-    if (dom.previewAudio) dom.previewAudio.textContent = "Audio Title - Audio Author." + audioExt();
+    const container = mode === "auto"
+      ? (settings.youtubeVideoContainer === "auto" ? (codec === "h264" ? "mp4" : "webm") : settings.youtubeVideoContainer)
+      : (settings.youtubeVideoContainer === "auto" ? (codec === "h264" ? "mp4" : "mkv") : settings.youtubeVideoContainer);
+
+    const videoName = {
+      classic: "Video Title." + container,
+      basic: "Video Title - Video Author (" + quality + ")." + container,
+      pretty: "Video Title (" + quality + ")." + container,
+      nerdy: "Video Title_" + quality + "_" + codec + "_Video Author." + container
+    }[settings.filenameStyle] || ("Video Title - Video Author (" + quality + ")." + container);
+
+    const audioName = "Audio Title - Audio Author." + audioExt();
+    const isAudio = mode === "audio";
+
+    if (dom.previewVideo) dom.previewVideo.textContent = isAudio ? audioName : videoName;
+    if (dom.previewMeta) {
+      dom.previewMeta.textContent = isAudio
+        ? (settings.audioFormat === "best"
+            ? "source · untouched"
+            : settings.audioFormat + " · " + settings.audioBitrate + " kb/s" + (settings.audioCovers ? " · cover art" : ""))
+        : (container + " · " + quality + " · " + (mode === "mute" ? "no sound" : codec));
+    }
+    if (dom.previewTag) dom.previewTag.textContent = isAudio ? "audio" : (mode === "mute" ? "silent" : "video");
   }
 
   function bindSettings() {

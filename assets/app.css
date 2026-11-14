@@ -430,10 +430,9 @@ a.ghost-btn { text-decoration: none; }
 #fetch-btn .fetch-word { display: none; }
 #fetch-btn[data-armed="false"] {
   background: transparent; color: var(--text-3); border-color: var(--stroke);
-  opacity: 0; pointer-events: none;
 }
+#fetch-btn[data-armed="false"] svg { opacity: 0.28; }
 #fetch-btn[data-armed="false"]:hover { background: var(--surface); color: var(--text-2); }
-#fetch-btn[data-armed="false"] svg { opacity: 0.7; }
 #fetch-btn[data-armed="true"] svg { opacity: 1; }
 /* it drops in rather than switching on: the last beat of the choreography,
    and again every time a link comes back after being cleared */
@@ -561,6 +560,38 @@ a.ghost-btn { text-decoration: none; }
   color: var(--text-3); font-size: 0.8rem;
 }
 .empty-tip { color: var(--text-3); font-family: var(--mono); font-size: 0.64rem; opacity: 0.85; }
+
+/* ---------- tools strip ---------- */
+/* the tools exist, and nothing on the front page said so. Three lines, not a
+   marketing section. */
+.tool-strip {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px; margin-top: 14px;
+}
+.tool-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 11px; border-radius: var(--r-md);
+  border: 1px solid var(--stroke); background: transparent;
+  transition: border-color var(--speed), background var(--speed);
+}
+.tool-card:hover { border-color: var(--stroke-2); background: var(--surface); }
+.tool-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.tool-card-icon {
+  display: grid; place-items: center; flex: none;
+  width: 28px; height: 28px; border-radius: 7px;
+  border: 1px solid var(--stroke); color: var(--text-3);
+  transition: color var(--speed), border-color var(--speed);
+}
+.tool-card-icon svg { width: 15px; height: 15px; }
+.tool-card:hover .tool-card-icon { color: var(--text-2); border-color: var(--stroke-2); }
+.tool-card-body { display: grid; gap: 1px; min-width: 0; }
+.tool-card-body b {
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 500; color: var(--text-2);
+}
+.tool-card-body span {
+  font-size: 0.68rem; color: var(--text-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* ---------- recent ---------- */
 .recent-line {
@@ -832,16 +863,30 @@ a.ghost-btn { text-decoration: none; }
 .switch:checked { background: var(--btn); border-color: var(--btn); }
 .switch:checked::after { transform: translateX(15px); background: #ffffff; }
 
-.filename-preview {
-  display: flex; flex-direction: column; gap: 5px;
-  padding: 10px 12px; border-radius: var(--r-sm);
-  background: var(--surface); border: 1px solid var(--stroke);
+/* the file itself, not a label about it */
+.file-preview {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--r-md);
+  background: var(--bg); border: 1px solid var(--stroke);
 }
-.preview-label {
-  color: var(--text-3); font-family: var(--mono); font-size: 0.6rem;
-  text-transform: uppercase; letter-spacing: var(--label-track);
+.fp-icon {
+  display: grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid var(--stroke); color: var(--text-3);
 }
-.filename-preview code { color: var(--text-2); font-size: 0.7rem; word-break: break-all; }
+.fp-icon svg { width: 16px; height: 16px; }
+.fp-body { display: grid; gap: 2px; min-width: 0; }
+.fp-body b {
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+  color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fp-meta { font-family: var(--mono); font-size: 0.62rem; color: var(--text-3); }
+.fp-tag {
+  padding: 2px 6px; border-radius: 4px; border: 1px solid var(--stroke);
+  font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-3);
+}
 
 .notice {
   padding: 10px 12px; border-radius: var(--r-sm);
@@ -1076,8 +1121,8 @@ a.ghost-btn { text-decoration: none; }
   .composer-cta .primary-btn { order: 5; flex: 1 1 100%; height: 48px; font-size: 0.88rem; }
   .composer-cta #fetch-btn { width: 100%; padding: 0 14px; gap: 8px; }
   .composer-cta #fetch-btn .fetch-word { display: inline; }
-  /* a thumb expects the button to be there, so on a phone it is dim, not gone */
-  .composer-cta #fetch-btn[data-armed="false"] { opacity: 0.45; pointer-events: auto; }
+  /* a thumb expects the button to be there, so on a phone the word stays dim */
+  .composer-cta #fetch-btn[data-armed="false"] { opacity: 0.55; }
   .composer-cta .ghost-btn { height: 48px; }
   #tune-mode { width: 40px; height: 40px; }
   .chip, .link-btn { min-height: 32px; display: inline-flex; align-items: center; }
@@ -1104,6 +1149,9 @@ a.ghost-btn { text-decoration: none; }
   .probe-title { font-size: 0.72rem; }
   .probe-meta { font-size: 0.66rem; }
   .q-actions { grid-column: 1 / -1; justify-content: flex-end; }
+  .tool-strip { grid-template-columns: 1fr; gap: 6px; }
+  .tool-card { padding: 8px 10px; }
+  .tool-card-body span { white-space: normal; }
     .sheet-panel { width: 100%; }
   .modal {
     width: 100%; max-height: 92dvh;
@@ -1681,22 +1729,44 @@ a.donate-value:hover { text-decoration: underline; }
   margin: 0 auto clamp(18px, 3vh, 28px);
   color: var(--text);
 }
-.hero-mark { display: inline-flex; }
+.hero-mark {
+  display: grid; place-items: center; flex: none;
+  width: clamp(38px, 5.6vw, 48px); height: clamp(38px, 5.6vw, 48px);
+  border-radius: 13px; border: 1px solid var(--stroke-2);
+}
 .hero-mark svg {
-  width: clamp(30px, 5vw, 40px); height: auto;
+  width: 56%; height: 56%;
   animation: mark-in 700ms var(--ease) both;
 }
 .hero-word {
+  position: relative;
   font-family: var(--mono); font-weight: 500;
   font-size: clamp(1.5rem, 4.2vw, 2.1rem);
   letter-spacing: -0.045em; line-height: 1;
 }
+/* the name types itself once, then the caret leaves. the text keeps its full
+   width the whole time, so nothing to the right of it ever moves. */
+.hero-type {
+  display: inline-block;
+  clip-path: inset(0 100% 0 0);
+  animation: type-in 560ms steps(8, end) 360ms forwards;
+}
+@keyframes type-in { to { clip-path: inset(0 0 0 0); } }
+.hero-caret {
+  position: absolute; top: 0.08em; bottom: 0.08em; left: 0; width: 2px;
+  background: var(--text-2); pointer-events: none;
+  animation:
+    caret-move 560ms steps(8, end) 360ms forwards,
+    caret-out 240ms ease-out 1020ms forwards;
+}
+@keyframes caret-move { to { left: 100%; } }
+@keyframes caret-out { to { opacity: 0; } }
 .hero-word-m { display: inline; }
 /* only the "down" moves. It falls the last few pixels and settles, the same
    gesture the mark makes in the corner — once, on load, and never again. */
 .hero-word-down {
   display: inline-block;
-  animation: down-in 560ms var(--ease) 90ms both;
+  animation: down-in 420ms var(--ease) 940ms both;
 }
 @keyframes down-in {
   0%   { transform: translateY(-0.16em); opacity: 0.3; }

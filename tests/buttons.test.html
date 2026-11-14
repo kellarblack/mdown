@@ -103,6 +103,18 @@ async function main() {
     doc.querySelector("#composer").classList.contains("is-nudging"),
     doc.querySelector("#composer").className);
 
+  const cards = [...doc.querySelectorAll(".tool-card")];
+  record("the front page says the browser tools exist",
+    cards.length === 3 && cards.every((c) => c.getAttribute("data-view")),
+    cards.map((c) => c.querySelector("b").textContent).join(", "));
+
+  const fileRow = doc.querySelector(".file-preview");
+  record("the file preview is a file, not a label",
+    !!fileRow && !!fileRow.querySelector(".fp-icon") &&
+    /\.[a-z0-9]{2,4}$/.test(fileRow.querySelector("#preview-video").textContent) &&
+    fileRow.querySelector("#preview-tag").textContent.length > 0,
+    fileRow ? fileRow.querySelector("#preview-video").textContent : "missing");
+
   // click every one, re-reading the list because panels come and go
   let clicked = 0;
   for (let i = 0; i < buttons.length; i++) {
