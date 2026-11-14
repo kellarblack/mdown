@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=65">
+<link rel="stylesheet" href="assets/app.css?v=69">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -156,7 +156,7 @@
   </a>
 
   <nav class="nav" aria-label="Sections">
-    <a class="nav-link is-active" href="#" data-view="download">download</a>
+    <a class="nav-link nav-download" href="#" data-view="download" title="back to the downloader"><span class="nav-back-arrow" aria-hidden="true">←</span><span class="nav-back-text">download</span></a>
     <details class="nav-tools" id="nav-tools">
       <summary class="nav-link" data-tools-toggle>tools <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></summary>
       <div class="nav-menu">
@@ -170,11 +170,15 @@
   <div class="topbar-actions">
     <!-- one control for state and downloads: the dot is the API, the number is
          the queue. Splitting them into two buttons was two things to read. -->
+    <button class="instance-pill" id="instance-pill" type="button" data-state="unknown" title="connection — click for status">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="instance-pill-label" id="instance-pill-label">not connected</span>
+    </button>
+
     <div class="dock" id="queue-dock">
-      <button class="instance-pill" id="instance-pill" type="button" data-state="unknown"
-              aria-expanded="false" aria-controls="queue-panel" title="connection and downloads">
-        <span class="dot" aria-hidden="true"></span>
-        <span class="instance-pill-label" id="instance-pill-label">not connected</span>
+      <button class="icon-btn dock-btn" id="queue-toggle" type="button"
+              aria-expanded="false" aria-controls="queue-panel" aria-label="downloads" title="downloads">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M5 17.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-1.5"/></svg>
         <span class="dock-badge" id="queue-badge" hidden>0</span>
       </button>
 
@@ -191,10 +195,6 @@
       </div>
     </div>
 
-
-    <button class="icon-btn" id="open-help" type="button" title="how it works" aria-label="how it works" aria-haspopup="dialog">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.3c-.8.5-1.2 1-1.2 1.9"/><path d="M12 16.9h.01"/></svg>
-    </button>
 
     <button class="icon-btn labeled" id="open-settings" type="button" aria-haspopup="dialog">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.9 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9.4a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9.4a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
@@ -213,7 +213,7 @@
   <div class="sources-wrap" id="sources-wrap">
     <button type="button" class="sources-toggle" id="open-sources"
             aria-expanded="false" aria-controls="sources-panel">
-      <span class="sources-count" id="sources-count">33</span>
+      <span class="sources-count" id="sources-count">32</span>
       <span class="sources-label">sources</span>
       <svg class="sources-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
@@ -428,7 +428,7 @@
 </main>
 
 <footer class="footer">
-  <p class="footer-meta">by continuing, you agree to <a href="terms.html">our TOS</a> · <a href="updates.html">updates</a> · <a href="status.html">status</a> · <span id="footer-version">mdown.cc</span> · local-first<span id="donate-wrap" hidden> · <a href="#" id="donate-link">donate</a></span></p>
+  <p class="footer-meta"><a href="terms.html">terms</a> · <button type="button" class="link-btn" id="open-help">how it works</button><span id="donate-wrap" hidden> · <a href="#" id="donate-link">donate</a></span></p>
 </footer>
 
 <!-- ======================= settings sheet ======================= -->
@@ -897,7 +897,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=36" defer></script>
+<script src="assets/app.js?v=38" defer></script>
 <script type="module" src="assets/nav.js?v=8"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

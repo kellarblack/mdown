@@ -223,7 +223,7 @@ async function main() {
     record("the dock badge shows the active job", !!badge && !badge.hidden, badge ? badge.textContent : "(none)");
 
     // a second download must reopen it too: the fetch click closes the dock
-    doc.querySelector("#instance-pill").click();       // user closes it by hand
+    doc.querySelector("#queue-toggle").click();       // user closes it by hand
     await sleep(150);
     const closed = doc.querySelector("#queue-panel").hidden;
     input.value = "https://youtube.com/watch?v=slowtest";
@@ -237,7 +237,7 @@ async function main() {
   {
     const frame = await loadWithMock(1100, 800);
     const doc = frame.contentDocument;
-    doc.querySelector("#instance-pill").click();
+    doc.querySelector("#queue-toggle").click();
     await sleep(250);
     const panel = doc.querySelector("#queue-panel");
     const r = panel ? panel.getBoundingClientRect() : null;
@@ -251,7 +251,7 @@ async function main() {
     const frame = await loadWithMock(320, 640);
     const doc = frame.contentDocument;
     // open it only if it is closed, and wait for the state instead of sleeping
-    if (doc.querySelector("#queue-panel").hidden) doc.querySelector("#instance-pill").click();
+    if (doc.querySelector("#queue-panel").hidden) doc.querySelector("#queue-toggle").click();
     await waitFor(() => !doc.querySelector("#queue-panel").hidden, 4000);
     const panel = doc.querySelector("#queue-panel");
     const r = panel ? panel.getBoundingClientRect() : null;

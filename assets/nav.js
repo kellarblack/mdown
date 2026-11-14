@@ -38,6 +38,8 @@ function setMeta(selector, value) {
 
 function apply() {
   const view = PANELS[location.hash] || "download";
+  // the "back to download" link only exists while you are inside a tool
+  document.body.dataset.view = view;
 
   document.querySelectorAll("[data-view-panel]").forEach((panel) => {
     panel.hidden = panel.dataset.viewPanel !== view;

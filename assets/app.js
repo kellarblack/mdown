@@ -370,7 +370,7 @@
     recent: $("#recent"),
     queueList: $("#queue-list"),
     queueDock: $("#queue-dock"),
-    queueToggle: $("#instance-pill"),
+    queueToggle: $("#queue-toggle"),
     queuePanel: $("#queue-panel"),
     queueBadge: $("#queue-badge"),
     queueCount: $("#queue-count"),
@@ -1757,26 +1757,18 @@
   /* grouped by what you get, not by brand. imgur/giphy/tenor/pixiv are
      deliberately absent: nothing here can fetch them, so listing them would be
      a promise the backend cannot keep. */
-  const SOURCE_GROUPS = [
-    ["video", [
-      ["youtube", "up to 4k"], ["vimeo", ""], ["dailymotion", ""], ["twitch", "live or clip"],
-      ["bilibili", ""], ["rutube", ""], ["rumble", ""], ["odysee", ""], ["kick", ""],
-      ["streamable", ""], ["loom", ""], ["douyin", ""], ["newgrounds", ""], ["coub", ""]
-    ]],
-    ["audio", [
-      ["soundcloud", "audio only"], ["bandcamp", "audio only"], ["mixcloud", "audio only"],
-      ["audiomack", "audio only"], ["hearthis", "audio only"]
-    ]],
-    ["social", [
-      ["twitter", ""], ["instagram", ""], ["tiktok", "no watermark"], ["reddit", ""],
-      ["threads", ""], ["bluesky", ""], ["snapchat", ""], ["tumblr", ""], ["vk", ""],
-      ["ok", ""], ["9gag", ""], ["facebook", ""], ["xiaohongshu", ""]
-    ]]
-  ];
-
-  const ENCRYPTED_SOURCES = [
-    ["spotify", "encrypted"], ["deezer", "encrypted"],
-    ["tidal", "encrypted"], ["apple-music", "encrypted"]
+  /* Only what this thing can actually fetch. The encrypted services used to be
+     listed here to explain why they fail; that made the panel a wall of text
+     for a feature nobody needs on a download page. */
+  const SOURCES = [
+    ["9gag", ""], ["audiomack", "audio"], ["bandcamp", "audio"], ["bilibili", ""],
+    ["bluesky", ""], ["coub", ""], ["dailymotion", ""], ["douyin", ""],
+    ["facebook", ""], ["hearthis", "audio"], ["instagram", ""], ["kick", ""],
+    ["loom", ""], ["mixcloud", "audio"], ["newgrounds", ""], ["odysee", ""],
+    ["ok", ""], ["reddit", ""], ["rumble", ""], ["rutube", ""], ["snapchat", ""],
+    ["soundcloud", "audio"], ["streamable", ""], ["threads", ""], ["tiktok", ""],
+    ["tumblr", ""], ["twitch", ""], ["twitter", ""], ["vimeo", ""], ["vk", ""],
+    ["xiaohongshu", ""], ["youtube", "4k"]
   ];
 
   let sourcesOpen = false;
@@ -1785,12 +1777,21 @@
     if (!sourcesOpen) return;
     sourcesOpen = false;
     dom.openSources.setAttribute("aria-expanded", "false");
-    dom.sourcesPanel.hidden = true;
+    const panel = dom.sourcesPanel;
+    if (!panel || panel.hidden) return;
+    panel.classList.add("is-closing");
+    const done = () => {
+      panel.classList.remove("is-closing");
+      panel.hidden = true;
+    };
+    panel.addEventListener("animationend", done, { once: true });
+    setTimeout(done, 220);   // if the animation is off (reduced motion)
   }
 
   function toggleSources() {
     if (sourcesOpen) { closeSources(); return; }
     sourcesOpen = true;
+    dom.sourcesPanel.classList.remove("is-closing");
     renderSources();
     dom.openSources.setAttribute("aria-expanded", "true");
     dom.sourcesPanel.hidden = false;
@@ -1803,6 +1804,10 @@
       ? new Set(instanceInfo.services)
       : null;
 
+    const shown = SOURCES
+      .filter(([id]) => !available || available.has(id))
+      .sort((a, b) => a[0].localeCompare(b[0]));
+
     const wrap = el("div", { class: "sources" });
 
     const search = el("input", {
@@ -1811,73 +1816,43 @@
       id: "sources-search",
       placeholder: "filter",
       autocomplete: "off",
-      "aria-label": "filter sources"
+      "aria-label": "filter supported sources"
     });
     wrap.appendChild(search);
 
-    const list = el("div", { class: "sources-list" });
-    const chips = [];
-
-    function addGroup(name, items, opts) {
-      const muted = !!(opts && opts.muted);
-      const shown = items.filter(([id]) => !available || available.has(id) || muted);
-      if (!shown.length) return;
-
-      const block = el("section", { class: "sources-block" });
-      const head = el("div", { class: "sources-head" });
-      head.appendChild(el("span", { class: "sources-group", text: name }));
-      head.appendChild(el("span", { class: "sources-count", text: String(shown.length) }));
-      block.appendChild(head);
-
-      const row = el("div", { class: "source-chips" });
-      shown.forEach(([id, note]) => {
-        const chip = el("span", { class: "source-chip" + (muted ? " is-muted" : "") });
-        chip.textContent = id;
-        chip.dataset.search = (id + " " + (note || "")).toLowerCase();
-        if (note) chip.title = id + " — " + note;
-        row.appendChild(chip);
-        chips.push(chip);
-      });
-      block.appendChild(row);
-      list.appendChild(block);
-    }
-
-    SOURCE_GROUPS.forEach(([name, items]) => addGroup(name, items));
-    addGroup("encrypted", ENCRYPTED_SOURCES, { muted: true });
-
-    wrap.appendChild(list);
-    wrap.appendChild(el("p", {
-      class: "sources-foot",
-      text: available
-        ? "Support means technical compatibility, nothing more. Encrypted services are listed so they read as refused, not broken."
-        : "Connect an API and this list shrinks to exactly what it supports."
-    }));
+    const row = el("div", { class: "source-chips" });
+    const chips = shown.map(([id, note]) => {
+      const chip = el("span", { class: "source-chip" });
+      chip.textContent = id;
+      chip.dataset.search = (id + " " + note).toLowerCase();
+      if (note) chip.title = id + " — " + note;
+      row.appendChild(chip);
+      return chip;
+    });
+    wrap.appendChild(row);
 
     const empty = el("p", { class: "sources-empty", text: "nothing matches that" });
     empty.hidden = true;
     wrap.appendChild(empty);
 
+    wrap.appendChild(el("p", {
+      class: "sources-foot",
+      text: shown.length + " supported · compatibility, not affiliation"
+    }));
+
     search.addEventListener("input", () => {
       const q = search.value.trim().toLowerCase();
-      let shown = 0;
+      let hits = 0;
       chips.forEach((chip) => {
         const hit = !q || chip.dataset.search.indexOf(q) >= 0;
         chip.hidden = !hit;
-        if (hit) shown++;
+        if (hit) hits++;
       });
-      list.querySelectorAll(".sources-block").forEach((block) => {
-        const any = [...block.querySelectorAll(".source-chip")].some((c) => !c.hidden);
-        block.hidden = !any;
-      });
-      empty.hidden = shown > 0;
+      empty.hidden = hits > 0;
     });
 
     dom.sourcesPanel.innerHTML = "";
     dom.sourcesPanel.appendChild(wrap);
-    dom.sourcesPanel.appendChild(el("p", {
-      class: "sources-hint",
-      text: "click anywhere else, or press esc, to close"
-    }));
   }
 
   /* ----------------------------------------------------------
@@ -2084,9 +2059,9 @@
       const git = data && data.git ? data.git : {};
 
       instanceInfo = { services: Array.isArray(cobalt.services) ? cobalt.services : [], version: cobalt.version || "" };
-      if (dom.sourcesCount && instanceInfo.services.length) {
-        dom.sourcesCount.textContent = String(instanceInfo.services.length);
-      }
+      // keep the trigger and an open panel agreeing about the count
+      if (dom.sourcesCount) dom.sourcesCount.textContent = String(instanceInfo.services.length || SOURCES.length);
+      if (sourcesOpen) renderSources();
       if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
       const host = hostOf(base) || base;
       // keep the Connection pane's health link pointing at the live instance
@@ -2355,7 +2330,9 @@
   function bindSheet() {
     $("#open-settings").addEventListener("click", () => openSettings());
     dom.setupOpenSettings.addEventListener("click", () => openSettings("instance"));
-    if (dom.queuePanel) dom.queuePanel.hidden = true;
+    /* the pill is the connection, nothing else — it opens the pane that shows
+       the address, the health link and the status page */
+    dom.instancePill.addEventListener("click", () => openSettings("instance"));
 
     if (dom.openSources) {
       dom.openSources.addEventListener("click", (event) => {

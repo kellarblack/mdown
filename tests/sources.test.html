@@ -72,11 +72,11 @@ async function main() {
   record("it only lists what the instance advertises",
     names.indexOf("youtube") >= 0 && names.indexOf("rumble") < 0, names.join(", ").slice(0, 80));
 
-  const groups = [...doc.querySelectorAll(".sources-group")].map((g) => g.textContent);
-  record("grouped by what you get", groups.join(",").indexOf("video") >= 0 && groups.indexOf("audio") >= 0, groups.join(", "));
-
-  record("encrypted services are named, not hidden",
-    doc.body.textContent.indexOf("encrypted") >= 0 && groups.indexOf("encrypted") >= 0, groups.join(", "));
+  record("the panel is compact", doc.querySelector("#sources-panel").getBoundingClientRect().height <= 340,
+    Math.round(doc.querySelector("#sources-panel").getBoundingClientRect().height) + "px tall");
+  record("it only lists services we accept",
+    doc.body.textContent.indexOf("encrypted") < 0 && rows().every((r) => r.textContent !== "spotify"),
+    rows().map((r) => r.textContent).slice(0, 4).join(", "));
 
   const search = doc.querySelector("#sources-search");
   search.value = "sound";
