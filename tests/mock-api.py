@@ -155,13 +155,14 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"status": "error",
                             "error": {"code": "api.content.video.private"}}, 422)
                 return
+            big = "big" in url
             self._json({
                 "status": "ok",
                 "title": "a mock clip",
                 "uploader": "mock",
                 "duration": 125,
                 "thumbnail": host + "/thumb.png",
-                "estimate": {"bytes": 24 * 1024 * 1024, "height": 1080, "exact": False},
+                "estimate": {"bytes": (800 if big else 24) * 1024 * 1024, "height": 1080, "exact": False},
                 "isLive": False,
                 "isPlaylist": False,
                 "tooLong": "too-long" in url,
