@@ -1783,10 +1783,14 @@
         holder.hidden = true;
         holder.id = "turnstile-holder";
         document.body.appendChild(holder);
+        // current Turnstile has no "invisible" size: the widget stays out of
+        // the way until it is executed, and only shows itself if it must ask
         turnstileWidget = window.turnstile.render(holder, {
           sitekey: key,
-          size: "invisible",
-          callback: (token) => { turnstileToken = token; }
+          appearance: "interaction-only",
+          execution: "execute",
+          callback: (token) => { turnstileToken = token; },
+          "error-callback": () => { turnstileToken = ""; }
         });
       }
       turnstileToken = "";
