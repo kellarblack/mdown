@@ -922,6 +922,7 @@ a.ghost-btn { text-decoration: none; }
 .instance-meta dd { margin: 0; color: var(--text-2); text-align: right; word-break: break-all; }
 .instance-error { margin-top: 8px; color: var(--err); font-size: 0.72rem; }
 .instance-links {
+  display: flex; align-items: center; gap: 7px;
   margin: 10px 0 0; padding-top: 9px;
   border-top: 1px solid var(--stroke);
   font-family: var(--mono); font-size: 0.68rem; color: var(--text-3);

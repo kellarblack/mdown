@@ -387,7 +387,6 @@
     servicesCard: $("#services-card"),
     servicesChips: $("#services-chips"),
     servicesCount: $("#services-count"),
-    refreshInstance: $("#refresh-instance"),
     instancePill: $("#instance-pill"),
     instancePillLabel: $("#instance-pill-label"),
     healthPop: $("#health-pop"),
@@ -2608,7 +2607,6 @@
       saveSettings();
     });
     dom.checkInstance.addEventListener("click", () => checkInstance());
-    dom.refreshInstance.addEventListener("click", () => checkInstance());
 
     $("#export-settings").addEventListener("click", () => {
       const payload = JSON.stringify(settings, null, 2);
