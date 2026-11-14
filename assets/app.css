@@ -1297,6 +1297,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm);
   border: 1px solid var(--stroke); background: var(--surface);
 }
+.report-note { width: 100%; min-height: 74px; resize: vertical; margin: 8px 0; font-size: 16px; }
 .report-text {
   margin: 8px 0; padding: 10px; max-height: 200px; overflow: auto;
   border-radius: 6px; background: var(--bg); border: 1px solid var(--stroke);

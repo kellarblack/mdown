@@ -176,6 +176,25 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(data["status"], "tunnel")
 
+    # -- reports -----------------------------------------------------------
+    def test_report_is_stored(self):
+        status, _, raw = self.call("POST", "/report", {
+            "note": "the video failed", "page": "/", "state": "up"})
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(raw)["status"], "ok")
+        folder = os.path.join(self.tmp, "reports")
+        names = os.listdir(folder)
+        self.assertEqual(len(names), 1)
+        with open(os.path.join(folder, names[0]), encoding="utf-8") as handle:
+            line = handle.read()
+        self.assertIn("the video failed", line)
+        self.assertNotIn("127.0.0.1", line)   # no client address
+
+    def test_report_needs_something(self):
+        status, _, raw = self.call("POST", "/report", {"page": "/"})
+        self.assertEqual(status, 400)
+        self.assertIn("error", json.loads(raw))
+
     # -- probe: size and picture before any download -----------------------
     def probe(self, body, headers=None):
         status, hdrs, raw = self.call("POST", "/probe", body, headers)

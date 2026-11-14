@@ -95,6 +95,9 @@ class Config:
     # from spending the download budget by accident
     probe_rate_max: int = 60
     probe_rate_window: int = 300
+    # one person with a broken page is worth listening to; a bot is not
+    report_rate_max: int = 12
+    report_rate_window: int = 3600
 
     # ---- source-side workarounds ----------------------------------------
     # a Netscape cookies.txt for age-gated / login-walled sources; empty = none
@@ -145,6 +148,8 @@ class Config:
             job_rate_window=_int("MDOWN_JOB_RATE_WINDOW", 300, 10, 86400),
             probe_rate_max=_int("MDOWN_PROBE_RATE_MAX", 60, 1, 10000),
             probe_rate_window=_int("MDOWN_PROBE_RATE_WINDOW", 300, 10, 86400),
+            report_rate_max=_int("MDOWN_REPORT_RATE_MAX", 12, 1, 1000),
+            report_rate_window=_int("MDOWN_REPORT_RATE_WINDOW", 3600, 60, 86400),
             ytdlp_cookies=os.environ.get("MDOWN_YTDLP_COOKIES", "").strip(),
             ytdlp_extra_args=os.environ.get("MDOWN_YTDLP_EXTRA_ARGS", "").strip(),
         )

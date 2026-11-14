@@ -475,11 +475,15 @@ class Handler(BaseHTTPRequestHandler):
             self._body_consumed = True
 
         path, _ = self._split()
-        if path not in ("/", "", "/probe"):
+        if path not in ("/", "", "/probe", "/report"):
             raise ApiError.not_found()
 
         self._check_auth()
         self._check_origin()
+
+        if path == "/report":
+            self._report()
+            return
 
         if path == "/probe":
             self._probe()
@@ -572,6 +576,44 @@ class Handler(BaseHTTPRequestHandler):
             "filename": job.filename,
             "size": job.size,
         }, headers)
+
+    def _report(self) -> None:
+        """A problem report that actually arrives, without a third party.
+
+        The note is the only free text. Everything else is what the page already
+        knows: the page, the state and a user agent. No IP, no cookie, no email.
+        """
+        verdict = self.report_limiter.check(self._client_ip())
+        if not verdict["allowed"]:
+            error = ApiError.rate_limit(0)
+            error.context["retry"] = verdict["retry"]
+            self._json(429, error.payload(), {"Retry-After": str(verdict["retry"])})
+            return
+
+        body = self._read_json()
+        note = str(body.get("note") or "").strip()[:2000]
+        page = str(body.get("page") or "").strip()[:120]
+        state = str(body.get("state") or "").strip()[:40]
+        if not note and not state:
+            raise ApiError.url_invalid("empty report")
+
+        folder = os.path.join(self.config.work_dir, "reports")
+        try:
+            os.makedirs(folder, mode=0o700, exist_ok=True)
+            name = time.strftime("%Y-%m-%d.jsonl", time.gmtime())
+            entry = {
+                "t": int(time.time()),
+                "page": page,
+                "state": state,
+                "note": note,
+                "ua": str(self.headers.get("User-Agent") or "")[:180],
+            }
+            with open(os.path.join(folder, name), "a", encoding="utf-8") as handle:
+                handle.write(json.dumps(entry, separators=(",", ":")) + "\n")
+        except OSError:
+            raise ApiError.internal("could not store the report")
+
+        self._json(200, {"status": "ok"})
 
     def _probe(self) -> None:
         """Metadata only: title, duration, thumbnail, estimated size.
@@ -684,6 +726,7 @@ class ApiServer(ThreadingHTTPServer):
             "job_limiter": RateLimiter(config.job_rate_max, config.job_rate_window),
             "probe_limiter": RateLimiter(config.probe_rate_max, config.probe_rate_window),
             "read_limiter": RateLimiter(config.read_rate_max, config.read_rate_window),
+            "report_limiter": RateLimiter(config.report_rate_max, config.report_rate_window),
             "uptime": UptimeLog(os.path.join(config.work_dir, "uptime.json")),
             "tools": ToolState(),
             "started_at": time.time(),
@@ -712,9 +755,10 @@ class ApiServer(ThreadingHTTPServer):
         jobs = self.RequestHandlerClass.job_limiter
         probes = self.RequestHandlerClass.probe_limiter
         reads = self.RequestHandlerClass.read_limiter
+        reports = self.RequestHandlerClass.report_limiter
         while True:
             time.sleep(120)
-            for item in (limiter, jobs, probes, reads):
+            for item in (limiter, jobs, probes, reads, reports):
                 item.prune()
 
     def server_bind(self) -> None:

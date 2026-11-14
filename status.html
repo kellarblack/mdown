@@ -38,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=127">
+<link rel="stylesheet" href="assets/app.css?v=128">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -89,9 +89,13 @@
     </div>
 
     <div class="report-panel" id="report-panel" hidden>
-      <p class="status-note">copy this and send it to whoever shared mdown with you. there is no public tracker yet.</p>
-      <pre class="report-text" id="report-text"></pre>
-      <button type="button" class="ghost-btn small" id="report-copy">copy report</button>
+      <p class="status-note">describe what went wrong. it goes to the server that runs this site — no third party, no account, no email.</p>
+      <textarea class="text-input report-note" id="report-note" rows="3" placeholder="what happened? (optional)" maxlength="2000"></textarea>
+      <div class="field-row">
+        <button type="button" class="ghost-btn small" id="report-send">send report</button>
+        <button type="button" class="ghost-btn small" id="report-copy">copy instead</button>
+      </div>
+      <pre class="report-text" id="report-text" hidden></pre>
     </div>
 
     <details class="status-more">
@@ -428,15 +432,40 @@
 
   function openReport() {
     const panel = $("#report-panel");
-    const text = reportText();
-    $("#report-text").textContent = text;
+    $("#report-text").textContent = reportText();
     panel.hidden = false;
     $("#status-report").setAttribute("aria-expanded", "true");
     if (REPORT_URL) {
       window.open(REPORT_URL, "_blank", "noopener");
       return;
     }
-    copyText(text, "report copied — send it to whoever shared mdown with you");
+    $("#report-note").focus();
+  }
+
+  async function sendReport() {
+    const base = apiBase();
+    if (!base) { toast("no server configured", "warn"); return; }
+    const note = ($("#report-note").value || "").trim();
+    const state = $("#status-card").dataset.state || "";
+    const button = $("#report-send");
+    button.disabled = true;
+    try {
+      const res = await fetch(base + "/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ note: note, page: location.pathname, state: state })
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      toast("report sent — thank you");
+      $("#report-panel").hidden = true;
+      $("#status-report").setAttribute("aria-expanded", "false");
+      $("#report-note").value = "";
+    } catch (e) {
+      $("#report-text").hidden = false;
+      toast("could not send — copy the text instead", "warn");
+    } finally {
+      button.disabled = false;
+    }
   }
 
   async function copyText(text, message) {
@@ -474,6 +503,7 @@
   $("#status-refresh").addEventListener("click", check);
   $("#status-report").addEventListener("click", openReport);
   $("#report-copy").addEventListener("click", () => copyText(reportText(), "report copied"));
+  $("#report-send").addEventListener("click", sendReport);
   check();
 
   /* polling a hidden tab is wasted requests; resume the moment it is visible */
