@@ -53,13 +53,13 @@ async function main() {
   const button = doc.querySelector("#open-sources");
   record("there is a sources trigger above the composer", !!button, button ? button.textContent.trim() : "missing");
 
-  const plusBefore = win.getComputedStyle(doc.querySelector(".sources-plus")).transform;
+  const plusBefore = win.getComputedStyle(doc.querySelector(".sources-chev")).transform;
   button.click();
   const opened = await waitFor(() => !doc.querySelector("#sources-panel").hidden, 5000);
   record("the panel opens", opened, "aria-expanded=" + button.getAttribute("aria-expanded"));
 
-  const plusAfter = win.getComputedStyle(doc.querySelector(".sources-plus")).transform;
-  record("the plus rotates into an x", plusBefore !== plusAfter && /matrix/.test(plusAfter),
+  const plusAfter = win.getComputedStyle(doc.querySelector(".sources-chev")).transform;
+  record("the chevron turns over", plusBefore !== plusAfter && /matrix/.test(plusAfter),
     plusBefore + " -> " + plusAfter);
   record("the trigger reports its state", button.getAttribute("aria-expanded") === "true", button.getAttribute("aria-expanded"));
 

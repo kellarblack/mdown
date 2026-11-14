@@ -57,12 +57,19 @@ async function loadWithMock(width, height) {
   const frame = await load(width, height);
   frame.contentWindow.localStorage.setItem("mdown.settings",
     JSON.stringify({ instance: "http://127.0.0.1:4320", savingMethod: "download" }));
-  frame.src = "../index.html?mock=" + Date.now();
-  await waitFor(() => {
+  const token = "mock=" + Date.now();
+  frame.src = "../index.html?" + token;
+  const ready = await waitFor(() => {
+    const win = frame.contentWindow;
+    if (!win || !win.location || win.location.search.indexOf(token) < 0) return false;
     const d = frame.contentDocument;
-    return d && d.querySelector("#url-input") && frame.contentWindow.md;
+    return d && d.querySelector("#url-input") && win.md;
   }, 20000);
+  if (!ready) throw new Error("the mock instance page did not boot at " + width + "px");
   await sleep(350);
+  if (!frame.contentDocument.querySelector("#url-input")) {
+    throw new Error("the composer disappeared after boot at " + width + "px");
+  }
   return frame;
 }
 
@@ -70,10 +77,14 @@ async function load(width, height) {
   const frame = document.getElementById("stage");
   frame.width = width;
   frame.height = height;
-  frame.src = "../index.html?w=" + width + "&t=" + Date.now();
+  const token = "w=" + width + "&t=" + Date.now();
+  frame.src = "../index.html?" + token;
+  // wait for *this* document, not the previous one that is still on screen
   const booted = await waitFor(() => {
+    const win = frame.contentWindow;
+    if (!win || !win.location || win.location.search.indexOf(token) < 0) return false;
     const d = frame.contentDocument;
-    return d && d.querySelector("#url-input") && frame.contentWindow.md;
+    return d && d.querySelector("#url-input") && win.md;
   }, 20000);
   // a page that never booted used to produce nonsense measurements instead of
   // a failure, which is how a flake looks like a dozen broken assertions

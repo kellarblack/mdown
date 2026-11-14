@@ -212,6 +212,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 
 
 /* ---------- composer ---------- */
+.composer:focus-within { border-color: var(--stroke-2); }
 .composer {
   position: relative;
   padding: 0;
@@ -829,7 +830,13 @@ a.ghost-btn { text-decoration: none; }
 }
 
 @media (max-width: 720px) {
-  .topbar { padding: 9px 14px; padding-top: max(9px, env(safe-area-inset-top)); }
+  .topbar {
+    padding: 9px 14px; padding-top: max(9px, env(safe-area-inset-top));
+    /* blur on a sticky bar repaints every scroll frame — solid is free */
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
   #url-input { font-size: 16px; }
   .mode { height: 34px; padding: 0 12px; font-size: 0.76rem; }
   .icon-btn { width: 36px; height: 36px; }
@@ -925,6 +932,7 @@ a.ghost-btn { text-decoration: none; }
 .status-card {
   margin: 22px auto 0; padding: 16px 18px;
   border: 1px solid var(--stroke); border-radius: var(--r-lg);
+  transition: border-color 160ms ease-out;
   background: var(--bg-elev); box-shadow: var(--shadow-1);
   max-width: 62ch;
 }
@@ -996,31 +1004,29 @@ a.ghost-btn { text-decoration: none; }
 
 /* ---------- sources trigger + panel ---------- */
 .sources-wrap { position: relative; display: grid; justify-items: center; margin: 0 0 22px; }
+/* a count and a chevron: the chevron turns over when the panel is open. no
+   plus, no circle, nothing borrowed. */
 .sources-toggle {
-  display: inline-flex; align-items: center; gap: 9px;
-  padding: 5px 13px 5px 5px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 10px 4px 10px; border-radius: 999px;
   border: 1px solid var(--stroke); background: transparent;
   color: var(--text-3); font-family: var(--mono); font-size: 0.7rem;
   cursor: pointer; touch-action: manipulation;
-  transition: color var(--speed), border-color var(--speed), background var(--speed);
+  transition: color 160ms ease-out, border-color 160ms ease-out, background 160ms ease-out;
 }
 .sources-toggle:hover { color: var(--text-2); border-color: var(--stroke-2); background: var(--surface); }
-.sources-plus {
-  position: relative; display: grid; place-items: center;
-  width: 24px; height: 24px; border-radius: 50%;
-  background: var(--surface-2); color: var(--text-2);
-  transition: transform 300ms var(--ease), background var(--speed), color var(--speed);
+.sources-count {
+  font-variant-numeric: tabular-nums; color: var(--text-2);
+  transition: color 160ms ease-out;
 }
-.sources-plus::before,
-.sources-plus::after {
-  content: ""; position: absolute; background: currentColor; border-radius: 1px;
+.sources-chev {
+  width: 13px; height: 13px; flex: none;
+  transition: transform 220ms var(--ease), opacity 160ms ease-out;
+  opacity: 0.7;
 }
-.sources-plus::before { width: 10px; height: 1.5px; }
-.sources-plus::after { width: 1.5px; height: 10px; }
-.sources-toggle[aria-expanded="true"] { color: var(--text-2); border-color: var(--stroke-2); }
-.sources-toggle[aria-expanded="true"] .sources-plus {
-  transform: rotate(45deg); background: var(--text); color: var(--bg);
-}
+.sources-toggle[aria-expanded="true"] { color: var(--text-2); border-color: var(--stroke-2); background: var(--surface); }
+.sources-toggle[aria-expanded="true"] .sources-chev { transform: rotate(180deg); opacity: 1; }
+.sources-toggle[aria-expanded="true"] .sources-count { color: var(--text); }
 
 .sources-panel {
   position: absolute; z-index: 60; top: calc(100% + 10px); left: 50%;
@@ -1031,6 +1037,11 @@ a.ghost-btn { text-decoration: none; }
   background: var(--bg-elev); box-shadow: var(--shadow-2);
 }
 .sources-hint { margin: 10px 0 0; color: var(--text-3); font-size: 0.64rem; text-align: center; }
+.sources-panel { animation: panel-centre-in 170ms var(--ease) both; }
+@keyframes panel-centre-in {
+  from { opacity: 0; transform: translate(-50%, -7px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
 
 /* ---------- sources panel (shared) ---------- */
 .sources { display: grid; gap: 14px; min-width: 0; }
@@ -1494,6 +1505,7 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .dock.is-open .dock-btn { color: var(--text); background: var(--surface-2); border-color: var(--stroke); }
 .dock-panel {
+  animation: pop 170ms var(--ease) both;
   position: absolute; top: calc(100% + 8px); right: 0; z-index: 70;
   /* 100% here resolves against .dock (the 40px button), which would shrink the
      panel to a 20px sliver — this is one of the few places vw is correct */

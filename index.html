@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=62">
+<link rel="stylesheet" href="assets/app.css?v=64">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -215,8 +215,9 @@
     <div class="sources-wrap" id="sources-wrap">
       <button type="button" class="sources-toggle" id="open-sources"
               aria-expanded="false" aria-controls="sources-panel">
-        <span class="sources-plus" aria-hidden="true"></span>
-        <span class="sources-label">supported services</span>
+        <span class="sources-count" id="sources-count">33</span>
+        <span class="sources-label">sources</span>
+        <svg class="sources-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
       </button>
       <div class="sources-panel" id="sources-panel" hidden></div>
     </div>
@@ -889,7 +890,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=35" defer></script>
+<script src="assets/app.js?v=36" defer></script>
 <script type="module" src="assets/nav.js?v=8"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

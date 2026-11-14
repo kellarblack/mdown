@@ -359,6 +359,7 @@
     openHealth: $("#open-health"),
     openSources: $("#open-sources"),
     sourcesPanel: $("#sources-panel"),
+    sourcesCount: $("#sources-count"),
     sourcesWrap: $("#sources-wrap"),
     donateWrap: $("#donate-wrap"),
     setupOpenSettings: $("#setup-open-settings"),
@@ -2083,6 +2084,9 @@
       const git = data && data.git ? data.git : {};
 
       instanceInfo = { services: Array.isArray(cobalt.services) ? cobalt.services : [], version: cobalt.version || "" };
+      if (dom.sourcesCount && instanceInfo.services.length) {
+        dom.sourcesCount.textContent = String(instanceInfo.services.length);
+      }
       if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
       const host = hostOf(base) || base;
       // keep the Connection pane's health link pointing at the live instance
