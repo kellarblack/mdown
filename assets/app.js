@@ -2889,8 +2889,6 @@
      ---------------------------------------------------------- */
   function bindComposer() {
     dom.input.addEventListener("input", updateComposerState);
-    dom.input.addEventListener("focus", () => dom.composer.classList.add("is-focused"));
-    dom.input.addEventListener("blur", () => dom.composer.classList.remove("is-focused"));
     dom.input.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();

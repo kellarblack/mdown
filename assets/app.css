@@ -297,7 +297,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   box-shadow: var(--shadow-1);
   transition: border-color var(--speed), box-shadow var(--speed);
 }
-.composer.is-focused { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
+
 
 .composer-main { display: flex; align-items: flex-start; gap: 8px; padding: 11px 11px 10px 11px; }
 .service-badge {
@@ -367,7 +367,7 @@ a.ghost-btn { text-decoration: none; }
   color: var(--accent); cursor: pointer;
   text-decoration: underline dotted; text-underline-offset: 3px;
 }
-.composer.is-dropping { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.composer.is-dropping { border-color: var(--accent); }
 
 .composer-cta { display: flex; align-items: center; gap: 10px; }
 .hint { color: var(--text-3); font-family: var(--mono); font-size: 0.68rem; max-width: 260px; text-align: right; }
@@ -1652,6 +1652,18 @@ a.donate-value:hover { text-decoration: underline; }
   font-family: var(--mono); font-weight: 500;
   font-size: clamp(1.5rem, 4.2vw, 2.1rem);
   letter-spacing: -0.045em; line-height: 1;
+}
+.hero-word-m { display: inline; }
+/* only the "down" moves. It falls the last few pixels and settles, the same
+   gesture the mark makes in the corner — once, on load, and never again. */
+.hero-word-down {
+  display: inline-block;
+  animation: down-in 560ms var(--ease) 90ms both;
+}
+@keyframes down-in {
+  0%   { transform: translateY(-0.16em); opacity: 0.3; }
+  58%  { transform: translateY(0.012em); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
 }
 .hero-word-dot { color: var(--accent); }
 .hero-word-sub {
