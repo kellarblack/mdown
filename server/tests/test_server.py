@@ -97,6 +97,7 @@ class ServerTest(unittest.TestCase):
             max_concurrent=2,
             max_queue=4,
             rate_limit_max=50,
+            read_rate_max=10,
             cors_origins=["https://mdown.cc"],
         )
         self.server = server_module.ApiServer(self.config)
@@ -161,12 +162,19 @@ class ServerTest(unittest.TestCase):
         self.assertNotIn("path", json.dumps(data).lower())
 
     def test_reads_are_rate_limited(self):
-        for _ in range(self.config.rate_limit_max):
+        for _ in range(self.config.read_rate_max):
             self.call("GET", "/health")
         status, headers, raw = self.call("GET", "/health")
         self.assertEqual(status, 429)
         self.assertIn("Retry-After", headers)
         self.assertEqual(json.loads(raw)["error"]["code"], "api.rate_limit")
+
+    def test_reads_do_not_consume_the_download_window(self):
+        for _ in range(self.config.read_rate_max):
+            self.call("GET", "/health")
+        status, _, data = self.post({"url": URL})
+        self.assertEqual(status, 200)
+        self.assertEqual(data["status"], "tunnel")
 
     # -- probe: size and picture before any download -----------------------
     def probe(self, body, headers=None):

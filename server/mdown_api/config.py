@@ -81,6 +81,10 @@ class Config:
     # ---- request frequency ----------------------------------------------
     rate_limit_max: int = 30
     rate_limit_window: int = 60
+    # reads are cheap and a page load can make several. They get their own,
+    # larger window so a download spree never makes the status page look down.
+    read_rate_max: int = 120
+    read_rate_window: int = 60
     rate_limit_tunnel_max: int = 120
     # downloads (not requests) per IP per window. Generous for a person
     # batching a few links, tight enough to stop a scraper.
@@ -134,6 +138,8 @@ class Config:
             work_dir=os.environ.get("MDOWN_WORK_DIR", "/var/lib/mdown/jobs").strip(),
             rate_limit_max=_int("MDOWN_RATE_MAX", 30, 1, 10000),
             rate_limit_window=_int("MDOWN_RATE_WINDOW", 60, 1, 3600),
+            read_rate_max=_int("MDOWN_READ_RATE_MAX", 120, 1, 100000),
+            read_rate_window=_int("MDOWN_READ_RATE_WINDOW", 60, 1, 3600),
             rate_limit_tunnel_max=_int("MDOWN_TUNNEL_RATE_MAX", 120, 1, 100000),
             job_rate_max=_int("MDOWN_JOB_RATE_MAX", 60, 1, 10000),
             job_rate_window=_int("MDOWN_JOB_RATE_WINDOW", 300, 10, 86400),

@@ -286,13 +286,13 @@ class Handler(BaseHTTPRequestHandler):
     def _limit_get(self) -> None:
         """Reads are cheap, but they are not free: a scraper asking for the
         instance info in a loop gets the same window as a downloader."""
-        verdict = self.limiter.check(self._client_ip())
+        verdict = self.read_limiter.check(self._client_ip())
         if verdict["allowed"]:
             return
         error = ApiError.rate_limit(0)
         error.context["retry"] = verdict["retry"]
         self._json(429, error.payload(), {
-            "RateLimit-Limit": str(self.config.rate_limit_max),
+            "RateLimit-Limit": str(self.config.read_rate_max),
             "RateLimit-Remaining": "0",
             "RateLimit-Reset": str(verdict["retry"]),
             "Retry-After": str(verdict["retry"]),
@@ -659,6 +659,7 @@ class ApiServer(ThreadingHTTPServer):
             "limiter": RateLimiter(config.rate_limit_max, config.rate_limit_window),
             "job_limiter": RateLimiter(config.job_rate_max, config.job_rate_window),
             "probe_limiter": RateLimiter(config.probe_rate_max, config.probe_rate_window),
+            "read_limiter": RateLimiter(config.read_rate_max, config.read_rate_window),
             "tools": ToolState(),
             "started_at": time.time(),
         })
@@ -672,9 +673,10 @@ class ApiServer(ThreadingHTTPServer):
         limiter = self.RequestHandlerClass.limiter
         jobs = self.RequestHandlerClass.job_limiter
         probes = self.RequestHandlerClass.probe_limiter
+        reads = self.RequestHandlerClass.read_limiter
         while True:
             time.sleep(120)
-            for item in (limiter, jobs, probes):
+            for item in (limiter, jobs, probes, reads):
                 item.prune()
 
     def server_bind(self) -> None:
