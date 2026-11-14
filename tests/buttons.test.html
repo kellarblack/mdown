@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>buttons test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 390px; height: 800px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Every visible button on the phone layout, clicked once, with uncaught errors
+  and console errors counted. A dead control is the kind of bug that only shows
+  up when someone taps it, so this taps all of them.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/buttons.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 20000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320", savingMethod: "ask" }));
+  frame.src = "../index.html?buttons=" + Date.now();
+
+  const ready = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
+  record("the app boots", ready);
+  if (!ready) { window.__results = { total: results.length, failures, results }; return; }
+  await sleep(400);
+
+  const win = frame.contentWindow;
+  const doc = frame.contentDocument;
+
+  // count anything that throws along the way
+  const errors = [];
+  win.addEventListener("error", (e) => errors.push(String(e.message || e.error || "error")));
+  win.addEventListener("unhandledrejection", (e) => errors.push("rejection: " + String(e.reason)));
+
+  const visible = () => [...doc.querySelectorAll("button")]
+    .filter((b) => b.getBoundingClientRect().width > 0 && !b.disabled && !b.closest("[hidden]"));
+
+  const buttons = visible();
+  record("there are buttons to test", buttons.length >= 8, buttons.length + " visible");
+
+  // click every one, re-reading the list because panels come and go
+  let clicked = 0;
+  for (let i = 0; i < buttons.length; i++) {
+    const list = visible();
+    const btn = list[i];
+    if (!btn) continue;
+    try { btn.click(); clicked++; } catch (e) { errors.push("click threw: " + String(e)); }
+    await sleep(90);
+  }
+  record("every visible button was clicked", clicked >= buttons.length, clicked + " clicks");
+  record("no uncaught errors from any button", errors.length === 0, errors.slice(0, 3).join(" | "));
+
+  // the two controls people actually reach for
+  const paste = doc.querySelector("#paste-btn");
+  paste.click();
+  await sleep(250);
+  const toast = ((doc.querySelector("#toasts") || {}).textContent || "").toLowerCase();
+  record("paste answers even when the clipboard is blocked",
+    /clipboard|pasted|empty|paste/i.test(toast), toast.slice(0, 50) || "(no toast)");
+
+  const input = doc.querySelector("#url-input");
+  input.value = "not a link";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  await sleep(150);
+  record("a non-link is called out before submitting",
+    /not a link/i.test(doc.querySelector("#composer-hint").textContent), doc.querySelector("#composer-hint").textContent);
+
+  const mode = doc.querySelector('[data-mode="audio"]');
+  mode.click();
+  await sleep(120);
+  record("mode buttons switch state", mode.getAttribute("aria-checked") === "true", "audio=" + mode.getAttribute("aria-checked"));
+
+  const errorsAfter = errors.length;
+  record("still no errors after the checks", errorsAfter === 0, errors.slice(0, 3).join(" | "));
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 90000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>
