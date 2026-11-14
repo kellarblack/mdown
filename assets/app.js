@@ -39,6 +39,7 @@
     videoQuality: "1080",
     audioFormat: "mp3",
     audioBitrate: "128",
+    audioCovers: true,
     filenameStyle: "basic",
     disableMetadata: false,
     alwaysProxy: false,
@@ -351,6 +352,10 @@
     serviceMark: $("#service-mark"),
     serviceName: $("#service-name"),
     composer: $("#composer"),
+    probePreview: $("#probe-preview"),
+    probeThumb: $("#probe-thumb"),
+    probeTitle: $("#probe-title"),
+    probeMeta: $("#probe-meta"),
     setupNote: $("#setup-note"),
     setupLead: $("#setup-lead"),
     setupTail: $("#setup-tail"),
@@ -454,6 +459,7 @@
 
   function updateComposerState() {
     const text = dom.input.value;
+    scheduleProbe();
     dom.clearBtn.hidden = text.length === 0;
     autosize();
 
@@ -698,6 +704,7 @@
       videoQuality: clampQuality(settings.videoQuality),
       audioFormat: clampFormat(settings.audioFormat),
       audioBitrate: clampBitrate(settings.audioBitrate),
+      audioCovers: settings.audioCovers !== false,
       filenameStyle: settings.filenameStyle,
       disableMetadata: !!settings.disableMetadata,
       alwaysProxy: !!settings.alwaysProxy,
@@ -750,9 +757,20 @@
       controller: null,
       running: false,
       node: null,
+      thumb: "",
+      estimate: null,
+      previewTitle: "",
+      duration: 0,
       modalOpener: null
     };
     queue.push(item);
+    const probed = readProbe(probeKey(item.url, item.mode));
+    if (probed) attachProbe(item, probed);
+    else if (probeSupported()) {
+      fetchProbe(item.url, item.mode)
+        .then((data) => { if (data && queue.indexOf(item) >= 0) attachProbe(item, data); })
+        .catch(() => {});
+    }
     return item;
   }
 
@@ -876,6 +894,7 @@
 
   function titleFor(item) {
     if (item.filename) return item.filename;
+    if (item.previewTitle) return item.previewTitle;
     if (item.status === "local") return "Local processing required";
     if (item.status === "picker") return "Multiple items found";
     if (item.url) return item.host || item.url;
@@ -903,6 +922,11 @@
       parts.push("• " + item.error);
     } else if (item.detail) {
       parts.push(item.detail);
+      const estimate = item.estimate;
+      if (estimate && estimate.bytes && !item.size) {
+        parts.push((estimate.exact ? "~" : "≈") + " " + formatBytes(estimate.bytes));
+      }
+      if (item.duration) parts.push(clockTime(item.duration));
     }
     return parts;
   }
@@ -910,6 +934,7 @@
   function buildNode(item) {
     const node = el("div", { class: "qitem", "data-status": item.status, id: item.id });
     const icon = el("div", { class: "q-icon", "aria-hidden": "true" });
+    const thumb = el("div", { class: "q-thumb", "aria-hidden": "true" });
     const body = el("div", { class: "q-body" });
     const title = el("div", { class: "q-title" });
     const meta = el("div", { class: "q-meta" });
@@ -921,12 +946,13 @@
     body.appendChild(meta);
     progress.appendChild(fill);
     node.appendChild(icon);
+    node.appendChild(thumb);
     node.appendChild(body);
     node.appendChild(actions);
     node.appendChild(progress);
 
     item.node = node;
-    item.refs = { icon, title, meta, actions, fill };
+    item.refs = { icon, thumb, title, meta, actions, fill };
     updateItem(item);
     return node;
   }
@@ -938,8 +964,16 @@
     node.setAttribute("data-status", item.status);
     node.setAttribute("data-indeterminate", item.indeterminate ? "true" : "false");
 
-    const { icon, title, meta, actions, fill } = item.refs;
+    const { icon, thumb, title, meta, actions, fill } = item.refs;
     if (icon.innerHTML !== iconFor(item)) icon.innerHTML = iconFor(item);
+
+    const picture = item.thumb || "";
+    if (thumb.dataset.src !== picture) {
+      thumb.dataset.src = picture;
+      thumb.style.backgroundImage = picture ? 'url("' + picture + '")' : "";
+    }
+    thumb.hidden = !picture;
+    icon.hidden = !!picture;
 
     const nextTitle = titleFor(item);
     if (title.textContent !== nextTitle) title.textContent = nextTitle;
@@ -1808,19 +1842,149 @@
   }
 
   /* ----------------------------------------------------------
+     probe: what the file will be, before fetching it
+     ---------------------------------------------------------- */
+  const PROBE_CACHE = new Map();
+  const PROBE_KEEP = 24;
+  let probeTimer = null;
+  let probeSeq = 0;
+
+  function probeKey(url, mode) {
+    return [url, mode || settings.downloadMode, settings.videoQuality,
+      settings.audioFormat, settings.audioBitrate].join("|");
+  }
+
+  function probeSupported() {
+    return !!(instanceInfo && instanceInfo.probe && apiEndpoint());
+  }
+
+  function readProbe(key) {
+    const hit = PROBE_CACHE.get(key);
+    if (!hit) return null;
+    // refresh its position so the map behaves as a small LRU
+    PROBE_CACHE.delete(key);
+    PROBE_CACHE.set(key, hit);
+    return hit;
+  }
+
+  function storeProbe(key, data) {
+    PROBE_CACHE.set(key, data);
+    while (PROBE_CACHE.size > PROBE_KEEP) {
+      PROBE_CACHE.delete(PROBE_CACHE.keys().next().value);
+    }
+  }
+
+  async function fetchProbe(url, mode) {
+    const key = probeKey(url, mode);
+    const cached = readProbe(key);
+    if (cached) return cached;
+    const endpoint = apiEndpoint();
+    if (!endpoint) return null;
+    const res = await fetch(endpoint + "probe", {
+      method: "POST",
+      headers: Object.assign({
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      }, authHeaders()),
+      body: JSON.stringify({
+        url,
+        downloadMode: mode || settings.downloadMode,
+        videoQuality: clampQuality(settings.videoQuality),
+        audioFormat: clampFormat(settings.audioFormat),
+        audioBitrate: clampBitrate(settings.audioBitrate)
+      })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || data.status !== "ok") return null;
+    storeProbe(key, data);
+    return data;
+  }
+
+  function clockTime(seconds) {
+    const total = Math.round(Number(seconds) || 0);
+    if (!total) return "";
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const rest = total % 60;
+    if (hours) return hours + ":" + String(minutes).padStart(2, "0") + ":" + String(rest).padStart(2, "0");
+    return minutes + ":" + String(rest).padStart(2, "0");
+  }
+
+  function renderProbe(data) {
+    if (!dom.probePreview) return;
+    const on = !!(data && data.status === "ok");
+    dom.probePreview.classList.toggle("is-on", on);
+    dom.probePreview.setAttribute("aria-hidden", on ? "false" : "true");
+    if (!on) return;
+
+    const estimate = data.estimate || {};
+    const bits = [];
+    if (data.tooLong) bits.push("too long for this server");
+    if (estimate.bytes) bits.push((estimate.exact ? "~" : "≈") + " " + formatBytes(estimate.bytes));
+    if (data.duration) bits.push(clockTime(data.duration));
+    if (estimate.height) bits.push(estimate.height + "p");
+    dom.probeMeta.textContent = bits.join(" · ");
+    dom.probeTitle.textContent = data.title || "";
+    dom.probeTitle.title = data.title || "";
+
+    if (data.thumbnail) {
+      dom.probeThumb.style.backgroundImage = 'url("' + data.thumbnail + '")';
+      dom.probeThumb.dataset.empty = "false";
+    } else {
+      dom.probeThumb.style.backgroundImage = "";
+      dom.probeThumb.dataset.empty = "true";
+    }
+  }
+
+  /* Debounced: only one link, only when the instance advertises the endpoint,
+     and the answer is thrown away if the field has moved on since. */
+  function scheduleProbe(delay) {
+    if (probeTimer) clearTimeout(probeTimer);
+    probeTimer = null;
+    const text = dom.input.value.trim();
+    const urls = text ? parseUrls(text) : [];
+    if (!probeSupported() || urls.length !== 1) {
+      renderProbe(null);
+      return;
+    }
+    const url = urls[0];
+    const cached = readProbe(probeKey(url));
+    if (cached) { renderProbe(cached); return; }
+    renderProbe(null);
+    probeTimer = setTimeout(() => {
+      const stamp = ++probeSeq;
+      fetchProbe(url).then((data) => {
+        if (stamp !== probeSeq) return;
+        if (dom.input.value.trim() !== text) return;
+        renderProbe(data);
+      }).catch(() => {});
+    }, delay || 550);
+  }
+
+  function attachProbe(item, data) {
+    if (!data || !item) return;
+    item.thumb = data.thumbnail || "";
+    item.estimate = data.estimate || null;
+    item.previewTitle = data.title || "";
+    item.duration = data.duration || 0;
+    if (item.node) updateItem(item);
+  }
+
+  /* ----------------------------------------------------------
      sources: what this instance can actually reach
      ---------------------------------------------------------- */
 
-  /* grouped by what you get, not by brand. imgur/giphy/tenor/pixiv are
-     deliberately absent: nothing here can fetch them, so listing them would be
-     a promise the backend cannot keep. */
-  /* Only what this thing can actually fetch. The encrypted services used to be
-     listed here to explain why they fail; that made the panel a wall of text
-     for a feature nobody needs on a download page. */
+  /* One flat alphabetical list of what mdown accepts. It is the union of this
+     list and whatever instance you are connected to advertises, so a service
+     the backend gains shows up without a release, and nothing that a server can
+     actually fetch is ever missing from the panel. The encrypted services are
+     not here on purpose: they cannot be downloaded, and listing them made the
+     panel a wall of explanation nobody needs. */
   const SOURCES = [
     ["9gag", ""], ["audiomack", "audio"], ["bandcamp", "audio"], ["bilibili", ""],
     ["bluesky", ""], ["coub", ""], ["dailymotion", ""], ["douyin", ""],
-    ["facebook", ""], ["hearthis", "audio"], ["instagram", ""], ["kick", ""],
+    ["facebook", ""], ["hearthis", "audio"], ["imgur", ""], ["instagram", ""], ["kick", ""],
     ["loom", ""], ["mixcloud", "audio"], ["newgrounds", ""], ["odysee", ""],
     ["ok", ""], ["reddit", ""], ["rumble", ""], ["rutube", ""], ["snapchat", ""],
     ["soundcloud", "audio"], ["streamable", ""], ["threads", ""], ["tiktok", ""],
@@ -1856,8 +2020,20 @@
     if (field) setTimeout(() => field.focus(), 40);
   }
 
+  const REFUSED_SOURCES = ["spotify", "deezer", "tidal", "apple_music", "applemusic"];
+
+  function sourceList() {
+    const known = new Map(SOURCES);
+    ((instanceInfo && instanceInfo.services) || []).forEach((name) => {
+      if (typeof name !== "string" || !name) return;
+      if (REFUSED_SOURCES.indexOf(name.toLowerCase()) >= 0) return;
+      if (!known.has(name)) known.set(name, "");
+    });
+    return Array.from(known.entries());
+  }
+
   function renderSources() {
-    const shown = SOURCES.slice().sort((a, b) => a[0].localeCompare(b[0]));
+    const shown = sourceList().sort((a, b) => a[0].localeCompare(b[0]));
 
     const wrap = el("div", { class: "sources" });
 
@@ -2112,10 +2288,14 @@
       instanceInfo = {
         services: Array.isArray(cobalt.services) ? cobalt.services : [],
         version: cobalt.version || "",
+        // honest capability flag: only an instance that answers /probe gets a
+        // size estimate and a thumbnail, everything else looks exactly as before
+        probe: cobalt.probe === true,
+        limits: cobalt.limits && typeof cobalt.limits === "object" ? cobalt.limits : null,
         turnstileSiteKey: typeof cobalt.turnstileSitekey === "string" ? cobalt.turnstileSitekey : ""
       };
       // keep the trigger and an open panel agreeing about the count
-      if (dom.sourcesCount) dom.sourcesCount.textContent = String(SOURCES.length);
+      if (dom.sourcesCount) dom.sourcesCount.textContent = String(sourceList().length);
       if (sourcesOpen) renderSources();
       if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
       const host = hostOf(base) || base;
@@ -2253,6 +2433,7 @@
         updateFileNamePreview();
         updateRequestPreview();
         updateComposerState();
+        scheduleProbe(150);
       });
     });
 

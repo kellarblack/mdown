@@ -28,7 +28,20 @@ PUBLIC = ["93.184.216.34"]
 
 class FakeEngine:
     def __init__(self):
-        self.info = {"title": "A Test Clip", "duration": 60, "is_live": False}
+        self.info = {
+            "title": "A Test Clip",
+            "duration": 60,
+            "is_live": False,
+            "thumbnail": "https://i.example.test/clip.jpg",
+            "formats": [
+                {"format_id": "18", "height": 360, "vcodec": "avc1", "acodec": "mp4a",
+                 "filesize": 1000000},
+                {"format_id": "137", "height": 1080, "vcodec": "avc1", "acodec": "none",
+                 "filesize": 8000000},
+                {"format_id": "140", "height": None, "vcodec": "none", "acodec": "mp4a",
+                 "abr": 128, "filesize": 1000000},
+            ],
+        }
         self.media = {"height": 720, "duration": 60, "has_video": True, "has_audio": True,
                       "format_name": "mp4", "video_codec": "h264", "audio_codec": "aac",
                       "size": 2048}
@@ -65,7 +78,11 @@ class ServerTest(unittest.TestCase):
         FakeEngine.downloaded = 0
 
         self._saved = (engine.probe, engine.download, engine.probe_file,
-                       engine.tools_available, security.resolve)
+                       engine.tools_available, security.resolve,
+                       engine.thumb_data_url)
+        self.thumb_calls = []
+        engine.thumb_data_url = lambda url, **kwargs: (
+            self.thumb_calls.append(url) or "data:image/jpeg;base64,AAAA")
         engine.probe = self.fake.probe
         engine.download = self.fake.download
         engine.probe_file = self.fake.probe_file
@@ -97,7 +114,7 @@ class ServerTest(unittest.TestCase):
         self.server.server_close()
         self.thread.join(timeout=5)
         (engine.probe, engine.download, engine.probe_file,
-         engine.tools_available, security.resolve) = self._saved
+         engine.tools_available, security.resolve, engine.thumb_data_url) = self._saved
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     # -- helpers -----------------------------------------------------------
@@ -131,6 +148,8 @@ class ServerTest(unittest.TestCase):
         self.assertFalse(data["cobalt"]["apiKeyRequired"])
         self.assertEqual(data["limits"]["maxDuration"], 1800)
         self.assertEqual(data["limits"]["maxHeight"], 4320)
+        self.assertTrue(data["cobalt"]["probe"])
+        self.assertIn("imgur", data["cobalt"]["services"])
         self.assertEqual(headers.get("Content-Type"), "application/json; charset=utf-8")
 
     def test_health(self):
@@ -140,6 +159,52 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(data["status"], "ok")
         self.assertTrue(data["checks"]["downloader"])
         self.assertNotIn("path", json.dumps(data).lower())
+
+    # -- probe: size and picture before any download -----------------------
+    def probe(self, body, headers=None):
+        status, hdrs, raw = self.call("POST", "/probe", body, headers)
+        return status, hdrs, json.loads(raw or b"{}")
+
+    def test_probe_returns_size_and_thumbnail(self):
+        status, headers, data = self.probe({
+            "url": URL, "downloadMode": "auto", "videoQuality": "1080"})
+        self.assertEqual(status, 200)
+        self.assertEqual(data["status"], "ok")
+        self.assertEqual(data["title"], "A Test Clip")
+        self.assertEqual(data["duration"], 60)
+        self.assertEqual(data["estimate"]["height"], 1080)
+        self.assertEqual(data["estimate"]["bytes"], 9000000)
+        self.assertTrue(data["estimate"]["exact"])
+        self.assertTrue(data["thumbnail"].startswith("data:image/jpeg;base64,"))
+        self.assertEqual(self.thumb_calls, ["https://i.example.test/clip.jpg"])
+        self.assertEqual(headers.get("RateLimit-Limit"), "60")
+
+    def test_probe_estimates_audio_from_the_target_bitrate(self):
+        _, _, data = self.probe({
+            "url": URL, "downloadMode": "audio", "audioFormat": "mp3", "audioBitrate": "96"})
+        self.assertEqual(data["estimate"]["bytes"], 96 * 125 * 60)
+        self.assertIsNone(data["estimate"]["height"])
+
+    def test_probe_can_skip_the_picture(self):
+        status, _, data = self.probe({"url": URL, "thumbnail": False})
+        self.assertEqual(status, 200)
+        self.assertEqual(data["thumbnail"], "")
+        self.assertEqual(self.thumb_calls, [])
+
+    def test_probe_flags_a_too_long_video(self):
+        self.fake.info["duration"] = 3600
+        _, _, data = self.probe({"url": URL})
+        self.assertTrue(data["tooLong"])
+
+    def test_probe_refuses_a_private_host(self):
+        status, _, data = self.probe({"url": "http://127.0.0.1/secret"})
+        self.assertIn(status, (400, 422))
+        self.assertIn("error", data)
+
+    def test_probe_needs_a_url(self):
+        status, _, data = self.probe({"downloadMode": "auto"})
+        self.assertEqual(status, 400)
+        self.assertIn("error", data)
 
     def test_unknown_route(self):
         status, _, raw = self.call("GET", "/nope")

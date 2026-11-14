@@ -118,7 +118,12 @@ class Handler(BaseHTTPRequestHandler):
                 "startTime": str(START),
                 "services": ["youtube", "twitter", "instagram", "tiktok", "reddit",
                              "soundcloud", "bilibili", "vimeo", "twitch", "bandcamp"],
+                # opt-in capability: without it the client shows no preview
+                "probe": True,
+                "turnstileSitekey": None,
             },
+            "limits": {"maxHeight": 4320, "maxDuration": 1800,
+                       "modes": ["auto", "audio", "mute"]},
             "git": {"commit": "0123456789abcdef", "branch": "main", "remote": "mock"},
         })
 
@@ -139,6 +144,25 @@ class Handler(BaseHTTPRequestHandler):
         url = body.get("url", "")
         host = "http://127.0.0.1:%d" % PORT
         self._host = host
+
+        if self.path.startswith("/probe"):
+            if "error" in url:
+                self._json({"status": "error",
+                            "error": {"code": "api.content.video.private"}}, 422)
+                return
+            self._json({
+                "status": "ok",
+                "title": "a mock clip",
+                "uploader": "mock",
+                "duration": 125,
+                "thumbnail": host + "/thumb.png",
+                "estimate": {"bytes": 24 * 1024 * 1024, "height": 1080, "exact": False},
+                "isLive": False,
+                "isPlaylist": False,
+                "tooLong": "too-long" in url,
+                "service": "youtube",
+            })
+            return
 
         if "picker" in url:
             # "link" entries are pages the client re-posts; the rest are files

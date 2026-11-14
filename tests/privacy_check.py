@@ -5,8 +5,12 @@ Checks every file the Pages workflow ships, not the repo: README, LICENSE and
 the git history are fine to be public, the *site* is not allowed to carry a
 name, an email, or a third-party request.
 
-    python3 tests/privacy_check.py            # exits 1 on a finding
-    python3 tests/privacy_check.py --verbose  # list every scanned file
+    python3 tests/privacy_check.py                 # exits 1 on a finding
+    python3 tests/privacy_check.py --verbose       # list every scanned file
+    python3 tests/privacy_check.py _site           # check an assembled site
+
+The optional directory is what CI uses, so the deploy gate reads the exact
+folder that is about to be published rather than the source tree.
 """
 
 import os
@@ -14,6 +18,12 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# an explicit directory wins: `_site` in CI, the repo everywhere else
+for argument in sys.argv[1:]:
+    if not argument.startswith("-"):
+        ROOT = os.path.abspath(argument)
+        break
 
 # exactly what .github/workflows/pages.yml copies into _site
 SITE = [

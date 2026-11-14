@@ -310,6 +310,9 @@ class Handler(BaseHTTPRequestHandler):
                                      if self.config.turnstile_secret else None),
                 "apiKeyRequired": bool(self.config.api_key),
                 "services": SERVICES,
+                # a capability, not a promise: the front-end only shows a size
+                # estimate and a thumbnail when the instance can produce them
+                "probe": True,
             },
             "git": {"branch": "", "commit": ""},
             "limits": {
@@ -422,11 +425,15 @@ class Handler(BaseHTTPRequestHandler):
             self._body_consumed = True
 
         path, _ = self._split()
-        if path not in ("/", ""):
+        if path not in ("/", "", "/probe"):
             raise ApiError.not_found()
 
         self._check_auth()
         self._check_origin()
+
+        if path == "/probe":
+            self._probe()
+            return
 
         verdict = self.limiter.check(self._client_ip())
         headers = {
@@ -468,6 +475,7 @@ class Handler(BaseHTTPRequestHandler):
             audio_format = "mp3"
         bitrate = min(_as_int(body.get("audioBitrate"), 128), 128)
 
+        audio_covers = bool(body.get("audioCovers"))
         subtitle_lang = str(body.get("subtitleLang") or "").strip().lower()
         if subtitle_lang and not re.fullmatch(r"[a-z]{2,3}(-[a-z0-9]{2,8})?", subtitle_lang):
             subtitle_lang = ""
@@ -480,6 +488,7 @@ class Handler(BaseHTTPRequestHandler):
                 audio_format=audio_format,
                 audio_bitrate=bitrate,
                 subtitle_lang=subtitle_lang,
+                audio_covers=audio_covers,
             )
         except PickerNeeded as picker:
             self._json(200, {
@@ -512,6 +521,69 @@ class Handler(BaseHTTPRequestHandler):
             "url": tunnel,
             "filename": job.filename,
             "size": job.size,
+        }, headers)
+
+    def _probe(self) -> None:
+        """Metadata only: title, duration, thumbnail, estimated size.
+
+        Deliberately not part of the v11 contract — a client that does not see
+        `probe: true` in the instance info never calls it, so mdown stays a
+        normal cobalt client anywhere else.
+        """
+        verdict = self.probe_limiter.check(self._client_ip())
+        headers = {
+            "RateLimit-Limit": str(self.config.probe_rate_max),
+            "RateLimit-Remaining": str(verdict["remaining"]),
+            "RateLimit-Reset": str(verdict["retry"]),
+        }
+        if not verdict["allowed"]:
+            error = ApiError.rate_limit(0)
+            error.context["retry"] = verdict["retry"]
+            headers["Retry-After"] = str(verdict["retry"])
+            self._json(429, error.payload(), headers)
+            return
+
+        body = self._read_json()
+        self._check_turnstile(str(body.get("turnstileToken") or ""))
+        url = body.get("url")
+        if not isinstance(url, str) or not url.strip():
+            raise ApiError.url_missing()
+        safe_url = validate_url(url)
+
+        mode = str(body.get("downloadMode") or "auto").strip().lower()
+        if mode not in ("auto", "audio", "mute"):
+            mode = "auto"
+        height = _as_int(body.get("videoQuality"), self.config.max_height)
+        audio_format = str(body.get("audioFormat") or "mp3").strip().lower()
+        if audio_format not in ("best", "mp3", "ogg", "opus", "wav"):
+            audio_format = "mp3"
+        bitrate = min(_as_int(body.get("audioBitrate"), 128), 128)
+
+        cache = os.path.join(self.config.work_dir, ".cache")
+        info = engine.probe(safe_url, self.config.probe_timeout, cache)
+        duration = info.get("duration")
+        duration = float(duration) if isinstance(duration, (int, float)) and duration > 0 else 0.0
+
+        thumbnail = ""
+        if body.get("thumbnail", True) is not False:
+            try:
+                thumbnail = engine.thumb_data_url(info.get("thumbnail") or "",
+                                                  cache_dir=cache, timeout=8)
+            except Exception:  # a missing picture is never a failed request
+                log.debug("thumbnail failed", exc_info=True)
+
+        self._json(200, {
+            "status": "ok",
+            "title": info.get("title") or "",
+            "uploader": info.get("uploader") or "",
+            "duration": duration,
+            "thumbnail": thumbnail,
+            "estimate": engine.estimate(info, mode=mode, height=height,
+                                        audio_format=audio_format, audio_bitrate=bitrate),
+            "isLive": bool(info.get("is_live")),
+            "isPlaylist": (info.get("entry_count") or 0) > 1,
+            "tooLong": bool(duration and duration > self.config.max_duration),
+            "service": info.get("extractor") or "",
         }, headers)
 
     def _read_json(self) -> Dict[str, Any]:
@@ -553,6 +625,7 @@ class ApiServer(ThreadingHTTPServer):
             "jobs": JobManager(config),
             "limiter": RateLimiter(config.rate_limit_max, config.rate_limit_window),
             "job_limiter": RateLimiter(config.job_rate_max, config.job_rate_window),
+            "probe_limiter": RateLimiter(config.probe_rate_max, config.probe_rate_window),
             "tools": ToolState(),
             "started_at": time.time(),
         })

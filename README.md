@@ -22,13 +22,11 @@ framework, and no telemetry.
 
 Plain HTML + CSS + JavaScript. No Node, no bundler, no dependencies.
 
-![home](.shots/home.png)
-
 ## Why a separate front-end
 
 `cobalt.tools` is only the UI; downloads are done by a cobalt **API instance**. The hosted
-the hosted API uses bot protection and is not meant for third-party clients, so this page
-talks to **an instance you point it at**.
+API applies per-IP limits and is not meant for third-party clients, so this page talks to
+**an instance you point it at**.
 
 - Run your own: [self-hosting guide](https://github.com/imputnet/cobalt/blob/main/docs/run-an-instance.md)
 - Or use an instance whose owner gave you access (and an API key if it requires one).
@@ -113,17 +111,20 @@ code is already there.
   dark), with a pre-paint script so there is no flash. Focus trap in the settings sheet,
   reduced-motion support, `⌘K` for settings and `Esc` to close.
 - **Local-only state.** Settings and recent links live in `localStorage`. No accounts, no
-  cookies, no analytics, no third-party requests.
+  cookies, no analytics, no advertising, and no third-party requests — the optional bot
+  check some instances enable is the only thing that can load an external script, and the
+  hosted instance leaves it off.
 
 ## Settings → API mapping
 
 | UI | API key | Values |
 | --- | --- | --- |
 | download mode | `downloadMode` | `auto` `audio` `mute` |
-| video quality | `videoQuality` | `1080` `720` `480` `360` `240` `144` — clamped on load and again in the request body |
+| video quality | `videoQuality` | `4320` `2160` `1440` `1080` `720` `480` `360` `240` `144` — clamped on load and again in the request body |
 | YouTube codec | `youtubeVideoCodec` | `h264` `av1` `vp9` |
 | YouTube container | `youtubeVideoContainer` | `auto` `mp4` `webm` `mkv` |
-| audio format | `audioFormat` | `mp3` `ogg` `wav` `opus` — no source/`best` passthrough |
+| audio format | `audioFormat` | `best` (untouched source) `mp3` `ogg` `opus` `wav` |
+| cover art | `audioCovers` | boolean — embed the thumbnail in mp3, ogg and opus |
 | bitrate | `audioBitrate` | `128` `96` `64` `8` — clamped to 128, ignored for `wav` |
 | filename style | `filenameStyle` | `classic` `basic` `pretty` `nerdy` |
 | strip metadata | `disableMetadata` | boolean |
@@ -173,12 +174,14 @@ no server executes anything for a visitor.
 
 Pick the host accordingly:
 
-- **Cloudflare Pages — free, unlimited bandwidth, honours `_headers`.** Best fit.
-- **GitHub Pages — free, 100 GB/month soft limit.** Fine for ~3,000 first-time remux uses.
-- **Netlify — free, 100 GB/month.**
+- **GitHub Pages — what mdown.cc uses.** Free, 100 GB/month soft limit, and it ignores
+  `_headers`, so cache policy comes from the query-versioned asset URLs.
+- **Cloudflare Pages — free, unlimited bandwidth, honours `_headers`.** The better host if you
+  expect the engine to be fetched a lot; `_headers` is already written for it.
+- **Netlify — free, 100 GB/month, also honours `_headers`.**
 
-`_headers` in the repo sets a one-year immutable cache on the engine, so repeat visits cost
-nothing. The `.wasm` is ~31 MB, compressed automatically by Cloudflare/Netlify to roughly 10 MB.
+`_headers` sets a one-year immutable cache on the engine there, so repeat visits cost nothing.
+The `.wasm` is ~31 MB, compressed automatically to roughly 10 MB.
 
 The real ceiling is the **API instance**, not this site. Every download is a stream through it.
 400 people doing one download each is fine for a well-provisioned instance; 400 people pulling
@@ -219,13 +222,13 @@ during extraction and cleaning recorded **zero** fetch/XHR calls.
 python3 -m http.server 4331          # from the repo folder
 open http://127.0.0.1:4331/tests/remux.test.html   # 90 assertions
 open http://127.0.0.1:4331/tests/tools.test.html   # 38 assertions
-open http://127.0.0.1:4331/tests/picker.test.html  # 15 assertions (needs mock-api.py 4320)
+open http://127.0.0.1:4331/tests/picker.test.html  # 13 assertions (needs mock-api.py 4320)
 open http://127.0.0.1:4331/tests/picker.test.html?w=390  # same, at phone width
-open http://127.0.0.1:4331/tests/status.test.html  # 10 assertions (needs mock-api.py 4320)
+open http://127.0.0.1:4331/tests/status.test.html  # 11 assertions (needs mock-api.py 4320)
 ```
 
 **Everything at once:** `./tests/run-all.sh` — backend plus every browser suite
-(91 · 38 · 90 · 13 · 15 · 10 · 8 · 8 · 8 · 8 · 11 · 32). It starts the mock and a static server itself.
+(97 backend + 333 browser). It starts the mock and a static server itself.
 
 Backend alone: `cd server && python3 -m unittest discover -s tests`.
 
@@ -294,19 +297,21 @@ headless browser can capture it:
 
 ## Known limits
 
-- **Turnstile instances** (like the hosted API) need a `POST /session` token flow with a
-  Cloudflare widget; this build does not ship a widget, so it expects a keyed or open instance.
+- **Turnstile is supported and off by default.** If an instance advertises `turnstileSitekey`
+  the page renders the widget and sends `turnstileToken` with each request; the API checks it
+  with `MDOWN_TURNSTILE_SECRET`. The hosted instance advertises the key only when the secret is
+  set, because a widget nobody verifies is a ten-second wait for nothing.
 - **Local processing** hands you the streams and the command. Bundling ffmpeg.wasm would add a
   ~30 MB third-party download, which this project deliberately avoids.
 - Redirect-style responses are opened directly, so no byte-level progress is available for
   those (the API serves a direct link instead of a tunnel).
 - **Audio output is limited by the API**: `mp3`, `ogg`, `wav`, or `opus`. The API cannot encode
-  m4a, AAC or FLAC, so there is no such option in the UI. The untouched source stream is
-  deliberately not offered — it's the tier most likely to move behind a paywall — and the
-  bitrate ceiling is 128 kb/s for lossy formats. wav ignores the bitrate setting: it is
+  m4a, AAC or FLAC, so there is no such option in the UI. `source` (`best`) keeps the
+  untouched stream and skips ffmpeg entirely; the bitrate ceiling is 128 kb/s for lossy
+  re-encodes. wav ignores the bitrate setting: it is
   uncompressed PCM (≈42 MB for a 4-minute track), so it avoids a second lossy encode but is
   ~11× the size of mp3 and no better than whatever the source stream was.
-- **Duration is capped by the instance, not the page** — `DURATION_LIMIT=1800` means 30 minutes
+- **Duration is capped by the instance, not the page** — `MDOWN_MAX_DURATION=1800` means 30 minutes
   for youtube, soundcloud and vimeo. The front-end can't know a length before the API fetches
   it, so it translates the API's `content.too_long` error instead of pretending to check.
 - **Service recognition is wider than any instance.** The hostname map covers more sites than
@@ -325,7 +330,7 @@ assets/app.js       API client, queue, settings, UI wiring
 DEPLOY.md           how to stand up the backend and publish the site
 server/             the download API (stdlib HTTP + yt-dlp + ffmpeg)
 server/deploy/      systemd unit, Caddyfile, install script
-server/tests/       71 unit + contract tests, no network needed
+server/tests/       97 unit + contract tests, no network needed
 tests/mock-api.py   mock cobalt API (stdlib only)
 tests/visual.html   screenshot harness
 tests/remux.test.html  90 assertions for the remux tool

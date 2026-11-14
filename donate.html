@@ -6,14 +6,14 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Donate — mdown</title>
-<meta name="description" content="mdown is free, has no ads and no tracking. What it costs to run, what a donation does and does not buy.">
+<meta name="description" content="mdown is free, has no ads and no tracking. If it saved you an evening, you can leave a tip — nothing changes if you do not.">
 <link rel="canonical" href="https://mdown.cc/donate.html">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="mdown">
 <meta property="og:url" content="https://mdown.cc/donate.html">
 <meta property="og:title" content="Donate — mdown">
-<meta property="og:description" content="What mdown costs to run, and what a donation does and does not buy.">
+<meta property="og:description" content="No ads, no accounts, no tracking. A tip is a thank you, not a transaction.">
 <meta name="twitter:card" content="summary">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
@@ -28,7 +28,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=74">
+<link rel="stylesheet" href="assets/app.css?v=76">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -64,95 +64,118 @@
 
 <main class="wrap donate-page">
 
-  <!-- hero -->
+  <!-- hero: the only loud thing on the page -->
   <section class="donate-hero">
     <div class="donate-hero-copy">
-      <span class="donate-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
-        </svg>
-      </span>
-      <h1 class="donate-headline">No ads. No accounts.<br>No plan to add either.</h1>
-      <p class="donate-sub">mdown is one page and one small server. If it saved you an evening, the tip jar is below — and nothing changes whether you use it or not.</p>
+      <p class="donate-kicker">support</p>
+      <h1 class="donate-headline">free is the<br>whole idea.</h1>
+      <p class="donate-sub">mdown has no ads, no accounts and no tracking, and it is not going to grow any. if it saved you an evening, you can leave a tip. if it did not, it keeps working — that is the deal.</p>
     </div>
     <div class="donate-hero-art" aria-hidden="true">
       <svg viewBox="0 0 300 300" role="presentation">
         <defs>
           <pattern id="dots" width="9" height="9" patternUnits="userSpaceOnUse">
-            <circle cx="1.4" cy="1.4" r="1.4" fill="currentColor" opacity="0.28"/>
+            <circle cx="1.4" cy="1.4" r="1.4" fill="currentColor" opacity="0.24"/>
           </pattern>
           <clipPath id="disc"><circle cx="150" cy="150" r="132"/></clipPath>
         </defs>
         <g clip-path="url(#disc)">
           <rect width="300" height="300" fill="url(#dots)"/>
-          <circle cx="150" cy="150" r="132" fill="#0b0c0f" opacity="0.62"/>
+          <circle cx="150" cy="150" r="132" style="fill: var(--bg)" opacity="0.72"/>
         </g>
-        <circle cx="150" cy="150" r="132" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
-        <circle cx="150" cy="150" r="108" fill="none" stroke="currentColor" stroke-width="1" opacity="0.28" stroke-dasharray="2 7"/>
+        <circle cx="150" cy="150" r="132" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.45"/>
+        <g class="donate-orbit">
+          <circle cx="150" cy="150" r="108" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3" stroke-dasharray="2 9"/>
+        </g>
         <g stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M150 78v74" stroke-width="11"/>
-          <path d="m124 132 26 26 26-26" stroke-width="11"/>
-          <path d="M108 196h84" stroke-width="11"/>
-          <path d="M108 196v14a10 10 0 0 0 10 10h64a10 10 0 0 0 10-10v-14" stroke-width="11"/>
-          <path d="M62 150h-18M256 150h-18" stroke-width="6" opacity="0.55"/>
-          <path d="M86 96 74 84M214 96l12-12" stroke-width="6" opacity="0.55"/>
+          <path d="M150 78v74" stroke-width="10"/>
+          <path d="m124 132 26 26 26-26" stroke-width="10"/>
+          <path d="M108 196h84" stroke-width="10"/>
+          <path d="M108 196v14a10 10 0 0 0 10 10h64a10 10 0 0 0 10-10v-14" stroke-width="10"/>
         </g>
       </svg>
     </div>
   </section>
 
-  <!-- funding -->
-  <section class="funding" id="funding" hidden>
-    <div class="funding-grid">
-      <a class="funding-card" id="stripe-card" href="#" hidden>
-        <span class="funding-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.6v8.8M14.4 9.8c-.6-.7-1.5-1.1-2.4-1.1-1.4 0-2.4.7-2.4 1.8 0 1.2 1.1 1.6 2.6 1.9 1.6.3 2.6.8 2.6 2 0 1.1-1 1.9-2.6 1.9-1 0-2-.4-2.6-1.2"/></svg>
+  <!-- the jar -->
+  <section class="support" id="support" aria-labelledby="support-title">
+    <div class="support-head">
+      <h2 id="support-title">the tip jar</h2>
+      <span class="support-state" id="support-state">closed for now</span>
+    </div>
+
+    <div class="support-ways" id="funding" hidden>
+      <a class="support-row" id="stripe-card" href="#" hidden>
+        <span class="support-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="2.6" y="5.4" width="18.8" height="13.2" rx="2.6"/><path d="M2.6 10h18.8"/><path d="M6.4 15h3.2"/></svg>
         </span>
-        <b>one-time donation</b>
-        <span>via stripe · card, apple pay, google pay</span>
+        <span class="support-copy">
+          <b>card</b>
+          <span>apple pay · google pay · one-time</span>
+        </span>
+        <span class="support-go" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>
+        </span>
       </a>
 
-      <a class="funding-card" id="liberapay-card" href="#" hidden>
-        <span class="funding-icon" aria-hidden="true">
+      <a class="support-row" id="liberapay-card" href="#" hidden>
+        <span class="support-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8.5a7.5 7.5 0 0 0-13-4.4"/><path d="M4 15.5a7.5 7.5 0 0 0 13 4.4"/><path d="M7 4v3.5H3.5M17 20v-3.5h3.5"/></svg>
         </span>
-        <b>recurring donation</b>
-        <span>via liberapay · monthly, cancel anytime</span>
+        <span class="support-copy">
+          <b>monthly</b>
+          <span>recurring · cancel whenever</span>
+        </span>
+        <span class="support-go" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>
+        </span>
       </a>
     </div>
 
-    <div class="tier-row" id="tier-row" hidden></div>
+    <div class="support-empty" id="dormant" hidden>
+      <p><b>the jar is closed for now.</b></p>
+      <p>no dead buttons, no placeholder links — when there is somewhere to send a tip, it appears here. until then, the site is the same either way.</p>
+      <p class="support-empty-link"><a href="./">go download something →</a></p>
+    </div>
+
+    <div class="support-alt" id="alt" hidden>
+      <p class="support-alt-lede">or send it straight to an address</p>
+      <div class="addr-grid" id="addr-grid"></div>
+      <p class="support-fine">monero hides the amount and both sides. the rest are public ledgers, so treat a tip there as public.</p>
+    </div>
+
+    <div class="support-foot" id="support-foot" hidden>
+      <span>no account, no receipt, nothing to unlock. a tip is a thank you and nothing else.</span>
+    </div>
   </section>
 
-  <!-- mission -->
-  <section class="donate-mission">
-    <h2>What your money keeps alive</h2>
-    <p>mdown does one thing: it saves a file from a link you already have access to. There is no account, no library, no ads, and no analytics. Files you open in the local tools — remux, subtitles, metadata — never touch the server at all.</p>
-    <p>Running it costs <b>about $22 a year</b>: a $12.99 VPS and an $8.55 domain, plus nothing. That number is the whole business model. There is no investor, no growth plan, and no feature held back for a paid tier, because there is no paid tier.</p>
-    <p>So a donation is exactly what it sounds like — a thank you, not a transaction. Nothing unlocks, nothing gets faster, and nobody gets your email. If you don't donate, the site keeps working and you owe me nothing.</p>
-  </section>
-
-  <!-- crypto -->
-  <section class="donate-alt" id="alt" hidden>
-    <h2>Other ways to send money</h2>
-    <p class="donate-alt-note">Plain addresses, no processor in the middle. Monero hides the amount and both sides; the rest are public ledgers, so treat them as public.</p>
-    <div class="addr-grid" id="addr-grid"></div>
-  </section>
-
-  <!-- dormant -->
-  <section class="donate-dormant" id="dormant" hidden>
-    <h2>Nothing to donate to right now</h2>
-    <p>Donations aren't open at the moment. The site works the same either way — <a href="./">go download something</a>.</p>
+  <!-- what it is and isn't -->
+  <section class="donate-facts" aria-label="What a tip does">
+    <div class="fact">
+      <span class="fact-k">buys nothing</span>
+      <p>no tier, no badge, no faster queue. every download is the same download.</p>
+    </div>
+    <div class="fact">
+      <span class="fact-k">no name attached</span>
+      <p>no account, no email, no mailing list. the page cannot tell who you are.</p>
+    </div>
+    <div class="fact">
+      <span class="fact-k">stays free</span>
+      <p>no ads and no tracking whether the jar is full, empty or closed.</p>
+    </div>
   </section>
 
   <!-- share -->
-  <section class="share-row">
-    <div class="share-copy">
-      <b>No money to spare? Share it instead.</b>
-      <span>That's honestly worth more than $5.</span>
+  <section class="share-card" aria-labelledby="share-title">
+    <div class="share-head">
+      <h2 id="share-title">or just pass it on</h2>
+      <p>one person finding mdown is worth more than a tip. no tracking links, no referral tags — the link is the link.</p>
     </div>
     <div class="share-actions">
-      <button type="button" class="ghost-btn" id="copy-link">copy link</button>
+      <button type="button" class="share-copy-btn" id="copy-link">
+        <span>copy link</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="4" width="12" height="16" rx="2.5"/><path d="M16 4V3.2A1.2 1.2 0 0 0 14.8 2H9.2A1.2 1.2 0 0 0 8 3.2V4"/><path d="M4 8v11.5A1.5 1.5 0 0 0 5.5 21H13"/></svg>
+      </button>
       <div class="share-chips">
         <a class="share-chip" data-share="x" target="_blank" rel="noopener noreferrer">x</a>
         <a class="share-chip" data-share="threads" target="_blank" rel="noopener noreferrer">threads</a>
@@ -160,12 +183,13 @@
         <a class="share-chip" data-share="bsky" target="_blank" rel="noopener noreferrer">bluesky</a>
       </div>
     </div>
+    <p class="share-toast" id="share-toast" role="status" aria-live="polite"></p>
   </section>
 
 </main>
 
 <footer class="footer">
-  <p class="footer-meta"><a href="./">mdown.cc</a> · <a href="updates.html">updates</a> · <a href="status.html">status</a> · <a href="terms.html">TOS</a> · <span id="footer-version">local-first</span></p>
+  <p class="footer-meta"><a href="./">mdown.cc</a> · <a href="terms.html">terms</a> · <a href="./#help">how it works</a> · <a href="updates.html">updates</a></p>
 </footer>
 
 <script src="assets/donate.js?v=3"></script>
@@ -181,25 +205,36 @@
     return n;
   }
 
+  /* every copy button answers in the same way: the word changes, the control
+     keeps its size, and the state resets without a layout shift */
+  function flash(button, text) {
+    var label = button.querySelector("span") || button;
+    var was = label.textContent;
+    label.textContent = text;
+    button.classList.add("is-copied");
+    clearTimeout(button._reset);
+    button._reset = setTimeout(function () {
+      label.textContent = was;
+      button.classList.remove("is-copied");
+    }, 1600);
+  }
+
   function copy(text, button) {
-    var done = function () {
-      var was = button.textContent;
-      button.textContent = "copied";
-      setTimeout(function () { button.textContent = was; }, 1400);
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () { fallback(); });
-    } else { fallback(); }
-    function fallback() {
+    var done = function () { flash(button, "copied"); };
+    var fallback = function () {
       var ta = document.createElement("textarea");
       ta.value = text;
+      ta.setAttribute("readonly", "");
       ta.style.position = "fixed";
       ta.style.opacity = "0";
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand("copy"); done(); } catch (e) { button.textContent = "copy failed"; }
+      try { document.execCommand("copy"); done(); } catch (e) { flash(button, "copy failed"); }
       ta.remove();
-    }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
   }
 
   var stripe = typeof cfg.stripe === "string" ? cfg.stripe.trim() : "";
@@ -209,8 +244,14 @@
   }) : [];
 
   var funding = document.getElementById("funding");
+  var state = document.getElementById("support-state");
+  var foot = document.getElementById("support-foot");
+
   if (on && (stripe || liberapay)) {
     funding.hidden = false;
+    foot.hidden = false;
+    state.textContent = "open";
+    state.classList.add("is-open");
     if (stripe) {
       var s = document.getElementById("stripe-card");
       s.href = stripe;
@@ -224,20 +265,6 @@
       l.target = "_blank";
       l.rel = "noopener noreferrer";
       l.hidden = false;
-    }
-    var tiers = Array.isArray(cfg.tiers) ? cfg.tiers.filter(function (t) { return t && t.amount; }) : [];
-    if (stripe && tiers.length) {
-      var row = document.getElementById("tier-row");
-      row.hidden = false;
-      tiers.forEach(function (t) {
-        var a = el("a", "tier");
-        a.href = stripe;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.appendChild(el("b", null, "$" + t.amount));
-        a.appendChild(el("span", null, String(t.label || "")));
-        row.appendChild(a);
-      });
     }
   }
 
@@ -262,6 +289,7 @@
       if (m.value) {
         var b = el("button", "addr-copy", "copy");
         b.type = "button";
+        b.setAttribute("aria-label", "copy " + String(m.label || "address"));
         b.addEventListener("click", function () { copy(String(m.value), b); });
         row.appendChild(b);
       }
@@ -285,9 +313,16 @@
     else chip.hidden = true;
   });
 
-  var share = document.getElementById("copy-link");
-  share.addEventListener("click", function () {
-    copy(pageURL, share);
+  var toast = document.getElementById("share-toast");
+  var shareButton = document.getElementById("copy-link");
+  shareButton.addEventListener("click", function () {
+    copy(pageURL, shareButton);
+    if (toast) {
+      toast.textContent = "link copied — thanks for passing it on";
+      toast.classList.add("is-on");
+      clearTimeout(toast._hide);
+      toast._hide = setTimeout(function () { toast.classList.remove("is-on"); }, 2600);
+    }
   });
 })();
 </script>

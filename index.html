@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=74">
+<link rel="stylesheet" href="assets/app.css?v=76">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -289,6 +289,16 @@
       <p><span id="setup-lead">Not connected — </span><button type="button" class="link-btn" id="setup-open-settings">connect an API</button><span id="setup-tail"> to download.</span></p>
     </div>
   </section>
+
+  <!-- what the file will be, before anything is fetched. Collapses to zero
+       height rather than appearing, so the composer never jumps. -->
+  <div class="probe-preview" id="probe-preview" aria-hidden="true">
+    <div class="probe-inner">
+      <span class="probe-thumb" id="probe-thumb" data-empty="true" aria-hidden="true"></span>
+      <span class="probe-title" id="probe-title"></span>
+      <span class="probe-meta" id="probe-meta"></span>
+    </div>
+  </div>
 
 
   <div class="quickpick" id="quickpick" hidden>
@@ -609,6 +619,14 @@
           </div>
         </div>
 
+        <label class="switch-row" for="audio-covers">
+          <span>
+            <span class="field-label">Cover art</span>
+            <span class="field-help">Embed the thumbnail into mp3, ogg and opus files. <code>source</code> and wav are left untouched.</span>
+          </span>
+          <input type="checkbox" id="audio-covers" class="switch" data-setting="audioCovers">
+        </label>
+
         <div class="field">
           <label class="field-label" for="dub-lang">Preferred audio track</label>
           <div class="field-row">
@@ -897,7 +915,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=42" defer></script>
+<script src="assets/app.js?v=43" defer></script>
 <script type="module" src="assets/nav.js?v=8"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

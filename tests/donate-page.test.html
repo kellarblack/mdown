@@ -45,8 +45,13 @@ async function main() {
   if (!ready) { window.__results = { total: results.length, failures, results }; return; }
   const doc = frame.contentDocument;
 
-  record("it explains what the money is for",
-    /22 a year|about \$22/i.test(doc.body.textContent), (doc.body.textContent.match(/about \$22[^.]*/) || [""])[0]);
+  record("it explains what a tip is for",
+    /no ads, no accounts/i.test(doc.body.textContent), "no ads, no accounts");
+  record("it does not quote what the site costs to run",
+    !/\$\s?\d|a year|VPS|per month/i.test(doc.body.textContent),
+    (doc.body.textContent.match(/\$\s?\d+|a year|VPS/i) || [""])[0] || "no figures");
+  record("the jar says it is closed", /closed/i.test(doc.querySelector("#support-state").textContent),
+    doc.querySelector("#support-state").textContent);
 
   record("closed donations say so", !doc.querySelector("#dormant").hidden, "dormant visible");
   record("no payment cards while closed", doc.querySelector("#funding").hidden, "funding hidden");
@@ -76,6 +81,14 @@ async function main() {
   const appDoc = appFrame.contentDocument;
   const navDonate = appDoc.querySelector(".nav-donate");
   record("the nav hides donate while it is closed", !navDonate || navDonate.hidden, navDonate ? "hidden=" + navDonate.hidden : "no link");
+
+  // the same page at phone width must not scroll sideways
+  frame.style.width = "390px";
+  await sleep(300);
+  const ddoc = frame.contentDocument;
+  record("no sideways scroll at 390px",
+    ddoc.documentElement.scrollWidth <= 391,
+    ddoc.documentElement.scrollWidth + "px wide");
 
   window.__results = { total: results.length, failures, results };
 }

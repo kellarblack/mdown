@@ -42,6 +42,11 @@ jobs:
           # the API, tests and dev shots are not part of the published site
           rm -rf _site/assets/vendor/ffmpeg/.DS_Store
 
+      # the published set must never carry a name, an email or a tracker;
+      # the same script the local suite runs, so red here means red locally
+      - name: Privacy check
+        run: python3 tests/privacy_check.py _site
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -86,6 +86,11 @@ class Config:
     # batching a few links, tight enough to stop a scraper.
     job_rate_max: int = 60
     job_rate_window: int = 300
+    # metadata lookups run yt-dlp without downloading, so they are cheaper than
+    # a job but still touch the source: their own window keeps a typing user
+    # from spending the download budget by accident
+    probe_rate_max: int = 60
+    probe_rate_window: int = 300
 
     # ---- source-side workarounds ----------------------------------------
     # a Netscape cookies.txt for age-gated / login-walled sources; empty = none
@@ -132,6 +137,8 @@ class Config:
             rate_limit_tunnel_max=_int("MDOWN_TUNNEL_RATE_MAX", 120, 1, 100000),
             job_rate_max=_int("MDOWN_JOB_RATE_MAX", 60, 1, 10000),
             job_rate_window=_int("MDOWN_JOB_RATE_WINDOW", 300, 10, 86400),
+            probe_rate_max=_int("MDOWN_PROBE_RATE_MAX", 60, 1, 10000),
+            probe_rate_window=_int("MDOWN_PROBE_RATE_WINDOW", 300, 10, 86400),
             ytdlp_cookies=os.environ.get("MDOWN_YTDLP_COOKIES", "").strip(),
             ytdlp_extra_args=os.environ.get("MDOWN_YTDLP_EXTRA_ARGS", "").strip(),
         )

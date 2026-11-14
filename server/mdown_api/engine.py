@@ -13,12 +13,15 @@ timeout kills yt-dlp *and* the ffmpeg it spawned, not just the parent.
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import os
 import shlex
 import re
 import signal
 import subprocess
+import tempfile
 import threading
 import time
 from typing import Any, Dict, Optional, Tuple
@@ -86,6 +89,31 @@ def run(cmd: list, timeout: int, cache_dir: Optional[str] = None) -> Tuple[int, 
             pass
         raise EngineError("timed out after %ds" % timeout)
     return proc.returncode, out.decode("utf-8", "replace"), err.decode("utf-8", "replace")
+
+
+def run_bytes(cmd: list, timeout: int, limit: int = 2 * 1024 * 1024) -> Tuple[int, bytes, str]:
+    """Like run(), but for output that is an image rather than text."""
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        stdin=subprocess.DEVNULL,
+        env=_base_env(),
+        start_new_session=True,
+    )
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            proc.kill()
+        try:
+            proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+        return 1, b"", "timed out"
+    return proc.returncode, out[:limit], err.decode("utf-8", "replace")
 
 
 def classify(stderr: str) -> Optional[ApiError]:
@@ -197,9 +225,30 @@ def probe(url: str, timeout: int, cache_dir: Optional[str] = None) -> Dict[str, 
             "thumb": thumb or "",
         })
 
+    formats = []
+    for fmt in (info.get("formats") or []):
+        if not isinstance(fmt, dict):
+            continue
+        if not fmt.get("height") and not fmt.get("acodec"):
+            continue
+        formats.append({
+            key: fmt.get(key)
+            for key in ("format_id", "ext", "height", "width", "vcodec", "acodec",
+                        "filesize", "filesize_approx", "tbr", "abr", "vbr", "fps")
+        })
+        if len(formats) >= 80:
+            break
+
+    thumb = info.get("thumbnail")
+    if not thumb and isinstance(info.get("thumbnails"), list) and info["thumbnails"]:
+        thumb = info["thumbnails"][-1].get("url")
+
     slim = {
         "id": info.get("id"),
         "title": info.get("title"),
+        "uploader": info.get("uploader") or info.get("channel") or "",
+        "thumbnail": thumb or "",
+        "formats": formats,
         "entries": entries,
         "entry_count": len(entries),
         "duration": info.get("duration"),
@@ -212,6 +261,135 @@ def probe(url: str, timeout: int, cache_dir: Optional[str] = None) -> Dict[str, 
     }
     INFO_CACHE.put(url, slim)
     return slim
+
+
+def _number(value: Any) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return 0.0
+    return number if number > 0 else 0.0
+
+
+def _has(value: Any) -> bool:
+    return bool(value) and str(value) != "none"
+
+
+def _size_of(fmt: Dict[str, Any], duration: float) -> float:
+    """Bytes for one format: exact, approximate, then bitrate × time."""
+    size = _number(fmt.get("filesize")) or _number(fmt.get("filesize_approx"))
+    if size:
+        return size
+    rate = _number(fmt.get("tbr")) or (_number(fmt.get("vbr")) + _number(fmt.get("abr")))
+    if rate and duration:
+        return rate * 1000 / 8 * duration
+    return 0.0
+
+
+def _sharper(fmt: Dict[str, Any]) -> tuple:
+    return (_number(fmt.get("height")), _number(fmt.get("tbr")), _number(fmt.get("filesize")))
+
+
+def estimate(info: Dict[str, Any], *, mode: str, height: int,
+             audio_format: str, audio_bitrate: int) -> Dict[str, Any]:
+    """Roughly how big the result will be, before a single byte is fetched.
+
+    This is an estimate, and it is labelled as one in the UI: exact sizes only
+    exist on formats the source publishes a filesize for. Bitrate × duration
+    is used when it does not, and a re-encode is computed from the target
+    bitrate instead — which is the one case where the guess is very good.
+    """
+    duration = _number(info.get("duration"))
+    formats = [f for f in (info.get("formats") or []) if isinstance(f, dict)]
+    if not duration or not formats:
+        return {"bytes": 0, "height": None, "exact": False}
+
+    if mode == "audio":
+        if audio_format == "wav":
+            return {"bytes": int(176400 * duration), "height": None, "exact": True}
+        if audio_format in ("mp3", "ogg", "opus"):
+            return {"bytes": int(audio_bitrate * 125 * duration), "height": None, "exact": True}
+        audios = [f for f in formats if _has(f.get("acodec")) and not _has(f.get("vcodec"))]
+        if not audios:
+            audios = [f for f in formats if _has(f.get("acodec"))]
+        if not audios:
+            return {"bytes": 0, "height": None, "exact": False}
+        pick = max(audios, key=_sharper)
+        return {"bytes": int(_size_of(pick, duration)), "height": None,
+                "exact": bool(_number(pick.get("filesize")))}
+
+    videos = [f for f in formats if _has(f.get("vcodec"))]
+    capped = [f for f in videos if 0 < _number(f.get("height")) <= height]
+    pool = capped or videos
+    if not pool:
+        return {"bytes": 0, "height": None, "exact": False}
+
+    top = max(_number(f.get("height")) for f in pool)
+    same = [f for f in pool if _number(f.get("height")) == top]
+
+    if mode == "mute":
+        pick = max(same, key=lambda f: _size_of(f, duration))
+        return {"bytes": int(_size_of(pick, duration)),
+                "height": int(top) if top else None,
+                "exact": bool(_number(pick.get("filesize")))}
+
+    progressive = [f for f in same if _has(f.get("acodec"))]
+    if progressive:
+        pick = max(progressive, key=lambda f: _size_of(f, duration))
+        return {"bytes": int(_size_of(pick, duration)),
+                "height": int(top) if top else None,
+                "exact": bool(_number(pick.get("filesize")))}
+
+    video_size = max(_size_of(f, duration) for f in same)
+    audios = [f for f in formats if _has(f.get("acodec")) and not _has(f.get("vcodec"))]
+    audio_size = max((_size_of(f, duration) for f in audios), default=0.0)
+    return {
+        "bytes": int(video_size + audio_size),
+        "height": int(top) if top else None,
+        "exact": bool(video_size and audio_size),
+    }
+
+
+def thumb_data_url(url: str, *, cache_dir: Optional[str] = None,
+                   timeout: int = 10, width: int = 160) -> str:
+    """Fetch a thumbnail and return it inline, so the page never talks to the
+    source's CDN. A failure is not an error: the preview just has no picture."""
+    if not isinstance(url, str) or not url.lower().startswith(("http://", "https://")):
+        return ""
+
+    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:32]
+    folder = os.path.join(cache_dir or tempfile.gettempdir(), "thumbs")
+    try:
+        os.makedirs(folder, mode=0o700, exist_ok=True)
+    except OSError:
+        folder = tempfile.gettempdir()
+    path = os.path.join(folder, digest + ".jpg")
+
+    try:
+        with open(path, "rb") as handle:
+            cached = handle.read()
+        if cached[:2] == b"\xff\xd8":
+            return "data:image/jpeg;base64," + base64.b64encode(cached).decode("ascii")
+    except OSError:
+        pass
+
+    cmd = [
+        FFMPEG, "-nostdin", "-loglevel", "error", "-y",
+        "-rw_timeout", "8000000",
+        "-i", url,
+        "-frames:v", "1",
+        "-vf", "scale=%d:-2:flags=lanczos" % width,
+        "-f", "mjpeg", "-q:v", "6", "pipe:1",
+    ]
+    code, data, _ = run_bytes(cmd, timeout)
+    if code != 0 or len(data) < 400 or len(data) > 400000 or data[:2] != b"\xff\xd8":
+        return ""
+    try:
+        with open(path, "wb") as handle:
+            handle.write(data)
+    except OSError:
+        pass
+    return "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
 
 
 # --------------------------------------------------------------------------
@@ -257,6 +435,7 @@ def download(
     height: int,
     audio_format: str,
     audio_bitrate: int,
+    audio_covers: bool = False,
     dest_dir: str,
     timeout: int,
     max_bytes: int,
@@ -293,6 +472,10 @@ def download(
         ]
         if fmt != "wav":
             cmd += ["--audio-quality", "%dK" % audio_bitrate]
+        # cover art needs a container that can carry it; the untouched source
+        # stream is deliberately left alone
+        if audio_covers and fmt in ("mp3", "ogg", "opus"):
+            cmd += ["--embed-thumbnail", "--convert-thumbnails", "jpg"]
         cmd.append(url)
         code, out, err = run(cmd, timeout, cache_dir)
         if code != 0:

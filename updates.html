@@ -28,7 +28,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=74">
+<link rel="stylesheet" href="assets/app.css?v=76">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -81,6 +81,9 @@
       <div class="cl-body">
         <h2>Phones, properly</h2>
         <ul>
+          <li>Paste a link and the field now tells you what you are about to get: a size estimate, the running time, the resolution and a thumbnail, before anything is fetched. It folds away when the field is empty, so the composer never moves.</li>
+          <li>The queue uses that picture too — the row shows the thumbnail and the estimated size while the download is still running, instead of a generic glyph and the word "requesting".</li>
+          <li>Cover art is a setting: embed the thumbnail in mp3, ogg and opus files, or leave the file clean. <code>source</code> and wav are never touched.</li>
           <li>A download now shows itself: the queue opens on any screen, the bar fills with real percentages, speed and time left, and the badge pulses while work is running. It used to open only above 720px, so phones saw nothing until the file arrived.</li>
           <li>Paste tells you what to do when the clipboard is blocked on iOS or Android, instead of naming a Mac shortcut.</li>
           <li>iOS hands downloads to Safari's downloader — a blob opens in a viewer there and never reaches Files.</li>
@@ -88,24 +91,22 @@
           <li>Fields are 16px on phones so iOS stops zooming the page when you tap them.</li>
           <li>No accidental pull-to-refresh mid-download. No sideways scroll at 320px.</li>
           <li>The status pill says <b>online</b> instead of a hostname, with the address in its tooltip.</li>
-          <li>The hero no longer labels the page — it says what to do: <i>paste a link, get a file.</i></li>
+          <li>The hero is a mark and a wordmark, <b>mdown.cc</b>, with the <b>cc</b> the same size as the name and a shade quieter so the wordmark still reads as a name.</li>
           <li>A test taps every visible button on a 390px screen and fails if any of them throws.</li>
           <li>The top bar is brand + tools on the left, the connection dot and the queue on the right, and nothing else. The connection pill means connection again — it opens the pane with the address, the health link and the status page — and the queue has its own small button.</li>
           <li>The footer is <i>terms · how it works</i>; the help moved down there so the top bar has three things at most, and <i>status</i> lives inside the connection pill.</li>
           <li>Inside a tool, the way back is <b>← download</b>, and on a phone it collapses to just <b>←</b> because the word cost 47px of top bar.</li>
           <li>A single light travels the perimeter of the field when the page opens, finishes the rectangle and fades. One pass, 1.5 seconds, no loop — the kind of detail you notice once.</li>
-          <li>Arriving on the page puts the caret in the link field, with whatever is there selected, so typing replaces it. Coming back to the tab does the same. (iOS still won't raise the keyboard without a tap — Safari's rule, not ours.)</li>
-          <li>Every dropdown — tools, sources, the queue — now drops with the same 4px, 150ms motion and the same curve, so they feel like one family instead of three implementations.</li>
+          <li>Arriving on the page puts the caret in the link field, with whatever is there selected, so typing replaces it. Returning to the tab does the same when nothing else has focus. (iOS still won't raise the keyboard without a tap — Safari's rule, not ours.)</li>
+          <li>Every dropdown — tools, sources, the queue — drops with the same 4px, 150ms motion on the same curve, and the panel it belongs to is the point it grows out of. One family instead of three implementations.</li>
           <li>The mark drops into the tray on load and replays when you point at the name; the fetch button brightens on hover. Nothing animates inside the button itself — that version re-rasterised the whole control on every hover and felt slower than the one it replaced.</li>
-          <li>The page has a mark and a wordmark instead of a sentence, and the sources list is pinned to the top centre of the screen rather than floating wherever the centred column put it.</li>
-          <li>The sources list dropped the encrypted services and the group headers: one flat alphabetical wrap of all 32 sites mdown accepts, 660px wide and 202px tall, and it leaves with the same short slide it arrives with.</li>
-          <li>The sources list opens from a count and a chevron above the composer — the chevron turns over, the panel drops 7px into place. No plus sign, no borrowed icon.</li>
-          <li>A sources panel behind the top bar: everything the connected instance can reach, grouped by what you get instead of by brand, filterable, with the encrypted services listed so they read as refused rather than broken. It only shows what that API actually advertises.</li>
-          <li>The status dot and the download queue are now one control. Two buttons side by side were two things to read; the dot says whether the API is up, the number says how many jobs are running.</li>
+          <li>The sources list is pinned to the top centre of the screen rather than floating wherever the centred column put it, and it hangs off the count with a chevron that turns over.</li>
+          <li>The sources list is one flat alphabetical wrap of everything mdown accepts — 33 services, including imgur — plus anything the connected instance advertises that the list has not learned yet. No group headers, no encrypted services, 660px wide, and it leaves with the same short slide it arrives with.</li>
           <li>Double-tap no longer zooms anything on a phone. Pinch still works — only the accidental gesture is gone.</li>
           <li>A finished download says where it went: <b>Files → Downloads</b> on iOS, <b>Downloads</b> on Android, your downloads folder on a desktop. "Saved" on its own left you hunting.</li>
-          <li>A <a href="donate.html">donate page</a> that states what the site costs to run instead of asking vaguely, with card, recurring and plain-address options, and nothing at all loaded from a third party.</li>
-          <li>An updates page (this one), a grid for supported services, and a one-line explanation at the top of every settings pane. "Output" is now "Files", because that's what it holds.</li>
+          <li>The 404 page — the one every bare <code>mdown.cc/link</code> lands on — now carries a content security policy like every other page, and a narrower one than the app needs.</li>
+          <li>A rebuilt <a href="donate.html">donate page</a>: one card that says whether the tip jar is open, copy buttons that answer when you press them, and sharing treated as the real option instead of a footnote. It no longer quotes what the site costs to run — that is nobody's business but ours. Nothing on it loads from a third party.</li>
+          <li>An updates page (this one) and a one-line explanation at the top of every settings pane. "Output" is now "Files", because that's what it holds.</li>
           <li>The active nav item stopped looking like a button — it names where you are now.</li>
           <li>Sharing moved onto the donate page: copy the link, or post it straight to x, threads, reddit or bluesky. Each one is an ordinary link with no referrer, so nothing is requested until you press it.</li>
         </ul>

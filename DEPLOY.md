@@ -40,7 +40,7 @@ Avoid anything IPv6-only: browsers need IPv4 to reach `api.mdown.cc`.
 
 ## 0. DNS: the records, and one trap
 
-Six records, all **DNS only** (no proxy):
+Ten records, all **DNS only** (no proxy):
 
 | type | host | value | why |
 | --- | --- | --- | --- |
@@ -148,7 +148,7 @@ The script is idempotent and does the whole server side:
 - a venv at `/opt/mdown/venv` with yt-dlp
 - `/etc/mdown/api.env` (mode 0600, root-owned) with the limits below
 - a hardened systemd unit: `ProtectSystem=strict`, `NoNewPrivileges`,
-  `PrivateTmp`, `MemoryMax=3G`, `CPUQuota=180%`, restart on failure
+  `PrivateTmp`, `MemoryMax=1536M`, `CPUQuota=180%`, restart on failure
 - log rotation
 
 Then Caddy:
@@ -384,14 +384,14 @@ sets cache policy, the second makes `mdown.cc/<pasted link>` work.
 
 ## Capacity, honestly
 
-With 1440p / 128 kb/s / 30 min caps:
+With 4320p / 128 kb/s / 30 min caps:
 
 | download | size | 10 TB buys |
 | --- | --- | --- |
 | mp3 128k, 4 min | ~3.8 MB | ~2,600,000 |
 | wav, 4 min | ~42 MB | ~240,000 |
 | wav, 30 min | ~318 MB | ~32,000 |
-| 1440p, 30 min (worst case) | ~1.1 GB | ~9,300 |
+| 4320p, 30 min (worst case, capped) | ~2 GB | ~5,100 |
 
 Two concurrent jobs on 2 OCPU is the real limit, not bandwidth: yt-dlp and
 ffmpeg are mostly network-bound during download and briefly CPU-bound during
@@ -414,8 +414,11 @@ a merge. Raise `MDOWN_MAX_CONCURRENT` only after watching `htop` and
 
 ## Known limits
 
-- **No Turnstile.** The front-end has no challenge widget, so this API is
-  either open or key-protected; it does not implement `POST /session`.
+- **Turnstile is optional and off by default.** Set `MDOWN_TURNSTILE_SITEKEY`
+  and `MDOWN_TURNSTILE_SECRET` and the front-end renders the widget and sends a
+  token with every download; the API verifies it with Cloudflare's `siteverify`
+  before doing any work. With the secret empty the key is not advertised and no
+  widget loads, so an unverified challenge never costs a visitor ten seconds.
 - **Age-restricted and login-walled content fails** unless cookies are supplied
   to yt-dlp. Not configured.
 - **Job state is in memory**, so a restart loses in-flight jobs. Finished files

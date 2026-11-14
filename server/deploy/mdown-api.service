@@ -35,7 +35,7 @@ MemoryDenyWriteExecute=no
 ReadWritePaths=/var/lib/mdown
 
 # --- resource ceilings ----------------------------------------------------
-# sized for a 2 OCPU / 12 GB VM shared with nothing else
+# sized for the 1 vCPU / 1 GB box this is documented to run on
 MemoryMax=1536M
 CPUQuota=180%
 TasksMax=256

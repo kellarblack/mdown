@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>probe test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 700px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The pre-download probe: an instance that advertises `probe` gets asked what a
+  link is before anything is fetched, and the answer shows up as a size, a
+  duration and a thumbnail — in the composer and in the queue row.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/probe.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  frame.src = "../index.html?probe=" + Date.now();
+
+  const booted = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
+  record("the app boots", booted);
+  if (!booted) { window.__results = { total: results.length, failures, results }; return; }
+
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  const $ = (sel) => doc.querySelector(sel);
+  await waitFor(() => !$("#instance-pill").getAttribute("data-state") ||
+    $("#instance-pill").getAttribute("data-state") !== "checking", 10000);
+  await sleep(400);
+
+  const input = $("#url-input");
+  const setValue = (value) => {
+    const set = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, "value").set;
+    set.call(input, value);
+    input.dispatchEvent(new win.Event("input", { bubbles: true }));
+  };
+
+  /* ---- the preview ---------------------------------------------------- */
+  setValue("https://youtu.be/abcdefghijk");
+  const shown = await waitFor(() => $("#probe-preview").classList.contains("is-on"), 8000);
+  record("a single link shows what the file will be", shown);
+
+  const meta = $("#probe-meta").textContent;
+  record("the preview estimates the size", /≈\s*24\s*MB/.test(meta) || /~\s*24\s*MB/.test(meta), meta);
+  record("it says how long the media is", meta.indexOf("2:05") >= 0, meta);
+  record("and what resolution it will be", meta.indexOf("1080p") >= 0, meta);
+  record("it names the item", $("#probe-title").textContent.length > 0, $("#probe-title").textContent);
+  record("the picture is loaded inline, not from the source site",
+    /url\("http:\/\/127\.0\.0\.1:4320\/thumb\.png"\)/.test($("#probe-thumb").style.backgroundImage),
+    $("#probe-thumb").style.backgroundImage.slice(0, 60));
+  record("it is announced, not just drawn", $("#probe-preview").getAttribute("aria-hidden") === "false");
+
+  /* ---- it folds away again -------------------------------------------- */
+  setValue("");
+  await waitFor(() => !$("#probe-preview").classList.contains("is-on"), 4000);
+  record("emptying the field folds the preview away",
+    !$("#probe-preview").classList.contains("is-on") &&
+    $("#probe-preview").getAttribute("aria-hidden") === "true");
+
+  setValue("https://youtu.be/one\nhttps://youtu.be/two");
+  await sleep(800);
+  record("several links get no single-file preview",
+    !$("#probe-preview").classList.contains("is-on"));
+
+  /* ---- the queue row -------------------------------------------------- */
+  setValue("https://youtu.be/abcdefghijk");
+  await waitFor(() => $("#probe-preview").classList.contains("is-on"), 6000);
+  $("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+
+  const gotRow = await waitFor(() => {
+    const row = doc.querySelector("#queue-list .qitem");
+    return row && row.querySelector(".q-thumb") && !row.querySelector(".q-thumb").hidden;
+  }, 8000);
+  const row = doc.querySelector("#queue-list .qitem");
+  record("the queue row keeps the picture", gotRow);
+  record("the row shows the title instead of a bare host",
+    row && row.querySelector(".q-title").textContent === "a mock clip",
+    row ? row.querySelector(".q-title").textContent : "no row");
+  record("the glyph is replaced, not stacked",
+    row && row.querySelector(".q-icon").hidden === true,
+    row ? "icon.hidden=" + row.querySelector(".q-icon").hidden : "no row");
+  const rowMeta = row ? row.querySelector(".q-meta").textContent : "";
+  record("the row carries the size before the download reports one",
+    /24\s*MB/.test(rowMeta), rowMeta);
+
+  /* ---- cover art ------------------------------------------------------ */
+  const covers = $("#audio-covers");
+  record("there is a cover art switch", !!covers);
+  record("it is on by default", !!(covers && covers.checked));
+
+  let sent = null;
+  const realFetch = win.fetch;
+  win.fetch = (url, opts) => {
+    if (opts && opts.body && String(url).indexOf("/probe") < 0 && String(url).indexOf("4320") >= 0) sent = String(opts.body);
+    return realFetch(url, opts);
+  };
+  covers.checked = false;
+  covers.dispatchEvent(new win.Event("change", { bubbles: true }));
+  setValue("https://youtu.be/covercheck");
+  $("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+  await waitFor(() => sent !== null, 6000);
+  let body = {};
+  try { body = JSON.parse(sent || "{}"); } catch (e) {}
+  record("turning it off reaches the API", body.audioCovers === false, "audioCovers=" + body.audioCovers);
+
+  covers.checked = true;
+  covers.dispatchEvent(new win.Event("change", { bubbles: true }));
+  sent = null;
+  setValue("https://youtu.be/covercheck2");
+  $("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+  await waitFor(() => sent !== null, 6000);
+  let body2 = {};
+  try { body2 = JSON.parse(sent || "{}"); } catch (e) {}
+  record("and turning it back on does too", body2.audioCovers === true, "audioCovers=" + body2.audioCovers);
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

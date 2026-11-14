@@ -167,6 +167,7 @@ class JobManager:
         height: int,
         audio_format: str,
         audio_bitrate: int,
+        audio_covers: bool = False,
         subtitle_lang: str = "",
     ) -> Job:
         if mode not in ("auto", "audio", "mute"):
@@ -184,6 +185,7 @@ class JobManager:
         try:
             return self._run(url, mode=mode, height=height,
                              audio_format=audio_format, audio_bitrate=audio_bitrate,
+                             audio_covers=audio_covers,
                              subtitle_lang=subtitle_lang)
         finally:
             with self._count_lock:
@@ -206,7 +208,8 @@ class JobManager:
             self._day_count += 1
 
     def _run(self, url: str, *, mode: str, height: int,
-             audio_format: str, audio_bitrate: int, subtitle_lang: str = "") -> Job:
+             audio_format: str, audio_bitrate: int, audio_covers: bool = False,
+             subtitle_lang: str = "") -> Job:
         config = self.config
         self._claim_daily_slot()
 
