@@ -1003,7 +1003,16 @@ a.ghost-btn { text-decoration: none; }
 }
 
 /* ---------- sources trigger + panel ---------- */
-.sources-wrap { position: relative; display: grid; justify-items: center; margin: 0 0 22px; }
+/* pinned to the top centre of the screen, not dragged around by the centred
+   column the composer lives in */
+.sources-wrap {
+  position: fixed; z-index: 45;
+  top: calc(52px + env(safe-area-inset-top, 0px) + 12px);
+  left: 50%; transform: translateX(-50%);
+  display: grid; justify-items: center;
+  pointer-events: none;
+}
+.sources-wrap > * { pointer-events: auto; }
 /* a count and a chevron: the chevron turns over when the panel is open. no
    plus, no circle, nothing borrowed. */
 .sources-toggle {
@@ -1435,16 +1444,26 @@ a.donate-value:hover { text-decoration: underline; }
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
-.hero-title {
-  margin: 0 auto 22px; max-width: 30ch; text-align: center;
-  text-wrap: balance;
-  color: var(--text); font-family: var(--mono);
-  /* the old label said what the page is; this says what to do. one line, no
-     shouting, and it fills the space the composer was floating in. */
-  font-size: clamp(1.05rem, 2.6vw, 1.35rem); font-weight: 400;
-  letter-spacing: -0.015em; line-height: 1.35;
+.hero-logo {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  color: var(--text);
 }
-.hero-dot { color: var(--accent); }
+.hero-mark { display: inline-flex; }
+.hero-mark svg {
+  width: clamp(30px, 5vw, 40px); height: auto;
+  animation: mark-in 700ms var(--ease) both;
+}
+.hero-word {
+  font-family: var(--mono); font-weight: 500;
+  font-size: clamp(1.5rem, 4.2vw, 2.1rem);
+  letter-spacing: -0.045em; line-height: 1;
+}
+.hero-word-dot { color: var(--accent); }
+.hero-word-sub {
+  font-size: 0.62em; font-weight: 400; color: var(--text-3);
+  letter-spacing: -0.02em; margin-left: 1px;
+}
 
 .meta-line {
   margin-top: 12px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;

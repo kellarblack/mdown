@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=64">
+<link rel="stylesheet" href="assets/app.css?v=65">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -210,19 +210,26 @@
 
 <main class="wrap" data-view-panel="download" id="download-view">
 
+  <div class="sources-wrap" id="sources-wrap">
+    <button type="button" class="sources-toggle" id="open-sources"
+            aria-expanded="false" aria-controls="sources-panel">
+      <span class="sources-count" id="sources-count">33</span>
+      <span class="sources-label">sources</span>
+      <svg class="sources-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="sources-panel" id="sources-panel" hidden></div>
+  </div>
+
   <div class="hero">
-
-    <div class="sources-wrap" id="sources-wrap">
-      <button type="button" class="sources-toggle" id="open-sources"
-              aria-expanded="false" aria-controls="sources-panel">
-        <span class="sources-count" id="sources-count">33</span>
-        <span class="sources-label">sources</span>
-        <svg class="sources-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      <div class="sources-panel" id="sources-panel" hidden></div>
-    </div>
-
-    <h1 class="hero-title">paste a link, get a file<span class="hero-dot">.</span><span class="sr-only"> mdown is a media downloader for video and audio.</span></h1>
+    <h1 class="hero-logo">
+      <span class="hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+        </svg>
+      </span>
+      <span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+      <span class="sr-only"> — a media downloader for video and audio</span>
+    </h1>
 
   <section class="composer" id="composer">
     <form id="fetch-form" novalidate>
