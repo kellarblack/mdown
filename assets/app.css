@@ -76,8 +76,11 @@
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-/* stop the 300 ms wait and the double-tap zoom on anything tappable */
-button, summary, .icon-btn, .mode, .chip, .link-btn, a { touch-action: manipulation; }
+/* Nothing on this page should zoom because of a double tap. `manipulation`
+   keeps panning and pinch-zoom working — it only removes the double-tap
+   gesture, which is the one people trigger by accident when tapping twice on
+   a field or a button. */
+html, body, body * { touch-action: manipulation; }
 body {
   margin: 0;
   min-height: 100vh;
@@ -161,6 +164,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 /* the repo link: a small 3d tilt on hover, nothing that moves on its own */
 
 .instance-pill {
+  position: relative;
   display: inline-flex; align-items: center; gap: 7px;
   height: var(--h); padding: 0 10px; border-radius: var(--r-sm);
   background: transparent; border: 1px solid var(--stroke);
@@ -837,7 +841,11 @@ a.ghost-btn { text-decoration: none; }
   .brand { gap: 7px; }
   .icon-btn.labeled span { display: none; }
   .icon-btn.labeled { width: 30px; padding: 0; }
-  .instance-pill { display: none; }
+  /* the pill is the queue on a phone too — it was hidden, which would have
+     taken downloads away with it */
+  .instance-pill { height: 40px; padding: 0 10px; }
+  .instance-pill .instance-pill-label { display: none; }
+  .instance-pill .dock-badge { top: -4px; right: -4px; }
   .lede { font-size: 0.82rem; }
   .composer-main { flex-wrap: wrap; }
   /* iOS zooms any field under 16px, which left the page scrolled sideways
@@ -1446,7 +1454,8 @@ a.donate-value:hover { text-decoration: underline; }
   }
   .nav-link[data-view="download"],
   .nav-link[href="updates.html"],
-  .nav-link[href="donate.html"] { display: none; }
+  .nav-link[href="donate.html"],
+  #open-sources { display: none; }
   /* the "you are here" dot costs 12px, which the 320px topbar does not have */
   .nav-link.is-active::before { display: none; }
 }

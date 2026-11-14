@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=58">
+<link rel="stylesheet" href="assets/app.css?v=60">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -164,22 +164,18 @@
         <a href="#subs" data-view="subs">subtitles</a>
         <a href="#clean" data-view="clean">metadata</a>
       </div>
-    <a class="nav-link" href="updates.html">updates</a>
-    <a class="nav-link nav-donate" href="donate.html">donate</a>
     </details>
+    <button type="button" class="nav-link" id="open-sources" title="every source this instance supports">sources</button>
   </nav>
 
   <div class="topbar-actions">
-    <button class="instance-pill" id="instance-pill" type="button" data-state="unknown" title="API status">
-      <span class="dot" aria-hidden="true"></span>
-      <span class="instance-pill-label" id="instance-pill-label">not connected</span>
-    </button>
-
-
+    <!-- one control for state and downloads: the dot is the API, the number is
+         the queue. Splitting them into two buttons was two things to read. -->
     <div class="dock" id="queue-dock">
-      <button class="icon-btn dock-btn" id="queue-toggle" type="button"
-              aria-expanded="false" aria-controls="queue-panel" aria-label="downloads" title="downloads">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M5 17.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-1.5"/></svg>
+      <button class="instance-pill" id="instance-pill" type="button" data-state="unknown"
+              aria-expanded="false" aria-controls="queue-panel" title="connection and downloads">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="instance-pill-label" id="instance-pill-label">not connected</span>
         <span class="dock-badge" id="queue-badge" hidden>0</span>
       </button>
 
@@ -884,7 +880,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=31" defer></script>
+<script src="assets/app.js?v=32" defer></script>
 <script type="module" src="assets/nav.js?v=8"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>

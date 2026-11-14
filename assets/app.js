@@ -357,6 +357,7 @@
     setupButton: $("#setup-open-settings"),
     donateLink: $("#donate-link"),
     openHealth: $("#open-health"),
+    openSources: $("#open-sources"),
     donateWrap: $("#donate-wrap"),
     setupOpenSettings: $("#setup-open-settings"),
     quickpick: $("#quickpick"),
@@ -366,7 +367,7 @@
     recent: $("#recent"),
     queueList: $("#queue-list"),
     queueDock: $("#queue-dock"),
-    queueToggle: $("#queue-toggle"),
+    queueToggle: $("#instance-pill"),
     queuePanel: $("#queue-panel"),
     queueBadge: $("#queue-badge"),
     queueCount: $("#queue-count"),
@@ -1728,6 +1729,112 @@
   }
 
   /* ----------------------------------------------------------
+     sources: what this instance can actually reach
+     ---------------------------------------------------------- */
+
+  /* grouped by what you get, not by brand. imgur/giphy/tenor/pixiv are
+     deliberately absent: nothing here can fetch them, so listing them would be
+     a promise the backend cannot keep. */
+  const SOURCE_GROUPS = [
+    ["video", [
+      ["youtube", "up to 4k"], ["vimeo", ""], ["dailymotion", ""], ["twitch", "live or clip"],
+      ["bilibili", ""], ["rutube", ""], ["rumble", ""], ["odysee", ""], ["kick", ""],
+      ["streamable", ""], ["loom", ""], ["douyin", ""], ["newgrounds", ""], ["coub", ""]
+    ]],
+    ["audio", [
+      ["soundcloud", "audio only"], ["bandcamp", "audio only"], ["mixcloud", "audio only"],
+      ["audiomack", "audio only"], ["hearthis", "audio only"]
+    ]],
+    ["social", [
+      ["twitter", ""], ["instagram", ""], ["tiktok", "no watermark"], ["reddit", ""],
+      ["threads", ""], ["bluesky", ""], ["snapchat", ""], ["tumblr", ""], ["vk", ""],
+      ["ok", ""], ["9gag", ""], ["facebook", ""], ["xiaohongshu", ""]
+    ]]
+  ];
+
+  const ENCRYPTED_SOURCES = [
+    ["spotify", "encrypted"], ["deezer", "encrypted"],
+    ["tidal", "encrypted"], ["apple-music", "encrypted"]
+  ];
+
+  function openSources() {
+    const available = instanceInfo && Array.isArray(instanceInfo.services) && instanceInfo.services.length
+      ? new Set(instanceInfo.services)
+      : null;
+
+    const wrap = el("div", { class: "sources" });
+
+    const search = el("input", {
+      type: "search",
+      class: "text-input sources-search",
+      id: "sources-search",
+      placeholder: "filter sources",
+      autocomplete: "off"
+    });
+    wrap.appendChild(search);
+
+    const list = el("div", { class: "sources-list" });
+    const rows = [];
+
+    function addGroup(name, items, { muted = false } = {}) {
+      const shown = items.filter(([id]) => !available || available.has(id) || muted);
+      if (!shown.length) return;
+      const head = el("div", { class: "sources-head" });
+      head.appendChild(el("span", { class: "sources-group", text: name }));
+      head.appendChild(el("span", { class: "sources-count", text: String(shown.length) }));
+      list.appendChild(head);
+      const grid = el("div", { class: "sources-grid" });
+      shown.forEach(([id, note]) => {
+        const row = el("div", { class: "source" + (muted ? " is-muted" : "") });
+        row.dataset.search = (id + " " + note).toLowerCase();
+        row.innerHTML = markForService(id);
+        row.appendChild(el("span", { class: "source-name", text: id }));
+        if (note) row.appendChild(el("span", { class: "source-note", text: note }));
+        grid.appendChild(row);
+        rows.push(row);
+      });
+      list.appendChild(grid);
+    }
+
+    SOURCE_GROUPS.forEach(([name, items]) => addGroup(name, items));
+    addGroup("encrypted", ENCRYPTED_SOURCES, { muted: true });
+
+    wrap.appendChild(list);
+    wrap.appendChild(el("p", {
+      class: "sources-foot",
+      text: available
+        ? "This is what the API you are connected to says it can reach. Encrypted services are listed so you know they are refused, not broken."
+        : "Connect an API to see exactly which of these it supports."
+    }));
+
+    const empty = el("p", { class: "sources-empty", text: "nothing matches that" });
+    empty.hidden = true;
+    wrap.appendChild(empty);
+
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      let shown = 0;
+      rows.forEach((row) => {
+        const hit = !q || row.dataset.search.indexOf(q) >= 0;
+        row.hidden = !hit;
+        if (hit) shown++;
+      });
+      // hide a group whose rows are all filtered out
+      list.querySelectorAll(".sources-grid").forEach((grid) => {
+        const any = [...grid.children].some((row) => !row.hidden);
+        grid.hidden = !any;
+        const head = grid.previousElementSibling;
+        if (head && head.classList.contains("sources-head")) head.hidden = !any;
+      });
+      empty.hidden = shown > 0;
+    });
+
+    const close = el("button", { type: "button", class: "ghost-btn small", text: "close", onclick: () => closeModal() });
+    openModal("Sources", wrap, [close]);
+    setTimeout(() => search.focus(), 60);
+  }
+
+  /* ----------------------------------------------------------
      donations: identity-free by construction
      ---------------------------------------------------------- */
   function donateConfig() {
@@ -2199,7 +2306,11 @@
   function bindSheet() {
     $("#open-settings").addEventListener("click", () => openSettings());
     dom.setupOpenSettings.addEventListener("click", () => openSettings("instance"));
-    dom.instancePill.addEventListener("click", () => openSettings("instance"));
+    if (dom.queuePanel) dom.queuePanel.hidden = true;
+
+    if (dom.openSources) {
+      dom.openSources.addEventListener("click", () => openSources());
+    }
 
     if (dom.openHealth) {
       dom.openHealth.addEventListener("click", (event) => {

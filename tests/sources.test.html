@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>sources test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 700px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The sources panel: every source this instance can reach, grouped by what you
+  get, filterable, with the encrypted ones listed so they read as refused
+  rather than broken.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/sources.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  frame.src = "../index.html?sources=" + Date.now();
+
+  const booted = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
+  record("the app boots", booted);
+  if (!booted) { window.__results = { total: results.length, failures, results }; return; }
+  await sleep(350);
+
+  const doc = frame.contentDocument;
+  const button = doc.querySelector("#open-sources");
+  record("there is a sources button in the top bar", !!button, button ? button.textContent : "missing");
+
+  button.click();
+  const opened = await waitFor(() => !doc.querySelector("#modal").hidden, 5000);
+  record("the panel opens", opened, doc.querySelector("#modal-title").textContent);
+
+  const rows = () => [...doc.querySelectorAll(".source")];
+  record("it lists the sources it can reach", rows().length >= 10, rows().length + " sources");
+
+  // the mock advertises ten services; anything it does not advertise must not
+  // appear, or the panel is promising something the backend cannot fetch
+  const names = rows().map((r) => r.querySelector(".source-name").textContent);
+  record("it only lists what the instance advertises",
+    names.indexOf("youtube") >= 0 && names.indexOf("rumble") < 0, names.join(", ").slice(0, 80));
+
+  const groups = [...doc.querySelectorAll(".sources-group")].map((g) => g.textContent);
+  record("grouped by what you get", groups.join(",").indexOf("video") >= 0 && groups.indexOf("audio") >= 0, groups.join(", "));
+
+  record("encrypted services are named, not hidden",
+    doc.body.textContent.indexOf("encrypted") >= 0 && groups.indexOf("encrypted") >= 0, groups.join(", "));
+
+  const search = doc.querySelector("#sources-search");
+  search.value = "sound";
+  search.dispatchEvent(new Event("input", { bubbles: true }));
+  await sleep(200);
+  const visible = rows().filter((r) => !r.hidden).map((r) => r.querySelector(".source-name").textContent);
+  record("filtering narrows the list", visible.length > 0 && visible.length < 5, visible.join(", "));
+  record("and finds the right one", visible.indexOf("soundcloud") >= 0, visible.join(", "));
+
+  doc.querySelector("#modal [data-close-modal]").click();
+  await sleep(150);
+  record("it closes again", doc.querySelector("#modal").hidden === true);
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>
