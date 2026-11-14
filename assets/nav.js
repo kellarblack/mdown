@@ -12,19 +12,19 @@ const PANELS = {
 
 const META = {
   download: {
-    title: "mdown — media downloader for video and audio",
-    desc: "A media downloader for video and audio, capped at 1440p and 30 minutes. Subtitle extractor, remux and metadata cleaner run in your browser — nothing is uploaded."
+    title: "mdown.cc — paste a link, keep the file",
+    desc: "No ads, no account. Paste a link and keep the video or audio. Remux, subtitles and metadata tools run in your browser."
   },
   remux: {
-    title: "Remux MP4, MKV and WebM without re-encoding — mdown",
+    title: "Remux without re-encoding — mdown.cc",
     desc: "Repackage a video or audio file into a different container without re-encoding. Fix broken seeking and container problems in your browser, with no upload."
   },
   subs: {
-    title: "Subtitle extractor — pull SRT tracks out of a video — mdown",
+    title: "Subtitle extractor — mdown.cc",
     desc: "Extract embedded text subtitle tracks from a video as SRT files, in your browser. Image-based subtitles are detected and flagged, not faked."
   },
   clean: {
-    title: "Metadata cleaner — strip tags without re-encoding — mdown",
+    title: "Metadata cleaner — mdown.cc",
     desc: "Remove title, artist, comment, date and location tags from a media file while leaving the streams untouched. Runs locally in your browser."
   }
 };

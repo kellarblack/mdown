@@ -45,6 +45,10 @@ async function main() {
   if (!ready) { window.__results = { total: results.length, failures, results }; return; }
   const doc = frame.contentDocument;
 
+  // the page configures itself at the end of the body: wait for that, not for
+  // the hero, or the assertions race the script
+  await waitFor(() => doc.querySelector('[data-share="x"]').getAttribute("href"), 8000);
+
   record("it explains what a tip is for",
     /no ads, no accounts/i.test(doc.body.textContent), "no ads, no accounts");
   record("it does not quote what the site costs to run",

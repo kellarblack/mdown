@@ -1,9 +1,8 @@
 # mdown
 
-> mdown is a media downloader that runs in the browser. You paste a link to a
-> video or audio post, choose a format, and the file lands in your normal
-> downloads. It is capped at 8k and 30 minutes per item, requires no account,
-> and stores nothing on a server.
+> mdown.cc is a media downloader that runs in the browser: paste a link, keep
+> the file. No ads, no account. Capped at 8K and 30 minutes per item, with
+> nothing stored on a server.
 
 ## What it does
 

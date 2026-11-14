@@ -5,16 +5,25 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Updates — mdown</title>
-<meta name="description" content="What changed in mdown, newest first: new formats, mobile fixes, limits, and the things that broke and got fixed.">
+<title>Updates — mdown.cc</title>
+<meta name="description" content="What changed in mdown.cc, newest first: formats, mobile fixes, limits, and the things that broke and got fixed.">
 <link rel="canonical" href="https://mdown.cc/updates.html">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="mdown">
+<meta property="og:site_name" content="mdown.cc">
 <meta property="og:url" content="https://mdown.cc/updates.html">
-<meta property="og:title" content="Updates — mdown">
-<meta property="og:description" content="What changed in mdown, newest first.">
-<meta name="twitter:card" content="summary">
+<meta property="og:title" content="Updates — mdown.cc">
+<meta property="og:description" content="What changed in mdown.cc, newest first: formats, mobile fixes, limits, and the things that broke and got fixed.">
+<meta property="og:image" content="https://mdown.cc/assets/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="mdown.cc — a monochrome wordmark with the line: paste a link. keep the file.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Updates — mdown.cc">
+<meta name="twitter:description" content="What changed in mdown.cc, newest first: formats, mobile fixes, limits, and the things that broke and got fixed.">
+<meta name="twitter:image" content="https://mdown.cc/assets/og.png">
+<meta name="twitter:image:alt" content="mdown.cc — a monochrome wordmark with the line: paste a link. keep the file.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
 <link rel="manifest" href="manifest.webmanifest">
@@ -81,6 +90,8 @@
       <div class="cl-body">
         <h2>Phones, properly</h2>
         <ul>
+          <li>Link previews got a proper card: a 1200×630 image with the wordmark and <i>paste a link. keep the file.</i>, large-format cards on X, and the same image on Discord, Reddit, iMessage and Android. Every page has its own title, description and alt text.</li>
+          <li>The name on the tin is now <b>mdown.cc — paste a link, keep the file</b> instead of a generic "media downloader", and the queue uses the same words as the buttons: video, audio, silent.</li>
           <li>The <b>down</b> in the wordmark falls the last few pixels and settles once when the page opens — the same gesture as the mark, and only that half of the name.</li>
           <li>The composer no longer lights up with a halo when the page loads. Focus is a hairline that gets a shade brighter, nothing more; the glow is gone from the site entirely.</li>
           <li>The green dot opens a miniature of the status page: <b>online</b>, how long the server has been up, a bar per recent check, the uptime percentage, and two links. It fills in as you use the site — every connection check is a sample — so it is a real graph, not a placeholder.</li>

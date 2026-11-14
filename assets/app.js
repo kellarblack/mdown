@@ -383,7 +383,6 @@
     queueCount: $("#queue-count"),
     queueStats: $("#queue-stats"),
     emptyState: $("#empty-state"),
-    emptyTip: $("#empty-tip"),
     clearFinished: $("#clear-finished"),
     servicesCard: $("#services-card"),
     servicesChips: $("#services-chips"),
@@ -931,10 +930,12 @@
     return "Untitled";
   }
 
+  const MODE_NAMES = { auto: "video", audio: "audio", mute: "silent" };
+
   function metaFor(item) {
     const parts = [];
     if (item.service) parts.push(item.service);
-    if (item.mode) parts.push(item.mode);
+    if (item.mode) parts.push(MODE_NAMES[item.mode] || item.mode);
     if (item.status === "downloading") {
       if (item.received) {
         const pct = item.size ? Math.round((item.received / item.size) * 100) + "%" : "";
@@ -3064,10 +3065,6 @@
     if (location.protocol === "file:") {
       const note = $("#file-note");
       if (note) note.hidden = false;
-    }
-
-    if (dom.emptyTip) {
-      dom.emptyTip.textContent = location.host + "/<link> starts it instantly";
     }
 
     const bookmarklet = $("#bookmarklet");

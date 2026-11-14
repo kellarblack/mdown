@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>meta test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  Link previews are part of the product: Discord, Reddit, X, iMessage and
+  Android all read these tags. This suite keeps the card real.
+
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/meta.test.html?report=1"
+-->
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const meta = (doc, attr, value) => {
+  const node = doc.querySelector(`meta[${attr}="${value}"]`);
+  return node ? node.getAttribute("content") || "" : "";
+};
+
+async function main() {
+  const home = await fetch("../index.html").then((r) => r.text());
+  const doc = new DOMParser().parseFromString(home, "text/html");
+
+  const title = doc.querySelector("title").textContent.trim();
+  record("the title leads with the domain",
+    /^mdown\.cc\b/.test(title) && !/simple media downloader/i.test(title), title);
+
+  const desc = meta(doc, "name", "description");
+  record("the description is one readable sentence",
+    desc.length >= 60 && desc.length <= 210 && !/1440p/.test(desc),
+    desc.length + " chars");
+
+  record("the open graph title matches the page",
+    meta(doc, "property", "og:title") === title, meta(doc, "property", "og:title"));
+
+  const image = meta(doc, "property", "og:image");
+  record("the card image is absolute",
+    /^https:\/\/mdown\.cc\/assets\/og\.png$/.test(image), image);
+
+  record("it declares the size scrapers need",
+    meta(doc, "property", "og:image:width") === "1200" &&
+    meta(doc, "property", "og:image:height") === "630",
+    meta(doc, "property", "og:image:width") + "x" + meta(doc, "property", "og:image:height"));
+
+  record("the image has alt text", meta(doc, "property", "og:image:alt").length > 20,
+    meta(doc, "property", "og:image:alt"));
+
+  record("twitter uses the large card with the same image",
+    meta(doc, "name", "twitter:card") === "summary_large_image" &&
+    meta(doc, "name", "twitter:image") === image,
+    meta(doc, "name", "twitter:card"));
+
+  record("the canonical points at the real URL",
+    (doc.querySelector('link[rel="canonical"]') || {}).href === "https://mdown.cc/",
+    (doc.querySelector('link[rel="canonical"]') || {}).href || "missing");
+
+  // the file itself must be the size the tags promise
+  const loaded = await new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => resolve({ w: 0, h: 0 });
+    img.src = "../assets/og.png";
+  });
+  record("the file is a real 1200x630 png", loaded.w === 1200 && loaded.h === 630,
+    loaded.w + "x" + loaded.h);
+
+  // every published page carries a card, not just the home page
+  const pages = ["updates.html", "donate.html", "terms.html", "status.html"];
+  const docs = await Promise.all(pages.map((name) =>
+    fetch("../" + name).then((r) => r.text()).then((html) =>
+      new DOMParser().parseFromString(html, "text/html"))));
+  const missing = pages.filter((name, i) =>
+    !meta(docs[i], "property", "og:image") ||
+    !meta(docs[i], "name", "twitter:card") ||
+    !meta(docs[i], "name", "description"));
+  record("every page has a card of its own", missing.length === 0,
+    missing.length ? missing.join(", ") : pages.length + " pages");
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 30000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

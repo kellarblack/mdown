@@ -1,11 +1,11 @@
 {
-  "name": "mdown.cc",
+  "name": "mdown.cc — paste a link, keep the file",
   "short_name": "mdown",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0b",
   "theme_color": "#0a0a0b",
-  "description": "mdown \u2014 media downloader with closed-caption tools: save video and audio, remux, pull subtitles, strip metadata.",
+  "description": "Paste a link, keep the file. No ads, no account. Saves video and audio, with remux, subtitle and metadata tools in the browser.",
   "icons": [
     {
       "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23111'/%3E%3Cpath d='M16 8v10m0 0 4.2-4.2M16 18l-4.2-4.2M9 22.5h14' stroke='%23ededee' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E",
