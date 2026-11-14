@@ -50,7 +50,7 @@ async function main() {
 
   const image = meta(doc, "property", "og:image");
   record("the card image is absolute",
-    /^https:\/\/mdown\.cc\/assets\/og\.png$/.test(image), image);
+    /^https:\/\/mdown\.cc\/assets\/og-card\.png$/.test(image), image);
 
   record("it declares the size scrapers need",
     meta(doc, "property", "og:image:width") === "1200" &&
@@ -74,7 +74,7 @@ async function main() {
     const img = new Image();
     img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
     img.onerror = () => resolve({ w: 0, h: 0 });
-    img.src = "../assets/og.png";
+    img.src = "../assets/og-card.png";
   });
   record("the file is a real 1200x630 png", loaded.w === 1200 && loaded.h === 630,
     loaded.w + "x" + loaded.h);
