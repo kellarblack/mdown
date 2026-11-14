@@ -2125,6 +2125,19 @@
     setTimeout(done, 220);   // if the animation is off (reduced motion)
   }
 
+  /* The panel hangs from the top of the page and the wordmark sits a short
+     drop below it. Rather than guess a height that overlaps on one screen and
+     wastes space on another, measure the gap and cap to it. */
+  function fitSources() {
+    const panel = dom.sourcesPanel;
+    if (!panel || panel.hidden) return;
+    const logo = document.querySelector(".hero-logo");
+    const top = panel.getBoundingClientRect().top;
+    const stop = logo ? logo.getBoundingClientRect().top : window.innerHeight;
+    const room = Math.round(Math.min(200, Math.max(88, stop - top - 14)));
+    panel.style.maxHeight = room + "px";
+  }
+
   function toggleSources() {
     if (sourcesOpen) { closeSources(); return; }
     sourcesOpen = true;
@@ -2132,8 +2145,10 @@
     renderSources();
     dom.openSources.setAttribute("aria-expanded", "true");
     dom.sourcesPanel.hidden = false;
+    fitSources();
     const field = dom.sourcesPanel.querySelector("#sources-search");
     if (field) setTimeout(() => field.focus(), 40);
+    requestAnimationFrame(fitSources);
   }
 
   const REFUSED_SOURCES = ["spotify", "deezer", "tidal", "apple_music", "applemusic"];
@@ -2178,10 +2193,6 @@
     empty.hidden = true;
     wrap.appendChild(empty);
 
-    wrap.appendChild(el("p", {
-      class: "sources-foot",
-      text: shown.length + " supported · compatibility, not affiliation"
-    }));
 
     search.addEventListener("input", () => {
       const q = search.value.trim().toLowerCase();
@@ -3128,6 +3139,10 @@
     }
 
     takeDeepLink();
+
+    window.addEventListener("resize", () => {
+      if (sourcesOpen) fitSources();
+    });
 
     if (location.hash === "#help") openHelp();
     window.addEventListener("hashchange", () => {

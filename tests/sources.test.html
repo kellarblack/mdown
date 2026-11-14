@@ -73,8 +73,12 @@ async function main() {
   record("and nothing we refuse",
     names.indexOf("spotify") < 0 && names.indexOf("giphy") < 0,
     "spotify/giphy absent");
-  record("the panel is compact", doc.querySelector("#sources-panel").getBoundingClientRect().height <= 340,
-    Math.round(doc.querySelector("#sources-panel").getBoundingClientRect().height) + "px tall");
+  const panelRect = doc.querySelector("#sources-panel").getBoundingClientRect();
+  const logoRect = doc.querySelector(".hero-logo").getBoundingClientRect();
+  record("the panel is compact", panelRect.height <= 210 && panelRect.width <= 560,
+    Math.round(panelRect.width) + "x" + Math.round(panelRect.height));
+  record("and it never reaches the wordmark", logoRect.top - panelRect.bottom >= 4,
+    Math.round(logoRect.top - panelRect.bottom) + "px clear");
 
 
   const search = doc.querySelector("#sources-search");

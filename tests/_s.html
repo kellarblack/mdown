@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>shot</title>
+<style>html,body{margin:0;background:#0a0a0b}iframe{display:block;width:900px;height:620px;border:0}</style>
+</head><body>
+<iframe id="app" src="../index.html"></iframe>
+<script>
+const f = document.getElementById("app");
+f.contentWindow.localStorage.setItem("mdown.settings", JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+f.src = "../index.html?p=" + Date.now();
+const wait = (ms) => new Promise(r => setTimeout(r, ms));
+(async () => {
+  for (let i = 0; i < 80 && !f.contentWindow.md; i++) await wait(150);
+  await wait(900);
+  f.contentDocument.querySelector("#open-sources").click();
+  await wait(500);
+})();
+</script>
+</body></html>
