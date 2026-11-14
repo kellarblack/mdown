@@ -835,6 +835,12 @@ a.ghost-btn { text-decoration: none; }
 @keyframes rise { from { transform: translateY(5px); } to { transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pop { from { transform: scale(0.99) translateY(4px); } to { transform: none; } }
+/* one motion for every dropdown: 4px, no bounce, 150ms, same curve as the rest
+   of the site. scale is 1 so text never shimmers while it lands. */
+@keyframes drop-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 @keyframes slide-in { from { transform: translateX(20px); } to { transform: none; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
@@ -1091,8 +1097,8 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   background: var(--bg-elev); box-shadow: var(--shadow-2);
 }
 .sources-hint { margin: 10px 0 0; color: var(--text-3); font-size: 0.64rem; text-align: center; }
-.sources-panel { animation: panel-centre-in 170ms var(--ease) both; }
-.sources-panel.is-closing { animation: panel-centre-out 150ms var(--ease) both; }
+.sources-panel { animation: panel-centre-in 160ms var(--ease) both; }
+.sources-panel.is-closing { animation: panel-centre-out 140ms var(--ease) both; }
 @keyframes panel-centre-out {
   from { opacity: 1; transform: translate(-50%, 0); }
   to   { opacity: 0; transform: translate(-50%, -6px); }
@@ -1398,8 +1404,11 @@ a.donate-value:hover { text-decoration: underline; }
   display: grid; min-width: 148px; padding: 5px;
   border: 1px solid var(--stroke-2); border-radius: var(--r-md);
   background: var(--bg-elev); box-shadow: var(--shadow-2);
+  transform-origin: top left;
+  animation: drop-in 150ms var(--ease) both;
 }
 .nav-menu a {
+  transition: background 120ms ease-out, color 120ms ease-out, padding-left 120ms ease-out;
   padding: 7px 9px; border-radius: var(--r-sm);
   color: var(--text-2); font-family: var(--mono); font-size: 0.74rem;
 }
@@ -1578,7 +1587,8 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .dock.is-open .dock-btn { color: var(--text); background: var(--surface-2); border-color: var(--stroke); }
 .dock-panel {
-  animation: pop 170ms var(--ease) both;
+  transform-origin: top right;
+  animation: drop-in 160ms var(--ease) both;
   position: absolute; top: calc(100% + 8px); right: 0; z-index: 70;
   /* 100% here resolves against .dock (the 40px button), which would shrink the
      panel to a 20px sliver — this is one of the few places vw is correct */
