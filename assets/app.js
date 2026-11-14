@@ -2268,6 +2268,7 @@
   function setInstancePill(state, label, title) {
     dom.instancePill.dataset.state = state;
     dom.instancePillLabel.textContent = label;
+    dom.instancePill.setAttribute("aria-label", "server: " + label);
     if (title) dom.instancePill.title = title;
   }
 
@@ -2363,10 +2364,10 @@
 
       const uptime = cobalt.startTime ? formatUptime(Number(cobalt.startTime)) : "unknown";
       setInstanceDetail("ok", "Connected", [
-        ["version", cobalt.version || "unknown"],
+        ["server", hostOf(base) || base],
         ["services", String(instanceInfo.services.length || "unknown")],
-        ["uptime", uptime],
-        ["commit", git.commit ? String(git.commit).slice(0, 8) : "unknown"]
+        ["up", uptime],
+        ["version", cobalt.version || "unknown"]
       ]);
 
       setSetupNote(null);

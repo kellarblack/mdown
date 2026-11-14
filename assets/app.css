@@ -166,20 +166,42 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 
 .instance-pill {
   position: relative;
-  display: inline-flex; align-items: center; gap: 7px;
-  height: var(--h); padding: 0 10px; border-radius: var(--r-sm);
-  background: transparent; border: 1px solid var(--stroke);
-  color: var(--text-3); font-family: var(--mono); font-size: 0.7rem;
-  transition: border-color var(--speed), color var(--speed);
+  display: inline-grid; place-items: center;
+  width: var(--h); height: var(--h); padding: 0;
+  border-radius: var(--r-sm); border: 1px solid var(--stroke);
+  background: transparent; color: var(--text-3);
+  transition: border-color var(--speed), background var(--speed);
 }
-.instance-pill:hover { border-color: var(--stroke-2); color: var(--text-2); }
+.instance-pill:hover { border-color: var(--stroke-2); background: var(--surface); }
 .instance-pill .dot {
-  width: 5px; height: 5px; border-radius: 1px; background: var(--text-3); flex: none;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); flex: none;
+  transition: background 200ms ease-out, box-shadow 200ms ease-out;
 }
-.instance-pill[data-state="ok"] .dot { background: var(--ok); }
+.instance-pill[data-state="ok"] .dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 14%, transparent);
+}
 .instance-pill[data-state="bad"] .dot { background: var(--err); }
 .instance-pill[data-state="checking"] .dot { background: var(--warn); animation: pulse 1.2s infinite; }
-.instance-pill-label { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* one soft ring leaves the dot every few seconds. It is the only thing on the
+   page that repeats, because "up" is the one state worth repeating. */
+.instance-pill[data-state="ok"]::after {
+  content: ""; position: absolute; width: 7px; height: 7px; border-radius: 50%;
+  background: color-mix(in srgb, var(--ok) 70%, transparent);
+  animation: beep 2.8s var(--ease) infinite;
+  pointer-events: none;
+}
+@keyframes beep {
+  0%   { transform: scale(1); opacity: 0.5; }
+  60%  { transform: scale(3.4); opacity: 0; }
+  100% { transform: scale(3.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .instance-pill[data-state="ok"]::after { animation: none; opacity: 0; }
+}
+
+.instance-pill-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 
 .icon-btn {
@@ -605,6 +627,29 @@ a.ghost-btn { text-decoration: none; }
   margin: 0 0 16px; color: var(--text-3); font-size: 0.78rem; line-height: 1.55;
   max-width: 54ch;
 }
+/* a settings tab should open with the two choices people actually make, and
+   keep the rest one click away */
+.pane-more {
+  margin: 2px 0 12px; padding-top: 8px;
+  border-top: 1px solid var(--stroke);
+}
+.pane-more > summary {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0; cursor: pointer; list-style: none;
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-3);
+  transition: color var(--speed);
+}
+.pane-more > summary::-webkit-details-marker { display: none; }
+.pane-more > summary::after {
+  content: "+"; margin-left: auto;
+  font-size: 0.9rem; line-height: 1; color: var(--text-3);
+}
+.pane-more[open] > summary::after { content: "−"; }
+.pane-more > summary:hover { color: var(--text-2); }
+.pane-more[open] > summary { color: var(--text-2); }
+.pane-more > .field:first-of-type { margin-top: 10px; }
+.pane-more .ghost-btn { margin-top: 8px; }
 
 .sheet-head {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
@@ -757,7 +802,7 @@ a.ghost-btn { text-decoration: none; }
   display: flex; align-items: center; gap: 7px;
   font-family: var(--mono); font-size: 0.74rem; color: var(--text-2);
 }
-.instance-card-head .dot { width: 5px; height: 5px; border-radius: 1px; background: var(--text-3); }
+.instance-card-head .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
 .instance-card[data-state="ok"] .instance-card-head .dot { background: var(--ok); }
 .instance-card[data-state="bad"] .instance-card-head .dot { background: var(--err); }
 .instance-card[data-state="checking"] .instance-card-head .dot { background: var(--warn); animation: pulse 1.2s infinite; }
@@ -766,6 +811,13 @@ a.ghost-btn { text-decoration: none; }
 .instance-meta dt { color: var(--text-3); }
 .instance-meta dd { margin: 0; color: var(--text-2); text-align: right; word-break: break-all; }
 .instance-error { margin-top: 8px; color: var(--err); font-size: 0.72rem; }
+.instance-links {
+  margin: 10px 0 0; padding-top: 9px;
+  border-top: 1px solid var(--stroke);
+  font-family: var(--mono); font-size: 0.68rem; color: var(--text-3);
+}
+.instance-links a { color: var(--text-3); text-decoration: underline; text-underline-offset: 2px; }
+.instance-links a:hover { color: var(--text); }
 
 /* ---------- modal ---------- */
 .modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; }
@@ -895,10 +947,10 @@ a.ghost-btn { text-decoration: none; }
 }
 
 @media (max-width: 360px) {
-  .topbar { padding: 8px 8px; padding-top: max(8px, env(safe-area-inset-top)); gap: 6px; }
+  .topbar { padding: 8px 6px; padding-top: max(8px, env(safe-area-inset-top)); gap: 4px; }
   .nav-link { padding: 5px 6px; }
   .brand { gap: 6px; }
-  .topbar-actions { gap: 4px; }
+  .topbar-actions { gap: 3px; }
   .topbar .icon-btn { width: 36px; height: 36px; }
   .topbar .brand-text { font-size: 0.86rem; }
   .composer-tools { gap: 2px; }
@@ -928,8 +980,7 @@ a.ghost-btn { text-decoration: none; }
   .icon-btn.labeled { width: 30px; padding: 0; }
   /* the pill is the queue on a phone too — it was hidden, which would have
      taken downloads away with it */
-  .instance-pill { height: 36px; padding: 0 9px; }
-  .instance-pill .instance-pill-label { display: none; }
+  .instance-pill { width: 34px; height: 34px; padding: 0; }
   .dock-btn { width: 34px; height: 34px; }
   .dock-badge { min-width: 13px; height: 13px; font-size: 8px; animation: none !important; }
   .lede { font-size: 0.82rem; }

@@ -42,7 +42,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=78">
+<link rel="stylesheet" href="assets/app.css?v=79">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -170,9 +170,10 @@
   <div class="topbar-actions">
     <!-- one control for state and downloads: the dot is the API, the number is
          the queue. Splitting them into two buttons was two things to read. -->
-    <button class="instance-pill" id="instance-pill" type="button" data-state="unknown" title="connection — click for status">
+    <button class="instance-pill" id="instance-pill" type="button" data-state="unknown"
+            title="connection — click for settings" aria-label="connection: not connected">
       <span class="dot" aria-hidden="true"></span>
-      <span class="instance-pill-label" id="instance-pill-label">not connected</span>
+      <span class="instance-pill-label sr-only" id="instance-pill-label">not connected</span>
     </button>
 
     <div class="dock" id="queue-dock">
@@ -462,16 +463,15 @@
       <button type="button" class="sheet-nav-item" data-section="output">Files</button>
       <button type="button" class="sheet-nav-item" data-section="privacy">Privacy</button>
       <button type="button" class="sheet-nav-item" data-section="advanced">Advanced</button>
-      <button type="button" class="sheet-nav-item" data-section="instance">Connection</button>
+      <button type="button" class="sheet-nav-item" data-section="instance">Server</button>
     </nav>
 
     <div class="sheet-body" id="sheet-body">
 
       <section class="pane is-active" data-pane="appearance">
-        <p class="pane-lede">How the site looks. Follows your system unless you choose otherwise.</p>
+        <p class="pane-lede">How the site looks.</p>
         <div class="field">
           <span class="field-label">Theme</span>
-          <p class="field-help">Follows your system setting unless you choose otherwise.</p>
           <div class="seg" data-setting="theme" role="radiogroup" aria-label="Theme">
             <button type="button" data-value="auto">system</button>
             <button type="button" data-value="light">light</button>
@@ -481,24 +481,14 @@
       </section>
 
       <section class="pane" data-pane="instance">
-        <p class="pane-lede">Which API this page talks to. The download runs on that server, not in this tab.</p>
+        <p class="pane-lede">Downloads run on a server, not in this tab.</p>
         <div class="field">
-          <label class="field-label" for="instance-url">API address</label>
-          <p class="field-help">The download runs on an API server, not on this page. Paste its address — whoever runs it gives you the URL. Usually something like <code>https://api.example.com</code>.</p>
+          <label class="field-label" for="instance-url">Server</label>
           <div class="field-row">
             <input type="url" id="instance-url" class="text-input" placeholder="https://api.example.com" spellcheck="false" autocomplete="off">
             <button type="button" class="ghost-btn" id="check-instance">Check</button>
           </div>
-          <p class="field-help">
-            <a href="status.html" target="_blank" rel="noopener">status page</a>
-            · <a href="#" id="open-health" target="_blank" rel="noopener">health json</a>
-          </p>
-        </div>
-
-        <div class="field">
-          <label class="field-label" for="api-key">API key <span class="optional">if required</span></label>
-          <p class="field-help">Only if the API asks for one. Stored in this browser, sent with each request.</p>
-          <input type="password" id="api-key" class="text-input" placeholder="paste key" spellcheck="false" autocomplete="off">
+          <p class="field-help">The default one comes with the site. Change it only if you run your own.</p>
         </div>
 
         <div class="instance-card" id="instance-detail" data-state="empty">
@@ -508,33 +498,42 @@
           </div>
           <dl class="instance-meta" id="instance-meta"></dl>
           <p class="instance-error" id="instance-error" hidden></p>
+          <p class="instance-links">
+            <a href="status.html" target="_blank" rel="noopener">status page</a>
+            <span aria-hidden="true">·</span>
+            <a href="#" id="open-health" target="_blank" rel="noopener">health</a>
+          </p>
         </div>
 
-        <div class="services" id="services-card" hidden>
-          <div class="services-head">
-            <span class="field-label">Supported services <span class="count" id="services-count">0</span></span>
-            <button type="button" class="ghost-btn small" id="refresh-instance">refresh</button>
+        <details class="pane-more">
+          <summary>API key</summary>
+          <div class="field">
+            <label class="field-label" for="api-key">Key <span class="optional">only if the server asks</span></label>
+            <input type="password" id="api-key" class="text-input" placeholder="paste key" spellcheck="false" autocomplete="off">
+            <p class="field-help">Stored in this browser. Sent with each download.</p>
           </div>
-          <div class="chips" id="services-chips"></div>
-        </div>
+        </details>
 
-        <p class="field-help footnote">No API yet? Ask the person hosting one for its address, or run one yourself.</p>
+        <details class="pane-more" id="services-card" hidden>
+          <summary>Services <span class="count" id="services-count">0</span></summary>
+          <div class="chips" id="services-chips"></div>
+          <button type="button" class="ghost-btn small" id="refresh-instance">check again</button>
+        </details>
       </section>
 
       <section class="pane" data-pane="video">
-        <p class="pane-lede">What you get when the link has video: height, container, codec.</p>
+        <p class="pane-lede">What you get from a video link.</p>
         <div class="field">
-          <span class="field-label">Default download mode</span>
+          <span class="field-label">Default</span>
           <div class="seg" data-setting="downloadMode" role="radiogroup" aria-label="Default download mode">
-            <button type="button" data-value="auto">auto</button>
+            <button type="button" data-value="auto">video</button>
             <button type="button" data-value="audio">audio</button>
-            <button type="button" data-value="mute">mute</button>
+            <button type="button" data-value="mute">silent</button>
           </div>
         </div>
 
         <div class="field">
-          <span class="field-label">Preferred video quality</span>
-          <p class="field-help">Up to 8k, but the instance decides what it will serve — if your pick is unavailable the next best is used. Videos longer than 30 minutes are refused.</p>
+          <span class="field-label">Quality</span>
           <div class="seg wrap" data-setting="videoQuality" role="radiogroup" aria-label="Video quality">
             <button type="button" data-value="4320">8k</button>
             <button type="button" data-value="2160">4k</button>
@@ -546,70 +545,72 @@
             <button type="button" data-value="240">240p</button>
             <button type="button" data-value="144">144p</button>
           </div>
+          <p class="field-help">The server gives you the closest it can serve.</p>
         </div>
 
-        <div class="field">
-          <span class="field-label">YouTube codec</span>
-          <p class="field-help">h264 = best compatibility · av1 = best quality and efficiency · vp9 = same quality, larger files.</p>
-          <div class="seg" data-setting="youtubeVideoCodec" role="radiogroup" aria-label="YouTube codec">
-            <button type="button" data-value="h264">h264 + aac</button>
-            <button type="button" data-value="av1">av1 + opus</button>
-            <button type="button" data-value="vp9">vp9 + opus</button>
+        <details class="pane-more">
+          <summary>Codec and container</summary>
+          <div class="field">
+            <span class="field-label">YouTube codec</span>
+            <div class="seg wrap" data-setting="youtubeVideoCodec" role="radiogroup" aria-label="YouTube codec">
+              <button type="button" data-value="h264">h264</button>
+              <button type="button" data-value="av1">av1</button>
+              <button type="button" data-value="vp9">vp9</button>
+            </div>
+            <p class="field-help">h264 plays everywhere. av1 is smaller at the same quality, on newer devices.</p>
           </div>
-        </div>
 
-        <div class="field">
-          <label class="field-label" for="yt-container">YouTube container</label>
-          <div class="field-row">
-            <select id="yt-container" class="select" data-setting="youtubeVideoContainer">
-              <option value="auto">auto</option>
-              <option value="mp4">mp4</option>
-              <option value="webm">webm</option>
-              <option value="mkv">mkv</option>
-            </select>
+          <div class="field">
+            <label class="field-label" for="yt-container">Container</label>
+            <div class="field-row">
+              <select id="yt-container" class="select" data-setting="youtubeVideoContainer">
+                <option value="auto">auto</option>
+                <option value="mp4">mp4</option>
+                <option value="webm">webm</option>
+                <option value="mkv">mkv</option>
+              </select>
+            </div>
+            <p class="field-help">auto is right unless your player refuses the file.</p>
           </div>
-          <p class="field-help">auto picks mp4 for h264, webm for vp9/av1. auto + h264 + mp4 is the combination that yields a single playable <code>.mp4</code> with video and audio already muxed.</p>
-        </div>
 
-        <div class="field">
-          <label class="switch-row" for="allow-h265">
-            <span>
-              <span class="field-label">Allow h265 (HEVC)</span>
-              <span class="field-help">Higher quality on TikTok &amp; similar, at the cost of compatibility.</span>
-            </span>
-            <input type="checkbox" id="allow-h265" class="switch" data-setting="allowH265">
-          </label>
-        </div>
+          <div class="field">
+            <label class="switch-row" for="allow-h265">
+              <span>
+                <span class="field-label">Allow h265</span>
+                <span class="field-help">Smaller files, but some players and editors cannot open them.</span>
+              </span>
+              <input type="checkbox" id="allow-h265" class="switch" data-setting="allowH265">
+            </label>
+          </div>
 
-        <div class="field">
-          <label class="switch-row" for="convert-gif">
-            <span>
-              <span class="field-label">Convert looping videos to GIF</span>
-              <span class="field-help">Twitter/X loops. GIF conversion is lossy and files get large.</span>
-            </span>
-            <input type="checkbox" id="convert-gif" class="switch" data-setting="convertGif">
-          </label>
-        </div>
-
-              </section>
+          <div class="field">
+            <label class="switch-row" for="convert-gif">
+              <span>
+                <span class="field-label">Turn loops into GIF</span>
+                <span class="field-help">For X/Twitter loops. Larger files, worse quality.</span>
+              </span>
+              <input type="checkbox" id="convert-gif" class="switch" data-setting="convertGif">
+            </label>
+          </div>
+        </details>
+      </section>
 
       <section class="pane" data-pane="audio">
-        <p class="pane-lede">What you get when you ask for sound only.</p>
+        <p class="pane-lede">What you get from an audio link.</p>
         <div class="field">
-          <span class="field-label">Audio format</span>
-          <p class="field-help"><code>source</code> keeps the stream untouched (usually <code>.m4a</code> or <code>.webm</code>) — no re-encode, best quality. mp3, ogg, opus and wav are re-encoded by the API; wav is uncompressed and large.</p>
+          <span class="field-label">Format</span>
           <div class="seg wrap" data-setting="audioFormat" role="radiogroup" aria-label="Audio format">
             <button type="button" data-value="best">source</button>
             <button type="button" data-value="mp3">mp3</button>
             <button type="button" data-value="ogg">ogg</button>
-            <button type="button" data-value="wav">wav</button>
             <button type="button" data-value="opus">opus</button>
+            <button type="button" data-value="wav">wav</button>
           </div>
+          <p class="field-help"><code>source</code> keeps the original file. The rest are re-encoded by the server.</p>
         </div>
 
         <div class="field">
           <span class="field-label">Bitrate</span>
-          <p class="field-help">Capped at 128 kb/s. Only applied to lossy output — above that, the extra bits rarely buy anything audible.</p>
           <div class="seg wrap" data-setting="audioBitrate" role="radiogroup" aria-label="Audio bitrate">
             <button type="button" data-value="128">128</button>
             <button type="button" data-value="96">96</button>
@@ -617,54 +618,57 @@
             <button type="button" data-value="8">8</button>
             <span class="seg-suffix">kb/s</span>
           </div>
+          <p class="field-help">Above 128 there is nothing audible to gain.</p>
         </div>
 
         <label class="switch-row" for="audio-covers">
           <span>
             <span class="field-label">Cover art</span>
-            <span class="field-help">Embed the thumbnail into mp3, ogg and opus files. <code>source</code> and wav are left untouched.</span>
+            <span class="field-help">Adds the thumbnail to mp3, ogg and opus.</span>
           </span>
           <input type="checkbox" id="audio-covers" class="switch" data-setting="audioCovers">
         </label>
 
-        <div class="field">
-          <label class="field-label" for="dub-lang">Preferred audio track</label>
-          <div class="field-row">
-            <select id="dub-lang" class="select" data-setting="youtubeDubLang">
-              <option value="original">original</option>
-              <option value="en">English</option>
-              <option value="es">español</option>
-              <option value="pt">português</option>
-              <option value="fr">français</option>
-              <option value="de">Deutsch</option>
-              <option value="ru">русский</option>
-              <option value="zh">中文</option>
-              <option value="ja">日本語</option>
-              <option value="ko">한국어</option>
-              <option value="hi">हिन्दी</option>
-              <option value="ar">العربية</option>
-              <option value="uk">українська</option>
-            </select>
+        <details class="pane-more">
+          <summary>Dubs and TikTok sound</summary>
+          <div class="field">
+            <label class="field-label" for="dub-lang">Preferred audio track</label>
+            <div class="field-row">
+              <select id="dub-lang" class="select" data-setting="youtubeDubLang">
+                <option value="original">original</option>
+                <option value="en">English</option>
+                <option value="es">español</option>
+                <option value="pt">português</option>
+                <option value="fr">français</option>
+                <option value="de">Deutsch</option>
+                <option value="ru">русский</option>
+                <option value="zh">中文</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="hi">हिन्दी</option>
+                <option value="ar">العربية</option>
+                <option value="uk">українська</option>
+              </select>
+            </div>
+            <p class="field-help">Used when the source has a dub. Otherwise you get the original.</p>
           </div>
-          <p class="field-help">Picks a dubbed track when the service has one; otherwise you get the original.</p>
-        </div>
 
-        
-        <div class="field">
-          <label class="switch-row" for="tiktok-audio">
-            <span>
-              <span class="field-label">TikTok: original sound</span>
-              <span class="field-help">Grabs the sound as the author uploaded it, unmodified.</span>
-            </span>
-            <input type="checkbox" id="tiktok-audio" class="switch" data-setting="tiktokFullAudio">
-          </label>
-        </div>
+          <div class="field">
+            <label class="switch-row" for="tiktok-audio">
+              <span>
+                <span class="field-label">TikTok: original sound</span>
+                <span class="field-help">The clip's own sound, not the reused track.</span>
+              </span>
+              <input type="checkbox" id="tiktok-audio" class="switch" data-setting="tiktokFullAudio">
+            </label>
+          </div>
+        </details>
       </section>
 
       <section class="pane" data-pane="output">
-        <p class="pane-lede">How files are named and saved on your device.</p>
+        <p class="pane-lede">How files are named and handed over.</p>
         <div class="field">
-          <span class="field-label">Saved file name</span>
+          <span class="field-label">File name</span>
           <div class="seg" data-setting="filenameStyle" role="radiogroup" aria-label="Filename style">
             <button type="button" data-value="classic">classic</button>
             <button type="button" data-value="basic">basic</button>
@@ -677,88 +681,90 @@
             <span class="preview-label">audio</span>
             <code id="preview-audio">Audio Title - Audio Author.mp3</code>
           </div>
-          <p class="field-help">Only used for tunneled files. Some services only support classic.</p>
         </div>
 
         <div class="field">
-          <label class="field-label" for="subtitle-lang">Preferred subtitle language</label>
-          <div class="field-row">
-            <select id="subtitle-lang" class="select" data-setting="subtitleLang">
-              <option value="none">none</option>
-              <option value="en">English</option>
-              <option value="es">español</option>
-              <option value="pt">português</option>
-              <option value="fr">français</option>
-              <option value="de">Deutsch</option>
-              <option value="it">italiano</option>
-              <option value="nl">Nederlands</option>
-              <option value="pl">polski</option>
-              <option value="ru">русский</option>
-              <option value="uk">українська</option>
-              <option value="tr">Türkçe</option>
-              <option value="ar">العربية</option>
-              <option value="he">עברית</option>
-              <option value="hi">हिन्दी</option>
-              <option value="bn">বাংলা</option>
-              <option value="ja">日本語</option>
-              <option value="ko">한국어</option>
-              <option value="zh">中文</option>
-              <option value="vi">Tiếng Việt</option>
-              <option value="id">Indonesia</option>
-              <option value="th">ไทย</option>
-            </select>
-          </div>
-          <p class="field-help">Added when available. Services with a single track get it regardless of choice.</p>
-        </div>
-
-        <div class="field">
-          <span class="field-label">Saving method</span>
-          <p class="field-help">How finished files are handed to you. If the preferred way is unavailable, you'll be asked.</p>
+          <span class="field-label">Saving</span>
           <div class="seg wrap" data-setting="savingMethod" role="radiogroup" aria-label="Saving method">
             <button type="button" data-value="ask">ask</button>
             <button type="button" data-value="download">download</button>
             <button type="button" data-value="share">share</button>
             <button type="button" data-value="copy">copy link</button>
           </div>
+          <p class="field-help">What happens when a file is ready.</p>
         </div>
 
         <div class="field">
           <label class="switch-row" for="disable-metadata">
             <span>
-              <span class="field-label">Strip file metadata</span>
-              <span class="field-help">Title, artist and other tags are not written into the file.</span>
+              <span class="field-label">Strip metadata</span>
+              <span class="field-help">No title, artist or tags written into the file.</span>
             </span>
             <input type="checkbox" id="disable-metadata" class="switch" data-setting="disableMetadata">
           </label>
         </div>
+
+        <details class="pane-more">
+          <summary>Subtitles</summary>
+          <div class="field">
+            <label class="field-label" for="subtitle-lang">Language</label>
+            <div class="field-row">
+              <select id="subtitle-lang" class="select" data-setting="subtitleLang">
+                <option value="none">none</option>
+                <option value="en">English</option>
+                <option value="es">español</option>
+                <option value="pt">português</option>
+                <option value="fr">français</option>
+                <option value="de">Deutsch</option>
+                <option value="it">italiano</option>
+                <option value="nl">Nederlands</option>
+                <option value="pl">polski</option>
+                <option value="ru">русский</option>
+                <option value="uk">українська</option>
+                <option value="tr">Türkçe</option>
+                <option value="ar">العربية</option>
+                <option value="he">עברית</option>
+                <option value="hi">हिन्दी</option>
+                <option value="bn">বাংলা</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="zh">中文</option>
+                <option value="vi">Tiếng Việt</option>
+                <option value="id">Indonesia</option>
+                <option value="th">ไทย</option>
+              </select>
+            </div>
+            <p class="field-help">Burned in as a track when the source has one for that language.</p>
+          </div>
+        </details>
       </section>
 
       <section class="pane" data-pane="privacy">
-        <p class="pane-lede">What this page keeps, and what it sends.</p>
+        <p class="pane-lede">What leaves this tab.</p>
         <div class="field">
           <label class="switch-row" for="always-proxy">
             <span>
-              <span class="field-label">Always tunnel files</span>
-              <span class="field-help">Hides your IP and browser from the source service, and gives readable filenames even when the source wouldn't.</span>
+              <span class="field-label">Always use the server</span>
+              <span class="field-help">The source never sees you — only your server does.</span>
             </span>
             <input type="checkbox" id="always-proxy" class="switch" data-setting="alwaysProxy">
           </label>
         </div>
 
         <div class="field">
-          <span class="field-label">Local processing</span>
-          <p class="field-help">When the API serves separate streams, they must be merged on your machine. This build hands you the tunnels and lists the exact <code>ffmpeg</code> command instead of silently failing.</p>
+          <span class="field-label">Split streams</span>
           <div class="seg" data-setting="localProcessing" role="radiogroup" aria-label="Local processing">
-            <button type="button" data-value="disabled">disabled</button>
-            <button type="button" data-value="preferred">preferred</button>
-            <button type="button" data-value="forced">forced</button>
+            <button type="button" data-value="disabled">server merges</button>
+            <button type="button" data-value="preferred">ask me</button>
+            <button type="button" data-value="forced">this browser</button>
           </div>
+          <p class="field-help">Some videos arrive as separate picture and sound. This decides where they are joined.</p>
         </div>
 
         <div class="field">
-          <span class="field-label">Telemetry</span>
+          <span class="field-label">Tracking</span>
           <div class="notice">
-            <strong>None, by design.</strong> This front-end sends nothing anywhere except the API you configure. Settings and history live in <code>localStorage</code>.
+            <strong>None.</strong> Nothing is sent anywhere except the server above.
           </div>
         </div>
       </section>
@@ -766,14 +772,13 @@
       <section class="pane" data-pane="advanced">
         <p class="pane-lede">Rarely needed. Safe to leave alone.</p>
         <div class="field">
-          <span class="field-label">Grab the page you're on</span>
-          <p class="field-help">Drag this to your bookmarks bar. On any media page, click it and the link opens here and starts fetching.</p>
-          <a class="ghost-btn" id="bookmarklet" href="#" draggable="true">send this page</a>
+          <span class="field-label">Send the page you're on</span>
+          <a class="ghost-btn" id="bookmarklet" href="#" draggable="true">drag me to the bookmarks bar</a>
+          <p class="field-help">Click it on any media page and the link lands here, already fetching.</p>
         </div>
 
         <div class="field">
-          <span class="field-label">Parallel downloads</span>
-          <p class="field-help">Fetches run side by side. Higher finishes batches faster; lower is gentler on your API.</p>
+          <span class="field-label">Downloads at once</span>
           <div class="seg" data-setting="concurrency" role="radiogroup" aria-label="Parallel downloads">
             <button type="button" data-value="1">1</button>
             <button type="button" data-value="2">2</button>
@@ -781,41 +786,38 @@
             <button type="button" data-value="4">4</button>
             <button type="button" data-value="5">5</button>
           </div>
+          <p class="field-help">Higher is faster for batches, heavier on the server.</p>
         </div>
 
         <div class="field">
-          <span class="field-label">Request preview</span>
-          <p class="field-help">Exactly what will be POSTed to <code>/</code>. Sensitive headers are not shown.</p>
-          <pre class="code-block" id="request-preview">{}</pre>
-        </div>
-
-        <div class="field">
-          <span class="field-label">Settings data</span>
+          <span class="field-label">Your data</span>
           <div class="field-row wrap-row">
-            <button type="button" class="ghost-btn" id="export-settings">Export JSON</button>
-            <button type="button" class="ghost-btn" id="import-settings">Import JSON</button>
-            <button type="button" class="ghost-btn danger" id="reset-settings">Reset all</button>
+            <button type="button" class="ghost-btn" id="export-settings">export</button>
+            <button type="button" class="ghost-btn" id="import-settings">import</button>
+            <button type="button" class="ghost-btn danger" id="reset-settings">reset all</button>
             <input type="file" id="import-file" accept="application/json,.json" hidden>
           </div>
-        </div>
-
-        <div class="field">
-          <span class="field-label">Local data</span>
           <div class="field-row wrap-row">
-            <button type="button" class="ghost-btn" id="clear-history">Clear recent links</button>
-            <button type="button" class="ghost-btn" id="clear-queue-all">Clear queue</button>
+            <button type="button" class="ghost-btn" id="clear-history">clear recent</button>
+            <button type="button" class="ghost-btn" id="clear-queue-all">clear queue</button>
           </div>
-          <p class="field-help">Both live in this browser only.</p>
+          <p class="field-help">Settings and history live in this browser only.</p>
         </div>
 
-        <div class="field">
-          <span class="field-label">About</span>
+        <details class="pane-more">
+          <summary>What gets sent</summary>
+          <pre class="code-block" id="request-preview">{}</pre>
+          <p class="field-help">Exactly what is POSTed to the server. No secrets are shown.</p>
+        </details>
+
+        <details class="pane-more">
+          <summary>About</summary>
           <dl class="instance-meta">
             <div><dt>build</dt><dd>mdown.cc</dd></div>
-            <div><dt>api target</dt><dd>v11 protocol</dd></div>
+            <div><dt>protocol</dt><dd>cobalt v11</dd></div>
             <div><dt>storage</dt><dd>localStorage</dd></div>
           </dl>
-        </div>
+        </details>
       </section>
 
     </div>
@@ -915,7 +917,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=3" defer></script>
-<script src="assets/app.js?v=44" defer></script>
+<script src="assets/app.js?v=45" defer></script>
 <script type="module" src="assets/nav.js?v=9"></script>
 <script type="module" src="assets/remux.js?v=7"></script>
 <script type="module" src="assets/tools.js?v=8"></script>
