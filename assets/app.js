@@ -1,8 +1,9 @@
 /* ============================================================
-   mdown — front-end for the cobalt v11 API contract
+   mdown — front-end for the media-downloader API contract
    plain JavaScript, no build step, no dependencies.
 
-   API contract: https://github.com/imputnet/cobalt/blob/main/docs/api.md
+   API contract: POST / with {url, downloadMode, videoQuality, audioFormat},
+   answers {status:"tunnel", url, filename} or {status:"picker", ...}.
    ============================================================ */
 (function () {
   "use strict";

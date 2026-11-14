@@ -28,7 +28,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=51">
+<link rel="stylesheet" href="assets/app.css?v=53">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -147,11 +147,19 @@
 
   <!-- share -->
   <section class="share-row">
-    <div>
+    <div class="share-copy">
       <b>No money to spare? Share it instead.</b>
       <span>That's honestly worth more than $5.</span>
     </div>
-    <button type="button" class="ghost-btn" id="copy-link">copy link</button>
+    <div class="share-actions">
+      <button type="button" class="ghost-btn" id="copy-link">copy link</button>
+      <div class="share-chips">
+        <a class="share-chip" data-share="x" target="_blank" rel="noopener noreferrer">x</a>
+        <a class="share-chip" data-share="threads" target="_blank" rel="noopener noreferrer">threads</a>
+        <a class="share-chip" data-share="reddit" target="_blank" rel="noopener noreferrer">reddit</a>
+        <a class="share-chip" data-share="bsky" target="_blank" rel="noopener noreferrer">bluesky</a>
+      </div>
+    </div>
   </section>
 
 </main>
@@ -263,9 +271,23 @@
 
   if (!on) document.getElementById("dormant").hidden = false;
 
+  var pageURL = "https://mdown.cc";
+  var blurb = "mdown — media downloader for video and audio. no ads, no accounts, no tracking.";
+  var intents = {
+    x: "https://x.com/intent/post?text=" + encodeURIComponent(blurb) + "&url=" + encodeURIComponent(pageURL),
+    threads: "https://www.threads.net/intent/post?text=" + encodeURIComponent(blurb + " " + pageURL),
+    reddit: "https://www.reddit.com/submit?url=" + encodeURIComponent(pageURL) + "&title=" + encodeURIComponent(blurb),
+    bsky: "https://bsky.app/intent/compose?text=" + encodeURIComponent(blurb + " " + pageURL)
+  };
+  [].forEach.call(document.querySelectorAll("[data-share]"), function (chip) {
+    var href = intents[chip.dataset.share];
+    if (href) chip.href = href;
+    else chip.hidden = true;
+  });
+
   var share = document.getElementById("copy-link");
   share.addEventListener("click", function () {
-    copy("https://mdown.cc", share);
+    copy(pageURL, share);
   });
 })();
 </script>

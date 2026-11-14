@@ -23,6 +23,8 @@
 - Does not bypass DRM, logins, paywalls or region locks. Those requests fail and the error says so.
 - Does not process image-based subtitles (no OCR) and cannot remove watermarks burned into frames.
 
+The code is open source under the MIT licence.
+
 ## Limits
 
 - Maximum resolution: 8k (4320p), decided by the instance.

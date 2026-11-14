@@ -28,7 +28,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=51">
+<link rel="stylesheet" href="assets/app.css?v=53">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -81,6 +81,9 @@
         <li>No accidental pull-to-refresh mid-download. No sideways scroll at 320px.</li>
         <li>The status pill says <b>online</b> instead of a hostname, with the address in its tooltip.</li>
         <li>The hero label was undersized lowercase mono; it's now a tracked caps label at a readable size.</li>
+        <li>A <a href="donate.html">donate page</a> that states what the site costs to run instead of asking vaguely, with card, recurring and plain-address options, and nothing at all loaded from a third party.</li>
+        <li>An updates page (this one), a grid for supported services, and a one-line explanation at the top of every settings pane. "Output" is now "Files", because that's what it holds.</li>
+        <li>The active nav item stopped looking like a button — it names where you are now.</li>
       </ul>
     </article>
 
@@ -88,7 +91,7 @@
       <span class="changelog-date">13 nov 2026 · 1.2</span>
       <h2>It's live</h2>
       <ul>
-        <li><b>mdown.cc</b> on GitHub Pages with a real certificate and HTTPS enforced; <b>api.mdown.cc</b> on the box, Let's Encrypt, renewing itself.</li>
+        <li><b>mdown.cc</b> served statically with a real certificate and HTTPS enforced; <b>api.mdown.cc</b> on the box, Let's Encrypt, renewing itself.</li>
         <li>8 parallel range requests per download instead of 4 — measured 39% faster on a 900 MB 4K file. 16 was slower on one core.</li>
         <li>Output cap raised to 2 GB. The old 800 MB ceiling rejected a 966 MB 4K file, which meant the highest quality was advertised and then refused.</li>
         <li>Range requests: a dropped connection on a big file resumes instead of starting over.</li>
@@ -113,7 +116,7 @@
       <span class="changelog-date">11 nov 2026 · 1.0</span>
       <h2>First release</h2>
       <ul>
-        <li>Cobalt-style front-end: paste a link, pick a mode, get a file.</li>
+        <li>One page: paste a link, pick a mode, get a file. No account, no build step.</li>
         <li>Its own API: yt-dlp + ffmpeg, no Docker, no Node, caps on duration, height and size.</li>
         <li>Remux, subtitle extraction and metadata cleaning run locally in your browser — those files never leave your device.</li>
         <li>Pickers for playlists, subtitle embedding, silent video, and untouched source audio.</li>
