@@ -234,6 +234,20 @@ class JobManagerTest(unittest.TestCase):
         self.manager.sweep()
         self.assertFalse(os.path.exists(orphan))
 
+    def test_sweep_prunes_old_thumbnails(self):
+        thumbs = os.path.join(self.tmp, ".cache", "thumbs")
+        os.makedirs(thumbs)
+        old_path = os.path.join(thumbs, "old.jpg")
+        new_path = os.path.join(thumbs, "new.jpg")
+        for path in (old_path, new_path):
+            with open(path, "wb") as handle:
+                handle.write(b"x")
+        stale = time.time() - 8 * 86400
+        os.utime(old_path, (stale, stale))
+        self.manager.sweep()
+        self.assertFalse(os.path.exists(old_path))
+        self.assertTrue(os.path.exists(new_path))
+
     def test_drop_is_idempotent(self):
         job = self.make()
         self.manager.drop(job.token)

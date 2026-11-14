@@ -37,7 +37,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=99">
+<link rel="stylesheet" href="assets/app.css?v=100">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -285,7 +285,7 @@
     stampEl.textContent = "";
 
     if (!base) {
-      setState("no-instance", "no API hooked up", "Add an instance address in Settings → Connection and this page fills in.");
+      setState("no-instance", "no API hooked up", "Add an instance address in Settings → Server and this page fills in.");
       setRow("api", "(none)");
       pruneRows();
       last = { api: "", state: "no-instance" };
@@ -295,36 +295,55 @@
 
     setRow("api", base);
 
-    const started = performance.now();
-    let response = null;
-    let body = null;
-    try {
-      response = await fetch(base + "/health", { headers: { Accept: "application/json" }, cache: "no-store" });
-      body = await response.json().catch(() => null);
-    } catch (e) {
-      const ms = Math.round(performance.now() - started);
+    async function probe() {
+      const started = performance.now();
+      try {
+        const response = await fetch(base + "/health", { headers: { Accept: "application/json" }, cache: "no-store" });
+        const body = await response.json().catch(() => null);
+        return { response, body, ms: Math.round(performance.now() - started) };
+      } catch (error) {
+        return { error, ms: Math.round(performance.now() - started) };
+      }
+    }
+
+    let result = await probe();
+    if (result.error) {
+      /* a deploy restarts the service for a second; one retry keeps that out
+         of the graph as an outage */
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      result = await probe();
+    }
+
+    if (result.error) {
+      const ms = result.ms;
       setState("down", "mdown is down lol", "The API never answered. Nothing on this page can fix that — the page is static, the server is the half that's sulking.");
-      setRow("error", String(e && e.message ? e.message : e), "err");
+      setRow("error", String(result.error && result.error.message ? result.error.message : result.error), "err");
       const dd = setRow("latency", ms + " ms", "warn");
       tween(dd, shownMs === null ? ms : shownMs, ms, (v) => Math.round(v) + " ms");
       shownMs = ms;
       pruneRows();
-      last = { api: base, state: "unreachable", error: String(e), ms };
+      last = { api: base, state: "unreachable", error: String(result.error), ms };
       stamp();
       renderHistory(pushHistory(false));
       return;
     }
 
-    const ms = Math.round(performance.now() - started);
+    const response = result.response;
+    const body = result.body;
+    const ms = result.ms;
     const checks = (body && body.checks && typeof body.checks === "object") ? body.checks : null;
     const checkKeys = checks ? Object.keys(checks) : [];
     const failing = checkKeys.filter((key) => !checks[key]);
-    const healthy = response.ok && failing.length === 0 && (!body || body.status !== "degraded");
+    const limited = response.status === 429;
+    // a 429 is the server answering: proof of life, not an outage
+    const healthy = limited || (response.ok && failing.length === 0 && (!body || body.status !== "degraded"));
 
     setState(
       healthy ? "up" : "degraded",
-      healthy ? "mdown is up" : "mdown is limping",
-      healthy
+      limited ? "mdown is up" : (healthy ? "mdown is up" : "mdown is limping"),
+      limited
+        ? "This address has asked a lot in the last minute, so the server answered with a rate limit instead of a health report. That is the server being alive, not down."
+        : healthy
         ? (checkKeys.length ? "" : "This API does not report dependency checks, so this is the instance answering — not proof that downloads work.")
         : "The API answered, but " + (failing.length ? failing.join(", ") + " " + (failing.length === 1 ? "is" : "are") + " failing" : "it reports itself as degraded") + ". Downloads may still work; merges and conversions may not."
     );

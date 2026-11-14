@@ -2783,7 +2783,7 @@
   function readHealth() {
     try {
       const parsed = JSON.parse(localStorage.getItem(HEALTH_KEY) || "[]");
-      return Array.isArray(parsed) ? parsed.filter((x) => x && typeof x.ok === "boolean") : [];
+      return Array.isArray(parsed) ? parsed.filter((x) => x && "ok" in x) : [];
     } catch (e) {
       return [];
     }
@@ -2794,7 +2794,7 @@
   function recordHealth(ok) {
     const history = readHealth();
     const last = history[history.length - 1];
-    if (last && Date.now() - last.t < 60000 && last.ok === !!ok) return history;
+    if (last && Date.now() - last.t < 60000 && last.ok === ok) return history;
     return pushHealth(ok);
   }
 
@@ -2817,7 +2817,7 @@
     }
     recent.forEach((entry, i) => {
       const bar = el("span", { class: "hp-bar" });
-      bar.dataset.ok = entry.ok ? "true" : "false";
+      bar.dataset.ok = entry.ok === true ? "true" : (entry.ok === false ? "false" : "unknown");
       if (typeof bar.animate === "function") {
         bar.animate(
           [{ transform: "scaleY(0.25)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
@@ -2827,8 +2827,9 @@
       strip.appendChild(bar);
     });
 
-    const total = history.length;
-    const up = history.filter((x) => x.ok).length;
+    const counted = history.filter((x) => x.ok === true || x.ok === false);
+    const total = counted.length;
+    const up = counted.filter((x) => x.ok === true).length;
     if (dom.hpPct) {
       dom.hpPct.textContent = total
         ? Math.round((up / total) * 1000) / 10 + "% up · " + total + " check" + (total === 1 ? "" : "s")
@@ -2846,6 +2847,24 @@
     }
   }
 
+  async function healthSample(endpoint) {
+    try {
+      const res = await fetch(endpoint + "health", {
+        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
+        cache: "no-store"
+      });
+      const body = await res.json().catch(() => null);
+      return {
+        responded: true,
+        limited: res.status === 429,
+        ok: res.ok && (!body || body.status !== "degraded"),
+        body
+      };
+    } catch (e) {
+      return { responded: false, limited: false, ok: false, body: null };
+    }
+  }
+
   async function checkHealth() {
     const endpoint = apiEndpoint();
     if (!endpoint) {
@@ -2854,23 +2873,35 @@
       return;
     }
     setHealthState("checking", "checking…", "");
-    try {
-      const res = await fetch(endpoint + "health", {
-        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
-        cache: "no-store"
-      });
-      const body = await res.json().catch(() => null);
-      const ok = res.ok && (!body || body.status !== "degraded");
-      renderHealthBars(pushHealth(ok));
-      const up = body && Number(body.uptimeSeconds)
-        ? formatUptime(Date.now() - Number(body.uptimeSeconds) * 1000)
-        : "";
-      setHealthState(ok ? "ok" : "bad", ok ? "online" : "down", up);
-    } catch (e) {
-      renderHealthBars(pushHealth(false));
-      setHealthState("bad", "unreachable", "");
+
+    let sample = await healthSample(endpoint);
+    /* one retry: a deploy restarts the service for a second, and that is not
+       an outage worth drawing in red */
+    if (!sample.responded) {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      sample = await healthSample(endpoint);
     }
+
+    if (sample.limited) {
+      // 429 means the server answered; that is proof of life, not downtime
+      renderHealthBars(readHealth());
+      setHealthState("ok", "online", "");
+      return;
+    }
+
+    if (!sample.responded) {
+      renderHealthBars(pushHealth(null));
+      setHealthState("bad", "unreachable", "");
+      return;
+    }
+
+    renderHealthBars(pushHealth(sample.ok));
+    const up = sample.body && Number(sample.body.uptimeSeconds)
+      ? formatUptime(Date.now() - Number(sample.body.uptimeSeconds) * 1000)
+      : "";
+    setHealthState(sample.ok ? "ok" : "bad", sample.ok ? "online" : "down", up);
   }
+
 
   function startHealthTimer() {
     if (healthTimer) return;

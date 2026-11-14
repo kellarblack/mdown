@@ -227,6 +227,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   background: color-mix(in srgb, var(--ok) 60%, transparent);
 }
 .hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 70%, transparent); }
+.hp-bar[data-ok="unknown"] { background: var(--text-3); opacity: 0.45; }
 .hp-bar[data-empty="true"] { height: 38%; background: var(--surface-3); }
 .hp-foot {
   display: flex; align-items: center; gap: 10px;

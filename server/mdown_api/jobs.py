@@ -352,6 +352,35 @@ class JobManager:
             except OSError:
                 pass
 
+        # thumbnails are one small file per probe, cached forever unless
+        # something removes them. Seven days and 400 files is plenty.
+        thumb_dir = os.path.join(config.work_dir, ".cache", "thumbs")
+        try:
+            thumbs = os.listdir(thumb_dir)
+        except OSError:
+            return
+        keep = []
+        for name in thumbs:
+            path = os.path.join(thumb_dir, name)
+            try:
+                stamp = os.path.getmtime(path)
+            except OSError:
+                continue
+            if now - stamp > 7 * 86400:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+            else:
+                keep.append((stamp, path))
+        if len(keep) > 400:
+            keep.sort()
+            for _, path in keep[:-400]:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+
     def drop(self, token: str) -> None:
         with self._lock:
             job = self._jobs.pop(token, None)

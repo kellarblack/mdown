@@ -37,7 +37,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=99">
+<link rel="stylesheet" href="assets/app.css?v=100">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -90,6 +90,8 @@
       <div class="cl-body">
         <h2>Phones, properly</h2>
         <ul>
+          <li>The uptime graph stopped inventing outages: a rate-limit reply counts as the server being alive, one failed check is retried before it is drawn, and a genuinely unknown check is grey rather than red.</li>
+          <li>Disk housekeeping: cached thumbnails are capped at 400 files and 7 days, so a busy month cannot slowly eat the VM. Downloads were already deleted 15 minutes after they are served.</li>
           <li>When a link won't go, the field says so: a short shake and a <b>red outline</b> for a second, one calm line, and a stack that never exceeds three notices.</li>
           <li>The paste field is simply there on load — no slide, no fade, and no border change when the caret lands in it.</li>
           <li>The hero arrow is the thing that moves now, not a box around it. It drops into the tray once, the name types itself, and that's it. Clicking the wordmark does nothing on purpose: it is not a link, cannot be selected, and the cursor does not change.</li>
