@@ -203,6 +203,16 @@
     return (value < 10 && i > 0 ? value.toFixed(1) : Math.round(value)) + " " + units[i];
   }
 
+  function etaText(seconds) {
+    if (!seconds || !Number.isFinite(seconds) || seconds <= 0) return "";
+    const total = Math.max(1, Math.round(seconds));
+    if (total < 60) return total + "s left";
+    const mins = Math.floor(total / 60);
+    const rest = total % 60;
+    if (mins < 60) return mins + "m" + (rest ? " " + rest + "s" : "") + " left";
+    return Math.floor(mins / 60) + "h " + (mins % 60) + "m left";
+  }
+
   function hostOf(url) {
     try { return new URL(url).hostname.replace(/^www\./, ""); }
     catch { return ""; }
@@ -1143,21 +1153,14 @@
     if (item.service) parts.push(item.service);
     if (item.mode) parts.push(MODE_NAMES[item.mode] || item.mode);
     if (item.status === "downloading") {
-      if (item.received) {
-        const pct = item.size ? Math.round((item.received / item.size) * 100) + "%" : "";
-        const of = item.size ? " / " + formatBytes(item.size) : "";
-        if (pct) parts.push(pct);
-        parts.push(formatBytes(item.received) + of);
-        if (item.speed) parts.push(formatBytes(item.speed) + "/s");
-        if (item.speed && item.size > item.received) {
-          parts.push(Math.max(1, Math.ceil((item.size - item.received) / item.speed)) + "s left");
-        }
-      } else {
-        parts.push("connecting");
-      }
+      /* bytes, rate, eta and % live on the progress block, not here: one place
+         for the numbers keeps the row from reading twice */
+      if (item.duration) parts.push(clockTime(item.duration));
     } else if (item.error) {
       parts.push("• " + item.error);
     } else if (item.detail) {
+      /* a finished row still owes you the one number you care about */
+      if (item.size) parts.push(formatBytes(item.size));
       parts.push(item.detail);
       if (item.started && (item.status === "working" || item.status === "downloading")) {
         parts.push(Math.max(1, Math.round((Date.now() - item.started) / 1000)) + "s");
@@ -1180,11 +1183,21 @@
     const meta = el("div", { class: "q-meta" });
     const actions = el("div", { class: "q-actions" });
     const progress = el("div", { class: "q-progress" });
+    const track = el("div", { class: "q-progress-track" });
     const fill = el("div", { class: "q-progress-fill" });
+    const percent = el("span", { class: "q-progress-pct" });
+    const line = el("div", { class: "q-progress-line" });
+    const bytes = el("span", { class: "q-bytes" });
+    const rate = el("span", { class: "q-rate" });
 
     body.appendChild(title);
     body.appendChild(meta);
-    progress.appendChild(fill);
+    track.appendChild(fill);
+    progress.appendChild(track);
+    progress.appendChild(percent);
+    line.appendChild(bytes);
+    line.appendChild(rate);
+    progress.appendChild(line);
     node.appendChild(icon);
     node.appendChild(thumb);
     node.appendChild(body);
@@ -1192,7 +1205,7 @@
     node.appendChild(progress);
 
     item.node = node;
-    item.refs = { icon, thumb, title, meta, actions, fill };
+    item.refs = { icon, thumb, title, meta, actions, fill, percent, bytes, rate };
     updateItem(item);
     return node;
   }
@@ -1233,6 +1246,32 @@
     let pct = item.size ? Math.min(100, (item.received / item.size) * 100) : 0;
     if (item.status === "done" || item.status === "ready") pct = 100;
     fill.style.transform = "scaleX(" + (pct / 100).toFixed(4) + ")";
+
+    const pctNode = item.refs.percent;
+    const bytesNode = item.refs.bytes;
+    const rateNode = item.refs.rate;
+    const write = (node, text) => {
+      if (node.textContent !== text) node.textContent = text;
+    };
+    if (item.status === "downloading") {
+      if (item.size) {
+        write(pctNode, Math.min(100, Math.floor(pct)) + "%");
+        write(bytesNode, formatBytes(item.received) + " / " + formatBytes(item.size));
+        const speed = item.speed ? formatBytes(item.speed) + "/s" : "";
+        const left = item.speed && item.size > item.received
+          ? etaText((item.size - item.received) / item.speed)
+          : "";
+        write(rateNode, [speed, left].filter(Boolean).join(" · "));
+      } else {
+        write(pctNode, "");
+        write(bytesNode, formatBytes(item.received) || "receiving");
+        write(rateNode, item.speed ? formatBytes(item.speed) + "/s" : "size unknown");
+      }
+    } else if (item.status === "working") {
+      write(pctNode, "");
+      write(bytesNode, item.detail || "requesting");
+      write(rateNode, item.started ? Math.max(1, Math.round((Date.now() - item.started) / 1000)) + "s" : "");
+    }
     if (dom.miniDock && !dom.miniDock.hidden && item === queue.find((i) => ["downloading", "working", "queued"].includes(i.status))) {
       const shown = item.size ? Math.min(100, Math.round((item.received / item.size) * 100)) : 0;
       dom.miniMeta.textContent = item.size
@@ -3534,8 +3573,42 @@
     openModal("About", wrap, buttons);
   }
 
+  /* remux.js + tools.js are 39 KB of wasm plumbing and nothing on the
+     download view touches them, so they load when a tool is opened (or when
+     the pointer says one is about to be) */
+  let toolsPromise = null;
+  function loadTools() {
+    if (toolsPromise) return toolsPromise;
+    const add = (src) => new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.type = "module";
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+    toolsPromise = add("assets/remux.js?v=7").then(() => add("assets/tools.js?v=8"));
+    return toolsPromise;
+  }
+
+  function toolsWanted() {
+    if (/^#(remux|subs|clean)$/.test(location.hash)) loadTools();
+  }
+
+  function warmTools() {
+    toolsWanted();
+    window.addEventListener("hashchange", toolsWanted);
+    $$(".tool-card").forEach((card) => {
+      const warm = () => loadTools();
+      card.addEventListener("mouseenter", warm, { once: true });
+      card.addEventListener("focus", warm, { once: true });
+      card.addEventListener("touchstart", warm, { once: true, passive: true });
+    });
+  }
+
   function boot() {
     renderDonate();
+    warmTools();
     applyTheme();
     reflectSettings();
     bindSettings();

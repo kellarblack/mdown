@@ -105,9 +105,11 @@ async function main() {
   record("the glyph is replaced, not stacked",
     row && row.querySelector(".q-icon").hidden === true,
     row ? "icon.hidden=" + row.querySelector(".q-icon").hidden : "no row");
-  const rowMeta = row ? row.querySelector(".q-meta").textContent : "";
+  /* the size lives on the progress block while it downloads and on the meta
+     line once it is saved; either way the row itself must say it */
+  const rowText = row ? row.textContent.replace(/\s+/g, " ").trim() : "";
   record("the row carries a size as soon as one exists",
-    /\d\s*(KB|MB|GB)/.test(rowMeta), rowMeta);
+    /\d\s*(KB|MB|GB)/.test(rowText), rowText.slice(0, 70));
 
   /* ---- cover art ------------------------------------------------------ */
   const covers = $("#audio-covers");

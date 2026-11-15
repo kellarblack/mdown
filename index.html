@@ -37,6 +37,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://api.mdown.cc" crossorigin>
 <script>
   try {
     var saved = JSON.parse(localStorage.getItem("mdown.settings") || localStorage.getItem("mget.settings") || localStorage.getItem("mediadownload.settings") || "{}");
@@ -47,7 +48,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=139">
+<link rel="stylesheet" href="assets/app.css?v=142">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -1012,9 +1013,9 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=5" defer></script>
-<script src="assets/app.js?v=83" defer></script>
+<script src="assets/app.js?v=85" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
-<script type="module" src="assets/remux.js?v=7"></script>
-<script type="module" src="assets/tools.js?v=8"></script>
+<!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
+     on arrival: the downloader never needs them -->
 </body>
 </html>

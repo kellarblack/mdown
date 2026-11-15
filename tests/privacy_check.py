@@ -103,10 +103,16 @@ def main():
 
         if rel.endswith(".html"):
             for match in EXTERNAL_LOAD.finditer(text):
-                snippet = match.group(0).replace("\n", " ")[:70]
-                if "schema.org" in snippet or "mdown.cc" in snippet or "127.0.0.1" in snippet:
+                # read past the scheme: the host is what decides "third party",
+                # and a preconnect to the site's own API is the site talking to
+                # itself, not a phone call to somebody else
+                snippet = text[match.start():match.start() + 120].replace("\n", " ")
+                host = re.search(r"https?://([^/\"'\s>]+)", snippet)
+                host = host.group(1).lower() if host else ""
+                own = host == "mdown.cc" or host.endswith(".mdown.cc")
+                if "schema.org" in snippet or own or host in ("127.0.0.1", "localhost"):
                     continue
-                findings.append((rel, "third-party load: %s" % snippet))
+                findings.append((rel, "third-party load: %s" % snippet[:70]))
 
     if findings:
         print("privacy check: %d finding(s)" % len(findings))
