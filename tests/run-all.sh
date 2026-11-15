@@ -109,7 +109,7 @@ report_suite buttons "http://127.0.0.1:$WEB_PORT/tests/buttons.test.html?report=
 report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 15
 report_suite probe   "http://127.0.0.1:$WEB_PORT/tests/probe.test.html?report=1" 18
 report_suite health  "http://127.0.0.1:$WEB_PORT/tests/health.test.html?report=1" 11
-report_suite spam    "http://127.0.0.1:$WEB_PORT/tests/spam.test.html?report=1" 7
+report_suite spam    "http://127.0.0.1:$WEB_PORT/tests/spam.test.html?report=1" 9
 dom_suite    meta    "http://127.0.0.1:$WEB_PORT/tests/meta.test.html" 10
 report_suite a11y    "http://127.0.0.1:$WEB_PORT/tests/a11y.test.html?report=1" 8
 

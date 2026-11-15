@@ -209,8 +209,8 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .health { position: relative; }
 .health-pop {
   position: absolute; top: calc(100% + 8px); right: 0; z-index: 80;
-  width: min(296px, calc(100vw - 20px));
-  padding: 12px 12px 10px;
+  width: min(264px, calc(100vw - 20px));
+  padding: 10px 11px 9px;
   border: 1px solid var(--stroke-2); border-radius: var(--r-md);
   background: var(--bg-elev); box-shadow: var(--shadow-2);
   transform-origin: top right;
@@ -227,13 +227,14 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .health-pop[data-state="ok"] .hp-state .dot { background: var(--ok); }
 .health-pop[data-state="bad"] .hp-state .dot { background: var(--err); }
 .health-pop[data-state="checking"] .hp-state .dot { background: var(--warn); animation: pulse 1.2s infinite; }
+.health-pop[data-busy="true"] .hp-state .dot { animation: pulse 1.2s infinite; }
 .hp-uptime {
   flex: none; font-family: var(--mono); font-size: 0.64rem; color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
 .hp-strip {
   display: flex; align-items: flex-end; gap: 2px;
-  height: 30px; margin: 11px 0 9px;
+  height: 24px; margin: 9px 0 8px;
 }
 .hp-bar {
   flex: 1 1 0; height: 100%; border-radius: 2px;
@@ -246,8 +247,8 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .hp-bar[data-ok="unknown"] { background: var(--text-3); opacity: 0.45; }
 .hp-bar[data-empty="true"] { height: 38%; background: var(--surface-3); }
 .hp-foot {
-  display: flex; align-items: center; gap: 10px;
-  font-family: var(--mono); font-size: 0.64rem; color: var(--text-3);
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 0.62rem; color: var(--text-3);
 }
 .hp-links { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
 .hp-link {
@@ -773,11 +774,6 @@ a.ghost-btn { text-decoration: none; }
   text-decoration: none;
   transition: color 120ms, background 120ms, border-color 120ms;
 }
-.footer-meta .footer-q {
-  display: inline-grid; place-items: center;
-  min-width: 24px; padding: 3px 6px; line-height: 1;
-  font-weight: 700; color: var(--text-2);
-}
 .footer-meta a:hover, .footer-meta .footer-link:hover {
   color: var(--text); background: var(--surface-2); border-color: var(--stroke-2);
 }
@@ -1234,7 +1230,7 @@ a.ghost-btn { text-decoration: none; }
   .health-pop {
     position: fixed; right: 8px; left: auto;
     top: calc(58px + env(safe-area-inset-top, 0px));
-    width: min(296px, calc(100vw - 16px));
+    width: min(280px, calc(100vw - 16px));
   }
   .topbar {
     padding: 9px 14px; padding-top: max(9px, env(safe-area-inset-top));
@@ -1339,15 +1335,6 @@ a.ghost-btn { text-decoration: none; }
 }
 
 /* ---------- footer proof ---------- */
-.footer-proof {
-  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-  gap: 3px 9px; margin: 6px 0 0;
-  font-family: var(--mono); font-size: 0.58rem; color: var(--hint-ink);
-}
-.footer-proof #build-info { color: var(--text-3); }
-.footer-proof a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--stroke-2); }
-.footer-proof a:hover { color: var(--text); text-decoration-color: var(--text); }
-
 /* ---------- navigation ---------- */
 .nav { display: flex; align-items: center; gap: 2px; margin-right: auto; margin-left: 18px; }
 /* the way back out of a tool, shown only while a tool is open */
@@ -1581,7 +1568,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     animation: drop-in 150ms var(--ease) both;
   }
   .sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
-  .sources-panel .sources-note { font-size: 0.6rem; }
+  .sources-panel .sources-note { font-size: 0.58rem; margin-bottom: 2px; }
   .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 3px; }
   .sources-panel .source-chip { padding: 3px 8px; }
 }
@@ -1599,7 +1586,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 @media (hover: none) {
   .sources-panel .source-chip {
     display: inline-flex; align-items: center; justify-content: center;
-    min-height: 32px;
+    min-height: 30px;
   }
 }
 .source-chip:hover {
@@ -2380,6 +2367,13 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .support-go svg { width: 15px; height: 15px; }
 .support-row:hover .support-go { transform: translateX(3px); color: var(--text); }
+/* the card is the only way in that needs no wallet, so it gets the weight */
+.support-primary { background: var(--surface); }
+.support-primary .support-icon {
+  color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
+}
+.support-primary .support-copy b { font-size: 0.92rem; }
+.support-primary .support-copy span { color: var(--text-2); }
 
 .support-empty { display: grid; gap: 8px; padding: 20px 16px 18px; }
 .support-empty p { margin: 0; max-width: 56ch; color: var(--text-3); font-size: 0.82rem; line-height: 1.6; }
@@ -2398,17 +2392,11 @@ a.donate-value:hover { text-decoration: underline; }
   text-transform: uppercase; color: var(--text-3);
 }
 .addr-grid { display: grid; gap: 6px; }
-/* three addresses, one row on anything wider than a phone */
-@media (min-width: 560px) {
-  .addr-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
-  .addr { grid-template-columns: 26px minmax(0, 1fr); gap: 9px 10px; }
-  .addr .coin-icon { grid-row: 1 / span 2; align-self: start; }
-  .addr-copy { grid-column: 2; justify-self: start; }
-  .addr-value { font-size: 0.7rem; line-height: 1.45; }
-}
+/* one coin per line, everywhere: three columns turned the addresses into a
+   puzzle and pushed the copy button around */
 .addr {
-  display: grid; grid-template-columns: 26px minmax(0, 1fr) auto;
-  align-items: center; gap: 10px;
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center; gap: 11px;
   padding: 10px 12px;
   border: 1px solid var(--stroke); border-radius: var(--r-md); background: var(--bg);
   transition: border-color 140ms;
@@ -2480,15 +2468,15 @@ a.addr-value:hover { color: var(--text); }
    word carries the meaning, and nothing is underlined or shouting */
 .share-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .share-chip {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  height: 38px; padding: 0 8px; min-width: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 44px; padding: 0 10px; min-width: 0;
   border-radius: var(--r-sm); border: 1px solid var(--stroke);
   color: var(--text-3);
   font-family: var(--mono); font-size: 0.7rem;
   transition: color 140ms, border-color 140ms, background 140ms, transform 140ms var(--ease);
 }
 .share-icon { display: inline-flex; flex: none; color: var(--text-3); transition: color 140ms; }
-.share-icon svg { width: 14px; height: 14px; display: block; }
+.share-icon svg { width: 17px; height: 17px; display: block; }
 .share-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .share-chip:hover {
   color: var(--text); border-color: var(--stroke-2);
@@ -2501,7 +2489,7 @@ a.addr-value:hover { color: var(--text); }
    smaller rather than truncated ("thre…" is not a brand) */
 @media (max-width: 430px) {
   .share-chip { gap: 6px; padding: 0 6px; font-size: 0.64rem; }
-  .share-icon svg { width: 13px; height: 13px; }
+  .share-icon svg { width: 15px; height: 15px; }
 }
 /* under 360px even that is too tight: icons only */
 @media (max-width: 359px) {
@@ -2599,4 +2587,66 @@ a.addr-value:hover { color: var(--text); }
   .dock-head { padding-bottom: 7px; }
   body { padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
   .footer { padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ---------- micro-motion ---------- */
+/* One gesture for the whole site: a hair of movement toward the pointer, never
+   more than three pixels, never on a touch screen (a stuck hover looks broken
+   there), and never when reduced motion is asked for. */
+.tool-card { position: relative; }
+.tool-card::after {
+  content: "→";
+  position: absolute; right: 12px; top: 50%;
+  font-family: var(--mono); font-size: 0.78rem; line-height: 1;
+  color: var(--text-3); opacity: 0;
+  transform: translate(-5px, -50%);
+  transition: opacity 160ms ease-out, transform 220ms var(--ease);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  /* cards lift a pixel and grow an arrow: "this opens something" */
+  .tool-card {
+    transition: border-color 140ms ease-out, background 140ms ease-out,
+                translate 220ms var(--ease);
+  }
+  .tool-card:hover { translate: 0 -1px; }
+  .tool-card:active { translate: 0 0; }
+  .tool-card:hover::after { opacity: 1; transform: translate(0, -50%); }
+  .tool-card-icon { transition: color 140ms, border-color 140ms, translate 220ms var(--ease); }
+  .tool-card:hover .tool-card-icon { translate: 0 -1px; }
+
+  /* mode icons nod when you point at them */
+  .mode svg { transition: translate 200ms var(--ease); }
+  .mode:hover svg { translate: 0 -1px; }
+
+  /* chips, queue rows and icon buttons share the same one-pixel lift */
+  .source-chip {
+    transition: color 140ms, border-color 140ms, background 140ms,
+                translate 200ms var(--ease);
+  }
+  .source-chip:hover { translate: 0 -1px; }
+  .qitem { transition: border-color 140ms, translate 200ms var(--ease); }
+  .qitem:hover { translate: 0 -1px; }
+  .icon-btn {
+    transition: color 140ms, background 140ms, border-color 140ms,
+                translate 200ms var(--ease);
+  }
+  .icon-btn:hover { translate: 0 -1px; }
+
+  /* the paste glyph leans up; the sources chevron leans down, the way it opens */
+  #paste-btn .pb-icons { transition: translate 200ms var(--ease); }
+  #paste-btn:hover .pb-icons { translate: 0 -1px; }
+  .sources-toggle .sources-chev {
+    transition: transform 220ms var(--ease), opacity 160ms ease-out,
+                translate 200ms var(--ease);
+  }
+  .sources-toggle:hover .sources-chev { translate: 0 1px; }
+
+  /* the primary arrow leans toward the click */
+  #fetch-btn svg {
+    transition: transform 180ms var(--ease), translate 200ms var(--ease), opacity 120ms;
+  }
+  #fetch-btn:hover svg { transform: none; translate: 3px 0; }
+  #fetch-btn[data-armed="true"]:active { transform: translateY(1px) scale(0.99); }
 }

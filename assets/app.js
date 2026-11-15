@@ -801,6 +801,9 @@
   }
 
   const recentSubmits = new Map();
+  /* links being resolved right now: measuring a big file can take seconds, and
+     a second tap during that window used to start the same download twice */
+  const pendingSubmits = new Set();
 
   function admitSubmit(url) {
     const now = Date.now();
@@ -883,49 +886,71 @@
       }
       usable.push(url);
     });
-    const fresh = usable.filter(admitSubmit);
+    const living = (url) => queue.some((item) =>
+      item.url === url && (item.status === "queued" || item.status === "working" || item.status === "downloading"));
+    const fresh = usable.filter((url) => {
+      if (pendingSubmits.has(url)) return false;
+      if (living(url)) return false;
+      return admitSubmit(url);
+    });
     if (!fresh.length) {
       /* a second tap, or the same link hammered: leave what they typed where
          it is, keep the keyboard down, and say it once */
-      toast("Already queued — wait for it to finish.", "warn");
+      const starting = usable.some((url) => pendingSubmits.has(url));
+      toast(starting ? "Already starting — one second." : "Already queued — wait for it to finish.", "warn");
       nudgeComposer();
       return;
     }
 
     const batch = fresh.slice(0, MAX_URLS_PER_SUBMIT);
-
-    /* measure before queueing, but only when the number is actually known */
-    const big = [];
-    batch.forEach((url) => {
-      const known = readProbe(probeKey(url, mode));
-      if (known && known.estimate && known.estimate.bytes >= XL_BYTES) {
-        big.push({ url, bytes: known.estimate.bytes, title: known.title });
+    fresh.forEach((url) => pendingSubmits.add(url));
+    setSubmitting(true);
+    try {
+      /* measure before queueing, but only when the number is actually known */
+      const big = [];
+      batch.forEach((url) => {
+        const known = readProbe(probeKey(url, mode));
+        if (known && known.estimate && known.estimate.bytes >= XL_BYTES) {
+          big.push({ url, bytes: known.estimate.bytes, title: known.title });
+        }
+      });
+      if (!big.length && batch.length === 1 && probeSupported()) {
+        const data = await fetchProbe(batch[0], mode).catch(() => null);
+        if (data && data.estimate && data.estimate.bytes >= XL_BYTES) {
+          big.push({ url: batch[0], bytes: data.estimate.bytes, title: data.title });
+        }
       }
-    });
-    if (!big.length && batch.length === 1 && probeSupported()) {
-      const data = await fetchProbe(batch[0], mode).catch(() => null);
-      if (data && data.estimate && data.estimate.bytes >= XL_BYTES) {
-        big.push({ url: batch[0], bytes: data.estimate.bytes, title: data.title });
+      if (big.length) {
+        const proceed = await confirmLarge(big);
+        if (!proceed) return;   /* the field keeps what they pasted */
       }
-    }
-    if (big.length) {
-      const proceed = await confirmLarge(big);
-      if (!proceed) return;   /* the field keeps what they pasted */
-    }
 
-    batch.forEach((url) => {
-      enqueue(url, mode);
-      addHistory(url);
-    });
-    if (fresh.length > batch.length) toast("Only the first " + batch.length + " links were queued.", "warn");
+      batch.forEach((url) => {
+        enqueue(url, mode);
+        addHistory(url);
+      });
+      if (fresh.length > batch.length) toast("Only the first " + batch.length + " links were queued.", "warn");
 
-    dom.input.value = "";
-    updateComposerState();
-    if (IS_TOUCH) { try { dom.input.blur(); } catch (e) {} }
-    renderQueue();
-    const firstQueued = queue.find((item) => item.status === "queued");
-    if (firstQueued && firstQueued.node) firstQueued.node.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    pump();
+      dom.input.value = "";
+      updateComposerState();
+      if (IS_TOUCH) { try { dom.input.blur(); } catch (e) {} }
+      renderQueue();
+      const firstQueued = queue.find((item) => item.status === "queued");
+      if (firstQueued && firstQueued.node) firstQueued.node.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      pump();
+    } finally {
+      fresh.forEach((url) => pendingSubmits.delete(url));
+      setSubmitting(false);
+    }
+  }
+
+  /* the button answers the click before the network does: the arrow turns
+     into a spinner until the link is resolved and queued */
+  function setSubmitting(on) {
+    if (!dom.fetchBtn) return;
+    dom.fetchBtn.dataset.busy = on ? "true" : "false";
+    dom.fetchBtn.setAttribute("aria-busy", on ? "true" : "false");
+    dom.fetchBtn.setAttribute("aria-disabled", on ? "true" : "false");
   }
 
   /* ----------------------------------------------------------
@@ -2608,14 +2633,14 @@
       badge.classList.add("donate-card-icon");
       card.appendChild(badge);
       const copy = el("span", { class: "donate-card-copy" });
-      copy.appendChild(el("b", { text: "card" }));
+      copy.appendChild(el("b", { text: "credit card" }));
       copy.appendChild(el("span", { text: "apple pay · google pay · one-time · via stripe" }));
       card.appendChild(copy);
       const go = el("span", { class: "donate-card-go", "aria-hidden": "true" });
       go.innerHTML = (window.MDOWN_COIN || {}).arrow || "";
       card.appendChild(go);
       wrap.appendChild(card);
-      wrap.appendChild(el("p", { class: "donate-or", text: "or send it straight to an address" }));
+      wrap.appendChild(el("p", { class: "donate-or", text: "or send crypto" }));
     }
 
     const list = el("div", { class: "donate-list" });
@@ -3158,9 +3183,13 @@
 
   /* Only the newest bar arrives with a rise; the rest are already there.
      Replaying the whole stagger every minute made a quiet graph look busy. */
+  let healthSig = "";
   function renderHealthBars(history) {
     const strip = dom.hpStrip;
     if (!strip) return;
+    const sig = history.map((x) => x.t + (x.ok === true ? "+" : x.ok === false ? "-" : "?")).join("|");
+    if (sig && sig === healthSig) return;   // nothing new: leave the bars alone
+    healthSig = sig;
     const recent = history.slice(-HEALTH_BARS);
     const pad = Math.max(0, HEALTH_BARS - recent.length);
     strip.innerHTML = "";
@@ -3230,14 +3259,25 @@
       renderHealthBars(readHealth());
       return;
     }
-    setHealthState("checking", "checking…", "");
+    /* the first look says "checking…". Every look after that keeps whatever it
+       already knows and only pulses the dot: flipping the word once a minute
+       is what made a healthy server look unstable */
+    const known = dom.healthPop && dom.healthPop.dataset.state &&
+      dom.healthPop.dataset.state !== "unknown";
+    if (!known) setHealthState("checking", "checking…", "");
+    else dom.healthPop.dataset.busy = "true";
 
-    let sample = await healthSample(endpoint);
-    /* one retry: a deploy restarts the service for a second, and that is not
-       an outage worth drawing in red */
-    if (!sample.responded) {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+    let sample;
+    try {
       sample = await healthSample(endpoint);
+      /* one retry: a deploy restarts the service for a second, and that is not
+         an outage worth drawing in red */
+      if (!sample.responded) {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        sample = await healthSample(endpoint);
+      }
+    } finally {
+      if (dom.healthPop) dom.healthPop.dataset.busy = "false";
     }
 
     if (sample.limited) {
@@ -3654,7 +3694,7 @@
       script.onerror = reject;
       document.head.appendChild(script);
     });
-    toolsPromise = add("assets/remux.js?v=7").then(() => add("assets/tools.js?v=8"));
+    toolsPromise = add("assets/remux.js?v=8").then(() => add("assets/tools.js?v=8"));
     return toolsPromise;
   }
 
@@ -3765,6 +3805,7 @@
       rateRemaining,
       items: queue.map((i) => ({
         id: i.id,
+        url: i.url,
         status: i.status,
         detail: i.detail,
         direct: i.direct,

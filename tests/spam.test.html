@@ -69,6 +69,19 @@ async function main() {
   const items = win.md.state().items.length;
   record("one link is queued once, not twenty-five times", items === 1, items + " items");
 
+  /* ---- two taps, seconds apart, while the probe is still running -------- */
+  await sleep(1600);   // past the short duplicate window (1.5s), still in the slow probe
+  setField("https://youtu.be/slowprobe");
+  form.dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+  await sleep(250);
+  const busy = $("#fetch-btn").getAttribute("aria-busy");
+  record("the button answers the tap while it works", busy === "true", "aria-busy=" + busy);
+  form.dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+  await sleep(3600);
+  const after = win.md.state().items.filter((i) => /slowprobe/.test(i.url || "")).length;
+  record("a second tap during the probe does not start it twice", after === 1,
+    after + " slowprobe items, " + win.md.state().items.length + " total");
+
   // ---- menus, toggled as fast as a finger can ---------------------------
   const sourcesBtn = $("#open-sources");
   const sourcesPanel = $("#sources-panel");

@@ -176,6 +176,9 @@ class Handler(BaseHTTPRequestHandler):
         self._host = host
 
         if self.path.startswith("/probe"):
+            # a probe slow enough to double-click inside
+            if "slowprobe" in url:
+                time.sleep(3)
             if "error" in url:
                 self._json({"status": "error",
                             "error": {"code": "api.content.video.private"}}, 422)

@@ -509,6 +509,9 @@ async function processItem(item) {
     item.sizeOut = blob.size;
     item.indeterminate = false;
     item.progress = 1;
+    /* the row may only say "done" once the engine's copies are gone: saying it
+       first left in_/out_ files behind for the length of a delete */
+    await cleanupFiles();
     setStatus(item, "done");
   } catch (err) {
     if (item.cancelled) {
@@ -519,10 +522,14 @@ async function processItem(item) {
     }
   } finally {
     engine.active = null;
+    await cleanupFiles();
+  }
+
+  async function cleanupFiles() {
     try {
       if (ff && inputName) await ff.deleteFile(inputName);
       if (ff && outputName) await ff.deleteFile(outputName);
-    } catch {}
+    } catch (e) { /* already gone, or the engine was killed */ }
   }
 }
 
