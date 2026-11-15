@@ -309,7 +309,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   border-radius: var(--r-lg);
   background: var(--bg-elev);
   border: 1px solid var(--stroke);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-1), 0 1px 0 rgba(255, 255, 255, 0.035) inset;
   transition: border-color var(--speed), box-shadow var(--speed);
 }
 
@@ -2163,6 +2163,23 @@ a.donate-value:hover { text-decoration: underline; }
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
+
+/* a soft pool of light behind the mark: depth, not a glow. It is the same
+   colour as the text at 6%, so it reads as the page being lit rather than as
+   a coloured effect. */
+.hero { position: relative; isolation: isolate; }
+.hero::before {
+  content: ""; position: absolute; z-index: -1;
+  left: 50%; top: -48px; width: min(720px, 90vw); height: 320px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side,
+    color-mix(in srgb, var(--text) 9%, transparent), transparent 72%);
+  pointer-events: none;
+}
+[data-theme="light"] .hero::before {
+  background: radial-gradient(closest-side,
+    rgba(12, 12, 16, 0.07), transparent 72%);
+}
 /* one flow: the arrow rises, the name follows it, the line follows the name.
    Same gesture each time, 70ms apart, so the eye reads it as one movement. */
 .hero-logo {
