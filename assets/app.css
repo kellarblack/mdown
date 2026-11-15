@@ -2167,6 +2167,11 @@ a.donate-value:hover { text-decoration: underline; }
   display: flex; align-items: center; justify-content: center; gap: 12px;
   margin: 0 auto clamp(18px, 3vh, 28px);
   color: var(--text);
+  /* the wordmark sits a little above the page rather than on it */
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.55));
+}
+[data-theme="light"] .hero-logo {
+  filter: drop-shadow(0 8px 18px rgba(12, 12, 16, 0.14));
 }
 .hero-mark {
   display: grid; place-items: center; flex: none;
@@ -2197,11 +2202,7 @@ a.donate-value:hover { text-decoration: underline; }
 }
 /* the name types itself once, then the caret leaves. the text keeps its full
    width the whole time, so nothing to the right of it ever moves. */
-.hero-type {
-  display: inline-block;
-  clip-path: inset(0 100% 0 0);
-  animation: type-in 640ms steps(8, end) 300ms forwards;
-}
+.hero-type { display: inline-block; }
 /* the last glyph's ink can sit a hair outside the box, and clipping exactly at
    the box chopped the final c. The reveal ends by removing the clip entirely. */
 @keyframes type-in {
@@ -2209,20 +2210,23 @@ a.donate-value:hover { text-decoration: underline; }
   99%  { clip-path: inset(0 0 0 0); }
   100% { clip-path: none; }
 }
-.hero-caret {
-  position: absolute; top: 0.08em; bottom: 0.08em; left: 0; width: 1.5px;
-  background: var(--text-2); pointer-events: none;
-  animation:
-    caret-move 640ms steps(8, end) 300ms forwards,
-    caret-out 200ms ease-out 1040ms forwards;
-}
+.hero-caret { display: none; }
 @keyframes caret-move { to { left: 100%; } }
 @keyframes caret-out { to { opacity: 0; } }
 .hero-word-m { display: inline; }
-/* the wordmark used to type, then drop its second half. That second drop is
-   what made the m and d collide, and it read as two animations fighting.
-   The typing is the gesture; the rest just sits still. */
-.hero-word-down { display: inline; }
+/* the gesture: the arrow and the second half of the name drop together, the
+   grey letters settling into place. A hair of space between m and d keeps them
+   from touching while it moves. */
+.hero-word-down {
+  display: inline-block;
+  margin-left: 0.055em;
+  animation: down-in 560ms var(--ease) 90ms both;
+}
+@keyframes down-in {
+  0%   { transform: translateY(-0.16em); opacity: 0.3; }
+  58%  { transform: translateY(0.012em); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
 .hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
 .hero-word-sub {
   /* same size as the name, a shade quieter: it reads as mdown.cc rather than
