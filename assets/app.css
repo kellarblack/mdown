@@ -2163,23 +2163,6 @@ a.donate-value:hover { text-decoration: underline; }
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
-
-/* a soft pool of light behind the mark: depth, not a glow. It is the same
-   colour as the text at 6%, so it reads as the page being lit rather than as
-   a coloured effect. */
-.hero { position: relative; isolation: isolate; }
-.hero::before {
-  content: ""; position: absolute; z-index: -1;
-  left: 50%; top: -48px; width: min(720px, 90vw); height: 320px;
-  transform: translateX(-50%);
-  background: radial-gradient(closest-side,
-    color-mix(in srgb, var(--text) 9%, transparent), transparent 72%);
-  pointer-events: none;
-}
-[data-theme="light"] .hero::before {
-  background: radial-gradient(closest-side,
-    rgba(12, 12, 16, 0.07), transparent 72%);
-}
 /* one flow: the arrow rises, the name follows it, the line follows the name.
    Same gesture each time, 70ms apart, so the eye reads it as one movement. */
 .hero-logo {
@@ -2200,7 +2183,7 @@ a.donate-value:hover { text-decoration: underline; }
    motion, and no filter on the lockup to make the edges shimmer */
 .hero-mark svg {
   width: 100%; height: 100%;
-  animation: hero-rise 360ms var(--ease) both;
+  animation: mark-in 620ms var(--ease) both;
 }
 @keyframes hero-arrow {
   0%   { transform: translateY(-16px); opacity: 0.15; }
@@ -2213,9 +2196,8 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .hero-word {
   position: relative;
-  animation: hero-rise 360ms var(--ease) 70ms both;
-  font-family: var(--mono); font-weight: 600;
-  font-size: clamp(2rem, 4.6vw, 2.8rem);
+  font-family: var(--mono); font-weight: 500;
+  font-size: clamp(1.75rem, 4.2vw, 2.4rem);
   letter-spacing: -0.03em; line-height: 1;
 }
 .hero-type { display: inline-block; }
@@ -2232,7 +2214,15 @@ a.donate-value:hover { text-decoration: underline; }
    gesture the mark makes in the corner — once, on load, and never again.
    The hair of margin is the one change: it keeps the grey letters off the
    white m while they fall. */
-.hero-word-down { display: inline-block; margin-left: 0.05em; }
+.hero-word-down {
+  display: inline-block; margin-left: 0.05em;
+  animation: down-in 620ms var(--ease) 60ms both;
+}
+@keyframes down-in {
+  0%   { transform: translateY(-0.16em); opacity: 0.28; }
+  62%  { transform: translateY(0.01em); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
 @keyframes down-in {
   0%   { transform: translateY(-0.16em); opacity: 0.3; }
   58%  { transform: translateY(0.012em); opacity: 1; }
@@ -2245,13 +2235,7 @@ a.donate-value:hover { text-decoration: underline; }
   font-size: 0.72em; font-weight: 400; color: var(--text-3);
   letter-spacing: 0; margin-left: 2px;
 }
-/* the one line that says what it is, directly under the name */
-.hero-tag {
-  margin: 0 0 clamp(18px, 3vh, 28px); text-align: center;
-  color: var(--text-3); font-family: var(--mono);
-  font-size: 0.78rem; letter-spacing: 0.02em;
-  animation: hero-rise 360ms var(--ease) 140ms both;
-}
+.hero-logo { margin-bottom: clamp(18px, 3vh, 28px); }
 
 .meta-line {
   margin-top: 12px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;
