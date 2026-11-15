@@ -50,13 +50,15 @@
 }
 
 [data-theme="light"] {
-  --bg: #ffffff;
-  --bg-elev: #fbfbfb;
-  --surface: rgba(0, 0, 0, 0.02);
-  --surface-2: rgba(0, 0, 0, 0.045);
-  --surface-3: rgba(0, 0, 0, 0.075);
-  --stroke: rgba(0, 0, 0, 0.13);
-  --stroke-2: rgba(0, 0, 0, 0.27);
+  /* a page slightly off-white, cards pure white: that is what gives light mode
+     depth without drawing heavier borders */
+  --bg: #f6f6f7;
+  --bg-elev: #ffffff;
+  --surface: rgba(0, 0, 0, 0.035);
+  --surface-2: rgba(0, 0, 0, 0.055);
+  --surface-3: rgba(0, 0, 0, 0.085);
+  --stroke: rgba(0, 0, 0, 0.12);
+  --stroke-2: rgba(0, 0, 0, 0.26);
   --text: #121213;
   --text-2: #5c5c61;
   --text-3: #6f6f76;
@@ -78,7 +80,13 @@
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  /* the recent strip can push the page past one screen a moment after load;
+     reserving the gutter keeps the whole layout from shifting sideways when
+     the scrollbar appears */
+  scrollbar-gutter: stable;
+}
 /* Nothing on this page should zoom because of a double tap. `manipulation`
    keeps panning and pinch-zoom working — it only removes the double-tap
    gesture, which is the one people trigger by accident when tapping twice on
@@ -2156,10 +2164,10 @@ a.donate-value:hover { text-decoration: underline; }
 /* the download view: one centred column, nothing else competing */
 #download-view {
   display: flex; flex-direction: column;
-  /* `safe` keeps the composer reachable when the viewport is shorter than the
-     content — plain `center` clips the top and you cannot scroll to it */
-  justify-content: center;
-  justify-content: safe center;
+  /* anchored, not centred: the recent strip arrives a moment after load, and
+     centring meant the whole column jumped up when it did. Now it grows down. */
+  justify-content: flex-start;
+  padding-top: clamp(14px, 6vh, 64px);
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
@@ -2181,10 +2189,7 @@ a.donate-value:hover { text-decoration: underline; }
 }
 /* the mark drops once, exactly as it did before: vertical only, no sideways
    motion, and no filter on the lockup to make the edges shimmer */
-.hero-mark svg {
-  width: 100%; height: 100%;
-  animation: mark-in 620ms var(--ease) both;
-}
+.hero-mark svg { width: 100%; height: 100%; }
 @keyframes hero-arrow {
   0%   { transform: translateY(-16px); opacity: 0.15; }
   62%  { transform: translateY(2.5px); opacity: 1; }
@@ -2214,10 +2219,7 @@ a.donate-value:hover { text-decoration: underline; }
    gesture the mark makes in the corner — once, on load, and never again.
    The hair of margin is the one change: it keeps the grey letters off the
    white m while they fall. */
-.hero-word-down {
-  display: inline-block; margin-left: 0.05em;
-  animation: down-in 620ms var(--ease) 60ms both;
-}
+.hero-word-down { display: inline-block; margin-left: 0.05em; }
 @keyframes down-in {
   0%   { transform: translateY(-0.16em); opacity: 0.28; }
   62%  { transform: translateY(0.01em); opacity: 1; }
@@ -3027,9 +3029,9 @@ a.addr-value:hover { color: var(--text); }
    panel on a white page. Elevation now comes from shadows, edges are a touch
    darker, and green is dark enough to read at 9-11px. */
 [data-theme="light"] {
-  --text-3: #64646b;
-  --stroke: rgba(0, 0, 0, 0.18);
-  --stroke-2: rgba(0, 0, 0, 0.34);
+  --text-3: #5f5f66;
+  --stroke: rgba(0, 0, 0, 0.12);
+  --stroke-2: rgba(0, 0, 0, 0.26);
   --ok: #15803d;
   --ring: rgba(0, 0, 0, 0.62);
   --shadow-1: 0 1px 2px rgba(12, 12, 16, 0.07), 0 1px 1px rgba(12, 12, 16, 0.04);
