@@ -2460,7 +2460,13 @@ a.addr-value:hover { color: var(--text); }
 .share-chip:hover .share-icon { color: var(--text); }
 .share-chip:active { transform: translateY(1px); }
 .share-chip:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-/* under 360px the words would be squeezed to nothing: icons only */
+/* a phone is 390-430 wide: four buttons means ~88px each, so the label gets
+   smaller rather than truncated ("thre…" is not a brand) */
+@media (max-width: 430px) {
+  .share-chip { gap: 6px; padding: 0 6px; font-size: 0.64rem; }
+  .share-icon svg { width: 13px; height: 13px; }
+}
+/* under 360px even that is too tight: icons only */
 @media (max-width: 359px) {
   .share-chips { gap: 5px; }
   .share-chip { gap: 0; }
