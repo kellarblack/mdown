@@ -1397,7 +1397,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 /* height is the day's uptime, so the row reads as a graph and not as a row of
    identical ticks: a bad day is visibly shorter, not just a different colour */
 .uptime-bar {
-  flex: 1 1 0; min-width: 0; max-width: 9px; height: 100%; border-radius: 2px;
+  flex: 1 1 0; min-width: 0; max-width: 22px; height: 100%; border-radius: 2px;
   background: color-mix(in srgb, var(--ok) 75%, transparent);
   transform-origin: bottom; transform: scaleY(1);
   transition: transform 520ms cubic-bezier(.22,.8,.3,1), background 320ms ease;
