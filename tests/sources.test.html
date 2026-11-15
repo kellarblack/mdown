@@ -70,9 +70,14 @@ async function main() {
   record("it lists the sources it can reach", rows().length >= 10, rows().length + " sources");
 
   const names = rows().map((r) => r.textContent.toLowerCase());
-  record("it lists every source we accept, not one server's subset",
-    names.length >= 30 && names.indexOf("youtube") >= 0 && names.indexOf("rumble") >= 0,
-    names.length + " sources, rumble=" + (names.indexOf("rumble") >= 0));
+  record("the panel is a shortlist, not the whole inventory",
+    names.length >= 12 && names.length <= 24 &&
+      names.indexOf("youtube") >= 0 && names.indexOf("soundcloud") >= 0,
+    names.length + " chips");
+  const more = doc.querySelector("#sources-panel .sources-more");
+  record("and it hands you the full list",
+    !!more && /sources\.html$/.test(more.getAttribute("href") || ""),
+    more ? more.getAttribute("href") : "(none)");
   record("and nothing we refuse",
     names.indexOf("spotify") < 0 && names.indexOf("giphy") < 0,
     "spotify/giphy absent");
@@ -122,6 +127,25 @@ async function main() {
     Math.round(phone.bottom) + " of " + frame.contentWindow.innerHeight);
   record("with no sideways scroll", doc.documentElement.scrollWidth <= 391,
     doc.documentElement.scrollWidth + "px wide");
+
+  /* ---- the full list is a page, not a wall of chips -------------------- */
+  {
+    const res = await fetch("../sources.html", { cache: "no-store" });
+    const html = await res.text();
+    const parsed = new DOMParser().parseFromString(html, "text/html");
+    const pageRows = [...parsed.querySelectorAll(".source-row")];
+    record("the sources page lists every service",
+      res.ok && pageRows.length >= 30, pageRows.length + " rows");
+    const bad = pageRows.filter((a) => !/^https:\/\//.test(a.getAttribute("href") || "") ||
+      a.getAttribute("rel") !== "noopener noreferrer");
+    record("every row is a real, safe link",
+      pageRows.length > 0 && bad.length === 0,
+      bad.map((a) => a.textContent.trim()).slice(0, 3).join(", ") || "all safe");
+    const domains = pageRows.filter((a) => /\.[a-z]{2,}$/.test((a.querySelector("span") || {}).textContent || "") ||
+      /\.[a-z]{2,} /.test((a.querySelector("span") || {}).textContent || ""));
+    record("and each one shows where it goes",
+      domains.length === pageRows.length, domains.length + "/" + pageRows.length);
+  }
 
   window.__results = { total: results.length, failures, results };
 }

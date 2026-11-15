@@ -28,7 +28,7 @@ for argument in sys.argv[1:]:
 # exactly what .github/workflows/pages.yml copies into _site
 SITE = [
     "index.html", "404.html", "terms.html", "status.html", "updates.html", "donate.html",
-    "api.html",
+    "api.html", "sources.html",
     "robots.txt", "sitemap.xml", "llms.txt", "manifest.webmanifest", "_headers",
 ]
 

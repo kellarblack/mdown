@@ -2596,8 +2596,19 @@
     return Array.from(known.entries());
   }
 
+  /* the panel is a shortcut, not an inventory: the twenty people actually
+     paste from, with the rest one click away */
+  const FEATURED = [
+    "youtube", "soundcloud", "tiktok", "instagram", "reddit", "twitter",
+    "facebook", "vimeo", "twitch", "dailymotion", "bilibili", "bluesky",
+    "threads", "tumblr", "bandcamp", "mixcloud", "rumble", "odysee",
+    "streamable", "snapchat"
+  ];
+
   function renderSources() {
-    const shown = sourceList().sort((a, b) => a[0].localeCompare(b[0]));
+    const all = sourceList().sort((a, b) => a[0].localeCompare(b[0]));
+    const known = new Map(all);
+    const shown = FEATURED.filter((id) => known.has(id)).map((id) => [id, known.get(id)]);
 
     const wrap = el("div", { class: "sources" });
 
@@ -2625,6 +2636,15 @@
       row.appendChild(chip);
     });
     wrap.appendChild(row);
+
+    const more = el("a", {
+      class: "sources-more",
+      href: "sources.html",
+      text: "all " + all.length + " sources"
+    });
+    const go = el("span", { class: "sources-more-go", "aria-hidden": "true", text: "→" });
+    more.appendChild(go);
+    wrap.appendChild(more);
 
     dom.sourcesPanel.innerHTML = "";
     dom.sourcesPanel.appendChild(wrap);
