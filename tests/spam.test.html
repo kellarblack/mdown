@@ -74,7 +74,7 @@ async function main() {
   setField("https://youtu.be/slowprobe");
   form.dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
   await sleep(250);
-  const busy = $("#fetch-btn").getAttribute("aria-busy");
+  const busy = $("#paste-btn").getAttribute("aria-busy");
   record("the button answers the tap while it works", busy === "true", "aria-busy=" + busy);
   form.dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
   await sleep(3600);

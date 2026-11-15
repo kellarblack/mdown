@@ -115,16 +115,24 @@ async function main() {
     record(device.name + ": fields are 16px (no iOS zoom)", small.length === 0,
       small.length ? small.map((f) => f.id + "=" + f.size + "px").join(", ") : "ok");
 
-    // the primary action must be big and reachable with a thumb
-    const cta = doc.querySelector(".primary-btn");
-    const ctaRect = cta ? cta.getBoundingClientRect() : null;
-    record(device.name + ": fetch is a full-width, 48px target",
-      !!ctaRect && ctaRect.width > device.w * 0.55 && ctaRect.height >= 44,
-      ctaRect ? Math.round(ctaRect.width) + "x" + Math.round(ctaRect.height) : "(missing)");
+    // one control: paste turns into download where it already sits
+    const mobField = doc.querySelector("#url-input");
+    const setMob = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, "value").set;
+    setMob.call(mobField, "https://youtu.be/armedcheck");
+    mobField.dispatchEvent(new win.Event("input", { bubbles: true }));
+    await sleep(320);
+    const cta = doc.querySelector("#paste-btn");
+    const ctaRect = cta.getBoundingClientRect();
+    record(device.name + ": the download control is a real thumb target",
+      cta.dataset.state === "get" && ctaRect.height >= 40 && ctaRect.width >= 100,
+      cta.dataset.state + " " + Math.round(ctaRect.width) + "x" + Math.round(ctaRect.height));
 
-    record(device.name + ": fetch sits above the fold",
-      !!ctaRect && ctaRect.bottom <= device.h + 1,
-      ctaRect ? "bottom=" + Math.round(ctaRect.bottom) + " of " + device.h : "");
+    record(device.name + ": and it sits above the fold",
+      ctaRect.bottom <= device.h + 1,
+      "bottom=" + Math.round(ctaRect.bottom) + " of " + device.h);
+    setMob.call(mobField, "");
+    mobField.dispatchEvent(new win.Event("input", { bubbles: true }));
+    await sleep(200);
 
     // the composer must be reachable without pinch-zoom
     const input = doc.querySelector("#url-input");
@@ -330,6 +338,38 @@ async function main() {
       const over = doc.documentElement.scrollWidth - frame.contentWindow.innerWidth;
       record(page + " at " + width + "px: no sideways scroll", over <= 1, over + "px over");
     }
+  }
+
+  /* ---- the bar answers a slide, not only a tap ------------------------- */
+  {
+    const frame = await load(390, 800);
+    const doc = frame.contentDocument;
+    const win = frame.contentWindow;
+    await sleep(500);
+    const bar = doc.querySelector(".mobile-bar");
+    const items = [...bar.querySelectorAll(".mbar-item")];
+    record("the phone bar holds four items", items.length === 4, items.length + " items");
+
+    const target = items[items.length - 1];
+    const rect = target.getBoundingClientRect();
+    const start = items[0].getBoundingClientRect();
+    const y = Math.round(rect.top + rect.height / 2);
+    const fire = (type, x) => bar.dispatchEvent(new win.PointerEvent(type, {
+      bubbles: true, clientX: x, clientY: y, pointerType: "touch", isPrimary: true
+    }));
+    fire("pointerdown", start.left + 20);
+    for (let x = start.left + 20; x < rect.left + rect.width / 2; x += 22) {
+      fire("pointermove", x);
+      await sleep(8);
+    }
+    const near = bar.querySelector(".mbar-item.is-near");
+    record("sliding across the bar marks the item under the finger", !!near,
+      near ? near.textContent.trim() : "none");
+    fire("pointerup", rect.left + rect.width / 2);
+    await sleep(420);
+    const pop = doc.querySelector("#tip-pop");
+    record("and releasing there opens that item", !!pop && !pop.hidden,
+      pop ? "hidden=" + pop.hidden : "(no panel)");
   }
 
   window.__results = { total: results.length, failures, results };

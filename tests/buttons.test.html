@@ -66,28 +66,20 @@ async function main() {
     doc.activeElement && doc.activeElement.id === "url-input",
     (doc.activeElement && (doc.activeElement.id || doc.activeElement.tagName)) || "none");
 
-  const fetchBtn = doc.querySelector("#fetch-btn");
-  record("the fetch control is quiet before a link",
-    !!fetchBtn && fetchBtn.dataset.armed === "false",
-    fetchBtn ? fetchBtn.dataset.armed : "missing");
-
   const field = doc.querySelector("#url-input");
   const setField = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, "value").set;
   setField.call(field, "https://youtu.be/armedcheck");
   field.dispatchEvent(new win.Event("input", { bubbles: true }));
   await sleep(120);
-  record("pasting a link arms it",
-    fetchBtn.dataset.armed === "true" && fetchBtn.getAttribute("aria-label") === "fetch",
-    fetchBtn.dataset.armed + " · " + fetchBtn.getAttribute("aria-label"));
-
   // one control, two jobs: paste when the field is empty, download when it is not
   await sleep(300);
   const morph = doc.querySelector("#paste-btn");
   const morphLabel = () => morph.querySelector(".pb-label").textContent;
   const morphWidth = () => Math.round(morph.getBoundingClientRect().width);
   const widthArmed = morphWidth();
-  record("paste becomes download when a link lands",
-    morph.dataset.state === "get" && morphLabel() === "download",
+  record("paste becomes the download button when a link lands",
+    morph.dataset.state === "get" && morphLabel() === "download" &&
+      morph.getAttribute("aria-label") === "download",
     morph.dataset.state + " / " + morphLabel());
   setField.call(field, "");
   field.dispatchEvent(new win.Event("input", { bubbles: true }));
@@ -98,13 +90,14 @@ async function main() {
   record("the swap does not resize the control",
     morphWidth() === widthArmed, morphWidth() + "px vs " + widthArmed + "px");
 
-  // the phone keeps a full-width target; a desktop gets the small arrow
+  // the same control survives the breakpoint: still the download button,
+  // still a real target (it gains a few px for the thumb on a phone)
   frame.style.width = "900px";
   await sleep(250);
-  const arrow = fetchBtn.getBoundingClientRect();
-  record("on a desktop it shrinks to an arrow",
-    arrow.width <= 40 && arrow.height <= 40,
-    Math.round(arrow.width) + "x" + Math.round(arrow.height));
+  const desk = morph.getBoundingClientRect();
+  record("it keeps a real target on a desktop",
+    desk.width >= 100 && desk.height >= 30,
+    Math.round(desk.width) + "x" + Math.round(desk.height));
   frame.style.width = "390px";
   await sleep(150);
 

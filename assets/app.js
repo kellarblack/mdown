@@ -368,7 +368,7 @@
     input: $("#url-input"),
     clearBtn: $("#clear-btn"),
     pasteBtn: $("#paste-btn"),
-    fetchBtn: $("#fetch-btn"),
+
     modes: $$(".mode"),
     formatNote: $("#format-note"),
     hint: $("#composer-hint"),
@@ -386,6 +386,7 @@
     setupTail: $("#setup-tail"),
     setupButton: $("#setup-open-settings"),
     donateLink: $("#donate-link"),
+    tipPop: $("#tip-pop"),
     openHealth: $("#open-health"),
     openSources: $("#open-sources"),
     sourcesPanel: $("#sources-panel"),
@@ -403,6 +404,7 @@
     queueToggle: $("#queue-toggle"),
     queuePanel: $("#queue-panel"),
     queueBadge: $("#queue-badge"),
+    mbarBadge: $("#mbar-badge"),
     queueCount: $("#queue-count"),
     queueStats: $("#queue-stats"),
     queueClose: $("#queue-close"),
@@ -578,19 +580,10 @@
     const service = detected && detected.id ? detected.id : null;
     updateFormatNote();
 
-    /* the arrow stays quiet until there is something to fetch. it never
-       appears or disappears, only arms, so the footer does not move */
+    /* one control: paste while the field is empty, download once it holds a
+       link. It is always there, so nothing moves when a link lands. */
     const armed = urls.length >= 1;
     updatePasteButton(armed);
-    if (dom.fetchBtn) {
-      if (dom.fetchBtn.dataset.armed !== String(armed)) {
-        dom.fetchBtn.dataset.armed = armed ? "true" : "false";
-        dom.fetchBtn.setAttribute("aria-label", armed ? "fetch" : "paste a link first");
-        /* an invisible control must not be a tab stop */
-        dom.fetchBtn.tabIndex = armed ? 0 : -1;
-        dom.fetchBtn.setAttribute("aria-hidden", armed ? "false" : "true");
-      }
-    }
     if (service && service !== lastService && dom.serviceMark) {
       lastService = service;
       if (typeof dom.serviceMark.animate === "function") {
@@ -972,10 +965,10 @@
   /* the button answers the click before the network does: the arrow turns
      into a spinner until the link is resolved and queued */
   function setSubmitting(on) {
-    if (!dom.fetchBtn) return;
-    dom.fetchBtn.dataset.busy = on ? "true" : "false";
-    dom.fetchBtn.setAttribute("aria-busy", on ? "true" : "false");
-    dom.fetchBtn.setAttribute("aria-disabled", on ? "true" : "false");
+    if (!dom.pasteBtn) return;
+    dom.pasteBtn.dataset.busy = on ? "true" : "false";
+    dom.pasteBtn.setAttribute("aria-busy", on ? "true" : "false");
+    dom.pasteBtn.setAttribute("aria-disabled", on ? "true" : "false");
   }
 
   /* ----------------------------------------------------------
@@ -1254,6 +1247,8 @@
     node.appendChild(actions);
     node.appendChild(progress);
 
+    node.classList.add("is-new");
+    node.addEventListener("animationend", () => node.classList.remove("is-new"), { once: true });
     item.node = node;
     item.refs = { icon, thumb, title, meta, actions, fill, percent, bytes, rate };
     updateItem(item);
@@ -1443,6 +1438,8 @@
       }, 120);
     }
     dom.queueToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    const barQueue = $("#mbar-queue");
+    if (barQueue) barQueue.setAttribute("aria-expanded", open ? "true" : "false");
     dom.queueDock.classList.toggle("is-open", open);
   }
 
@@ -1461,6 +1458,11 @@
   }
 
   function updateQueueMeta() {
+    if (dom.mbarBadge && dom.queueBadge) {
+      const count = dom.queueBadge.textContent || "";
+      dom.mbarBadge.textContent = count;
+      dom.mbarBadge.hidden = dom.queueBadge.hidden;
+    }
     ensureTicker();
     const count = queue.length;
     const active = queue.filter((i) => ["queued", "working", "downloading"].includes(i.status)).length;
@@ -2302,7 +2304,6 @@
     }
   }
 
-
   /* ----------------------------------------------------------
      probe: what the file will be, before fetching it
      ---------------------------------------------------------- */
@@ -2548,7 +2549,6 @@
   /* the panel shows everything; no inner scroll */
   function fitSources() {}
 
-
   function toggleSources() {
     if (sourcesOpen) { closeSources(); return; }
     sourcesSeq += 1;
@@ -2644,14 +2644,29 @@
        leaving a dangling " · " when donations are off */
     dom.donateWrap.hidden = !cfg;
     if (!cfg) return;
-    if (dom.donateLink.dataset.bound === "1") return;
-    dom.donateLink.dataset.bound = "1";
-    dom.donateLink.addEventListener("click", (event) => {
-      event.preventDefault();
-      openDonate();
-    });
     /* the link may have been rendered before the config existed */
     dom.donateLink.removeAttribute("aria-disabled");
+  }
+
+  function bindTip() {
+    tipTriggers().forEach((node) => {
+      node.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (tipOpen) closeTipPop();
+        else openTipPop();
+      });
+    });
+    document.addEventListener("click", (event) => {
+      if (!tipOpen) return;
+      if (dom.tipPop && dom.tipPop.contains(event.target)) return;
+      if (event.target.closest && event.target.closest('[aria-controls="tip-pop"]')) return;
+      closeTipPop();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && tipOpen) closeTipPop();
+    });
+    window.addEventListener("resize", positionTipPop);
   }
 
   function coinGlyph(id) {
@@ -2694,16 +2709,60 @@
     return code;
   }
 
-  function openDonate() {
-    const cfg = donateConfig();
-    if (!cfg) return;
+  /* the tip jar is a dropdown, like the sources list: one tap, no page load */
+  let tipOpen = false;
 
-    const wrap = el("div", { class: "donate" });
-    wrap.appendChild(el("p", {
-      class: "donate-lede",
-      text: "mdown is free, has no ads, and keeps nothing about you. Nothing here unlocks anything — it is just a tip jar."
-    }));
-    if (cfg.note) wrap.appendChild(el("p", { class: "donate-note", text: cfg.note }));
+  function tipTriggers() {
+    return $$('#open-donate-top, #donate-link, #coin-jar, #mbar-donate');
+  }
+
+  function setTipState(on) {
+    tipOpen = on;
+    tipTriggers().forEach((node) => node.setAttribute("aria-expanded", on ? "true" : "false"));
+    const pop = dom.tipPop;
+    if (pop) pop.setAttribute("aria-hidden", on ? "false" : "true");
+  }
+
+  function positionTipPop() {
+    const pop = dom.tipPop;
+    if (!pop || pop.hidden) return;
+    if (window.innerWidth <= 720) {
+      pop.style.left = "";
+      pop.style.right = "";
+      pop.style.top = "";
+      return;
+    }
+    const anchor = $("#open-donate-top");
+    const rect = anchor ? anchor.getBoundingClientRect() : { right: window.innerWidth - 16, bottom: 48 };
+    pop.style.top = Math.round(rect.bottom + 8) + "px";
+    pop.style.right = Math.max(12, Math.round(window.innerWidth - rect.right)) + "px";
+    pop.style.left = "auto";
+  }
+
+  function closeTipPop() {
+    if (!tipOpen) return;
+    const pop = dom.tipPop;
+    setTipState(false);
+    if (pop) {
+      pop.classList.add("is-closing");
+      setTimeout(() => {
+        if (tipOpen) return;
+        pop.hidden = true;
+        pop.classList.remove("is-closing");
+      }, 140);
+    }
+  }
+
+  function openTipPop() {
+    const cfg = donateConfig();
+    const pop = dom.tipPop;
+    if (!cfg || !pop) return;
+
+    pop.innerHTML = "";
+    const head = el("div", { class: "tip-head" });
+    head.appendChild(el("b", { text: "tip jar" }));
+    head.appendChild(el("span", { class: "tip-state", text: "open" }));
+    pop.appendChild(head);
 
     if (cfg.stripe) {
       const card = el("a", {
@@ -2717,64 +2776,70 @@
       card.appendChild(badge);
       const copy = el("span", { class: "donate-card-copy" });
       copy.appendChild(el("b", { text: "credit card" }));
-      copy.appendChild(el("span", { text: "apple pay · google pay · one-time · via stripe" }));
+      copy.appendChild(el("span", { text: "apple pay · google pay · via stripe" }));
       card.appendChild(copy);
       const go = el("span", { class: "donate-card-go", "aria-hidden": "true" });
       go.innerHTML = (window.MDOWN_COIN || {}).arrow || "";
       card.appendChild(go);
-      wrap.appendChild(card);
-      wrap.appendChild(el("p", { class: "donate-or", text: "or send crypto" }));
+      pop.appendChild(card);
     }
 
-    const list = el("div", { class: "donate-list" });
-    cfg.methods.forEach((method) => {
-      const row = el("div", { class: "donate-row" });
-      const badge = coinGlyph(method.id);
-      if (badge) row.appendChild(badge);
+    if (cfg.methods.length) {
+      pop.appendChild(el("p", { class: "donate-or", text: "or send crypto" }));
+      const list = el("div", { class: "donate-list" });
+      cfg.methods.forEach((method) => {
+        const row = el("div", { class: "donate-row" });
+        const badge = coinGlyph(method.id);
+        if (badge) row.appendChild(badge);
+        const left = el("div", { class: "donate-id" });
+        left.appendChild(el("span", { class: "donate-label", text: String(method.label || method.id || "tip") }));
+        if (method.href) {
+          left.appendChild(el("a", {
+            class: "donate-value",
+            href: String(method.href),
+            text: String(method.href).replace(/^https?:\/\//, ""),
+            rel: "noopener noreferrer",
+            target: "_blank"
+          }));
+        } else {
+          left.appendChild(addressCode(method));
+        }
+        if (method.note) left.appendChild(el("span", { class: "donate-hint", text: String(method.note) }));
+        row.appendChild(left);
+        if (!method.href && method.value) {
+          const copy = el("button", {
+            type: "button",
+            class: "ghost-btn small",
+            text: "copy",
+            "aria-label": "copy " + String(method.label || "address")
+          });
+          copy.addEventListener("click", () => copyText(String(method.value), "Address copied"));
+          row.appendChild(copy);
+        }
+        list.appendChild(row);
+      });
+      pop.appendChild(list);
+    }
 
-      const left = el("div", { class: "donate-id" });
-      left.appendChild(el("span", { class: "donate-label", text: String(method.label || method.id || "tip") }));
-
-      if (method.href) {
-        const link = el("a", {
-          class: "donate-value",
-          href: String(method.href),
-          text: String(method.href).replace(/^https?:\/\//, ""),
-          rel: "noopener noreferrer",
-          target: "_blank"
-        });
-        left.appendChild(link);
-      } else {
-        left.appendChild(addressCode(method));
-      }
-      if (method.note) left.appendChild(el("span", { class: "donate-hint", text: String(method.note) }));
-      row.appendChild(left);
-
-      if (!method.href && method.value) {
-        const copy = el("button", {
-          type: "button",
-          class: "ghost-btn small",
-          text: "copy",
-          "aria-label": "copy " + String(method.label || "address")
-        });
-        copy.addEventListener("click", () => copyText(String(method.value), "Address copied"));
-        row.appendChild(copy);
-      }
-      list.appendChild(row);
-    });
-    wrap.appendChild(list);
-
-    wrap.appendChild(el("p", {
+    pop.appendChild(el("p", {
       class: "donate-fine",
-      text: "No receipts, no accounts, no tracking, and donating does not buy priority. If a tip page is listed, it shows whatever name that account uses."
+      text: "nothing here unlocks anything — it is just a tip jar."
     }));
 
-    wrap.appendChild(el("p", { class: "donate-hint" }));
-    wrap.lastChild.appendChild(el("a", { href: "donate.html", text: "all the ways to give" }));
+    const more = el("a", { class: "tip-more", href: "donate.html" });
+    more.appendChild(el("span", { text: "all the ways to give" }));
+    more.appendChild(el("span", { class: "tip-more-go", "aria-hidden": "true", text: "→" }));
+    pop.appendChild(more);
 
-    const close = el("button", { type: "button", class: "ghost-btn small", text: "close" });
-    close.addEventListener("click", () => closeModal());
-    openModal("Donate", wrap, [close]);
+    pop.hidden = false;
+    pop.classList.remove("is-closing");
+    setTipState(true);
+    positionTipPop();
+  }
+
+  /* everything that used to open the donate dialog now opens the dropdown */
+  function openDonate() {
+    openTipPop();
   }
 
   let modalSeq = 0;
@@ -3184,22 +3249,7 @@
   /* ----------------------------------------------------------
      help
      ---------------------------------------------------------- */
-  function openHelp() {
-    const template = $("#help-template");
-    if (!template) return;
-    const body = template.content.cloneNode(true);
-    const close = el("button", { type: "button", class: "primary-btn", text: "got it" });
-    close.addEventListener("click", () => closeModal());
-    const buttons = [close];
-    if (donateConfig()) {
-      const tip = el("button", { type: "button", class: "ghost-btn", text: "tip jar" });
-      tip.addEventListener("click", () => { closeModal(); openDonate(); });
-      buttons.unshift(tip);
-    }
-    openModal("How it works", body, buttons);
-  }
-
-  /* ----------------------------------------------------------
+    /* ----------------------------------------------------------
      settings sheet
      ---------------------------------------------------------- */
   let lastFocused = null;
@@ -3394,7 +3444,6 @@
     setHealthState(sample.ok ? "ok" : "bad", sample.ok ? "online" : "down", up);
   }
 
-
   function startHealthTimer() {
     if (healthTimer) return;
     healthTimer = setInterval(() => {
@@ -3441,8 +3490,6 @@
       closeSettings();
       openDonate();
     });
-    const aboutButton = $("#open-about");
-    if (aboutButton) aboutButton.addEventListener("click", openAbout);
     const mbarSettings = $("#mbar-settings");
     if (mbarSettings) mbarSettings.addEventListener("click", () => openSettings());
     const mbarQueue = $("#mbar-queue");
@@ -3752,28 +3799,133 @@
     } catch (e) {}
   }
 
-  function openAbout() {
-    const wrap = el("div", { class: "shortcuts" });
-    wrap.appendChild(el("p", {
-      class: "about-line",
-      text: "open source under the mit licence. fork it, run it, change it."
-    }));
-    const terms = el("a", { class: "about-link", href: "terms.html#source", text: "read the terms" });
-    wrap.appendChild(terms);
-    wrap.appendChild(el("p", { class: "about-line", text: "keyboard" }));
-    const rows = [
-      ["/", "focus the link field"],
-      ["enter", "start the download"],
-      ["esc", "close menus, dialogs and the queue"],
-      ["?", "this list"]
-    ];
-    rows.forEach(([key, what]) => {
-      const row = el("div", { class: "shortcut-row" });
-      row.appendChild(el("kbd", { text: key }));
-      row.appendChild(el("span", { text: what }));
-      wrap.appendChild(row);
-    });
-    const close = el("button", { type: "button", class: "ghost-btn", text: "close" });
+  /* ----------------------------------------------------------
+     clipboard
+     ---------------------------------------------------------- */
+  async function copyText(text, message) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast(message || "Copied", "ok");
+      return true;
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); toast(message || "Copied", "ok"); return true; }
+      catch { toast("Copy failed — select the text manually.", "err"); return false; }
+      finally { ta.remove(); }
+    }
+  }
+
+  /* ----------------------------------------------------------
+     instance
+     ---------------------------------------------------------- */
+  /* The note under the composer answers one question: why can't I download?
+     "not set up" and "configured but down" look identical to a visitor, so
+     they must not look identical on screen. */
+
+  async function checkInstance(options) {
+    const opts = options || {};
+    const stamp = ++instanceSeq;
+    const base = normalizeInstance(settings.instance);
+    setSetupNote(base ? null : "empty");
+
+    if (!base) {
+      instanceInfo = null;
+      setInstancePill("unknown", "not connected", "No API connected");
+      setInstanceDetail("empty", "Not connected", []);
+      dom.servicesCard.hidden = true;
+      return false;
+    }
+
+    if (!opts.silent) {
+      setInstancePill("checking", "checking…", base);
+      setInstanceDetail("checking", "Contacting instance…", []);
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+
+    try {
+      const res = await fetch(base.replace(/\/+$/, "") + "/", {
+        method: "GET",
+        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
+        signal: controller.signal
+      });
+      if (res.status === 401 || res.status === 403) {
+        throw new Error("The API refused the request (HTTP " + res.status + "). Add or check the API key in Settings → Server.");
+      }
+      if (!res.ok) throw new Error("The API answered HTTP " + res.status + ".");
+      const data = await res.json();
+      const cobalt = data && data.cobalt ? data.cobalt : {};
+      const git = data && data.git ? data.git : {};
+
+      if (stamp !== instanceSeq) return false;
+      instanceInfo = {
+        services: Array.isArray(cobalt.services) ? cobalt.services : [],
+        version: cobalt.version || "",
+        // honest capability flag: only an instance that answers /probe gets a
+        // size estimate and a thumbnail, everything else looks exactly as before
+        probe: cobalt.probe === true,
+        limits: cobalt.limits && typeof cobalt.limits === "object" ? cobalt.limits : null,
+        turnstileSiteKey: typeof cobalt.turnstileSitekey === "string" ? cobalt.turnstileSitekey : ""
+      };
+      // keep the trigger and an open panel agreeing about the count
+      if (dom.sourcesCount) dom.sourcesCount.textContent = String(sourceList().length);
+      if (sourcesOpen) renderSources();
+      if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
+      const host = hostOf(base) || base;
+      // keep the Server pane's health link pointing at the live instance
+      if (dom.openHealth) dom.openHealth.href = base.replace(/\/+$/, "") + "/health";
+      const usingDefault = normalizeInstance(settings.instance) === normalizeInstance(DEFAULT_INSTANCE);
+      const detail = base + (cobalt.version ? " · api " + cobalt.version : "");
+      setInstancePill("ok", usingDefault ? "online" : host, detail);
+      recordHealth(true);
+
+      const uptime = cobalt.startTime ? formatUptime(Number(cobalt.startTime)) : "unknown";
+      const hostname = hostOf(base) || base;
+      setInstanceDetail("ok", "Connected", [
+        ["server", hostname],
+        ["services", String(instanceInfo.services.length || "unknown") + " · up " + uptime]
+      ]);
+      dom.instanceDetail.title = "version " + (cobalt.version || "unknown");
+
+      setSetupNote(null);
+      renderServices(instanceInfo.services);
+      updateComposerState();
+      return true;
+    } catch (err) {
+      recordHealth(false);
+      const message = err && err.name === "AbortError"
+        ? "The API didn't respond within 12 seconds."
+        : friendlyError(err);
+      instanceInfo = null;
+      setInstancePill("bad", "unreachable", message);
+      setInstanceDetail("bad", "Can't reach this instance", [], message);
+      setSetupNote("unreachable");
+      dom.servicesCard.hidden = true;
+      return false;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /* ----------------------------------------------------------
+     settings: reflect + bind
+     ---------------------------------------------------------- */
+  /* The preview is the file, not a label for it: same name the queue will
+     show, the same container and the same quality, for the mode in force. */
+  /* ----------------------------------------------------------
+     help
+     ---------------------------------------------------------- */
+  function openHelp() {
+    const template = $("#help-template");
+    if (!template) return;
+    const body = template.content.cloneNode(true);
+    const close = el("button", { type: "button", class: "primary-btn", text: "got it" });
     close.addEventListener("click", () => closeModal());
     const buttons = [close];
     if (donateConfig()) {
@@ -3781,9 +3933,99 @@
       tip.addEventListener("click", () => { closeModal(); openDonate(); });
       buttons.unshift(tip);
     }
-    openModal("About", wrap, buttons);
+    openModal("How it works", body, buttons);
   }
 
+  /* ----------------------------------------------------------
+     settings sheet
+     ---------------------------------------------------------- */
+
+  /* ----------------------------------------------------------
+     health: the dot opens a miniature of the status page
+     ---------------------------------------------------------- */
+
+  /* a successful instance check is a health sample too, so the graph fills in
+     over visits without a single extra request. One sample a minute is enough. */
+
+  /* Only the newest bar arrives with a rise; the rest are already there.
+     Replaying the whole stagger every minute made a quiet graph look busy. */
+  async function healthSample(endpoint) {
+    try {
+      const res = await fetch(endpoint + "health", {
+        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
+        cache: "no-store"
+      });
+      const body = await res.json().catch(() => null);
+      return {
+        responded: true,
+        limited: res.status === 429,
+        ok: res.ok && (!body || body.status !== "degraded"),
+        body
+      };
+    } catch (e) {
+      return { responded: false, limited: false, ok: false, body: null };
+    }
+  }
+
+  async function checkHealth() {
+    const endpoint = apiEndpoint();
+    if (!endpoint) {
+      setHealthState("bad", "not connected", "");
+      renderHealthBars(readHealth());
+      return;
+    }
+    /* the first look says "checking…". Every look after that keeps whatever it
+       already knows and only pulses the dot: flipping the word once a minute
+       is what made a healthy server look unstable */
+    const known = dom.healthPop && dom.healthPop.dataset.state &&
+      dom.healthPop.dataset.state !== "unknown";
+    if (!known) setHealthState("checking", "checking…", "");
+    else dom.healthPop.dataset.busy = "true";
+
+    let sample;
+    try {
+      sample = await healthSample(endpoint);
+      /* one retry: a deploy restarts the service for a second, and that is not
+         an outage worth drawing in red */
+      if (!sample.responded) {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        sample = await healthSample(endpoint);
+      }
+    } finally {
+      if (dom.healthPop) dom.healthPop.dataset.busy = "false";
+    }
+
+    if (sample.limited) {
+      // 429 means the server answered; that is proof of life, not downtime
+      renderHealthBars(readHealth());
+      setHealthState("ok", "online", "");
+      return;
+    }
+
+    if (!sample.responded) {
+      renderHealthBars(pushHealth(null));
+      setHealthState("bad", "unreachable", "");
+      return;
+    }
+
+    renderHealthBars(pushHealth(sample.ok));
+    const up = sample.body && Number(sample.body.uptimeSeconds)
+      ? formatUptime(Date.now() - Number(sample.body.uptimeSeconds) * 1000)
+      : "";
+    setHealthState(sample.ok ? "ok" : "bad", sample.ok ? "online" : "down", up);
+  }
+
+  /* ----------------------------------------------------------
+     history
+     ---------------------------------------------------------- */
+  /* ----------------------------------------------------------
+     composer events
+     ---------------------------------------------------------- */
+  /* ----------------------------------------------------------
+     boot
+     ---------------------------------------------------------- */
+  /* The field is the only thing this page is for, so it owns the caret. Select,
+     not just focus: typing replaces whatever is there instead of appending. */
   /* remux.js + tools.js are 39 KB of wasm plumbing and nothing on the
      download view touches them, so they load when a tool is opened (or when
      the pointer says one is about to be) */
@@ -3817,8 +4059,112 @@
     });
   }
 
+  /* the phone bar answers a slide, not only a tap: drag across it and the item
+     under your thumb grows, release and that item opens */
+  function bindMobileBar() {
+    const bar = document.querySelector(".mobile-bar");
+    const lens = document.getElementById("mbar-lens");
+    if (!bar || !lens) return;
+    const items = Array.from(bar.querySelectorAll(".mbar-item"));
+
+    let active = null;
+    let dragging = false;
+    let moved = false;
+    let startX = 0;
+    let startY = 0;
+    let pointerId = null;
+    let rects = [];
+    let rectsAt = 0;
+    let swallow = 0;
+    let raf = 0;
+
+    const measure = () => {
+      rects = items.map((node) => node.getBoundingClientRect());
+      rectsAt = Date.now();
+    };
+    const itemAt = (x) => {
+      if (!rects.length || Date.now() - rectsAt > 1000) measure();
+      const index = rects.findIndex((rect) => x >= rect.left && x <= rect.right);
+      return index === -1 ? null : items[index];
+    };
+    const mark = (item) => {
+      if (item === active) return;
+      active = item;
+      items.forEach((node) => node.classList.toggle("is-near", node === item));
+      if (!item) { lens.classList.remove("is-on"); return; }
+      const barRect = bar.getBoundingClientRect();
+      const box = item.getBoundingClientRect();
+      /* the bar's padding box, not its border box: 1px of border was offsetting
+         the pill downwards */
+      const left = barRect.left + bar.clientLeft;
+      const top = barRect.top + bar.clientTop;
+      lens.style.setProperty("--lens-x", (box.left - left).toFixed(1) + "px");
+      lens.style.setProperty("--lens-y", (box.top - top).toFixed(1) + "px");
+      lens.style.setProperty("--lens-w", box.width.toFixed(1) + "px");
+      lens.style.setProperty("--lens-h", box.height.toFixed(1) + "px");
+      lens.classList.add("is-on");
+    };
+
+    bar.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" || !event.isPrimary) return;
+      dragging = true;
+      moved = false;
+      pointerId = event.pointerId;
+      startX = event.clientX;
+      startY = event.clientY;
+      measure();
+      try { bar.setPointerCapture(event.pointerId); } catch (e) {}
+      mark(itemAt(event.clientX));   /* a tap lights the bar too */
+    });
+
+    bar.addEventListener("pointermove", (event) => {
+      if (!dragging || event.pointerId !== pointerId) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      /* 10px, and horizontal has to win: a scroll that starts on the bar is
+         not a drag */
+      if (!moved && (Math.abs(dx) < 10 || Math.abs(dx) <= Math.abs(dy))) return;
+      moved = true;
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        mark(itemAt(event.clientX));
+      });
+    });
+
+    const settle = (event) => {
+      if (!dragging || (event.pointerId != null && event.pointerId !== pointerId)) return;
+      dragging = false;
+      pointerId = null;
+      try { if (bar.hasPointerCapture(event.pointerId)) bar.releasePointerCapture(event.pointerId); } catch (e) {}
+      const end = itemAt(event.clientX);
+      if (!moved) {
+        setTimeout(() => mark(null), 110);
+        return;
+      }
+      mark(null);
+      if (!end) return;
+      /* exactly one synthesised click is swallowed below, so the item opens once */
+      swallow += 1;
+      setTimeout(() => { swallow = Math.max(0, swallow - 1); }, 700);
+      end.click();
+    };
+    bar.addEventListener("pointerup", settle);
+    bar.addEventListener("pointercancel", settle);
+
+    document.addEventListener("click", (event) => {
+      if (!event.isTrusted || !swallow) return;
+      if (!event.target.closest || !event.target.closest(".mobile-bar")) return;
+      swallow -= 1;
+      event.preventDefault();
+      event.stopPropagation();
+    }, true);
+  }
+
   function boot() {
     renderDonate();
+    bindTip();
+    bindMobileBar();
     warmTools();
     applyTheme();
     reflectSettings();
@@ -3845,7 +4191,7 @@
       }
       if (event.key === "?" && !typing) {
         event.preventDefault();
-        openAbout();
+        openHelp();
       }
     });
 
@@ -3887,7 +4233,6 @@
     window.addEventListener("hashchange", () => {
       if (location.hash === "#help") openHelp();
     });
-
 
     if (dom.footerVersion) {
       dom.footerVersion.textContent = instanceInfo && instanceInfo.version

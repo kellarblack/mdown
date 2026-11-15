@@ -60,9 +60,11 @@ window.MDOWN_DONATE = {
    checks before sending; the rest is what malware swaps.
    --------------------------------------------------------------- */
 window.MDOWN_COIN = {
-  xmr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M8 16.2V9.4l4 4.6 4-4.6v6.8"/></svg>',
-  btc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M10.4 7.6h3.1a2.2 2.2 0 0 1 0 4.4h-3.1z"/><path d="M10.4 12h3.3a2.2 2.2 0 0 1 0 4.6h-3.3z"/><path d="M10.4 7.6v9M12 6.4v1.2M12 16.6v1.2"/></svg>',
-  eth: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 6.5 16 12.3l-4 2.3-4-2.3z"/><path d="m8 13.5 4 4.1 4-4.1"/></svg>',
+  /* brand glyphs only, no enclosing circle: a circle around a tiny symbol is
+     what made them look like generic coins */
+  xmr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5V7l8 8.6L20 7v9.5"/></svg>',
+  btc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 5.4h5.1a2.9 2.9 0 0 1 0 5.8H8.6z"/><path d="M8.6 11.2h5.5a2.9 2.9 0 0 1 0 5.8H8.6z"/><path d="M8.6 5.4v11.6M11.1 3.8v1.6M13.6 3.8v1.6M11.1 17v1.6M13.6 17v1.6"/></svg>',
+  eth: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 18 12l-6 3.6L6 12z"/><path d="m6 13.2 6 7.4 6-7.4"/></svg>',
   card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="2.6" y="5.4" width="18.8" height="13.2" rx="2.6"/><path d="M2.6 10h18.8"/><path d="M6.4 15h3.2"/></svg>',
   arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>'
 };

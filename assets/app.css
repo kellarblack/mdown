@@ -357,9 +357,11 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .pb-label { display: inline-block; transition: opacity 120ms ease-out, transform 200ms var(--ease); }
 .pb-label.is-out { opacity: 0; transform: translateY(3px); }
 #paste-btn[data-state="get"] {
-  color: var(--text); background: var(--surface-3); border-color: var(--stroke-2);
+  color: var(--accent-ink); background: var(--btn); border-color: var(--btn-line);
+  animation: arrow-in 220ms var(--ease);
 }
-#paste-btn[data-state="get"]:hover { background: var(--surface-2); color: var(--text); }
+#paste-btn[data-state="get"]:hover { background: var(--btn-hover); color: var(--accent-ink); }
+#paste-btn[data-busy="true"] .pb-get { animation: spin 900ms linear infinite; }
 @media (prefers-reduced-motion: reduce) {
   .pb-icons svg, .pb-label { transition: none; }
 }
@@ -406,7 +408,7 @@ a.ghost-btn { text-decoration: none; }
 .mode[aria-checked="true"] { background: transparent; color: var(--text); }
 .mode-group { display: flex; align-items: center; gap: 6px; }
 .format-note {
-  color: var(--text-3); font-family: var(--mono); font-size: 0.64rem;
+  color: var(--text-3); font-family: var(--mono); font-size: 0.7rem;
   white-space: nowrap; letter-spacing: 0.01em;
 }
 .format-note:empty { display: none; }
@@ -498,21 +500,6 @@ a.ghost-btn { text-decoration: none; }
 /* On a desktop the fetch button is an arrow, not a word: 34px, no label, and
    quiet until the field holds a link. It arms rather than appearing, so the
    footer never shifts by a pixel. */
-#fetch-btn {
-  width: 34px; padding: 0; justify-content: center;
-  transition: background var(--speed), color var(--speed),
-              border-color var(--speed), filter var(--speed), transform var(--speed);
-}
-#fetch-btn .fetch-word { display: none; }
-#fetch-btn[data-armed="false"] {
-  background: transparent; color: var(--text-3); border-color: var(--stroke);
-}
-#fetch-btn[data-armed="false"] svg { opacity: 0.42; }
-#fetch-btn[data-armed="false"]:hover { background: var(--surface); color: var(--text-2); }
-#fetch-btn[data-armed="true"] svg { opacity: 1; }
-/* it drops in rather than switching on: the last beat of the choreography,
-   and again every time a link comes back after being cleared */
-#fetch-btn[data-armed="true"] { animation: arrow-in 260ms var(--ease); }
 @keyframes arrow-in {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: none; }
@@ -556,7 +543,7 @@ a.ghost-btn { text-decoration: none; }
   padding: 12px 14px;
   border-radius: var(--r-md);
   background: var(--surface); border: 1px solid var(--stroke);
-  animation: rise 240ms var(--ease) both;
+  animation: none;
   transition: border-color var(--speed), background var(--speed);
 }
 .qitem:hover { border-color: var(--stroke-2); }
@@ -591,7 +578,7 @@ a.ghost-btn { text-decoration: none; }
 .q-meta {
   display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
   margin-top: 2px; color: var(--text-3);
-  font-family: var(--mono); font-size: 0.66rem;
+  font-family: var(--mono); font-size: 0.7rem;
 }
 .q-meta .sep { width: 2px; height: 2px; border-radius: 50%; background: currentColor; opacity: 0.5; }
 .q-meta .q-err { color: var(--err); }
@@ -619,15 +606,8 @@ a.ghost-btn { text-decoration: none; }
   transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
   overflow: hidden;
 }
-/* a slow sweep on the filled part: it reads as moving even when the number
-   only ticks once a second */
-.q-progress-fill::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(100deg,
-    transparent 20%, rgba(255, 255, 255, 0.4) 50%, transparent 80%);
-  transform: translateX(-110%);
-  animation: bar-sheen 1.5s linear infinite;
-}
+/* no sweeping highlight: the bar fills, the numbers tick, nothing blinks */
+.q-progress-fill { background: var(--text); }
 .q-progress-pct {
   min-width: 36px; text-align: right;
   font-family: var(--mono); font-size: 0.7rem;
@@ -645,11 +625,10 @@ a.ghost-btn { text-decoration: none; }
   from { transform: translateX(-110%); }
   to   { transform: translateX(110%); }
 }
+/* size unknown: a quiet half-full bar, not a bar racing back and forth */
 .qitem[data-indeterminate="true"] .q-progress-fill {
-  animation: glide 1.35s var(--ease) infinite;
-  opacity: 0.6;
+  transform: scaleX(0.32); opacity: 0.5;
 }
-.qitem[data-indeterminate="true"] .q-progress-fill::after { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .mode-glider { transition: none; }
   main.wrap[data-view-panel]:not([hidden]),
@@ -659,10 +638,6 @@ a.ghost-btn { text-decoration: none; }
   #modal.is-closing,
   #modal.is-closing .modal-inner { animation: none; }
   .q-progress-fill { transition: none; }
-  .q-progress-fill::after { animation: none; opacity: 0; }
-  .qitem[data-indeterminate="true"] .q-progress-fill {
-    animation: none; opacity: 0.4; transform: scaleX(1);
-  }
 }
 @keyframes glide {
   from { transform: translateX(-130%) scaleX(0.34); }
@@ -757,9 +732,9 @@ a.ghost-btn { text-decoration: none; }
 .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 5px; }
 .chip {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 8px; border-radius: 5px;
+  padding: 4px 9px; border-radius: 5px;
   border: 1px solid var(--stroke);
-  color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
+  color: var(--text-3); font-family: var(--mono); font-size: 0.72rem;
   transition: color var(--speed), border-color var(--speed), background var(--speed);
 }
 .chip:hover { color: var(--text-2); border-color: var(--stroke-2); background: var(--surface); }
@@ -784,27 +759,26 @@ a.ghost-btn { text-decoration: none; }
 .footer a:hover { color: var(--text-2); }
 .footer-meta {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-  gap: 4px 12px; margin: 0;
-  font-family: var(--mono); font-size: 0.66rem; color: var(--text-3);
+  gap: 6px; margin: 0;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--text-3);
 }
-/* one quiet line, no pill for every word: separators do the work */
+/* three words that are obviously pressable, label centred in the pill */
 .footer-meta a, .footer-meta .footer-link {
-  padding: 2px 0; border: 0; background: none;
-  color: var(--text-3); font: inherit; cursor: pointer;
-  text-decoration: none;
-  transition: color 120ms;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 28px; padding: 0 12px;
+  border: 1px solid var(--stroke); border-radius: 999px;
+  background: transparent; color: var(--text-2);
+  font: inherit; cursor: pointer; text-decoration: none;
+  transition: color 120ms, background 120ms, border-color 120ms;
 }
-.footer-meta > :not(:last-child)::after {
-  content: "·"; margin-left: 10px; color: var(--stroke-2);
+.footer-meta a:hover, .footer-meta .footer-link:hover {
+  color: var(--text); background: var(--surface-2); border-color: var(--stroke-2);
 }
-.footer-meta a:hover, .footer-meta .footer-link:hover { color: var(--text); }
 .footer-meta .footer-link:focus-visible, .footer-meta a:focus-visible {
-  outline: 2px solid var(--ring); outline-offset: 3px; border-radius: 3px;
+  outline: 2px solid var(--ring); outline-offset: 2px;
 }
 .footer-meta #donate-wrap { display: contents; }
-/* the tip jar is a button, not another word in a list */
-.footer-meta #donate-wrap a { color: var(--text); }
-.footer-meta #donate-wrap a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.footer-meta #donate-wrap a { color: var(--text); border-color: var(--stroke-2); }
 .footer-meta #donate-wrap[hidden] { display: none; }
 .footer-meta a { color: var(--text-3); text-decoration: none; border-bottom: 1px solid transparent; }
 .footer-meta a:hover { color: var(--text-2); border-bottom-color: var(--stroke-2); }
@@ -1305,15 +1279,7 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
   /* iOS Safari floats its toolbar over the bottom of the page, and a bar at
      bottom: 0 puts its labels underneath that pill. The bar stays put; its
      content moves up by the height of the toolbar. */
-  @supports (-webkit-touch-callout: none) {
-    @media (hover: none) {
-      .mobile-bar { padding-bottom: calc(46px + env(safe-area-inset-bottom, 0px)); }
-      .mini-dock { bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
-      .sources-panel { max-height: calc(100dvh - 180px); }
-      .toasts { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
-      .footer { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
-    }
-  }
+  .sources-panel { max-height: calc(100dvh - 180px); }
   /* the name is the product: keep "cc" on phones, just tighter */
   .brand-text { font-size: 0.9rem; }
   .brand { gap: 7px; }
@@ -1341,13 +1307,14 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
   .composer-cta { width: 100%; flex-wrap: wrap; row-gap: 8px; }
   .composer-cta .format-note { margin-right: auto; }
   .composer-cta .hint { order: 4; width: 100%; max-width: none; text-align: left; font-size: 0.72rem; }
-  .composer-cta .primary-btn { order: 5; flex: 1 1 auto; height: 48px; font-size: 0.88rem; }
-  .composer-cta #fetch-btn { width: auto; padding: 0 14px; gap: 8px; }
-  .composer-cta #fetch-btn .fetch-word { display: inline; }
+
+  /* the one action, sized for a thumb */
+  #paste-btn { width: 118px; height: 42px; }
+  #paste-btn .pb-label { font-size: 0.8rem; }
   /* the format switch sits beside fetch, not alone on its own line */
-  .composer-cta #tune-mode { order: 5; flex: none; width: 48px; height: 48px; }
+  .composer-cta #tune-mode { order: 5; flex: none; width: 40px; height: 40px; }
   /* a thumb expects the button to be there, so on a phone the word stays dim */
-  .composer-cta #fetch-btn[data-armed="false"] { opacity: 0.55; }
+  #paste-btn[data-state="get"] { box-shadow: none; }
   .composer-cta .ghost-btn { height: 48px; }
   #tune-mode { width: 40px; height: 40px; }
   .icon-btn.help-btn,
@@ -1570,7 +1537,11 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 .sources-chev {
   width: 13px; height: 13px; flex: none;
-  transition: transform 220ms var(--ease), opacity 160ms ease-out;
+  /* a slow flip with a little follow-through: the one place a chevron is
+     allowed to feel like a mechanism rather than a state change */
+  transition: transform 340ms cubic-bezier(0.34, 1.4, 0.64, 1),
+              opacity 180ms ease-out,
+              translate 260ms var(--ease);
   opacity: 0.7;
 }
 .sources-toggle[aria-expanded="true"] { color: var(--text-2); border-color: var(--stroke-2); background: var(--surface); }
@@ -1609,7 +1580,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-panel .source-chip {
   padding: 4px 9px; line-height: 1.5;
   /* scales down just enough on a 320px phone that no name is cut */
-  font-size: clamp(0.56rem, 2.7vw, 0.66rem);
+  font-size: clamp(0.62rem, 2.8vw, 0.7rem);
 }
 .sources-panel { animation: panel-center-in 150ms var(--ease) both; }
 .sources-panel.is-closing { animation: panel-center-out 120ms var(--ease) both; }
@@ -1779,7 +1750,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   border: 1px solid var(--stroke); color: var(--text-2);
   transition: color 140ms, border-color 140ms;
 }
-.coin-icon svg { width: 14px; height: 14px; display: block; }
+.coin-icon svg { width: 16px; height: 16px; display: block; }
 .donate-row:hover .coin-icon { color: var(--text); border-color: var(--stroke-2); }
 .donate-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .donate-label {
@@ -1834,6 +1805,45 @@ a.donate-value:hover { text-decoration: underline; }
 .donate-hint { margin: 10px 0 0; font-size: 0.72rem; color: var(--text-3); }
 .donate-hint a { color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
 .donate-fine { color: var(--text-3); font-size: 0.72rem; line-height: 1.6; margin: 0; }
+
+/* ---------- the tip jar, as a dropdown ---------- */
+.tip-pop {
+  position: fixed; z-index: 95;
+  width: 322px; max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 90px); overflow-y: auto;
+  padding: 12px;
+  border: 1px solid var(--stroke-2); border-radius: var(--r-md);
+  background: var(--bg-elev); box-shadow: var(--shadow-2);
+  animation: drop-in 150ms var(--ease) both;
+}
+.tip-pop.is-closing { animation: drop-out 120ms var(--ease) both; }
+.tip-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tip-head b {
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3);
+}
+.tip-state { font-family: var(--mono); font-size: 0.64rem; color: var(--ok); }
+.tip-state::before {
+  content: ""; display: inline-block; width: 5px; height: 5px;
+  margin-right: 6px; border-radius: 50%; background: currentColor; vertical-align: 1px;
+}
+.tip-more {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--stroke);
+  color: var(--text-2); font-family: var(--mono); font-size: 0.7rem;
+  text-decoration: none;
+}
+.tip-more:hover { color: var(--text); }
+.tip-more-go { transition: transform 160ms var(--ease); }
+.tip-more:hover .tip-more-go { transform: translateX(2px); }
+@media (max-width: 720px) {
+  .tip-pop {
+    left: max(8px, env(safe-area-inset-left, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    width: auto; max-height: calc(100dvh - 130px);
+    top: calc(62px + env(safe-area-inset-top, 0px));
+  }
+}
 
 /* ---------- tip jar in the corner ---------- */
 .coin-jar {
@@ -2380,8 +2390,8 @@ a.donate-value:hover { text-decoration: underline; }
   margin: 0; max-width: 46ch;
   color: var(--text-2); font-size: 0.9rem; line-height: 1.65;
 }
-.donate-hero-art { color: var(--text-2); opacity: 0.95; }
-.donate-hero-art svg { display: block; width: 100%; height: auto; }
+.donate-hero-art { color: var(--text-3); opacity: 0.9; }
+.donate-hero-art svg { display: block; width: 100%; max-width: 240px; height: auto; }
 /* this used to spin. rotating a clipped, dash-patterned SVG group re-rasterises
    the whole disc every frame, and on a throttled phone that cost a full second
    before the page could paint at all. static ring, same look. */
@@ -2489,7 +2499,7 @@ a.donate-value:hover { text-decoration: underline; }
 .addr:hover { border-color: var(--stroke-2); }
 .addr-left { display: grid; gap: 3px; min-width: 0; }
 .addr-label {
-  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em;
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--text-3);
 }
 .addr-value {
@@ -2561,7 +2571,8 @@ a.addr-value:hover { color: var(--text); }
   transition: color 140ms, border-color 140ms, background 140ms, transform 140ms var(--ease);
 }
 .share-icon { display: inline-flex; flex: none; color: var(--text-3); transition: color 140ms; }
-.share-icon svg { width: 17px; height: 17px; display: block; }
+.share-icon { width: 18px; height: 18px; }
+.share-icon svg { width: 18px; height: 18px; display: block; }
 .share-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .share-chip:hover {
   color: var(--text); border-color: var(--stroke-2);
@@ -2574,7 +2585,7 @@ a.addr-value:hover { color: var(--text); }
    smaller rather than truncated ("thre…" is not a brand) */
 @media (max-width: 430px) {
   .share-chip { gap: 6px; padding: 0 6px; font-size: 0.64rem; }
-  .share-icon svg { width: 15px; height: 15px; }
+  .share-icon, .share-icon svg { width: 16px; height: 16px; }
 }
 /* under 360px even that is too tight: icons only */
 @media (max-width: 359px) {
@@ -2642,27 +2653,56 @@ a.addr-value:hover { color: var(--text); }
   /* flex, not five columns: the bar has four items and a fixed five-column
      grid left a dead slot at the end */
   .mobile-bar {
-    display: flex;
+    display: flex; isolation: isolate;
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
-    background: var(--bg); border-top: 1px solid var(--stroke);
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid var(--stroke);
     padding: 5px max(6px, env(safe-area-inset-right, 0px))
              calc(5px + env(safe-area-inset-bottom, 0px))
              max(6px, env(safe-area-inset-left, 0px));
+    touch-action: pan-y;
+    user-select: none; -webkit-user-select: none;
   }
+  /* the soft pill that follows your thumb across the bar */
+  .mbar-lens {
+    position: absolute; z-index: 0;
+    left: 0; top: var(--y, 4px);
+    width: var(--w, 0px); height: var(--h, 44px);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--text) 9%, transparent);
+    border: 1px solid var(--stroke-2);
+    opacity: 0; transform: translateX(var(--tx, 0px)) scale(0.94);
+    /* transform only: a drag must not relayout the bar on every frame */
+    transition: transform 190ms var(--ease), opacity 140ms ease-out;
+    pointer-events: none;
+  }
+  .mbar-lens.is-on { opacity: 1; transform: translateX(var(--tx, 0px)) scale(1); }
   .mbar-item {
+    position: relative; z-index: 1;
     flex: 1 1 0; min-width: 0;
     display: grid; justify-items: center; gap: 3px;
     padding: 6px 0 5px; border-radius: 8px;
-    color: var(--text-3); font-family: var(--mono); font-size: 0.6rem;
-    transition: color 120ms, background 120ms;
+    color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
+    transition: color 140ms, background 120ms;
   }
+  .mbar-item svg {
+    width: 19px; height: 19px;
+    transition: transform 200ms var(--ease);
+    transform-origin: 50% 60%;
+  }
+  /* under the thumb the glyph grows, not the box: the pill and the item have to
+     stay the same size or one peeks out from under the other */
+  .mbar-item.is-near { color: var(--text); }
+  .mbar-item.is-near svg { transform: translateY(-1px) scale(1.16); color: var(--text); }
   .mbar-item svg { width: 19px; height: 19px; }
   .mbar-item:hover, .mbar-item:active { color: var(--text-2); background: var(--surface); }
-  .mbar-item[href$="donate.html"] {
+  .mbar-item#mbar-donate {
     color: var(--text-2); background: var(--surface);
     box-shadow: inset 0 0 0 1px var(--stroke);
   }
-  .mbar-item[href$="donate.html"] svg { color: var(--text); }
+  .mbar-item#mbar-donate svg { color: var(--text); }
   .mbar-item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   /* the bar replaces the two actions it duplicates */
   .topbar-actions #queue-toggle, .topbar-actions #open-settings { display: none; }
@@ -2678,6 +2718,9 @@ a.addr-value:hover { color: var(--text); }
   body { padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
   .footer { padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* a row that has just been created rises; re-renders leave the rest alone */
+.qitem.is-new { animation: rise 240ms var(--ease) both; }
 
 /* ---------- micro-motion ---------- */
 /* One gesture for the whole site: a hair of movement toward the pointer, never
@@ -2734,9 +2777,309 @@ a.addr-value:hover { color: var(--text); }
   .sources-toggle:hover .sources-chev { translate: 0 1px; }
 
   /* the primary arrow leans toward the click */
-  #fetch-btn svg {
-    transition: transform 180ms var(--ease), translate 200ms var(--ease), opacity 120ms;
-  }
-  #fetch-btn:hover svg { transform: none; translate: 3px 0; }
-  #fetch-btn[data-armed="true"]:active { transform: translateY(1px) scale(0.99); }
+  #paste-btn[data-state="get"]:hover .pb-get { translate: 2px 0; }
+  #paste-btn[data-state="get"]:active { transform: translateY(1px) scale(0.99); }
 }
+
+/* ---------- composer polish ---------- */
+.composer { --card-pad: 12px; }
+.composer-main {
+  align-items: center;
+  padding: 10px var(--card-pad);
+}
+.service-badge { margin-top: 0; }
+.composer-foot {
+  position: relative;
+  border-top: 0;
+  padding: 9px var(--card-pad);
+}
+.composer-foot::before {
+  content: ""; position: absolute; top: 0;
+  left: var(--card-pad); right: var(--card-pad);
+  height: 1px; background: color-mix(in srgb, var(--stroke) 75%, transparent);
+}
+.setup-note { padding: 10px var(--card-pad) 11px; }
+
+/* the card is the field's surface, so the card shows focus */
+.composer:focus-within {
+  border-color: var(--stroke-2);
+  box-shadow: var(--shadow-1), 0 0 0 3px var(--accent-soft);
+}
+.composer.is-error:focus-within {
+  border-color: var(--err);
+  box-shadow: inset 0 0 0 1px var(--err), 0 0 0 3px color-mix(in srgb, var(--err) 16%, transparent);
+}
+
+/* one control: paste, then download, in the same box */
+#paste-btn {
+  width: 104px; height: 32px; padding: 0 10px;
+  gap: 6px; justify-content: center;
+}
+#paste-btn:not([data-state="get"]):hover { border-color: var(--stroke-2); }
+#paste-btn[data-state="get"] { box-shadow: 0 5px 14px -10px rgba(0, 0, 0, 0.85); }
+#paste-btn[data-state="get"]:active { transform: translateY(1px); filter: brightness(0.96); }
+#paste-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.composer-cta { gap: 9px; }
+.format-note {
+  color: var(--text-2); font-size: 0.72rem;
+  letter-spacing: 0; font-variant-numeric: tabular-nums;
+}
+.icon-btn.tune {
+  width: 28px; height: 28px;
+  color: var(--text-2); border-color: var(--stroke); background: var(--surface);
+}
+.icon-btn.tune:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
+
+.mode:active { color: var(--text); }
+.mode-glider { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--stroke) 80%, transparent); }
+
+/* 13.12px everywhere: the phone used to get 10.2px */
+.composer-cta .hint { font-size: 0.82rem; line-height: 1.4; }
+
+.composer-note {
+  margin-top: 9px; padding: 6px 12px;
+  border-radius: var(--r-md);
+  border-color: color-mix(in srgb, var(--stroke) 70%, transparent);
+  color: var(--text-3);
+  font-size: 0.78rem;
+}
+.composer-note b { color: var(--text-2); font-weight: 500; }
+
+@media (max-width: 720px) {
+  #paste-btn { width: 118px; height: 42px; }
+  #tune-mode { width: 40px; height: 40px; }
+  .composer-cta .hint { font-size: 0.82rem; }
+  .composer-main, .composer-foot { padding-left: var(--card-pad); padding-right: var(--card-pad); }
+}
+
+/* ---------- tool cards, recent, empty ---------- */
+.tool-strip { gap: 8px; margin-top: clamp(16px, 2.4vw, 20px); }
+.tool-card {
+  gap: 11px;
+  padding: 10px 26px 10px 11px;
+  background: var(--surface);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+}
+.tool-card:hover { background: var(--surface-2); }
+.tool-card:active { background: var(--surface-3); }
+.tool-card-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  border-color: transparent; background: var(--surface-2); color: var(--text-2);
+}
+.tool-card-icon svg { width: 16px; height: 16px; }
+.tool-card-body { gap: 2px; }
+.tool-card-body b { font-size: 0.78rem; font-weight: 500; color: var(--text-2); }
+.tool-card:hover .tool-card-body b { color: var(--text); }
+.tool-card-body span { font-size: 0.675rem; letter-spacing: 0.055em; text-transform: uppercase; }
+.tool-card::after { right: 11px; }
+
+.recent-line {
+  justify-content: flex-start; gap: 2px 4px;
+  margin-top: 14px; padding-top: 10px;
+  border-top: 1px solid var(--stroke);
+  font-size: 0.72rem;
+}
+.recent-label { margin-right: 6px; font-size: 0.66rem; }
+.recent-item {
+  min-height: 34px; padding: 0 8px; border-radius: 999px;
+  font-size: 0.72rem; color: var(--hint-ink);
+}
+.recent-item:hover { color: var(--text); background: var(--surface-2); }
+.recent-mark svg { width: 13px; height: 13px; }
+
+.empty {
+  justify-items: center; gap: 4px;
+  padding: 18px 14px 16px; margin-top: 10px;
+  border: 1px dashed var(--stroke-2); border-radius: var(--r-md);
+  font-size: 0.8rem; line-height: 1.5; text-align: center; text-wrap: balance;
+}
+.dock-panel .empty {
+  padding: 8px 2px 4px; margin-top: 0; border: 0;
+  justify-items: start; text-align: left;
+}
+
+[data-theme="light"] .tool-card {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+[data-theme="light"] .tool-card:hover { background: var(--bg-elev); }
+
+@media (max-width: 720px) {
+  .tool-strip { gap: 6px; }
+  .tool-card { flex-direction: column; justify-content: center; gap: 7px; padding: 12px 6px 10px; }
+  .tool-card-body { justify-items: center; }
+  .tool-card-body span { display: none; }
+  .tool-card::after { display: none; }
+  .recent-line { gap: 0 2px; }
+}
+
+/* ---------- the phone bar, its lift, and everything that sits on it ------
+   Safari floats a toolbar over the bottom of the page. The bar keeps its
+   background at bottom: 0 and moves its contents up by --mbar-lift, and every
+   thing that stacks above it reads the same number. */
+:root { --mbar-lift: 0px; }
+
+@media (max-width: 720px) {
+  .mobile-bar {
+    padding-bottom: calc(5px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px));
+  }
+  body { padding-bottom: calc(66px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px)); }
+  .mini-dock, .dock-panel { bottom: calc(70px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px)); }
+  .toasts { bottom: calc(76px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px)); }
+  .footer { padding-bottom: calc(96px + var(--mbar-lift) + env(safe-area-inset-bottom)); }
+}
+
+/* standalone has no Safari toolbar to clear */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 720px) and (hover: none) and (display-mode: browser) {
+    :root { --mbar-lift: 46px; }
+  }
+}
+
+/* the lens: transform only, and its own variables so it stops reading --h */
+.mbar-lens {
+  left: 0; top: 0;
+  width: var(--lens-w, 0px); height: var(--lens-h, 44px);
+  transform: translate3d(var(--lens-x, 0px), var(--lens-y, 4px), 0) scale(0.94);
+  transition: transform 150ms var(--ease), opacity 120ms ease-out;
+  will-change: transform;
+}
+.mbar-lens.is-on { transform: translate3d(var(--lens-x, 0px), var(--lens-y, 4px), 0) scale(1); }
+
+/* ---------- light theme: elevation and readable greys ---------------------
+   On white, a 1px hairline tops out around 1.5:1, and --shadow-2 was a 50px
+   blur with a -46px spread, i.e. nothing at all: every popover was a white
+   panel on a white page. Elevation now comes from shadows, edges are a touch
+   darker, and green is dark enough to read at 9-11px. */
+[data-theme="light"] {
+  --text-3: #64646b;
+  --stroke: rgba(0, 0, 0, 0.18);
+  --stroke-2: rgba(0, 0, 0, 0.34);
+  --ok: #15803d;
+  --ring: rgba(0, 0, 0, 0.62);
+  --shadow-1: 0 1px 2px rgba(12, 12, 16, 0.07), 0 1px 1px rgba(12, 12, 16, 0.04);
+  --shadow-2: 0 20px 44px -24px rgba(12, 12, 16, 0.30), 0 4px 12px -6px rgba(12, 12, 16, 0.12);
+}
+
+[data-theme="light"] .sources-count,
+[data-theme="light"] .source-chip.is-muted,
+[data-theme="light"] .empty-tip,
+[data-theme="light"] .donate-hero-art { opacity: 1; }
+
+[data-theme="light"] .tool-card { background: #fff; box-shadow: var(--shadow-1); }
+[data-theme="light"] .tool-card:hover { background: var(--surface-2); border-color: var(--stroke-2); }
+
+/* hover fills that resolved to 1.03:1 */
+[data-theme="light"] .qitem:hover,
+[data-theme="light"] .source-chip:hover,
+[data-theme="light"] .sources-toggle:hover,
+[data-theme="light"] .mbar-item:hover,
+[data-theme="light"] .share-chip:hover,
+[data-theme="light"] .footer-meta a:hover,
+[data-theme="light"] .footer-meta .footer-link:hover,
+[data-theme="light"] .addr:hover,
+[data-theme="light"] .donate-row:hover {
+  background: var(--surface-2);
+  border-color: var(--stroke-2);
+}
+
+/* floating chrome that had no shadow */
+[data-theme="light"] .toast,
+[data-theme="light"] .coin-jar,
+[data-theme="light"] .coin-jar-label,
+[data-theme="light"] .tip::after {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 10px 26px -14px rgba(12, 12, 16, 0.34), 0 1px 2px rgba(12, 12, 16, 0.06);
+}
+[data-theme="light"] .mini-dock {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 -8px 24px -18px rgba(12, 12, 16, 0.30);
+}
+
+[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.94); border-bottom-color: rgba(0, 0, 0, 0.14); }
+[data-theme="light"] .sources-toggle { background: rgba(255, 255, 255, 0.92); border-color: rgba(0, 0, 0, 0.16); }
+[data-theme="light"] .sources-toggle:hover,
+[data-theme="light"] .sources-toggle[aria-expanded="true"] { background: var(--surface-2); border-color: var(--stroke-2); }
+[data-theme="light"] .source-chip { border-color: rgba(0, 0, 0, 0.16); }
+
+/* the phone bar: 78% white plus saturate(180%) turned into pastel sludge */
+[data-theme="light"] .mobile-bar {
+  background: rgba(255, 255, 255, 0.93);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  border-top-color: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 -10px 30px -22px rgba(12, 12, 16, 0.40);
+}
+[data-theme="light"] .mbar-lens {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 1px 2px rgba(12, 12, 16, 0.06);
+}
+[data-theme="light"] .mbar-item#mbar-donate {
+  background: rgba(0, 0, 0, 0.045);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+[data-theme="light"] .mbar-item.is-near { color: var(--text); }
+
+[data-theme="light"] .coin-icon {
+  border-color: rgba(0, 0, 0, 0.16);
+  background: rgba(0, 0, 0, 0.035);
+  color: #3f3f45;
+}
+[data-theme="light"] .donate-row { background: #fff; box-shadow: var(--shadow-1); }
+[data-theme="light"] .donate-card { background: #fff; border-color: rgba(0, 0, 0, 0.22); box-shadow: var(--shadow-1); }
+[data-theme="light"] .footer-meta a,
+[data-theme="light"] .footer-meta .footer-link { background: #fff; border-color: rgba(0, 0, 0, 0.18); }
+[data-theme="light"] .share-chip,
+[data-theme="light"] .share-copy-btn,
+[data-theme="light"] .addr-copy { border-color: rgba(0, 0, 0, 0.16); }
+
+[data-theme="light"] .modal-backdrop { background: rgba(18, 18, 20, 0.34); }
+[data-theme="light"] .modal-inner { background: #fff; border-color: rgba(0, 0, 0, 0.14); }
+
+[data-theme="light"] .mode-glider {
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.10);
+}
+[data-theme="light"] .text-input,
+[data-theme="light"] .select,
+[data-theme="light"] .seg,
+[data-theme="light"] .switch { border-color: rgba(0, 0, 0, 0.42); }
+[data-theme="light"] .q-progress-track { background: rgba(0, 0, 0, 0.12); }
+[data-theme="light"] .mini-track { background: rgba(0, 0, 0, 0.10); }
+[data-theme="light"] .file-note {
+  border-color: color-mix(in srgb, var(--warn) 55%, transparent);
+  background: color-mix(in srgb, var(--warn) 7%, transparent);
+}
+[data-theme="light"] .dropzone { background: #fff; border-color: rgba(0, 0, 0, 0.26); box-shadow: var(--shadow-1); }
+
+/* ---------- phone ergonomics ---------- */
+/* iOS zooms the whole page when a focused field is under 16px. The rule
+   existed only inside the width query, so landscape phones and iPads still
+   zoomed. */
+@media (hover: none) {
+  #url-input, .text-input, .select, textarea { font-size: 16px; }
+}
+
+/* the phone's downloads button: a count you can see, on the button you can reach */
+.mbar-badge {
+  position: absolute; top: 3px; right: calc(50% - 22px);
+  min-width: 15px; height: 15px; padding: 0 4px;
+  border-radius: 999px; background: var(--text); color: var(--bg);
+  font-family: var(--mono); font-size: 0.56rem; line-height: 15px;
+  text-align: center; font-variant-numeric: tabular-nums;
+}
+.mbar-badge[hidden] { display: none; }
+
+/* the sources pill is position: fixed and centred by a hardcoded row height:
+   it sat 3px above the bar's centre line on a phone */
+.sources-wrap { top: 9px; height: var(--h); }
+@media (max-width: 720px) { .sources-wrap { height: 40px; top: 9px; } }
+.sources-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 28px; padding: 0 10px; line-height: 1;
+}
+@media (max-width: 430px) { .sources-toggle { padding: 0 8px; gap: 5px; } }

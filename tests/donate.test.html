@@ -75,10 +75,12 @@ async function main() {
   record("enabling it shows the footer link", wrap.hidden === false && !link.hidden, "hidden=" + wrap.hidden);
 
   link.click();
-  const opened = await waitFor(() => !doc().querySelector("#modal").hidden, 5000);
-  record("the donate dialog opens", opened, doc().querySelector("#modal-title").textContent);
+  const pop = doc().querySelector("#tip-pop");
+  const opened = await waitFor(() => pop && !pop.hidden, 5000);
+  record("the tip jar opens as a dropdown, not a page", opened,
+    pop ? "hidden=" + pop.hidden : "(no panel)");
 
-  const body = doc().querySelector("#modal-body");
+  const body = pop;
   const rows = body.querySelectorAll(".donate-row");
   record("both methods render", rows.length === 2, rows.length + " rows");
 
@@ -121,19 +123,16 @@ async function main() {
       card.getAttribute("rel") === "noopener noreferrer" && card.getAttribute("target") === "_blank",
     card ? card.getAttribute("href").slice(0, 40) : "(none)");
 
-  /* the X in the corner always worked; the word "close" under the dialog is
-     the one people press, so it has to work too */
-  const closeBtn = [...body.parentElement.querySelectorAll("button")]
-    .find((b) => /^close$/i.test(b.textContent.trim()));
-  record("there is a close button under the dialog", !!closeBtn, closeBtn ? closeBtn.className : "(none)");
-  if (closeBtn) closeBtn.click();
-  await sleep(200);
-  record("and it closes the dialog", doc().querySelector("#modal").hidden === true,
-    "hidden=" + doc().querySelector("#modal").hidden);
+  /* a dropdown closes on Escape and on a click outside it */
+  doc().dispatchEvent(new (win().KeyboardEvent)("keydown", { key: "Escape", bubbles: true }));
+  await sleep(220);
+  record("Escape closes the tip jar", pop.hidden === true, "hidden=" + pop.hidden);
 
-  doc().querySelector("[data-close-modal]").click();
-  await sleep(150);
-  record("it closes again", doc().querySelector("#modal").hidden === true);
+  link.click();
+  await waitFor(() => !pop.hidden, 3000);
+  doc().body.click();
+  await sleep(220);
+  record("a click outside closes it too", pop.hidden === true, "hidden=" + pop.hidden);
 
   window.__results = { total: results.length, failures, results };
 }
