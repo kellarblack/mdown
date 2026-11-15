@@ -2468,7 +2468,9 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .support-primary .support-copy b { font-size: 0.95rem; letter-spacing: -0.012em; }
 .support-primary .support-copy span { color: var(--text-3); }
-.support-primary:hover .support-icon { transform: none; }
+/* the tile is an inverted surface: its glyph must stay the page colour, or a
+   hover that brightens icons turns a white glyph on a white tile */
+.support-primary:hover .support-icon { color: var(--bg); transform: none; }
 
 .support-empty { display: grid; gap: 8px; padding: 20px 16px 18px; }
 .support-empty p { margin: 0; max-width: 56ch; color: var(--text-3); font-size: 0.82rem; line-height: 1.6; }
