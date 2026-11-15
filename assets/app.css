@@ -273,6 +273,9 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .icon-btn:hover { color: var(--text); background: var(--surface); border-color: var(--stroke); }
 /* the question mark next to settings: same box as every other icon button,
    the glyph is the icon */
+.donate-btn { color: var(--text-2); }
+.donate-btn:hover { color: var(--text); }
+.donate-btn svg { width: 14px; height: 14px; }
 .icon-btn.help-btn {
   font-family: var(--mono); font-size: 0.82rem; font-weight: 700;
   color: var(--text-3); line-height: 1; border-color: var(--stroke);
@@ -785,11 +788,11 @@ a.ghost-btn { text-decoration: none; }
 /* the tip jar is a button, not another word in a list */
 .footer-meta #donate-wrap a {
   display: inline-block; padding: 3px 10px;
-  border: 1px solid var(--stroke-2); border-radius: 999px;
-  color: var(--text); text-decoration: none;
+  border: 1px solid var(--text); border-radius: 999px;
+  background: var(--text); color: var(--bg); text-decoration: none;
   transition: color 120ms, background 120ms, border-color 120ms;
 }
-.footer-meta #donate-wrap a:hover { color: var(--bg); background: var(--text); border-color: var(--text); }
+.footer-meta #donate-wrap a:hover { filter: brightness(1.08); }
 .footer-meta #donate-wrap[hidden] { display: none; }
 .footer-meta a { color: var(--text-3); text-decoration: none; border-bottom: 1px solid transparent; }
 .footer-meta a:hover { color: var(--text-2); border-bottom-color: var(--stroke-2); }
@@ -1225,6 +1228,14 @@ a.ghost-btn { text-decoration: none; }
 }
 
 @media (max-width: 720px) {
+  /* the pill is no longer the rightmost control, so the popover anchors to the
+     screen instead of to the pill: 296px hanging off a 390px phone fell off
+     the left edge */
+  .health-pop {
+    position: fixed; right: 8px; left: auto;
+    top: calc(58px + env(safe-area-inset-top, 0px));
+    width: min(296px, calc(100vw - 16px));
+  }
   .topbar {
     padding: 9px 14px; padding-top: max(9px, env(safe-area-inset-top));
     /* blur on a sticky bar repaints every scroll frame — solid is free */
@@ -1276,7 +1287,8 @@ a.ghost-btn { text-decoration: none; }
   .composer-cta #fetch-btn[data-armed="false"] { opacity: 0.55; }
   .composer-cta .ghost-btn { height: 48px; }
   #tune-mode { width: 40px; height: 40px; }
-  .icon-btn.help-btn { width: 40px; height: 40px; font-size: 0.9rem; }
+  .icon-btn.help-btn,
+  .icon-btn.donate-btn { width: 40px; height: 40px; font-size: 0.9rem; }
   .chip, .link-btn { min-height: 32px; display: inline-flex; align-items: center; }
   /* no hover on a touch screen, and the absolutely-positioned tooltip was
      adding 20px of scrollable width at 320px */
@@ -1756,9 +1768,9 @@ a.donate-value:hover { text-decoration: underline; }
 /* ---------- tip jar in the corner ---------- */
 .coin-jar {
   position: fixed; z-index: 40; left: 18px; bottom: 18px;
-  width: 38px; height: 38px; display: grid; place-items: center;
-  border-radius: 999px; border: 1px solid var(--stroke);
-  background: var(--bg-elev); color: var(--text-3);
+  width: 44px; height: 44px; display: grid; place-items: center;
+  border-radius: 999px; border: 1px solid var(--stroke-2);
+  background: var(--bg-elev); color: var(--text-2);
   cursor: pointer; touch-action: manipulation;
   transition: color 160ms, border-color 160ms, background 160ms,
               transform 220ms var(--ease);
@@ -1769,7 +1781,21 @@ a.donate-value:hover { text-decoration: underline; }
   background: var(--surface-2); transform: translateY(-2px);
 }
 .coin-jar:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-.coin-jar-glyph svg { width: 17px; height: 17px; display: block; }
+.coin-jar-glyph svg { width: 19px; height: 19px; display: block; }
+/* the jar is small on purpose; the word appears when you get near it */
+.coin-jar-label {
+  position: absolute; left: calc(100% + 8px); top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  padding: 3px 8px; border-radius: 6px;
+  border: 1px solid var(--stroke); background: var(--bg-elev);
+  color: var(--text-2); font-family: var(--mono); font-size: 0.66rem;
+  white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: opacity 140ms ease-out, transform 160ms var(--ease);
+}
+.coin-jar:hover .coin-jar-label,
+.coin-jar:focus-visible .coin-jar-label {
+  opacity: 1; transform: translateY(-50%) translateX(0);
+}
 /* a coin falls in every few seconds: enough to catch the eye once, not a loop
    that pulls at the corner of the screen */
 .coin-jar-drop {

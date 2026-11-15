@@ -2528,13 +2528,9 @@
     const settingsDonate = $("#open-donate-settings");
     if (settingsDonate) settingsDonate.hidden = !cfg;
     const jar = $("#coin-jar");
-    if (jar) {
-      jar.hidden = !cfg;
-      if (cfg && jar.dataset.bound !== "1") {
-        jar.dataset.bound = "1";
-        jar.addEventListener("click", () => openDonate());
-      }
-    }
+    if (jar) jar.hidden = !cfg;
+    const tip = $("#open-donate-top");
+    if (tip) tip.hidden = !cfg;
     if (!dom.donateLink || !dom.donateWrap) return;
     /* the wrapper carries the leading separator, so hide that rather than
        leaving a dangling " · " when donations are off */
@@ -2613,7 +2609,7 @@
       card.appendChild(badge);
       const copy = el("span", { class: "donate-card-copy" });
       copy.appendChild(el("b", { text: "card" }));
-      copy.appendChild(el("span", { text: "apple pay · google pay · one-time" }));
+      copy.appendChild(el("span", { text: "apple pay · google pay · one-time · via stripe" }));
       card.appendChild(copy);
       const go = el("span", { class: "donate-card-go", "aria-hidden": "true" });
       go.innerHTML = (window.MDOWN_COIN || {}).arrow || "";
@@ -2647,13 +2643,14 @@
       row.appendChild(left);
 
       if (!method.href && method.value) {
-        row.appendChild(el("button", {
+        const copy = el("button", {
           type: "button",
           class: "ghost-btn small",
           text: "copy",
-          "aria-label": "copy " + String(method.label || "address"),
-          onclick: () => copyText(String(method.value), "Address copied")
-        }));
+          "aria-label": "copy " + String(method.label || "address")
+        });
+        copy.addEventListener("click", () => copyText(String(method.value), "Address copied"));
+        row.appendChild(copy);
       }
       list.appendChild(row);
     });
@@ -2667,7 +2664,8 @@
     wrap.appendChild(el("p", { class: "donate-hint" }));
     wrap.lastChild.appendChild(el("a", { href: "donate.html", text: "all the ways to give" }));
 
-    const close = el("button", { type: "button", class: "ghost-btn small", text: "close", onclick: () => closeModal() });
+    const close = el("button", { type: "button", class: "ghost-btn small", text: "close" });
+    close.addEventListener("click", () => closeModal());
     openModal("Donate", wrap, [close]);
   }
 

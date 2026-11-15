@@ -48,7 +48,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=149">
+<link rel="stylesheet" href="assets/app.css?v=152">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -251,6 +251,12 @@
       </div>
     </div>
 
+
+    <a class="icon-btn labeled donate-btn" id="open-donate-top" href="donate.html"
+       target="_blank" rel="noopener" hidden title="leave a tip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5 4.6 13a4.7 4.7 0 0 1 6.6-6.7l.8.8.8-.8A4.7 4.7 0 0 1 19.4 13z"/></svg>
+      <span>tip</span>
+    </a>
 
     <button class="icon-btn help-btn" id="open-help-top" type="button"
             aria-haspopup="dialog" aria-label="how it works" title="how it works">
@@ -1003,8 +1009,8 @@
   </a>
 </nav>
 
-  <button type="button" class="coin-jar" id="coin-jar" hidden
-          aria-label="tip jar" title="tip jar">
+  <a class="coin-jar" id="coin-jar" href="donate.html" target="_blank" rel="noopener"
+     aria-label="tip jar — open the donate page" title="tip jar" hidden>
     <span class="coin-jar-glyph" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5.4 9.4h13.2l-1.2 8.7A1.8 1.8 0 0 1 15.6 19.7H8.4a1.8 1.8 0 0 1-1.8-1.6z"/>
@@ -1013,12 +1019,13 @@
       </svg>
     </span>
     <span class="coin-jar-drop" aria-hidden="true"></span>
-  </button>
+    <span class="coin-jar-label" aria-hidden="true">tip jar</span>
+  </a>
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=5" defer></script>
-<script src="assets/app.js?v=89" defer></script>
+<script src="assets/app.js?v=90" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

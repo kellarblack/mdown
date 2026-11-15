@@ -63,6 +63,7 @@ async function main() {
   win().MDOWN_DONATE = {
     enabled: true,
     note: "two ways, neither asks who you are",
+    stripe: "https://donate.stripe.com/test_link_0000",
     methods: [
       { id: "xmr", label: "Monero", value: "4AdUndXHHZ6cfufTMvppY6JwXNouMBzSkbLYfpAV5Usx3skxNgYeYTRj5UzqtReoS44qo9mtmXCqY45DJ852K5Jv2684Rge", note: "no memo" },
       { id: "kofi", label: "Ko-fi", href: "https://ko-fi.com/example" }
@@ -111,6 +112,24 @@ async function main() {
   record("it says donating buys nothing",
     /does not buy|nothing here unlocks|just a tip jar/i.test(body.textContent),
     (body.textContent || "").slice(-90));
+
+  record("the card row names the processor", /stripe/i.test(body.textContent),
+    (body.textContent.match(/[^·]*stripe[^·]*/i) || [""])[0].trim().slice(0, 40));
+  const card = body.querySelector(".donate-card");
+  record("the card row is a real link to the payment page",
+    !!card && /^https:\/\//.test(card.getAttribute("href")) &&
+      card.getAttribute("rel") === "noopener noreferrer" && card.getAttribute("target") === "_blank",
+    card ? card.getAttribute("href").slice(0, 40) : "(none)");
+
+  /* the X in the corner always worked; the word "close" under the dialog is
+     the one people press, so it has to work too */
+  const closeBtn = [...body.parentElement.querySelectorAll("button")]
+    .find((b) => /^close$/i.test(b.textContent.trim()));
+  record("there is a close button under the dialog", !!closeBtn, closeBtn ? closeBtn.className : "(none)");
+  if (closeBtn) closeBtn.click();
+  await sleep(200);
+  record("and it closes the dialog", doc().querySelector("#modal").hidden === true,
+    "hidden=" + doc().querySelector("#modal").hidden);
 
   doc().querySelector("[data-close-modal]").click();
   await sleep(150);
