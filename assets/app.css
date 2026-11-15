@@ -1289,6 +1289,10 @@ a.ghost-btn { text-decoration: none; }
   #tune-mode { width: 40px; height: 40px; }
   .icon-btn.help-btn,
   .icon-btn.donate-btn { width: 40px; height: 40px; font-size: 0.9rem; }
+  /* a phone runs out of top bar before it runs out of ideas: drop the word,
+     then the heart, and the three things that must never collide stop
+     colliding */
+  .topbar-actions { gap: 4px; }
   .chip, .link-btn { min-height: 32px; display: inline-flex; align-items: center; }
   /* no hover on a touch screen, and the absolutely-positioned tooltip was
      adding 20px of scrollable width at 320px */
@@ -1518,6 +1522,13 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-toggle[aria-expanded="true"] { color: var(--text-2); border-color: var(--stroke-2); background: var(--surface); }
 .sources-toggle[aria-expanded="true"] .sources-chev { transform: rotate(180deg); opacity: 1; }
 .sources-toggle[aria-expanded="true"] .sources-count { color: var(--text); }
+@media (max-width: 380px) {
+  .sources-toggle { padding: 4px 8px; gap: 5px; }
+  .sources-toggle .sources-label { display: none; }
+}
+@media (max-width: 340px) {
+  .topbar-actions #open-donate-top { display: none; }
+}
 
 .sources-panel {
   position: absolute; z-index: 60; top: calc(100% + 6px); left: 50%; right: auto;
