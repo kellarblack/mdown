@@ -1602,13 +1602,16 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources { display: grid; gap: 5px; min-width: 0; }
 @media (max-width: 720px) {
   /* a sheet above the bottom bar, aligned to the screen, never the wordmark */
+  /* a tap at the top of the screen has to open something at the top of the
+     screen. this used to be a sheet at the bottom, a foot away from the
+     button that opened it, which read as broken */
   .sources-panel {
-    position: fixed; left: 6px; right: 6px; top: auto; width: auto;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-    max-height: calc(100dvh - 150px);
+    position: fixed; left: 8px; right: 8px; width: auto;
+    top: calc(62px + env(safe-area-inset-top, 0px)); bottom: auto;
+    max-height: calc(100dvh - 130px);
     overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
-    transform: none; transform-origin: bottom center;
-    animation: drop-in 150ms var(--ease) both;
+    transform: none; transform-origin: top center;
+    animation: drop-in 160ms var(--ease) both;
   }
   .sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
   .sources-panel .sources-note { font-size: 0.58rem; margin-bottom: 2px; }

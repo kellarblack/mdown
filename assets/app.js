@@ -2523,9 +2523,11 @@
   function closeSources() {
     if (!sourcesOpen) return;
     sourcesOpen = false;
-    dom.openSources.setAttribute("aria-expanded", "false");
     const panel = dom.sourcesPanel;
-    if (!panel || panel.hidden) return;
+    if (!panel || panel.hidden) {
+      dom.openSources.setAttribute("aria-expanded", "false");
+      return;
+    }
     panel.classList.add("is-closing");
     const stamp = ++sourcesSeq;
     const done = () => {
@@ -2534,6 +2536,7 @@
       if (stamp !== sourcesSeq) return;
       panel.classList.remove("is-closing");
       panel.hidden = true;
+      dom.openSources.setAttribute("aria-expanded", "false");
     };
     panel.addEventListener("animationend", done, { once: true });
     setTimeout(done, 220);   // if the animation is off (reduced motion)
@@ -3418,11 +3421,13 @@
   function closeHealthPop() {
     if (!dom.healthPop || !healthOpen) return;
     healthOpen = false;
-    dom.instancePill.setAttribute("aria-expanded", "false");
     dom.healthPop.classList.add("is-closing");
     healthCloseTimer = setTimeout(() => {
       dom.healthPop.hidden = true;
       dom.healthPop.classList.remove("is-closing");
+      /* collapse the label when the panel actually leaves: reporting it closed
+         for 120ms while it is still on screen is a lie the DOM can be caught in */
+      dom.instancePill.setAttribute("aria-expanded", "false");
     }, 120);
   }
 
@@ -3469,6 +3474,14 @@
         dom.instancePill.focus();
       }
     });
+
+    /* following a chip leaves this page behind: close the panel so coming back
+       shows the downloader, not the list again */
+    if (dom.sourcesPanel) {
+      dom.sourcesPanel.addEventListener("click", (event) => {
+        if (event.target.closest && event.target.closest(".source-chip")) closeSources();
+      });
+    }
 
     if (dom.openSources) {
       dom.openSources.addEventListener("click", (event) => {

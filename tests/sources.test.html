@@ -105,6 +105,24 @@ async function main() {
     doc.querySelector("#sources-panel").hidden === true && button.getAttribute("aria-expanded") === "false",
     "hidden=" + doc.querySelector("#sources-panel").hidden);
 
+  /* ---- on a phone it has to open where the button is ------------------- */
+  frame.style.width = "390px";
+  frame.style.height = "780px";
+  await sleep(400);
+  doc.querySelector("#sources-panel").hidden = true;
+  button.click();
+  await sleep(350);
+  const phone = doc.querySelector("#sources-panel").getBoundingClientRect();
+  const phoneTrigger = button.getBoundingClientRect();
+  record("on a phone the panel opens under the button, not at the other end of the screen",
+    phone.top >= phoneTrigger.bottom - 1 && phone.top - phoneTrigger.bottom < 60,
+    Math.round(phoneTrigger.bottom) + " → " + Math.round(phone.top));
+  record("and the whole list fits on that phone",
+    phone.bottom <= frame.contentWindow.innerHeight + 1,
+    Math.round(phone.bottom) + " of " + frame.contentWindow.innerHeight);
+  record("with no sideways scroll", doc.documentElement.scrollWidth <= 391,
+    doc.documentElement.scrollWidth + "px wide");
+
   window.__results = { total: results.length, failures, results };
 }
 main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
