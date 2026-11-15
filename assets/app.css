@@ -629,10 +629,7 @@ a.ghost-btn { text-decoration: none; }
 }
 .q-bytes { color: var(--text-2); font-variant-numeric: tabular-nums; }
 .q-rate { font-variant-numeric: tabular-nums; }
-@keyframes bar-sheen {
-  from { transform: translateX(-110%); }
-  to   { transform: translateX(110%); }
-}
+
 /* size unknown: a quiet half-full bar, not a bar racing back and forth */
 .qitem[data-indeterminate="true"] .q-progress-fill {
   transform: scaleX(0.32); opacity: 0.5;
@@ -2179,10 +2176,7 @@ a.donate-value:hover { text-decoration: underline; }
   margin: 0 auto 10px;
   color: var(--text);
 }
-@keyframes hero-rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
-}
+
 .hero-mark {
   display: grid; place-items: center; flex: none;
   width: clamp(34px, 5vw, 44px); height: clamp(34px, 5vw, 44px);
@@ -2192,7 +2186,7 @@ a.donate-value:hover { text-decoration: underline; }
    motion, and no filter on the lockup to make the edges shimmer */
 .hero-mark svg {
   width: 100%; height: 100%;
-  animation: hero-arrow 720ms var(--ease) both;
+  animation: hero-arrow 900ms var(--ease) both;
 }
 @keyframes hero-arrow {
   0%   { transform: translateY(-16px); opacity: 0.15; }
@@ -2210,14 +2204,8 @@ a.donate-value:hover { text-decoration: underline; }
   letter-spacing: -0.03em; line-height: 1;
 }
 .hero-type { display: inline-block; }
-.hero-caret { display: none; }
-@keyframes type-in {
-  0%   { clip-path: inset(0 100% 0 0); }
-  99%  { clip-path: inset(0 0 0 0); }
-  100% { clip-path: none; }
-}
-@keyframes caret-move { to { left: 100%; } }
-@keyframes caret-out { to { opacity: 0; } }
+
+
 .hero-word-m { display: inline; }
 /* only the "down" moves. It falls the last few pixels and settles, the same
    gesture the mark makes in the corner — once, on load, and never again.
@@ -2225,16 +2213,11 @@ a.donate-value:hover { text-decoration: underline; }
    white m while they fall. */
 .hero-word-down {
   display: inline-block; margin-left: 0.05em;
-  animation: down-in 620ms var(--ease) 90ms both;
+  animation: down-in 780ms var(--ease) 110ms both;
 }
 @keyframes down-in {
-  0%   { transform: translateY(-0.16em); opacity: 0.28; }
-  62%  { transform: translateY(0.01em); opacity: 1; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-@keyframes down-in {
-  0%   { transform: translateY(-0.16em); opacity: 0.3; }
-  58%  { transform: translateY(0.012em); opacity: 1; }
+  0%   { transform: translateY(-0.18em); opacity: 0.25; }
+  68%  { transform: translateY(0.008em); opacity: 1; }
   100% { transform: translateY(0); opacity: 1; }
 }
 .hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
@@ -2966,6 +2949,16 @@ a.addr-value:hover { color: var(--text); }
   box-shadow: 0 6px 16px -12px rgba(0, 0, 0, 0.9);
 }
 .recent-item:active { translate: 0 0; }
+/* a way out of the strip, quiet until you look for it */
+.recent-clear {
+  margin-left: auto; padding: 4px 8px;
+  border: 0; border-radius: 999px; background: none;
+  color: var(--text-3); font-family: var(--mono); font-size: 0.64rem;
+  cursor: pointer; letter-spacing: 0.04em;
+  transition: color 140ms, background 140ms;
+}
+.recent-clear:hover { color: var(--text); background: var(--surface-2); }
+.recent-clear:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 .recent-mark { color: var(--text-3); }
 .recent-mark svg { width: 13px; height: 13px; }
 .recent-item:hover .recent-mark { color: var(--text-2); }

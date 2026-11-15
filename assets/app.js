@@ -3687,6 +3687,20 @@
       });
       dom.recent.appendChild(item);
     });
+
+    const clear = el("button", {
+      type: "button",
+      class: "recent-clear",
+      text: "clear",
+      "aria-label": "clear recent links"
+    });
+    clear.addEventListener("click", () => {
+      recentLinks = [];
+      try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+      renderHistory();
+      toast("Recent links cleared", "ok");
+    });
+    dom.recent.appendChild(clear);
   }
 
   /* ----------------------------------------------------------
