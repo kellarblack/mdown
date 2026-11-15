@@ -38,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=194">
+<link rel="stylesheet" href="assets/app.css?v=198">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -382,7 +382,12 @@
       drawUptimeBars(data.days);
       const pctEl = $("#uptime-pct");
       pctEl.textContent = data.uptime === null ? "—" : data.uptime.toFixed(1) + "% up";
-      $("#uptime-meta").textContent = "· " + data.checks + " checks over 30 days, sampled by the server";
+      /* the count is the server's, not this tab's: one sample a minute, so a
+         full day is 1,440 checks and the total is what the box actually ran */
+      const perDay = data.days.length ? Math.round(data.checks / data.days.length) : 0;
+      $("#uptime-meta").textContent = "· one check a minute · " + data.checks.toLocaleString() +
+        " checks over 30 days" + (perDay ? " (" + perDay.toLocaleString() + " a day)" : "") +
+        ", sampled by the server";
       serverGraph = true;
       uptimeAsked = Date.now();
       stampLive();

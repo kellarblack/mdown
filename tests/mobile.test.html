@@ -350,7 +350,7 @@ async function main() {
     const items = [...bar.querySelectorAll(".mbar-item")];
     record("the phone bar holds four items", items.length === 4, items.length + " items");
 
-    const target = items[items.length - 1];
+    const target = items[2];   /* settings: the donate item is a page link now */
     const rect = target.getBoundingClientRect();
     const start = items[0].getBoundingClientRect();
     const y = Math.round(rect.top + rect.height / 2);
@@ -367,9 +367,9 @@ async function main() {
       near ? near.textContent.trim() : "none");
     fire("pointerup", rect.left + rect.width / 2);
     await sleep(420);
-    const pop = doc.querySelector("#tip-pop");
-    record("and releasing there opens that item", !!pop && !pop.hidden,
-      pop ? "hidden=" + pop.hidden : "(no panel)");
+    const sheet = doc.querySelector("#settings");
+    record("and releasing there opens that item", !!sheet && !sheet.hidden,
+      sheet ? "hidden=" + sheet.hidden : "(no sheet)");
   }
 
   window.__results = { total: results.length, failures, results };

@@ -48,7 +48,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=194">
+<link rel="stylesheet" href="assets/app.css?v=198">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -521,7 +521,7 @@
   <nav class="footer-meta" aria-label="Footer">
     <a href="terms.html">terms</a>
     <a href="updates.html">updates</a>
-    <span id="donate-wrap" hidden><a href="#" id="donate-link">donate</a></span>
+    <span id="donate-wrap" hidden><a href="donate.html" id="donate-link">donate</a></span>
   </nav>
 
 </footer>
@@ -1000,10 +1000,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.9 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9.4a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9.4a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
     <span>settings</span>
   </button>
-  <button class="mbar-item" type="button" id="mbar-donate" aria-haspopup="dialog" aria-expanded="false" aria-controls="tip-pop">
+  <a class="mbar-item" href="donate.html" id="mbar-donate">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9z"/></svg>
     <span>donate</span>
-  </button>
+  </a>
 </nav>
 
   <button class="coin-jar" id="coin-jar" type="button"
@@ -1022,7 +1022,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=6" defer></script>
-<script src="assets/app.js?v=107" defer></script>
+<script src="assets/app.js?v=109" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

@@ -278,7 +278,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .donate-btn:hover { color: var(--text); }
 .donate-btn svg { width: 14px; height: 14px; }
 .icon-btn.help-btn {
-  font-family: var(--mono); font-size: 0.82rem; font-weight: 700;
+  font-family: var(--mono); font-size: 0.9rem; font-weight: 400;
   color: var(--text-3); line-height: 1; border-color: var(--stroke);
 }
 .icon-btn.help-btn:hover { color: var(--text); }
@@ -1554,7 +1554,8 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   opacity: 0.7;
 }
 .sources-toggle[aria-expanded="true"] { color: var(--text-2); border-color: var(--stroke-2); background: var(--surface); }
-.sources-toggle[aria-expanded="true"] .sources-chev { transform: rotate(180deg); opacity: 1; }
+.sources-toggle[aria-expanded="true"] .sources-chev,
+.sources-toggle.is-open .sources-chev { transform: rotate(180deg); opacity: 1; }
 .sources-toggle[aria-expanded="true"] .sources-count { color: var(--text); }
 /* the label used to come back at 381, where the chip's right edge and the
    action cluster were flush (measured 0-1px at 390). It waits for 431. */
@@ -2162,13 +2163,17 @@ a.donate-value:hover { text-decoration: underline; }
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
-/* the lockup does not animate as a block: the mark drops, the second half of
-   the name drops. Two small vertical gestures, nothing that can drift
-   sideways, and no filter over the whole thing. */
+/* one gesture, once: the lockup rises six pixels and fades in over 300ms.
+   No per-letter drops, no caret, nothing that can be caught mid-motion. */
 .hero-logo {
   display: flex; align-items: center; justify-content: center; gap: 12px;
   margin: 0 auto clamp(18px, 3vh, 28px);
   color: var(--text);
+  animation: hero-in 300ms var(--ease) both;
+}
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
 }
 .hero-mark {
   display: grid; place-items: center; flex: none;
@@ -2177,10 +2182,7 @@ a.donate-value:hover { text-decoration: underline; }
 }
 /* the mark drops once, exactly as it did before: vertical only, no sideways
    motion, and no filter on the lockup to make the edges shimmer */
-.hero-mark svg {
-  width: 100%; height: 100%;
-  animation: mark-in 700ms var(--ease) both;
-}
+.hero-mark svg { width: 100%; height: 100%; }
 @keyframes hero-arrow {
   0%   { transform: translateY(-16px); opacity: 0.15; }
   62%  { transform: translateY(2.5px); opacity: 1; }
@@ -2210,11 +2212,7 @@ a.donate-value:hover { text-decoration: underline; }
    gesture the mark makes in the corner — once, on load, and never again.
    The hair of margin is the one change: it keeps the grey letters off the
    white m while they fall. */
-.hero-word-down {
-  display: inline-block;
-  margin-left: 0.05em;
-  animation: down-in 560ms var(--ease) 90ms both;
-}
+.hero-word-down { display: inline-block; margin-left: 0.05em; }
 @keyframes down-in {
   0%   { transform: translateY(-0.16em); opacity: 0.3; }
   58%  { transform: translateY(0.012em); opacity: 1; }

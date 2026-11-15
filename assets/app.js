@@ -2547,6 +2547,7 @@
   function closeSources() {
     if (!sourcesOpen) return;
     sourcesOpen = false;
+    dom.openSources.classList.remove("is-open");
     const panel = dom.sourcesPanel;
     if (!panel || panel.hidden) {
       dom.openSources.setAttribute("aria-expanded", "false");
@@ -2578,6 +2579,9 @@
     sourcesOpen = true;
     dom.sourcesPanel.classList.remove("is-closing");
     renderSources();
+    /* the chevron answers the tap, not the animation: a class flips it the
+       instant you press, and it stays in step when the button is spammed */
+    dom.openSources.classList.add("is-open");
     dom.openSources.setAttribute("aria-expanded", "true");
     dom.sourcesPanel.hidden = false;
     fitSources();
@@ -2605,8 +2609,13 @@
     "streamable", "snapchat"
   ];
 
-  function renderSources() {
+  let sourcesSig = "";
+  function renderSources(force) {
     const all = sourceList().sort((a, b) => a[0].localeCompare(b[0]));
+    const sig = all.map((entry) => entry[0]).join(",");
+    /* the panel is a list of twenty links: build it once and keep it. Opening
+       it again is a visibility toggle, not a re-render. */
+    if (!force && sig === sourcesSig && dom.sourcesPanel.firstChild) return;
     const known = new Map(all);
     const shown = FEATURED.filter((id) => known.has(id)).map((id) => [id, known.get(id)]);
 
@@ -2648,6 +2657,7 @@
 
     dom.sourcesPanel.innerHTML = "";
     dom.sourcesPanel.appendChild(wrap);
+    sourcesSig = sig;
   }
 
   /* ----------------------------------------------------------
@@ -2756,7 +2766,7 @@
   let tipOpen = false;
 
   function tipTriggers() {
-    return $$('#open-donate-top, #donate-link, #coin-jar, #mbar-donate');
+    return $$('#open-donate-top, #coin-jar');
   }
 
   function setTipState(on) {
@@ -3573,6 +3583,13 @@
       });
     }
 
+    /* building the list on the way in makes the click itself instant */
+    if (dom.openSources) {
+      dom.openSources.addEventListener("pointerenter", () => {
+        if (!dom.sourcesPanel.firstChild) renderSources();
+      }, { passive: true });
+    }
+
     if (dom.openSources) {
       dom.openSources.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -4217,6 +4234,13 @@
   function boot() {
     renderDonate();
     bindTip();
+    /* build the sources list while the page is idle, so the first tap on a
+       phone opens instantly instead of assembling twenty links */
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => renderSources(), { timeout: 2500 });
+    } else {
+      setTimeout(() => renderSources(), 1500);
+    }
     bindMobileBar();
     warmTools();
     applyTheme();

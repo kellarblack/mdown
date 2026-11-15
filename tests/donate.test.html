@@ -74,7 +74,11 @@ async function main() {
 
   record("enabling it shows the footer link", wrap.hidden === false && !link.hidden, "hidden=" + wrap.hidden);
 
-  link.click();
+  record("the footer donate button points at the full page",
+    /donate\.html$/.test(link.getAttribute("href") || ""), link.getAttribute("href"));
+
+  const trigger = doc().querySelector("#open-donate-top");
+  trigger.click();
   const pop = doc().querySelector("#tip-pop");
   const opened = await waitFor(() => pop && !pop.hidden, 5000);
   record("the tip jar opens as a dropdown, not a page", opened,
@@ -128,7 +132,7 @@ async function main() {
   await sleep(220);
   record("Escape closes the tip jar", pop.hidden === true, "hidden=" + pop.hidden);
 
-  link.click();
+  trigger.click();
   await waitFor(() => !pop.hidden, 3000);
   doc().body.click();
   await sleep(220);
