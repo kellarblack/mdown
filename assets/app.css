@@ -2163,15 +2163,14 @@ a.donate-value:hover { text-decoration: underline; }
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
-/* one gesture, once: the lockup rises six pixels and fades in over 300ms.
-   No per-letter drops, no caret, nothing that can be caught mid-motion. */
+/* one flow: the arrow rises, the name follows it, the line follows the name.
+   Same gesture each time, 70ms apart, so the eye reads it as one movement. */
 .hero-logo {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  margin: 0 auto clamp(18px, 3vh, 28px);
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin: 0 auto 10px;
   color: var(--text);
-  animation: hero-in 300ms var(--ease) both;
 }
-@keyframes hero-in {
+@keyframes hero-rise {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
 }
@@ -2182,7 +2181,10 @@ a.donate-value:hover { text-decoration: underline; }
 }
 /* the mark drops once, exactly as it did before: vertical only, no sideways
    motion, and no filter on the lockup to make the edges shimmer */
-.hero-mark svg { width: 100%; height: 100%; }
+.hero-mark svg {
+  width: 100%; height: 100%;
+  animation: hero-rise 360ms var(--ease) both;
+}
 @keyframes hero-arrow {
   0%   { transform: translateY(-16px); opacity: 0.15; }
   62%  { transform: translateY(2.5px); opacity: 1; }
@@ -2194,9 +2196,10 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .hero-word {
   position: relative;
-  font-family: var(--mono); font-weight: 500;
-  font-size: clamp(1.5rem, 4.2vw, 2.1rem);
-  letter-spacing: -0.045em; line-height: 1;
+  animation: hero-rise 360ms var(--ease) 70ms both;
+  font-family: var(--mono); font-weight: 600;
+  font-size: clamp(2rem, 4.6vw, 2.8rem);
+  letter-spacing: -0.03em; line-height: 1;
 }
 .hero-type { display: inline-block; }
 .hero-caret { display: none; }
@@ -2220,10 +2223,17 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
 .hero-word-sub {
-  /* same size as the name, a shade quieter: it reads as mdown.cc rather than
+  /* the tld, set smaller than the name: it reads as mdown.cc rather than
      mdowncc, and the dot still does the separating */
-  font-size: 1em; font-weight: 400; color: var(--text-2);
-  letter-spacing: -0.02em; margin-left: 1px;
+  font-size: 0.72em; font-weight: 400; color: var(--text-3);
+  letter-spacing: 0; margin-left: 2px;
+}
+/* the one line that says what it is, directly under the name */
+.hero-tag {
+  margin: 0 0 clamp(18px, 3vh, 28px); text-align: center;
+  color: var(--text-3); font-family: var(--mono);
+  font-size: 0.78rem; letter-spacing: 0.02em;
+  animation: hero-rise 360ms var(--ease) 140ms both;
 }
 
 .meta-line {
@@ -2843,13 +2853,15 @@ a.addr-value:hover { color: var(--text); }
 .setup-note { padding: 10px var(--card-pad) 11px; }
 
 /* the card is the field's surface, so the card shows focus */
+/* the field is focused on arrival, so this is the border people actually see:
+   barely a step up from the resting hairline, and no visible ring */
 .composer:focus-within {
-  border-color: var(--stroke-2);
-  box-shadow: var(--shadow-1), 0 0 0 3px var(--accent-soft);
+  border-color: color-mix(in srgb, var(--text) 12%, transparent);
+  box-shadow: var(--shadow-1);
 }
 .composer.is-error:focus-within {
   border-color: var(--err);
-  box-shadow: inset 0 0 0 1px var(--err), 0 0 0 3px color-mix(in srgb, var(--err) 16%, transparent);
+  box-shadow: inset 0 0 0 1px var(--err), 0 0 0 2px color-mix(in srgb, var(--err) 12%, transparent);
 }
 
 /* one control: paste, then download, in the same box */
