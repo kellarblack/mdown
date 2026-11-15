@@ -2190,7 +2190,7 @@ a.donate-value:hover { text-decoration: underline; }
 .hero-word {
   position: relative;
   font-family: var(--mono); font-weight: 500;
-  font-size: clamp(1.5rem, 4.2vw, 2.1rem);
+  font-size: clamp(1.75rem, 4.2vw, 2.1rem);
   /* the mono face already tracks tight; the negative value was squeezing the
      m and d into each other, and a split span loses the kerning pair anyway */
   letter-spacing: 0; line-height: 1;
@@ -2202,7 +2202,13 @@ a.donate-value:hover { text-decoration: underline; }
   clip-path: inset(0 100% 0 0);
   animation: type-in 640ms steps(8, end) 300ms forwards;
 }
-@keyframes type-in { to { clip-path: inset(0 0 0 0); } }
+/* the last glyph's ink can sit a hair outside the box, and clipping exactly at
+   the box chopped the final c. The reveal ends by removing the clip entirely. */
+@keyframes type-in {
+  0%   { clip-path: inset(0 100% 0 0); }
+  99%  { clip-path: inset(0 0 0 0); }
+  100% { clip-path: none; }
+}
 .hero-caret {
   position: absolute; top: 0.08em; bottom: 0.08em; left: 0; width: 1.5px;
   background: var(--text-2); pointer-events: none;
