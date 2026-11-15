@@ -11,6 +11,7 @@ Implements just enough of the v11 contract:
   GET  /tunnel   a small generated file with Content-Length + CORS
 """
 import base64
+import datetime
 import json
 import sys
 import time
@@ -83,6 +84,30 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.startswith("/thumb.png"):
             self._thumb()
             return
+        # an instance that also keeps a 30-day log, so the status page's server
+        # graph can be exercised without the real box
+        if self.path.startswith("/uptime-on"):
+            if "/uptime" in self.path:
+                days = []
+                today = datetime.date.today()
+                for i in range(30):
+                    day = today - datetime.timedelta(days=29 - i)
+                    if i == 29:
+                        up, total = 47, 48
+                    elif i in (12, 20):
+                        up, total = 0, 48
+                    elif i == 25:
+                        up, total = 46, 48
+                    else:
+                        up, total = 48, 48
+                    days.append({"date": day.isoformat(), "up": up, "total": total})
+                self._json({"days": days, "checks": sum(d["total"] for d in days),
+                            "uptime": 98.4})
+                return
+            if "/health" in self.path:
+                self._json({"status": "ok", "uptimeSeconds": 3600})
+                return
+
         if self.path.startswith("/health"):
             # deliberately bare: no checks, no uptime. The status suite asserts
             # that a server reporting nothing is still read as up.

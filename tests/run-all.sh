@@ -97,6 +97,7 @@ report_suite remux  "http://127.0.0.1:$WEB_PORT/tests/remux.test.html?report=1" 
 report_suite picker "http://127.0.0.1:$WEB_PORT/tests/picker.test.html?report=1" 13
 report_suite picker2 "http://127.0.0.1:$WEB_PORT/tests/picker.test.html?report=1&w=390" 15
 report_suite status "http://127.0.0.1:$WEB_PORT/tests/status.test.html?report=1" 11
+report_suite uptime "http://127.0.0.1:$WEB_PORT/tests/uptime.test.html?report=1" 11
 report_suite large  "http://127.0.0.1:$WEB_PORT/tests/large.test.html?report=1" 8
 report_suite marks  "http://127.0.0.1:$WEB_PORT/tests/services.test.html?report=1" 8
 report_suite apikey "http://127.0.0.1:$WEB_PORT/tests/apikey.test.html?report=1" 8
@@ -105,7 +106,7 @@ report_suite donate "http://127.0.0.1:$WEB_PORT/tests/donate.test.html?report=1"
 report_suite donopg "http://127.0.0.1:$WEB_PORT/tests/donate-page.test.html?report=1" 14
 report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 65
 report_suite buttons "http://127.0.0.1:$WEB_PORT/tests/buttons.test.html?report=1" 21
-report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 12
+report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 15
 report_suite probe   "http://127.0.0.1:$WEB_PORT/tests/probe.test.html?report=1" 18
 report_suite health  "http://127.0.0.1:$WEB_PORT/tests/health.test.html?report=1" 11
 report_suite spam    "http://127.0.0.1:$WEB_PORT/tests/spam.test.html?report=1" 7

@@ -87,6 +87,18 @@ async function main() {
 
   record("there is no filter to maintain", !doc.querySelector("#sources-search"), "no search field");
 
+  // each chip is a door to the site it names
+  const links = rows().filter((r) => r.tagName === "A" && r.getAttribute("href"));
+  record("every chip links to the site it names", links.length === rows().length,
+    links.length + "/" + rows().length + " links");
+  const unsafe = links.filter((a) => !/^https:\/\//.test(a.href) ||
+    a.getAttribute("target") !== "_blank" || a.getAttribute("rel") !== "noopener noreferrer");
+  record("and every one opens safely in a new tab", unsafe.length === 0,
+    unsafe.map((a) => a.textContent).join(", ") || "all noopener");
+  const titled = rows().filter((r) => (r.getAttribute("title") || "").indexOf(r.textContent.trim()) === 0);
+  record("a slow reader can hover for the full address", titled.length === rows().length,
+    (rows()[0].getAttribute("title") || "").slice(0, 40));
+
   doc.body.click();
   await sleep(200);
   record("it closes when you click away",

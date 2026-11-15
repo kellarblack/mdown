@@ -38,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=142">
+<link rel="stylesheet" href="assets/app.css?v=147">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -79,6 +79,10 @@
       <div class="uptime-head">
         <span class="uptime-pct" id="uptime-pct">—</span>
         <span class="uptime-meta" id="uptime-meta"></span>
+        <span class="uptime-live" id="uptime-live" hidden>
+          <span class="uptime-live-dot" aria-hidden="true"></span>
+          <span id="uptime-live-text"></span>
+        </span>
       </div>
       <div class="uptime-strip" id="uptime-strip" aria-hidden="true"></div>
     </div>
@@ -234,16 +238,19 @@
       " recorded while this page was open";
 
     const recent = history.slice(-60);
-    const existing = strip.children.length;
     strip.innerHTML = "";
     recent.forEach((entry, i) => {
       const bar = document.createElement("span");
       bar.className = "uptime-bar";
       bar.dataset.ok = entry.ok ? "true" : "false";
-      if (!CALM) {
+      bar.dataset.live = i === recent.length - 1 ? "true" : "false";
+      const when = new Date(entry.t);
+      bar.title = when.toLocaleTimeString() + " · " + (entry.ok ? "answered" : "unreachable");
+      /* only the sample that just landed gets the rise */
+      if (i === recent.length - 1 && !CALM) {
         bar.animate(
-          [{ transform: "scaleY(0.2)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
-          { duration: 260, delay: Math.min(i, 8) * 12, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
+          [{ transform: "scaleY(0.18)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
+          { duration: 300, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
         );
       }
       strip.appendChild(bar);
@@ -282,7 +289,82 @@
   }
 
   /* The server keeps one sample a minute in daily buckets; this is the real
-     number, not one browser's memory of its own checks. */
+     number, not one browser's memory of its own checks. The graph is drawn
+     once and then updated in place: re-animating thirty bars every thirty
+     seconds made a healthy server look like it was flapping. */
+  let uptimeDays = "";
+  let uptimeAsked = 0;
+  let liveTimer = null;
+
+  function uptimeFill(day) {
+    if (!day.total) return 0.16;
+    return Math.max(0.22, Math.min(1, day.up / day.total));
+  }
+
+  function uptimeState(day) {
+    if (!day.total) return "unknown";
+    const pct = day.up / day.total;
+    if (pct >= 0.995) return "true";
+    if (pct >= 0.97) return "partial";
+    return "false";
+  }
+
+  function uptimeTitle(day) {
+    if (!day.total) return day.date + " · no checks";
+    const pct = Math.round((day.up / day.total) * 1000) / 10;
+    return day.date + " · " + pct + "% of " + day.total + " checks";
+  }
+
+  /* once the server's graph is on screen, the browser's own 40-minute memory
+     must not wipe it and replay the intro every thirty seconds */
+  let serverGraph = false;
+
+  function noteCheck(ok) {
+    const history = pushHistory(ok);
+    if (!serverGraph) renderHistory(history);
+  }
+
+  function drawUptimeBars(days) {
+    const strip = $("#uptime-strip");
+    const animate = strip.children.length !== days.length;
+    days.forEach((day, i) => {
+      let bar = strip.children[i];
+      if (!bar) {
+        bar = document.createElement("span");
+        bar.className = "uptime-bar";
+        strip.appendChild(bar);
+      }
+      const fill = uptimeFill(day);
+      bar.dataset.ok = uptimeState(day);
+      bar.title = uptimeTitle(day);
+      bar.dataset.live = i === days.length - 1 ? "true" : "false";
+      bar.style.transform = "scaleY(" + fill.toFixed(4) + ")";
+      if (animate && !CALM) {
+        bar.animate(
+          [{ transform: "scaleY(0.12)", opacity: 0 }, { transform: "scaleY(" + fill.toFixed(4) + ")", opacity: 1 }],
+          { duration: 420, delay: Math.min(i, 12) * 16, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
+        );
+      }
+    });
+  }
+
+  function stampLive() {
+    const live = $("#uptime-live");
+    const text = $("#uptime-live-text");
+    if (!live || !text) return;
+    if (!uptimeAsked) { live.hidden = true; return; }
+    live.hidden = false;
+    const age = Math.round((Date.now() - uptimeAsked) / 1000);
+    text.textContent = age < 3 ? "checked just now" : age < 90 ? "checked " + age + "s ago"
+      : "checked " + Math.round(age / 60) + "m ago";
+    live.title = "this page asks every 30 seconds; the server takes one sample a minute";
+  }
+
+  function startLiveClock() {
+    if (liveTimer) return;
+    liveTimer = setInterval(stampLive, 1000);
+  }
+
   async function renderServerUptime(base) {
     try {
       const res = await fetch(base + "/uptime", { headers: { Accept: "application/json" }, cache: "no-store" });
@@ -291,27 +373,20 @@
       if (!data || !Array.isArray(data.days) || !data.days.length) return false;
       const wrap = $("#uptime");
       const strip = $("#uptime-strip");
+      const signature = data.days.map((d) => d.date).join(",");
+      if (signature !== uptimeDays) {
+        strip.innerHTML = "";
+        uptimeDays = signature;
+      }
       wrap.hidden = false;
-      strip.innerHTML = "";
-      data.days.forEach((day, i) => {
-        const bar = document.createElement("span");
-        bar.className = "uptime-bar";
-        const pct = day.total ? day.up / day.total : null;
-        bar.dataset.ok = pct === null ? "unknown" : (pct >= 0.99 ? "true" : "false");
-        bar.title = pct === null
-          ? day.date + " · no checks"
-          : day.date + " · " + Math.round(pct * 1000) / 10 + "% of " + day.total + " checks";
-        if (!CALM) {
-          bar.animate(
-            [{ transform: "scaleY(0.2)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
-            { duration: 260, delay: Math.min(i, 10) * 12, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
-          );
-        }
-        strip.appendChild(bar);
-      });
+      drawUptimeBars(data.days);
       const pctEl = $("#uptime-pct");
       pctEl.textContent = data.uptime === null ? "—" : data.uptime.toFixed(1) + "% up";
-      $("#uptime-meta").textContent = "· " + data.checks + " checks over 30 days, measured by the server";
+      $("#uptime-meta").textContent = "· " + data.checks + " checks over 30 days, sampled by the server";
+      serverGraph = true;
+      uptimeAsked = Date.now();
+      stampLive();
+      startLiveClock();
       return true;
     } catch (e) {
       return false;
@@ -327,7 +402,7 @@
       setRow("api", "(none)");
       pruneRows();
       last = { api: "", state: "no-instance" };
-      renderHistory(readHistory());
+      if (!serverGraph) renderHistory(readHistory());
       return;
     }
 
@@ -362,7 +437,10 @@
       pruneRows();
       last = { api: base, state: "unreachable", error: String(result.error), ms };
       stamp();
-      renderHistory(pushHistory(false));
+      noteCheck(false);
+      /* a failed probe says nothing about yesterday: the server's own 30-day
+         log is still the better graph, so ask for it anyway */
+      renderServerUptime(base);
       return;
     }
 
@@ -411,7 +489,7 @@
     pruneRows();
     last = { api: base, state: healthy ? "up" : "degraded", status: response.status, ms, checks, body };
     stamp();
-    renderHistory(pushHistory(healthy));
+    noteCheck(healthy);
     renderServerUptime(base);
   }
 

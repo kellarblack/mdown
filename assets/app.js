@@ -2374,6 +2374,44 @@
     ["xiaohongshu", ""], ["youtube", "4k"]
   ];
 
+  /* where each one lives, for the chips: the panel is a list of sites, so a
+     chip that goes nowhere was a missed handshake. no affiliation claimed. */
+  const SOURCE_HOME = {
+    "9gag": "https://9gag.com",
+    audiomack: "https://audiomack.com",
+    bandcamp: "https://bandcamp.com",
+    bilibili: "https://www.bilibili.com",
+    bluesky: "https://bsky.app",
+    coub: "https://coub.com",
+    dailymotion: "https://www.dailymotion.com",
+    douyin: "https://www.douyin.com",
+    facebook: "https://www.facebook.com",
+    hearthis: "https://hearthis.at",
+    imgur: "https://imgur.com",
+    instagram: "https://www.instagram.com",
+    kick: "https://kick.com",
+    loom: "https://www.loom.com",
+    mixcloud: "https://www.mixcloud.com",
+    newgrounds: "https://www.newgrounds.com",
+    odysee: "https://odysee.com",
+    ok: "https://ok.ru",
+    reddit: "https://www.reddit.com",
+    rumble: "https://rumble.com",
+    rutube: "https://rutube.ru",
+    snapchat: "https://www.snapchat.com",
+    soundcloud: "https://soundcloud.com",
+    streamable: "https://streamable.com",
+    threads: "https://www.threads.net",
+    tiktok: "https://www.tiktok.com",
+    tumblr: "https://www.tumblr.com",
+    twitch: "https://www.twitch.tv",
+    twitter: "https://x.com",
+    vimeo: "https://vimeo.com",
+    vk: "https://vk.com",
+    xiaohongshu: "https://www.xiaohongshu.com",
+    youtube: "https://www.youtube.com"
+  };
+
   let sourcesOpen = false;
   let sourcesSeq = 0;
 
@@ -2438,9 +2476,21 @@
     }));
     const row = el("div", { class: "source-chips" });
     shown.forEach(([id, note]) => {
-      const chip = el("span", { class: "source-chip" });
+      const home = SOURCE_HOME[id] || "";
+      const host = home.replace(/^https?:\/\/(?:www\.)?/, "").replace(/\/$/, "");
+      /* a chip is a door: it opens the site in a new tab, and the title carries
+         the full address for the names too long to print in full */
+      const chip = home
+        ? el("a", {
+            class: "source-chip",
+            href: home,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            title: id + (host ? " — " + host : "") + (note ? " · " + note : ""),
+            "aria-label": id + (host ? " — open " + host : "")
+          })
+        : el("span", { class: "source-chip", title: id + (note ? " — " + note : "") });
       chip.textContent = id;
-      if (note) chip.title = id + " — " + note;
       row.appendChild(chip);
     });
     wrap.appendChild(row);
@@ -3101,6 +3151,15 @@
     return history;
   }
 
+  const CALM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function clockStamp(t) {
+    const d = new Date(t);
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+
+  /* Only the newest bar arrives with a rise; the rest are already there.
+     Replaying the whole stagger every minute made a quiet graph look busy. */
   function renderHealthBars(history) {
     const strip = dom.hpStrip;
     if (!strip) return;
@@ -3108,15 +3167,21 @@
     const pad = Math.max(0, HEALTH_BARS - recent.length);
     strip.innerHTML = "";
     for (let i = 0; i < pad; i += 1) {
-      strip.appendChild(el("span", { class: "hp-bar", "data-empty": "true" }));
+      const empty = el("span", { class: "hp-bar", "data-empty": "true" });
+      empty.title = "no sample yet";
+      strip.appendChild(empty);
     }
     recent.forEach((entry, i) => {
       const bar = el("span", { class: "hp-bar" });
-      bar.dataset.ok = entry.ok === true ? "true" : (entry.ok === false ? "false" : "unknown");
-      if (typeof bar.animate === "function") {
+      const ok = entry.ok === true ? "true" : (entry.ok === false ? "false" : "unknown");
+      bar.dataset.ok = ok;
+      bar.dataset.live = i === recent.length - 1 ? "true" : "false";
+      bar.title = clockStamp(entry.t) + " · " +
+        (ok === "true" ? "answered" : ok === "false" ? "unreachable" : "no answer");
+      if (i === recent.length - 1 && typeof bar.animate === "function" && !CALM) {
         bar.animate(
-          [{ transform: "scaleY(0.25)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
-          { duration: 280, delay: Math.min(i, 10) * 14, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
+          [{ transform: "scaleY(0.18)", opacity: 0 }, { transform: "scaleY(1)", opacity: 1 }],
+          { duration: 320, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" }
         );
       }
       strip.appendChild(bar);
@@ -3212,6 +3277,9 @@
     clearTimeout(healthCloseTimer);
     dom.healthPop.hidden = false;
     dom.healthPop.classList.remove("is-closing");
+    if (dom.hpStrip) {
+      dom.hpStrip.title = "one check a minute while this is open; the server keeps the 30-day graph";
+    }
     dom.instancePill.setAttribute("aria-expanded", "true");
     renderHealthBars(readHealth());
     checkHealth();
@@ -3293,8 +3361,9 @@
       });
     }
 
-    const help = $("#open-help");
-    if (help) help.addEventListener("click", openHelp);
+    $$("#open-help, #open-help-top").forEach((button) => {
+      button.addEventListener("click", openHelp);
+    });
     $$("[data-close-settings]").forEach((node) => node.addEventListener("click", closeSettings));
 
     $$(".sheet-nav-item").forEach((btn) => {

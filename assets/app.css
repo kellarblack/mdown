@@ -238,7 +238,10 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .hp-bar {
   flex: 1 1 0; height: 100%; border-radius: 2px;
   background: color-mix(in srgb, var(--ok) 60%, transparent);
+  transform-origin: bottom;
+  transition: background 300ms ease;
 }
+.hp-bar[data-live="true"] { animation: bar-live 3.4s ease-in-out infinite; }
 .hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 70%, transparent); }
 .hp-bar[data-ok="unknown"] { background: var(--text-3); opacity: 0.45; }
 .hp-bar[data-empty="true"] { height: 38%; background: var(--surface-3); }
@@ -268,6 +271,13 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 }
 .icon-btn svg { width: 15px; height: 15px; }
 .icon-btn:hover { color: var(--text); background: var(--surface); border-color: var(--stroke); }
+/* the question mark next to settings: same box as every other icon button,
+   the glyph is the icon */
+.icon-btn.help-btn {
+  font-family: var(--mono); font-size: 0.82rem; font-weight: 700;
+  color: var(--text-3); line-height: 1; border-color: var(--stroke);
+}
+.icon-btn.help-btn:hover { color: var(--text); }
 .icon-btn.labeled {
   width: auto; gap: 7px; padding: 0 10px; grid-auto-flow: column;
   font-family: var(--mono); font-size: 0.72rem; border-color: var(--stroke);
@@ -1257,13 +1267,16 @@ a.ghost-btn { text-decoration: none; }
   .composer-cta { width: 100%; flex-wrap: wrap; row-gap: 8px; }
   .composer-cta .format-note { margin-right: auto; }
   .composer-cta .hint { order: 4; width: 100%; max-width: none; text-align: left; font-size: 0.72rem; }
-  .composer-cta .primary-btn { order: 5; flex: 1 1 100%; height: 48px; font-size: 0.88rem; }
-  .composer-cta #fetch-btn { width: 100%; padding: 0 14px; gap: 8px; }
+  .composer-cta .primary-btn { order: 5; flex: 1 1 auto; height: 48px; font-size: 0.88rem; }
+  .composer-cta #fetch-btn { width: auto; padding: 0 14px; gap: 8px; }
   .composer-cta #fetch-btn .fetch-word { display: inline; }
+  /* the format switch sits beside fetch, not alone on its own line */
+  .composer-cta #tune-mode { order: 5; flex: none; width: 48px; height: 48px; }
   /* a thumb expects the button to be there, so on a phone the word stays dim */
   .composer-cta #fetch-btn[data-armed="false"] { opacity: 0.55; }
   .composer-cta .ghost-btn { height: 48px; }
   #tune-mode { width: 40px; height: 40px; }
+  .icon-btn.help-btn { width: 40px; height: 40px; font-size: 0.9rem; }
   .chip, .link-btn { min-height: 32px; display: inline-flex; align-items: center; }
   /* no hover on a touch screen, and the absolutely-positioned tooltip was
      adding 20px of scrollable width at 320px */
@@ -1376,15 +1389,44 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .uptime-head { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
 .uptime-pct { color: var(--text-2); font-family: var(--mono); font-size: 0.76rem; }
 .uptime-meta { color: var(--text-3); font-family: var(--mono); font-size: 0.64rem; }
-.uptime-strip { display: flex; gap: 2px; margin-top: 7px; flex-wrap: nowrap; overflow: hidden; }
-.uptime-bar {
-  width: 4px; height: 14px; border-radius: 1px; flex: 0 0 auto;
-  background: var(--ok); opacity: 0.85;
-  transform-origin: bottom;
-  transition: background var(--speed) var(--ease);
+.uptime-strip {
+  display: flex; align-items: flex-end; justify-content: flex-start; gap: 3px;
+  height: 24px; margin-top: 8px; flex-wrap: nowrap; overflow: hidden;
+  padding-bottom: 2px; border-bottom: 1px solid var(--stroke);
 }
-.uptime-bar[data-ok="false"] { background: var(--err); }
+/* height is the day's uptime, so the row reads as a graph and not as a row of
+   identical ticks: a bad day is visibly shorter, not just a different colour */
+.uptime-bar {
+  flex: 1 1 0; min-width: 0; max-width: 9px; height: 100%; border-radius: 2px;
+  background: color-mix(in srgb, var(--ok) 75%, transparent);
+  transform-origin: bottom; transform: scaleY(1);
+  transition: transform 520ms cubic-bezier(.22,.8,.3,1), background 320ms ease;
+}
+.uptime-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 80%, transparent); }
+.uptime-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 80%, transparent); }
 .uptime-bar[data-ok="unknown"] { background: var(--surface-3); }
+.uptime-bar[data-live="true"] { animation: bar-live 3.4s ease-in-out infinite; }
+@keyframes bar-live {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+.uptime-live {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 0.6rem; color: var(--text-3);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.uptime-live-dot {
+  width: 4px; height: 4px; border-radius: 999px; background: var(--ok);
+  animation: live-dot 2.4s ease-in-out infinite;
+}
+@keyframes live-dot {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50%      { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uptime-bar, .hp-bar { transition: none; }
+  .uptime-bar[data-live="true"], .hp-bar[data-live="true"], .uptime-live-dot { animation: none; }
+}
 .status-note { margin: 12px 0 0; color: var(--text-3); font-size: 0.76rem; line-height: 1.6; white-space: pre-wrap; }
 .status-cta { margin: 12px 0 0; }
 .status-card[data-state="no-instance"] .status-dot { background: var(--text-3); }
@@ -1525,9 +1567,17 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .source-chip {
   padding: 2px 7px; border: 1px solid var(--stroke); border-radius: 4px;
   font-family: var(--mono); font-size: 0.6rem; line-height: 1.45;
-  color: var(--text-2); text-align: left;
+  color: var(--text-2); text-align: left; text-decoration: none;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  cursor: pointer;
   transition: color var(--speed), border-color var(--speed), background var(--speed);
+}
+/* on a touch screen a chip is a link you tap, so it gets a real target */
+@media (hover: none) {
+  .sources-panel .source-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 32px;
+  }
 }
 .source-chip:hover {
   color: var(--text); border-color: var(--stroke-2); background: var(--surface);

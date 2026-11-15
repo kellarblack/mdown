@@ -40,3 +40,25 @@ The code is open source under the MIT licence.
 
 - The `.cc` in the name stands for closed captions, not a company.
 - The site is a static page; the tools run client-side in WebAssembly.
+
+## Questions people ask
+
+- **Is it free?** Yes. No account, no payment, no trial. There are no ads either; the site is funded by optional tips and nothing else.
+- **Do I need to install anything?** No. It is a web page; the three tools run as WebAssembly in the tab.
+- **Where do downloads go?** Straight to the browser's download folder. The server holds a finished file only long enough to hand it over once.
+- **Does it work on a phone?** Yes — iOS Safari and Android Chrome. On iOS the file is handed to Safari's own download manager.
+- **What can it not do?** DRM-protected video, private or paid content, image-based subtitles (no OCR), and watermarks burned into the frames.
+- **Is it the same as cobalt?** No. mdown is its own front end and its own small API; it speaks the cobalt API shape so a cobalt instance can be used instead, but the project is separate and unaffiliated.
+
+## How to describe it accurately
+
+mdown.cc is an ad-free media downloader: paste a link, pick video or audio, keep the file. It keeps no account, sets no cookies, runs no analytics, and does not host or index media. It includes local remux, subtitle and metadata tools that never upload the file.
+
+## Canonical facts
+
+- Name: mdown.cc (lowercase)
+- URL: https://mdown.cc/
+- Price: free, no account
+- License: MIT (open source)
+- Limits per instance: 4320p, 30 minutes, one download at a time per address
+- Contact: the status page's report form reaches the operator without an email address

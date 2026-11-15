@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>uptime graph test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 700px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The server keeps one sample a minute for 30 days. The page must draw that as
+  a graph, keep the bars it already has on a refresh (no replaying the intro
+  every thirty seconds), say how old its last look is, and mark today.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/uptime.test.html?report=1"
+-->
+<iframe id="app" src="../status.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320/uptime-on" }));
+  frame.contentWindow.localStorage.removeItem("mdown.uptime");
+  frame.src = "../status.html?t=" + Date.now();
+
+  const doc = () => frame.contentDocument;
+  const opened = await waitFor(() => doc() && doc().querySelector("#uptime-strip"));
+  record("status page loads", opened);
+  if (!opened) { window.__results = { total: results.length, failures, results }; return; }
+
+  const drawn = await waitFor(() => doc().querySelectorAll(".uptime-bar").length === 30, 15000);
+  record("the server's 30 days are drawn", drawn, doc().querySelectorAll(".uptime-bar").length + " bars");
+
+  const bars = [...doc().querySelectorAll(".uptime-bar")];
+  const scaleOf = (el) => {
+    const m = /scaleY\(([\d.]+)\)/.exec(el.style.transform || "");
+    return m ? parseFloat(m[1]) : 0;
+  };
+  const today = bars[bars.length - 1];
+  const badDay = bars[12];
+  record("today is marked live", today.dataset.live === "true", today.dataset.live);
+  record("only today is live", bars.filter((b) => b.dataset.live === "true").length === 1,
+    bars.filter((b) => b.dataset.live === "true").length + " marked");
+  record("a bad day is shorter, not just a different colour",
+    scaleOf(badDay) > 0 && scaleOf(badDay) < scaleOf(today) - 0.05,
+    scaleOf(badDay).toFixed(2) + " vs " + scaleOf(today).toFixed(2));
+  record("a bad day is coloured as bad", badDay.dataset.ok === "false", badDay.dataset.ok);
+  record("every bar explains itself on hover",
+    bars.every((b) => b.title && /\d{4}-\d{2}-\d{2}/.test(b.title)), bars[0].title);
+
+  const meta = doc().querySelector("#uptime-meta").textContent;
+  record("the graph says the server measured it", /sampled by the server/i.test(meta), meta);
+
+  const live = doc().querySelector("#uptime-live");
+  record("it shows how fresh the look is", !!live && !live.hidden &&
+    /checked/i.test(live.textContent), live ? live.textContent.trim() : "(none)");
+
+  // a refresh must reuse the bars instead of rebuilding the strip
+  const first = doc().querySelector(".uptime-bar");
+  doc().querySelector("#status-refresh").click();
+  await sleep(1200);
+  const after = doc().querySelector(".uptime-bar");
+  record("a refresh keeps the bars it already has", first === after,
+    first === after ? "same node" : "rebuilt");
+  record("and the strip is still 30 bars", doc().querySelectorAll(".uptime-bar").length === 30,
+    doc().querySelectorAll(".uptime-bar").length + " bars");
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>
