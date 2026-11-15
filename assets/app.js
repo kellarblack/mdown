@@ -4322,6 +4322,9 @@
     document.addEventListener("DOMContentLoaded", boot);
   } else {
     boot();
+    /* the strip is part of the first frame, so the centred column never has to
+       re-centre after it appears */
+    renderHistory();
   }
 
   /* dev hook: inspect state from the console / automated checks */

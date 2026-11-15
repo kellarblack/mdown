@@ -2164,10 +2164,11 @@ a.donate-value:hover { text-decoration: underline; }
 /* the download view: one centred column, nothing else competing */
 #download-view {
   display: flex; flex-direction: column;
-  /* anchored, not centred: the recent strip arrives a moment after load, and
-     centring meant the whole column jumped up when it did. Now it grows down. */
-  justify-content: flex-start;
-  padding-top: clamp(14px, 6vh, 64px);
+  /* centred, and `safe` keeps the composer reachable when the viewport is
+     shorter than the content. The recent strip is rendered before the first
+     frame, so centring no longer causes a jump. */
+  justify-content: center;
+  justify-content: safe center;
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
@@ -2189,7 +2190,10 @@ a.donate-value:hover { text-decoration: underline; }
 }
 /* the mark drops once, exactly as it did before: vertical only, no sideways
    motion, and no filter on the lockup to make the edges shimmer */
-.hero-mark svg { width: 100%; height: 100%; }
+.hero-mark svg {
+  width: 100%; height: 100%;
+  animation: hero-arrow 720ms var(--ease) both;
+}
 @keyframes hero-arrow {
   0%   { transform: translateY(-16px); opacity: 0.15; }
   62%  { transform: translateY(2.5px); opacity: 1; }
@@ -2219,7 +2223,10 @@ a.donate-value:hover { text-decoration: underline; }
    gesture the mark makes in the corner — once, on load, and never again.
    The hair of margin is the one change: it keeps the grey letters off the
    white m while they fall. */
-.hero-word-down { display: inline-block; margin-left: 0.05em; }
+.hero-word-down {
+  display: inline-block; margin-left: 0.05em;
+  animation: down-in 620ms var(--ease) 90ms both;
+}
 @keyframes down-in {
   0%   { transform: translateY(-0.16em); opacity: 0.28; }
   62%  { transform: translateY(0.01em); opacity: 1; }
