@@ -60,6 +60,7 @@ async function main() {
   button.click();
   const opened = await waitFor(() => !doc.querySelector("#sources-panel").hidden, 5000);
   record("the panel opens", opened, "aria-expanded=" + button.getAttribute("aria-expanded"));
+  await sleep(260);   /* it drops in over 190ms; measure it where it lands */
 
   const plusAfter = win.getComputedStyle(doc.querySelector(".sources-chev")).transform;
   record("the chevron turns over", plusBefore !== plusAfter && /matrix/.test(plusAfter),

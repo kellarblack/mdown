@@ -1593,11 +1593,14 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   /* scales down just enough on a 320px phone that no name is cut */
   font-size: clamp(0.62rem, 2.8vw, 0.7rem);
 }
-.sources-panel { animation: panel-center-in 150ms var(--ease) both; }
+/* it should feel like the panel arrives, not like it was painted on: a short
+   drop with a touch of scale, and it is fully there by the time you look */
+.sources-panel { animation: panel-center-in 190ms cubic-bezier(0.2, 0.9, 0.3, 1.02) both; }
 .sources-panel.is-closing { animation: panel-center-out 120ms var(--ease) both; }
 @keyframes panel-center-in {
-  from { opacity: 0; transform: translate(-50%, -4px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
+  0%   { opacity: 0; transform: translate(-50%, -10px) scale(0.975); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 @keyframes panel-center-out {
   from { opacity: 1; transform: translate(-50%, 0); }
@@ -1619,7 +1622,12 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     max-height: calc(100dvh - 130px);
     overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
     transform: none; transform-origin: top center;
-    animation: drop-in 160ms var(--ease) both;
+    animation: panel-drop-in 190ms cubic-bezier(0.2, 0.9, 0.3, 1.02) both;
+  }
+  @keyframes panel-drop-in {
+    0%   { opacity: 0; transform: translateY(-10px) scale(0.975); }
+    55%  { opacity: 1; }
+    100% { opacity: 1; transform: none; }
   }
   .sources-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
   .sources-panel .sources-note { font-size: 0.58rem; margin-bottom: 2px; }
@@ -2154,34 +2162,24 @@ a.donate-value:hover { text-decoration: underline; }
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
-/* one choreography on arrival: the lockup drops and settles, then the field
-   rises under it. Both run once, and neither is a loop. */
-.hero-logo { animation: logo-in 680ms var(--ease) 40ms both; }
-@keyframes logo-in {
-  0%   { opacity: 0; transform: translateY(9px); }
-  55%  { opacity: 1; transform: translateY(-2px); }
-  78%  { transform: translateY(1px); }
-  100% { opacity: 1; transform: none; }
-}
+/* the lockup does not animate as a block: the mark drops, the second half of
+   the name drops. Two small vertical gestures, nothing that can drift
+   sideways, and no filter over the whole thing. */
 .hero-logo {
   display: flex; align-items: center; justify-content: center; gap: 12px;
   margin: 0 auto clamp(18px, 3vh, 28px);
   color: var(--text);
-  /* the wordmark sits a little above the page rather than on it */
-  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.55));
-}
-[data-theme="light"] .hero-logo {
-  filter: drop-shadow(0 8px 18px rgba(12, 12, 16, 0.14));
 }
 .hero-mark {
   display: grid; place-items: center; flex: none;
   width: clamp(34px, 5vw, 44px); height: clamp(34px, 5vw, 44px);
   color: var(--text);
 }
-/* the arrow itself moves: it drops the last few pixels into the tray */
+/* the mark drops once, exactly as it did before: vertical only, no sideways
+   motion, and no filter on the lockup to make the edges shimmer */
 .hero-mark svg {
   width: 100%; height: 100%;
-  animation: hero-arrow 640ms var(--ease) both;
+  animation: mark-in 700ms var(--ease) both;
 }
 @keyframes hero-arrow {
   0%   { transform: translateY(-16px); opacity: 0.15; }
@@ -2195,31 +2193,26 @@ a.donate-value:hover { text-decoration: underline; }
 .hero-word {
   position: relative;
   font-family: var(--mono); font-weight: 500;
-  font-size: clamp(1.75rem, 4.2vw, 2.1rem);
-  /* the mono face already tracks tight; the negative value was squeezing the
-     m and d into each other, and a split span loses the kerning pair anyway */
-  letter-spacing: 0; line-height: 1;
+  font-size: clamp(1.5rem, 4.2vw, 2.1rem);
+  letter-spacing: -0.045em; line-height: 1;
 }
-/* the name types itself once, then the caret leaves. the text keeps its full
-   width the whole time, so nothing to the right of it ever moves. */
 .hero-type { display: inline-block; }
-/* the last glyph's ink can sit a hair outside the box, and clipping exactly at
-   the box chopped the final c. The reveal ends by removing the clip entirely. */
+.hero-caret { display: none; }
 @keyframes type-in {
   0%   { clip-path: inset(0 100% 0 0); }
   99%  { clip-path: inset(0 0 0 0); }
   100% { clip-path: none; }
 }
-.hero-caret { display: none; }
 @keyframes caret-move { to { left: 100%; } }
 @keyframes caret-out { to { opacity: 0; } }
 .hero-word-m { display: inline; }
-/* the gesture: the arrow and the second half of the name drop together, the
-   grey letters settling into place. A hair of space between m and d keeps them
-   from touching while it moves. */
+/* only the "down" moves. It falls the last few pixels and settles, the same
+   gesture the mark makes in the corner — once, on load, and never again.
+   The hair of margin is the one change: it keeps the grey letters off the
+   white m while they fall. */
 .hero-word-down {
   display: inline-block;
-  margin-left: 0.055em;
+  margin-left: 0.05em;
   animation: down-in 560ms var(--ease) 90ms both;
 }
 @keyframes down-in {
@@ -2938,9 +2931,13 @@ a.addr-value:hover { color: var(--text); }
   font-size: 0.7rem; color: var(--text-2);
   transition: color 140ms, border-color 140ms, background 140ms, translate 200ms var(--ease);
 }
+.recent-item {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+}
 .recent-item:hover {
   color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
   text-decoration: none; translate: 0 -1px;
+  box-shadow: 0 6px 16px -12px rgba(0, 0, 0, 0.9);
 }
 .recent-item:active { translate: 0 0; }
 .recent-mark { color: var(--text-3); }
