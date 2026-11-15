@@ -48,7 +48,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=159">
+<link rel="stylesheet" href="assets/app.css?v=162">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -326,7 +326,8 @@
 
       <div class="composer-foot">
         <div class="mode-group">
-        <div class="modes" role="radiogroup" aria-label="Download mode">
+        <div class="modes" role="radiogroup" aria-label="Download mode" id="modes">
+          <span class="mode-glider" aria-hidden="true"></span>
           <button type="button" class="mode" data-mode="auto" role="radio" aria-checked="true" title="pick what suits the link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>
             <span class="mode-name">auto</span>
@@ -1014,7 +1015,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=6" defer></script>
-<script src="assets/app.js?v=95" defer></script>
+<script src="assets/app.js?v=97" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

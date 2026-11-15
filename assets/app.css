@@ -382,7 +382,18 @@ a.ghost-btn { text-decoration: none; }
   padding: 8px 11px; flex-wrap: wrap;
   border-top: 1px solid var(--stroke);
 }
-.modes { display: inline-flex; gap: 2px; padding: 0; border-radius: var(--r-sm); }
+.modes { position: relative; display: inline-flex; gap: 2px; padding: 0; border-radius: var(--r-sm); }
+/* the selection is one object that moves, not three that blink */
+.mode-glider {
+  position: absolute; left: 0; top: 0; bottom: 0; z-index: 0;
+  width: var(--mw, 0px); transform: translateX(var(--mx, 0px));
+  border-radius: var(--r-sm); background: var(--surface-3);
+  opacity: 0;
+  transition: transform 300ms var(--ease), width 300ms var(--ease), opacity 160ms ease-out;
+  pointer-events: none;
+}
+.modes.has-glider .mode-glider { opacity: 1; }
+.modes.no-glide .mode-glider { transition: none; }
 .mode {
   display: inline-flex; align-items: center; gap: 5px;
   height: 26px; padding: 0 10px; border-radius: var(--r-sm);
@@ -391,7 +402,8 @@ a.ghost-btn { text-decoration: none; }
 }
 .mode svg { width: 12px; height: 12px; }
 .mode:hover { color: var(--text-2); }
-.mode[aria-checked="true"] { background: var(--surface-2); color: var(--text); }
+.mode { position: relative; z-index: 1; background: transparent; }
+.mode[aria-checked="true"] { background: transparent; color: var(--text); }
 .mode-group { display: flex; align-items: center; gap: 6px; }
 .format-note {
   color: var(--text-3); font-family: var(--mono); font-size: 0.64rem;
@@ -639,6 +651,13 @@ a.ghost-btn { text-decoration: none; }
 }
 .qitem[data-indeterminate="true"] .q-progress-fill::after { animation: none; }
 @media (prefers-reduced-motion: reduce) {
+  .mode-glider { transition: none; }
+  main.wrap[data-view-panel]:not([hidden]),
+  .qitem.is-done .q-icon,
+  .qitem.is-done .q-thumb,
+  .qitem.is-leaving,
+  #modal.is-closing,
+  #modal.is-closing .modal-inner { animation: none; }
   .q-progress-fill { transition: none; }
   .q-progress-fill::after { animation: none; opacity: 0; }
   .qitem[data-indeterminate="true"] .q-progress-fill {
@@ -839,10 +858,8 @@ a.ghost-btn { text-decoration: none; }
 }
 [data-theme="light"] .sheet-backdrop { background: rgba(0, 0, 0, 0.22); }
 /* selected controls read as selected in daylight, not as slightly-greyer grey */
-[data-theme="light"] .mode[aria-checked="true"],
-[data-theme="light"] .seg button[aria-checked="true"] {
-  background: var(--text); color: var(--bg);
-}
+[data-theme="light"] .mode[aria-checked="true"] { background: transparent; color: var(--text); }
+[data-theme="light"] .seg button[aria-checked="true"] { background: var(--text); color: var(--bg); }
 [data-theme="light"] .ghost-btn:hover,
 [data-theme="light"] .icon-btn:hover,
 [data-theme="light"] .nav-link:hover,
@@ -1169,6 +1186,28 @@ a.ghost-btn { text-decoration: none; }
 
 /* ---------- motion ---------- */
 @keyframes rise { from { transform: translateY(5px); } to { transform: none; } }
+/* a tool panel arrives instead of appearing */
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: none; }
+}
+main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) both; }
+/* a finished row lands: the tick pops once and settles */
+@keyframes done-pop {
+  0%   { transform: scale(0.82); }
+  55%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.qitem.is-done .q-icon,
+.qitem.is-done .q-thumb { animation: done-pop 420ms var(--ease); }
+/* clearing a row slides it out rather than blinking it away */
+@keyframes row-out {
+  to { opacity: 0; transform: translateX(10px) scale(0.985); }
+}
+.qitem.is-leaving {
+  animation: row-out 170ms var(--ease) both;
+  pointer-events: none;
+}
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pop { from { transform: scale(0.99) translateY(4px); } to { transform: none; } }
 /* one motion for every dropdown: 4px, no bounce, 150ms, same curve as the rest
@@ -1184,6 +1223,13 @@ a.ghost-btn { text-decoration: none; }
 .nav-menu.is-closing { animation: drop-out 120ms var(--ease) both; }
 .dock-panel.is-closing { animation: drop-out 120ms var(--ease) both; }
 @keyframes slide-in { from { transform: translateX(20px); } to { transform: none; } }
+@keyframes modal-out {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(6px) scale(0.99); }
+}
+@keyframes veil-out { from { opacity: 1; } to { opacity: 0; } }
+#modal.is-closing { animation: veil-out 120ms var(--ease) both; }
+#modal.is-closing .modal-inner { animation: modal-out 120ms var(--ease) both; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }

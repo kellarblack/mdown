@@ -694,6 +694,25 @@
       : "";
   }
 
+  /* one pill that slides between auto / audio / video, rather than a
+     background switching on and off under the words */
+  function positionModeGlider() {
+    const group = $("#modes");
+    if (!group) return;
+    const active = group.querySelector('.mode[aria-checked="true"]');
+    if (!active) return;
+    /* the first placement must not animate: the pill is already where the
+       selection is, and a slide on page load would read as a glitch */
+    if (!group.dataset.glide) {
+      group.dataset.glide = "1";
+      group.classList.add("no-glide");
+      requestAnimationFrame(() => group.classList.remove("no-glide"));
+    }
+    group.style.setProperty("--mx", active.offsetLeft + "px");
+    group.style.setProperty("--mw", active.offsetWidth + "px");
+    group.classList.add("has-glider");
+  }
+
   function renderModes() {
     dom.modes.forEach((btn) => {
       const mode = btn.dataset.mode;
@@ -701,6 +720,7 @@
       btn.setAttribute("aria-checked", on ? "true" : "false");
       
     });
+    positionModeGlider();
     updateFormatNote();
     updateFileNamePreview();
     $$('[data-setting="downloadMode"] button').forEach((btn) => {
@@ -1311,6 +1331,16 @@
       dom.miniFill.style.transform = "scaleX(" + (item.size ? shown / 100 : 0.12) + ")";
     }
 
+    if (item._lastStatus !== item.status) {
+      item._lastStatus = item.status;
+      if (item.status === "ready" || item.status === "done") {
+        node.classList.remove("is-done");
+        void node.offsetWidth;         /* restart the animation */
+        node.classList.add("is-done");
+        setTimeout(() => node.classList.remove("is-done"), 520);
+      }
+    }
+
     const actionsKey = item.status + "|" + item.error + "|" + (item.blob ? "blob" : "noblob") + (item.sourceUrl ? "|src" : "");
     if (item.refs.actionsKey !== actionsKey) {
       item.refs.actionsKey = actionsKey;
@@ -1486,7 +1516,11 @@
   function removeItem(item) {
     cancelItem(item, true);
     if (item.blobUrl) URL.revokeObjectURL(item.blobUrl);
-    if (item.node) item.node.remove();
+    if (item.node) {
+      const node = item.node;
+      node.classList.add("is-leaving");
+      setTimeout(() => node.remove(), 170);
+    }
     queue = queue.filter((q) => q !== item);
     updateQueueMeta();
   }
@@ -2192,6 +2226,9 @@
     (footButtons || []).forEach((btn) => dom.modalFoot.appendChild(btn));
 
     modalReturnFocus = document.activeElement;
+    modalSeq += 1;
+    dom.modal.classList.remove("is-closing");
+    delete dom.modal.dataset.closing;
     dom.modal.hidden = false;
     document.body.style.overflow = "hidden";
     setTimeout(() => { if (!dom.modal.hidden) dom.modalClose.focus(); }, 40);
@@ -2737,14 +2774,25 @@
     openModal("Donate", wrap, [close]);
   }
 
+  let modalSeq = 0;
   function closeModal() {
-    if (dom.modal.hidden) return;
-    dom.modal.hidden = true;
-    if (dom.sheet.hidden) document.body.style.overflow = "";
-    if (modalReturnFocus && typeof modalReturnFocus.focus === "function") {
-      modalReturnFocus.focus();
-    }
-    modalReturnFocus = null;
+    if (dom.modal.hidden || dom.modal.dataset.closing === "1") return;
+    dom.modal.dataset.closing = "1";
+    dom.modal.classList.add("is-closing");
+    const stamp = ++modalSeq;
+    const finish = () => {
+      if (stamp !== modalSeq) return;
+      dom.modal.hidden = true;
+      dom.modal.classList.remove("is-closing");
+      delete dom.modal.dataset.closing;
+      if (dom.sheet.hidden) document.body.style.overflow = "";
+      if (modalReturnFocus && typeof modalReturnFocus.focus === "function") {
+        modalReturnFocus.focus();
+      }
+      modalReturnFocus = null;
+    };
+    dom.modal.addEventListener("animationend", finish, { once: true });
+    setTimeout(finish, 140);   /* or reduced motion, where nothing plays */
   }
 
   $$("[data-close-modal]", dom.modal).forEach((node) => {
@@ -3819,6 +3867,7 @@
 
     window.addEventListener("resize", () => {
       if (sourcesOpen) fitSources();
+      positionModeGlider();
     });
 
     if (location.hash === "#help") openHelp();

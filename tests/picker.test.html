@@ -132,7 +132,8 @@ async function main() {
     confirm.click();
     const queued = await waitFor(() => win().md.state().items.length >= 3, 8000);
     record("confirm queues every picked entry", queued, "items=" + win().md.state().items.length);
-    record("picker modal closes", modal().hidden);
+    /* the dialog leaves with a 120ms fade, so give it a beat */
+    record("picker modal closes", await waitFor(() => modal().hidden, 2000));
   }
 
   window.__results = { total: results.length, failures, results };
