@@ -3656,7 +3656,7 @@
     const seen = new Set();
     recentLinks.forEach((url) => {
       const host = hostOf(url) || url;
-      if (seen.has(host) || seen.size >= 5) return;
+      if (seen.has(host) || seen.size >= 4) return;
       seen.add(host);
       const detected = detectService(url);
       const mark = markForService(detected && detected.id);
