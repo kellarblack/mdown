@@ -890,6 +890,15 @@ a.ghost-btn { text-decoration: none; }
   display: flex; gap: 14px; padding: 0 18px; overflow-x: auto;
   border-bottom: 1px solid var(--stroke); scrollbar-width: none;
 }
+/* six tabs do not fit a 320px phone: wrap instead of hiding Advanced off the
+   right edge with no scrollbar to find it */
+@media (max-width: 480px) {
+  .sheet-nav {
+    flex-wrap: wrap; gap: 0 14px; overflow: visible;
+    padding: 2px 16px 0;
+  }
+  .sheet-nav-item { padding: 8px 0; }
+}
 .sheet-nav::-webkit-scrollbar { display: none; }
 .sheet-nav-item {
   flex: none; padding: 9px 0;
@@ -1547,8 +1556,10 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-toggle[aria-expanded="true"] { color: var(--text-2); border-color: var(--stroke-2); background: var(--surface); }
 .sources-toggle[aria-expanded="true"] .sources-chev { transform: rotate(180deg); opacity: 1; }
 .sources-toggle[aria-expanded="true"] .sources-count { color: var(--text); }
-@media (max-width: 380px) {
-  .sources-toggle { padding: 4px 8px; gap: 5px; }
+/* the label used to come back at 381, where the chip's right edge and the
+   action cluster were flush (measured 0-1px at 390). It waits for 431. */
+@media (max-width: 430px) {
+  .sources-toggle { padding: 0 8px; gap: 5px; }
   .sources-toggle .sources-label { display: none; }
 }
 @media (max-width: 340px) {
@@ -2165,7 +2176,7 @@ a.donate-value:hover { text-decoration: underline; }
 /* the arrow itself moves: it drops the last few pixels into the tray */
 .hero-mark svg {
   width: 100%; height: 100%;
-  animation: hero-arrow 760ms var(--ease) both;
+  animation: hero-arrow 640ms var(--ease) both;
 }
 @keyframes hero-arrow {
   0%   { transform: translateY(-16px); opacity: 0.15; }
@@ -2180,37 +2191,32 @@ a.donate-value:hover { text-decoration: underline; }
   position: relative;
   font-family: var(--mono); font-weight: 500;
   font-size: clamp(1.5rem, 4.2vw, 2.1rem);
-  letter-spacing: -0.045em; line-height: 1;
+  /* the mono face already tracks tight; the negative value was squeezing the
+     m and d into each other, and a split span loses the kerning pair anyway */
+  letter-spacing: 0; line-height: 1;
 }
 /* the name types itself once, then the caret leaves. the text keeps its full
    width the whole time, so nothing to the right of it ever moves. */
 .hero-type {
   display: inline-block;
   clip-path: inset(0 100% 0 0);
-  animation: type-in 560ms steps(8, end) 360ms forwards;
+  animation: type-in 640ms steps(8, end) 300ms forwards;
 }
 @keyframes type-in { to { clip-path: inset(0 0 0 0); } }
 .hero-caret {
-  position: absolute; top: 0.08em; bottom: 0.08em; left: 0; width: 2px;
+  position: absolute; top: 0.08em; bottom: 0.08em; left: 0; width: 1.5px;
   background: var(--text-2); pointer-events: none;
   animation:
-    caret-move 560ms steps(8, end) 360ms forwards,
-    caret-out 240ms ease-out 1020ms forwards;
+    caret-move 640ms steps(8, end) 300ms forwards,
+    caret-out 200ms ease-out 1040ms forwards;
 }
 @keyframes caret-move { to { left: 100%; } }
 @keyframes caret-out { to { opacity: 0; } }
 .hero-word-m { display: inline; }
-/* only the "down" moves. It falls the last few pixels and settles, the same
-   gesture the mark makes in the corner — once, on load, and never again. */
-.hero-word-down {
-  display: inline-block;
-  animation: down-in 420ms var(--ease) 940ms both;
-}
-@keyframes down-in {
-  0%   { transform: translateY(-0.16em); opacity: 0.3; }
-  58%  { transform: translateY(0.012em); opacity: 1; }
-  100% { transform: translateY(0); opacity: 1; }
-}
+/* the wordmark used to type, then drop its second half. That second drop is
+   what made the m and d collide, and it read as two animations fighting.
+   The typing is the gesture; the rest just sits still. */
+.hero-word-down { display: inline; }
 .hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
 .hero-word-sub {
   /* same size as the name, a shade quieter: it reads as mdown.cc rather than
