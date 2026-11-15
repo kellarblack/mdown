@@ -412,6 +412,8 @@
     miniTitle: $("#mini-title"),
     miniMeta: $("#mini-meta"),
     miniFill: $("#mini-fill"),
+    miniPct: $("#mini-pct"),
+    miniEta: $("#mini-eta"),
     emptyState: $("#empty-state"),
     clearFinished: $("#clear-finished"),
     servicesCard: $("#services-card"),
@@ -1318,11 +1320,18 @@
       write(bytesNode, item.detail || "requesting");
       write(rateNode, item.started ? Math.max(1, Math.round((Date.now() - item.started) / 1000)) + "s" : "");
     }
-    if (dom.miniDock && !dom.miniDock.hidden && item === queue.find((i) => ["downloading", "working", "queued"].includes(i.status))) {
+    if (dom.miniDock && !dom.miniDock.hidden && item === miniFocus) {
       const shown = item.size ? Math.min(100, Math.round((item.received / item.size) * 100)) : 0;
+      if (dom.miniPct) dom.miniPct.textContent = item.size ? shown + "%" : "";
       dom.miniMeta.textContent = item.size
-        ? formatBytes(item.received) + " / " + formatBytes(item.size) + " · " + shown + "%"
+        ? formatBytes(item.received) + " / " + formatBytes(item.size)
         : (item.detail || "starting");
+      if (dom.miniEta) {
+        const finished = item.size && item.received >= item.size;
+        dom.miniEta.textContent = item.speed && !finished
+          ? (item.size > item.received ? etaText((item.size - item.received) / item.speed) : formatBytes(item.speed) + "/s")
+          : "";
+      }
       dom.miniFill.style.transform = "scaleX(" + (item.size ? shown / 100 : 0.12) + ")";
     }
 
@@ -1420,6 +1429,7 @@
 
   let lastQueueCount = 0;
   let dockOpen = false;
+  let miniFocus = null;   /* the download the phone dock is pointing at */
 
   let dockTimer = null;
 
@@ -1490,20 +1500,33 @@
     dom.clearFinished.hidden = !queue.some((i) => ["done", "error", "cancelled"].includes(i.status));
 
     const live = queue.find((i) => ["downloading", "working", "queued"].includes(i.status));
+    const ready = queue.find((i) => i.status === "ready");
+    const focus = live || ready;
     if (dom.miniDock) {
-      const show = !!live && !dockOpen;
+      const show = !!focus && !dockOpen;
       dom.miniDock.hidden = !show;
       if (show) {
-        const pct = live.size ? Math.min(100, Math.round((live.received / live.size) * 100)) : 0;
-        const title = live.filename || live.previewTitle || live.host || "download";
-        dom.miniTitle.textContent = title.length > 34 ? title.slice(0, 33) + "…" : title;
-        dom.miniMeta.textContent = live.size
-          ? formatBytes(live.received) + " / " + formatBytes(live.size) + " · " + pct + "%"
-          : (live.detail || "starting");
-        dom.miniFill.style.transform = "scaleX(" + (live.size ? pct / 100 : 0.12) + ")";
-        dom.miniDock.dataset.live = live.size ? "true" : "false";
+        const pct = live && live.size ? Math.min(100, Math.round((live.received / live.size) * 100)) : 0;
+        const title = focus.filename || focus.previewTitle || focus.host || "download";
+        dom.miniTitle.textContent = title.length > 32 ? title.slice(0, 31) + "…" : title;
+        dom.miniDock.dataset.state = live ? "live" : "ready";
+        if (live) {
+          dom.miniPct.textContent = live.size ? pct + "%" : "";
+          dom.miniMeta.textContent = live.size ? formatBytes(live.received) + " / " + formatBytes(live.size) : (live.detail || "starting");
+          const done = live.size && live.received >= live.size;
+          const left = !done && live.speed && live.size > live.received ? etaText((live.size - live.received) / live.speed) : "";
+          dom.miniEta.textContent = left || (!done && live.speed ? formatBytes(live.speed) + "/s" : "");
+          dom.miniFill.style.transform = "scaleX(" + (live.size ? pct / 100 : 0.12) + ")";
+          dom.miniDock.dataset.live = live.size ? "true" : "false";
+        } else {
+          dom.miniPct.textContent = "";
+          dom.miniMeta.textContent = formatBytes(focus.size) + " · ready";
+          dom.miniEta.textContent = "tap to save";
+          dom.miniFill.style.transform = "scaleX(1)";
+        }
       }
     }
+    miniFocus = focus || null;
 
     const saved = queue.filter((i) => i.status === "done");
     const bytes = saved.reduce((total, i) => total + (i.size || 0), 0);
@@ -3701,6 +3724,16 @@
     if (dom.queueClose) dom.queueClose.addEventListener("click", () => setDock(false));
     if (dom.miniDock) dom.miniDock.addEventListener("click", (event) => {
       event.stopPropagation();
+      /* when the row is ready, the dock IS the download button */
+      if (miniFocus && miniFocus.status === "ready") {
+        const item = miniFocus;
+        if (settings.savingMethod === "share" && item.blob) {
+          shareItem(item, true).then((shared) => { if (!shared) saveBlob(item); });
+        } else {
+          saveBlob(item);
+        }
+        return;
+      }
       setDock(true);
     });
 

@@ -48,7 +48,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=179">
+<link rel="stylesheet" href="assets/app.css?v=180">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -971,11 +971,16 @@
 
 <button type="button" class="mini-dock" id="mini-dock" hidden aria-label="open downloads">
   <span class="mini-icon" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg>
+    <svg class="mini-live" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg>
+    <svg class="mini-ready" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
   </span>
   <span class="mini-body">
-    <span class="mini-line"><b id="mini-title">downloading</b><span id="mini-meta"></span></span>
+    <span class="mini-line"><b id="mini-title">downloading</b><span class="mini-pct" id="mini-pct"></span></span>
     <span class="mini-track"><span id="mini-fill"></span></span>
+    <span class="mini-line mini-sub"><span id="mini-meta"></span><span id="mini-eta"></span></span>
+  </span>
+  <span class="mini-go" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>
   </span>
 </button>
 
@@ -1017,7 +1022,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=6" defer></script>
-<script src="assets/app.js?v=104" defer></script>
+<script src="assets/app.js?v=106" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->
