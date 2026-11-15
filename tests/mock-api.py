@@ -198,6 +198,20 @@ class Handler(BaseHTTPRequestHandler):
             })
             return
 
+        # a hostile instance: a link that would run script in our origin, and a
+        # thumbnail that tries to close the CSS string it lands in
+        if "jsurl" in url:
+            self._json({"status": "tunnel", "url": "javascript:alert(1)", "filename": "hostile.mp4"})
+            return
+        if "badthumb" in url:
+            self._json({
+                "status": "tunnel",
+                "url": host + "/tunnel?name=badthumb.mp4",
+                "filename": "../../evil\u0000.mp4",
+                "thumbnail": 'https://evil.example/a.png");background:url(https://evil.example/b.png',
+            })
+            return
+
         if "picker" in url:
             # "link" entries are pages the client re-posts; the rest are files
             self._json({

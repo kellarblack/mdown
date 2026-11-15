@@ -141,6 +141,40 @@ async function main() {
   try { body2 = JSON.parse(sent || "{}"); } catch (e) {}
   record("and turning it back on does too", body2.audioCovers === true, "audioCovers=" + body2.audioCovers);
 
+  /* ---- hostile instance: a javascript: tunnel, an injected thumbnail ---- */
+  {
+    const field = $("#url-input");
+    const set = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, "value").set;
+    const go = (value) => {
+      set.call(field, value);
+      field.dispatchEvent(new win.Event("input", { bubbles: true }));
+      $("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+    };
+
+    go("https://youtu.be/jsurl");
+    const refused = await waitFor(() => {
+      const rows = [...doc.querySelectorAll(".qitem")];
+      return rows.some((r) => r.getAttribute("data-status") === "error");
+    }, 10000);
+    /* the bookmarklet is our own javascript: link and is not in scope */
+    const hostile = [...doc.querySelectorAll(".qitem a[href], #modal a[href]")]
+      .filter((a) => /^javascript:/i.test(a.getAttribute("href") || ""));
+    record("a javascript: tunnel is refused, not linked", refused && hostile.length === 0,
+      hostile.length + " javascript: links, refused=" + refused);
+
+    await sleep(400);
+    go("https://youtu.be/badthumb");
+    await waitFor(() => !$("#file-preview").hidden || doc.querySelector(".qitem[data-status='error']"), 10000);
+    await sleep(300);
+    const thumb = doc.querySelector(".qitem .q-thumb");
+    const background = thumb ? thumb.style.backgroundImage : "";
+    record("a thumbnail cannot break out of its url()", !/background:url\(https:\/\/evil/i.test(background) &&
+      !background.includes("evil.example/b.png"), background.slice(0, 60) || "(none)");
+    const name = doc.querySelector(".qitem .q-title");
+    record("a hostile filename cannot climb out of the folder",
+      !!name && !/[\\/\u0000]/.test(name.textContent), name ? name.textContent : "(none)");
+  }
+
   window.__results = { total: results.length, failures, results };
 }
 main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });

@@ -768,27 +768,24 @@ a.ghost-btn { text-decoration: none; }
   gap: 4px 12px; margin: 0;
   font-family: var(--mono); font-size: 0.66rem; color: var(--text-3);
 }
+/* one quiet line, no pill for every word: separators do the work */
 .footer-meta a, .footer-meta .footer-link {
-  padding: 3px 10px; border: 1px solid var(--stroke); border-radius: 999px;
-  background: transparent; color: var(--text-2); font: inherit; cursor: pointer;
+  padding: 2px 0; border: 0; background: none;
+  color: var(--text-3); font: inherit; cursor: pointer;
   text-decoration: none;
-  transition: color 120ms, background 120ms, border-color 120ms;
+  transition: color 120ms;
 }
-.footer-meta a:hover, .footer-meta .footer-link:hover {
-  color: var(--text); background: var(--surface-2); border-color: var(--stroke-2);
+.footer-meta > :not(:last-child)::after {
+  content: "·"; margin-left: 10px; color: var(--stroke-2);
 }
+.footer-meta a:hover, .footer-meta .footer-link:hover { color: var(--text); }
 .footer-meta .footer-link:focus-visible, .footer-meta a:focus-visible {
   outline: 2px solid var(--ring); outline-offset: 3px; border-radius: 3px;
 }
 .footer-meta #donate-wrap { display: contents; }
 /* the tip jar is a button, not another word in a list */
-.footer-meta #donate-wrap a {
-  display: inline-block; padding: 3px 10px;
-  border: 1px solid var(--text); border-radius: 999px;
-  background: var(--text); color: var(--bg); text-decoration: none;
-  transition: color 120ms, background 120ms, border-color 120ms;
-}
-.footer-meta #donate-wrap a:hover { filter: brightness(1.08); }
+.footer-meta #donate-wrap a { color: var(--text); }
+.footer-meta #donate-wrap a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
 .footer-meta #donate-wrap[hidden] { display: none; }
 .footer-meta a { color: var(--text-3); text-decoration: none; border-bottom: 1px solid transparent; }
 .footer-meta a:hover { color: var(--text-2); border-bottom-color: var(--stroke-2); }

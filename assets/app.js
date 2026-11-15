@@ -749,7 +749,7 @@
 
   function takeDeepLink() {
     const raw = targetFromLocation();
-    if (!raw) return false;
+    if (!raw || raw.length > 2048) return false;
     const urls = parseUrls(raw);
     if (!urls.length) return false;
     dom.input.value = urls[0];
@@ -762,6 +762,11 @@
 
     /* YouTube could be a song or a video, so ask instead of guessing.
        Everything else keeps the old one-tap behaviour. */
+    /* A deep link is a convenience, not an instruction: inside someone else's
+       frame it only fills the field. Otherwise any page could start a download
+       on a visitor's connection without a click. */
+    if (window.top !== window.self) return true;
+
     const detected = detectService(urls[0]);
     if (apiEndpoint() && detected && detected.id === "youtube") {
       askWhatToDownload(urls[0], detected.host);
@@ -1248,7 +1253,8 @@
     const picture = item.thumb || "";
     if (thumb.dataset.src !== picture) {
       thumb.dataset.src = picture;
-      thumb.style.backgroundImage = picture ? 'url("' + picture + '")' : "";
+      /* JSON.stringify keeps a quote inside the URL from ending the CSS string */
+      thumb.style.backgroundImage = picture ? "url(" + JSON.stringify(picture) + ")" : "";
     }
     thumb.hidden = !picture;
     icon.hidden = !!picture;
@@ -1513,10 +1519,38 @@
     });
   }
 
+  /* the URL comes from whichever instance is configured, so it is treated as
+     hostile: only http(s) survives, because an href of javascript: runs in our
+     origin when the next person clicks "open" */
   function resolveUrl(url) {
     if (!url) return "";
-    try { return new URL(url, apiEndpoint() || window.location.href).href; }
-    catch { return url; }
+    try {
+      const resolved = new URL(url, apiEndpoint() || window.location.href);
+      if (resolved.protocol !== "http:" && resolved.protocol !== "https:") return "";
+      return resolved.href;
+    } catch { return ""; }
+  }
+
+  /* thumbnails are the same story, and they land in a CSS url() */
+  function safeImageUrl(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    if (/^data:image\//i.test(raw)) return raw;
+    try {
+      const parsed = new URL(raw, apiEndpoint() || window.location.href);
+      return (parsed.protocol === "http:" || parsed.protocol === "https:") ? parsed.href : "";
+    } catch { return ""; }
+  }
+
+  /* a filename is a filename: no separators, no control characters, no dotfiles */
+  function safeFilename(value, fallback) {
+    const raw = String(value || "")
+      .replace(/[\u0000-\u001f\u007f]+/g, "")
+      .replace(/[\\/]+/g, "-")
+      .trim()
+      .slice(0, 120)
+      .replace(/^\.+/, "");
+    return raw || fallback;
   }
 
   function readRateLimit(res) {
@@ -1588,8 +1622,13 @@
       switch (data.status) {
         case "tunnel":
         case "redirect": {
-          const filename = data.filename || guessFilename(item.url, item.mode);
+          const filename = safeFilename(data.filename, guessFilename(item.url, item.mode));
           const source = resolveUrl(data.url);
+          if (!source) {
+            item.error = "The server sent a link this page will not open.";
+            setStatus(item, "error");
+            return;
+          }
           item.filename = filename;
           item.sourceUrl = source;
 
@@ -1799,6 +1838,10 @@
 
   function filenameFromHeaders(res) {
     const disposition = res.headers.get("content-disposition") || "";
+    return safeFilename(rawFilenameFromHeaders(disposition), "");
+  }
+
+  function rawFilenameFromHeaders(disposition) {
     const star = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
     if (star) {
       try { return decodeURIComponent(star[1].trim()); } catch { return star[1].trim(); }
@@ -1883,7 +1926,7 @@
 
     const link = document.createElement("a");
     link.href = item.sourceUrl;
-    link.download = item.filename || "download";
+    link.download = safeFilename(item.filename, "download");
     link.rel = "noopener";
     link.dataset.ignoreDock = "true";
     document.body.appendChild(link);
@@ -1900,7 +1943,7 @@
     setTimeout(() => { item.saving = false; }, 900);
     const link = document.createElement("a");
     link.href = item.blobUrl;
-    link.download = item.filename || "download";
+    link.download = safeFilename(item.filename, "download");
     link.dataset.ignoreDock = "true";
     document.body.appendChild(link);
     link.click();
@@ -2071,7 +2114,7 @@
   }
 
   function handleLocalProcessing(item, data) {
-    const tunnels = Array.isArray(data.tunnel) ? data.tunnel.map(resolveUrl) : [];
+    const tunnels = (Array.isArray(data.tunnel) ? data.tunnel.map(resolveUrl) : []).filter(Boolean);
     const output = data.output || {};
     const filename = output.filename || guessFilename(item.url, item.mode);
     item.filename = filename;
@@ -2371,7 +2414,7 @@
 
   function attachProbe(item, data) {
     if (!data || !item) return;
-    item.thumb = data.thumbnail || "";
+    item.thumb = safeImageUrl(data.thumbnail);
     item.estimate = data.estimate || null;
     item.previewTitle = data.title || "";
     item.duration = data.duration || 0;
