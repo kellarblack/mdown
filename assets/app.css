@@ -2582,8 +2582,14 @@ a.addr-value:hover { color: var(--text); }
   transition: color 140ms, border-color 140ms, background 140ms, transform 140ms var(--ease);
 }
 .share-icon { display: inline-flex; flex: none; color: var(--text-3); transition: color 140ms; }
-.share-icon { width: 18px; height: 18px; }
-.share-icon svg { width: 18px; height: 18px; display: block; }
+.share-icon { width: 20px; height: 20px; }
+.share-icon svg { width: 20px; height: 20px; display: block; }
+/* the icon leans into the hover a hair before the row does */
+.share-chip .share-icon { transition: transform 200ms var(--ease), color 140ms; }
+.share-chip:hover .share-icon { transform: translateY(-1px) scale(1.06); }
+@media (prefers-reduced-motion: reduce) {
+  .share-chip:hover .share-icon { transform: none; }
+}
 .share-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .share-chip:hover {
   color: var(--text); border-color: var(--stroke-2);
