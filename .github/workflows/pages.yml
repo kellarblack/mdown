@@ -44,6 +44,11 @@ jobs:
 
       # the published set must never carry a name, an email or a tracker;
       # the same script the local suite runs, so red here means red locally
+      # the tip page is a landing page: it ships its CSS inside the HTML
+      # instead of paying a blocking round trip for it
+      - name: Inline the tip page stylesheet
+        run: python3 tools/inline_css.py _site donate.html
+
       - name: Privacy check
         run: python3 tests/privacy_check.py _site
 

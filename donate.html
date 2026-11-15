@@ -38,7 +38,7 @@
     document.documentElement.dataset.theme = pick;
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=167">
+<link rel="stylesheet" href="assets/app.css?v=169">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -74,21 +74,11 @@
       <p class="donate-sub">mdown has no ads, no accounts and no tracking, and it is not going to grow any. if it saved you an evening, you can leave a tip. if it did not, it keeps working — that is the deal.</p>
     </div>
     <div class="donate-hero-art" aria-hidden="true">
+      <!-- plain strokes only: the dotted pattern and its clip path cost about
+           700ms of first paint on a throttled phone and bought a texture -->
       <svg viewBox="0 0 300 300" role="presentation">
-        <defs>
-          <pattern id="dots" width="9" height="9" patternUnits="userSpaceOnUse">
-            <circle cx="1.4" cy="1.4" r="1.4" fill="currentColor" opacity="0.24"/>
-          </pattern>
-          <clipPath id="disc"><circle cx="150" cy="150" r="132"/></clipPath>
-        </defs>
-        <g clip-path="url(#disc)">
-          <rect width="300" height="300" fill="url(#dots)"/>
-          <circle cx="150" cy="150" r="132" style="fill: var(--bg)" opacity="0.72"/>
-        </g>
-        <circle cx="150" cy="150" r="132" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.45"/>
-        <g class="donate-orbit">
-          <circle cx="150" cy="150" r="108" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3" stroke-dasharray="2 9"/>
-        </g>
+        <circle cx="150" cy="150" r="132" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.4"/>
+        <circle cx="150" cy="150" r="108" fill="none" stroke="currentColor" stroke-width="1" opacity="0.22" stroke-dasharray="2 9"/>
         <g stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path d="M150 78v74" stroke-width="10"/>
           <path d="m124 132 26 26 26-26" stroke-width="10"/>

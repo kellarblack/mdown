@@ -1814,10 +1814,10 @@ a.donate-value:hover { text-decoration: underline; }
 .donate-card:hover { border-color: var(--text); background: var(--surface-2); }
 .donate-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 .donate-card-icon {
-  width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--stroke);
-  color: var(--text-2);
+  width: 34px; height: 34px; border-radius: 9px; border: 1px solid transparent;
+  background: var(--text); color: var(--bg);
 }
-.donate-card:hover .donate-card-icon { color: var(--text); border-color: var(--stroke-2); }
+.donate-card:hover .donate-card-icon { color: var(--bg); border-color: transparent; }
 .donate-card-copy { display: grid; gap: 2px; min-width: 0; }
 .donate-card-copy b { color: var(--text); font-size: 0.86rem; font-weight: 600; }
 .donate-card-copy span { color: var(--text-3); font-size: 0.74rem; }
@@ -2382,8 +2382,10 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .donate-hero-art { color: var(--text-2); opacity: 0.95; }
 .donate-hero-art svg { display: block; width: 100%; height: auto; }
-.donate-orbit { transform-origin: 150px 150px; animation: donate-orbit 44s linear infinite; }
-@keyframes donate-orbit { to { transform: rotate(360deg); } }
+/* this used to spin. rotating a clipped, dash-patterned SVG group re-rasterises
+   the whole disc every frame, and on a throttled phone that cost a full second
+   before the page could paint at all. static ring, same look. */
+.donate-orbit { transform-origin: 150px 150px; }
 
 /* the jar */
 .support {
@@ -2440,12 +2442,23 @@ a.donate-value:hover { text-decoration: underline; }
 .support-go svg { width: 15px; height: 15px; }
 .support-row:hover .support-go { transform: translateX(3px); color: var(--text); }
 /* the card is the only way in that needs no wallet, so it gets the weight */
-.support-primary { background: var(--surface); }
-.support-primary .support-icon {
-  color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
+.support-primary {
+  margin: 12px;
+  grid-template-columns: 40px minmax(0, 1fr) 22px;
+  padding: 13px 14px;
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  transition: border-color 140ms ease-out, background 140ms ease-out;
 }
-.support-primary .support-copy b { font-size: 0.92rem; }
-.support-primary .support-copy span { color: var(--text-2); }
+.support-primary:hover { border-color: var(--text); background: var(--surface-3); }
+.support-primary .support-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  border-color: transparent; background: var(--text); color: var(--bg);
+}
+.support-primary .support-copy b { font-size: 0.95rem; letter-spacing: -0.012em; }
+.support-primary .support-copy span { color: var(--text-3); }
+.support-primary:hover .support-icon { transform: none; }
 
 .support-empty { display: grid; gap: 8px; padding: 20px 16px 18px; }
 .support-empty p { margin: 0; max-width: 56ch; color: var(--text-3); font-size: 0.82rem; line-height: 1.6; }
