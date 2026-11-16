@@ -866,12 +866,15 @@ a.ghost-btn { text-decoration: none; }
 [data-theme="light"] .addr { background: #fff; }
 .sheet-panel {
   position: absolute; top: 0; right: 0; bottom: 0;
-  width: min(640px, 100%);
-  display: flex; flex-direction: column;
+  width: min(780px, 100%);
+  display: grid;
+  grid-template-columns: 186px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   background: var(--bg-elev);
   border-left: 1px solid var(--stroke);
   animation: slide-in 220ms var(--ease) both;
 }
+.sheet-panel > .sheet-head { grid-column: 1 / -1; }
 .pane-lede {
   margin: 0 0 16px; color: var(--text-3); font-size: 0.78rem; line-height: 1.55;
   max-width: 54ch;
@@ -907,28 +910,68 @@ a.ghost-btn { text-decoration: none; }
 }
 .sheet-head h2 { font-size: 1rem; font-weight: 600; letter-spacing: -0.015em; }
 .sheet-sub { color: var(--text-3); font-family: var(--mono); font-size: 0.68rem; margin-top: 3px; }
-.sheet-nav {
-  display: flex; gap: 14px; padding: 0 18px; overflow-x: auto;
-  border-bottom: 1px solid var(--stroke); scrollbar-width: none;
+/* the small build line above the title, the way a tool should say what it is */
+.sheet-tag {
+  margin: 0 0 2px; color: var(--text-3);
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em;
+  text-transform: uppercase; opacity: 0.75;
 }
-/* six tabs do not fit a 320px phone: wrap instead of hiding Advanced off the
-   right edge with no scrollbar to find it */
-@media (max-width: 480px) {
-  .sheet-nav {
-    flex-wrap: wrap; gap: 0 14px; overflow: visible;
-    padding: 2px 16px 0;
-  }
-  .sheet-nav-item { padding: 8px 0; }
+/* the sections read as a list of places, not as a row of tabs: a tile, a name,
+   and the current one inverted so it cannot be mistaken for a hover */
+.sheet-nav {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 8px;
+  border-right: 1px solid var(--stroke);
+  overflow-y: auto; scrollbar-width: none;
 }
 .sheet-nav::-webkit-scrollbar { display: none; }
 .sheet-nav-item {
-  flex: none; padding: 9px 0;
-  color: var(--text-3); font-family: var(--mono); font-size: 0.72rem;
-  border-bottom: 1px solid transparent;
-  transition: color var(--speed), border-color var(--speed);
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 9px; border-radius: 10px;
+  color: var(--text-2); text-align: left;
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.01em;
+  transition: background var(--speed), color var(--speed);
 }
-.sheet-nav-item:hover { color: var(--text-2); }
-.sheet-nav-item.is-active { color: var(--text); border-bottom-color: var(--tab-active); }
+.sheet-nav-item .nav-ico {
+  display: grid; place-items: center; flex: none;
+  width: 27px; height: 27px; border-radius: 8px;
+  background: var(--surface-2); color: var(--text-2);
+  transition: background var(--speed), color var(--speed);
+}
+.sheet-nav-item .nav-ico svg { width: 15px; height: 15px; }
+.sheet-nav-item:hover { background: var(--surface-2); color: var(--text); }
+.sheet-nav-item:hover .nav-ico { color: var(--text); }
+.sheet-nav-item.is-active { background: var(--text); color: var(--bg); }
+.sheet-nav-item.is-active .nav-ico {
+  background: color-mix(in srgb, var(--bg) 14%, transparent);
+  color: var(--bg);
+}
+.sheet-nav-item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* a phone has no room for a column: the same list lies down and scrolls, with
+   the current one kept in view by the script that switches it */
+@media (max-width: 760px) {
+  .sheet-panel {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .sheet-nav {
+    flex-direction: row; gap: 6px;
+    padding: 8px 12px;
+    border-right: 0; border-bottom: 1px solid var(--stroke);
+    overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sheet-nav-item {
+    flex: none; gap: 7px; min-height: 38px;
+    padding: 5px 13px 5px 5px; border-radius: 999px;
+    border: 1px solid var(--stroke);
+    font-size: 0.74rem;
+  }
+  .sheet-nav-item .nav-ico { width: 26px; height: 26px; border-radius: 999px; }
+  .sheet-nav-item.is-active { border-color: transparent; }
+}
+
 .sheet-body {
   flex: 1 1 auto; overflow-y: auto; padding: 18px; overscroll-behavior: contain;
   scrollbar-width: thin; scrollbar-color: var(--surface-3) transparent;

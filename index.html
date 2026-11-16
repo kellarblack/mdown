@@ -50,7 +50,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=216">
+<link rel="stylesheet" href="assets/app.css?v=217">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -534,6 +534,7 @@
   <div class="sheet-panel">
     <header class="sheet-head">
       <div>
+        <p class="sheet-tag">v1.2</p>
         <h2 id="settings-title">Settings</h2>
         <p class="sheet-sub">Stored in this browser only.</p>
       </div>
@@ -543,13 +544,34 @@
     </header>
 
     <nav class="sheet-nav" aria-label="Settings sections">
-      <button type="button" class="sheet-nav-item is-active" data-section="appearance">Appearance</button>
-      <button type="button" class="sheet-nav-item" data-section="video">Video</button>
-      <button type="button" class="sheet-nav-item" data-section="audio">Audio</button>
-      <button type="button" class="sheet-nav-item" data-section="output">Files</button>
-      <button type="button" class="sheet-nav-item" data-section="privacy">Privacy</button>
-      <button type="button" class="sheet-nav-item" data-section="advanced">Advanced</button>
-      <button type="button" class="sheet-nav-item" data-section="instance">Server</button>
+      <button type="button" class="sheet-nav-item is-active" data-section="appearance">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg></span>
+        <span class="nav-label">appearance</span>
+      </button>
+      <button type="button" class="sheet-nav-item" data-section="video">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="m10.2 9.2 4.9 2.8-4.9 2.8z"/></svg></span>
+        <span class="nav-label">video</span>
+      </button>
+      <button type="button" class="sheet-nav-item" data-section="audio">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17.4V5.6l10-2v11.8"/><circle cx="6.3" cy="17.9" r="2.8"/><circle cx="16.3" cy="15.9" r="2.8"/></svg></span>
+        <span class="nav-label">audio</span>
+      </button>
+      <button type="button" class="sheet-nav-item" data-section="output">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.2H7.4a2.2 2.2 0 0 0-2.2 2.2v13.2a2.2 2.2 0 0 0 2.2 2.2h9.2a2.2 2.2 0 0 0 2.2-2.2V8z"/><path d="M14 3.2V8h4.8"/></svg></span>
+        <span class="nav-label">files</span>
+      </button>
+      <button type="button" class="sheet-nav-item" data-section="privacy">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.4" y="10.2" width="15.2" height="10.4" rx="2.6"/><path d="M8.2 10.2V7.4a3.8 3.8 0 0 1 7.6 0v2.8"/></svg></span>
+        <span class="nav-label">privacy</span>
+      </button>
+      <button type="button" class="sheet-nav-item" data-section="advanced">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.4h9.2M19 7.4h1M4 16.6h3.4M11.4 16.6H20"/><circle cx="16" cy="7.4" r="2.2"/><circle cx="9.4" cy="16.6" r="2.2"/></svg></span>
+        <span class="nav-label">advanced</span>
+      </button>
+      <button type="button" class="sheet-nav-item" data-section="instance">
+        <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.8"/><path d="M3.4 12h17.2"/><path d="M12 3.2a14 14 0 0 1 0 17.6a14 14 0 0 1 0-17.6z"/></svg></span>
+        <span class="nav-label">server</span>
+      </button>
     </nav>
 
     <div class="sheet-body" id="sheet-body">
@@ -1024,7 +1046,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=6" defer></script>
-<script src="assets/app.js?v=115" defer></script>
+<script src="assets/app.js?v=117" defer></script>
 <script type="module" src="assets/nav.js?v=11"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

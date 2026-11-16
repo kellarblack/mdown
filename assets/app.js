@@ -3326,6 +3326,7 @@
     dom.sheet.hidden = false;
     document.body.style.overflow = "hidden";
     if (section) showSettingsSection(section);
+    else revealSection($(".sheet-nav-item.is-active"));
     reflectSettings();
     setTimeout(() => {
       /* closing before the timer lands must not focus a hidden field */
@@ -3342,8 +3343,28 @@
     if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
   }
 
+  /* on a phone the section list is a strip that scrolls sideways: keep the
+     current one in view so it never looks like a section has no home */
+  function revealSection(btn) {
+    if (!btn) return;
+    const nav = btn.parentElement;
+    if (!nav) return;
+    const max = nav.scrollWidth - nav.clientWidth;
+    if (max <= 4) return;
+    const b = btn.getBoundingClientRect();
+    const n = nav.getBoundingClientRect();
+    if (b.left >= n.left && b.right <= n.right) return;
+    /* centred, and moved in the same frame as the pane: a strip that slides
+       after the content has changed looks like a second, late decision */
+    nav.scrollLeft = Math.max(0, Math.min(max, nav.scrollLeft + (b.left - n.left) - (n.width - b.width) / 2));
+  }
+
   function showSettingsSection(name) {
-    $$(".sheet-nav-item").forEach((btn) => btn.classList.toggle("is-active", btn.dataset.section === name));
+    $$(".sheet-nav-item").forEach((btn) => {
+      const on = btn.dataset.section === name;
+      btn.classList.toggle("is-active", on);
+      if (on) revealSection(btn);
+    });
     $$(".pane").forEach((pane) => pane.classList.toggle("is-active", pane.dataset.pane === name));
     dom.sheetBody.scrollTop = 0;
     updateRequestPreview();
