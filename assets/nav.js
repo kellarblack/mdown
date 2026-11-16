@@ -31,9 +31,9 @@ const META = {
 
 const BASE_URL = "https://mdown.cc/";
 
-/* set this to the public repository URL to light up the two source links.
-   it stays hidden while it is the placeholder, so nothing links nowhere. */
-const REPO_URL = "REPO_URL_HERE";
+/* the public repository. Both source links stay hidden while this is the
+   placeholder, so nothing ever points at nothing. */
+const REPO_URL = "https://github.com/kelllar/mdown";
 
 function setMeta(selector, value) {
   const node = document.querySelector(selector);

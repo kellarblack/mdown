@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  body { background:#0a0a0b; color:#ededee; font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; }
+</style>
+<pre id="out"></pre>
+<script>
+const c = document.createElement("canvas");
+const ctx = c.getContext("2d");
+const stack = 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace';
+const SIZE = 100;
+ctx.font = `500 ${SIZE}px ${stack}`;
+const m = (t) => ctx.measureText(t);
+const res = {
+  resolved: (document.fonts && document.fonts.check) ? "n/a" : "n/a",
+  font: ctx.font,
+  advance_one_char: m("m").width,
+  advance_m: m("m").width,
+  advance_dot: m(".").width,
+  advance_n: m("n").width,
+  letters: {}
+};
+for (const ch of ["m","d","o","w","n","c",".","H","x","l","0"]) {
+  const t = m(ch);
+  res.letters[ch] = {
+    adv: +t.width.toFixed(2),
+    inkLeft: +(t.actualBoundingBoxLeft).toFixed(2),
+    inkRight: +(t.actualBoundingBoxRight).toFixed(2),
+    top: +t.actualBoundingBoxAscent.toFixed(2),
+    bottom: +t.actualBoundingBoxDescent.toFixed(2)
+  };
+}
+res.word_mdown_adv = +m("mdown").width.toFixed(2);
+res.word_mdowncc_adv = +m("mdown.cc").width.toFixed(2);
+res.ink_mdown = (() => { const t = m("mdown"); return { left:+t.actualBoundingBoxLeft.toFixed(2), right:+t.actualBoundingBoxRight.toFixed(2), top:+t.actualBoundingBoxAscent.toFixed(2), bottom:+t.actualBoundingBoxDescent.toFixed(2) }; })();
+res.ink_dot = (() => { const t = m("."); return { left:t.actualBoundingBoxLeft, right:t.actualBoundingBoxRight, top:t.actualBoundingBoxAscent, bottom:t.actualBoundingBoxDescent }; })();
+res.fontBoundingBox = { ascent: +m("H").fontBoundingBoxAscent.toFixed(2), descent: +m("H").fontBoundingBoxDescent.toFixed(2) };
+document.getElementById("out").textContent = JSON.stringify(res, null, 1);
+</script>

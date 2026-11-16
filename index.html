@@ -536,6 +536,7 @@
   <nav class="footer-meta" aria-label="Footer">
     <a href="terms.html">terms</a>
     <a href="updates.html">updates</a>
+    <a id="repo-link" href="https://github.com/kelllar/mdown" rel="noopener" hidden>source</a>
     <span id="donate-wrap" hidden><a href="donate.html" id="donate-link">donate</a></span>
   </nav>
 
@@ -981,8 +982,8 @@
         <p>No. Spotify, Deezer, Tidal and Apple Music encrypt their audio, so mdown refuses them and says so. The same track is usually on YouTube or SoundCloud.</p>
       </details>
       <details>
-        <summary>Can I use my own server?</summary>
-        <p>Yes. The page is static and talks to whatever API you point it at, so you can run the API yourself and keep the downloads on your own machine. <a href="terms.html#source">The terms</a> explain what that involves.</p>
+        <summary>Is it open source?</summary>
+        <p>Yes — MIT, all of it: <a id="view-source" href="https://github.com/kelllar/mdown" rel="noopener">github.com/kelllar/mdown</a>. Fork it, run the API yourself, and the downloads never touch this server. <a href="terms.html#source">The terms</a> say the same thing at greater length.</p>
       </details>
       <details>
         <summary>A link failed — why?</summary>
@@ -1048,7 +1049,7 @@
 
 <script src="assets/donate.js?v=7" defer></script>
 <script src="assets/app.js?v=135" defer></script>
-<script type="module" src="assets/nav.js?v=13"></script>
+<script type="module" src="assets/nav.js?v=14"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->
 </body>

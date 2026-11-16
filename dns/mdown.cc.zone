@@ -7,4 +7,4 @@ $TTL 600
 @       IN  A       185.199.110.153
 @       IN  A       185.199.111.153
 api     IN  A       136.0.57.157
-www     IN  CNAME   kellarblack.github.io.
+www     IN  CNAME   kelllar.github.io.

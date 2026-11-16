@@ -22,7 +22,7 @@ Deploy the site: push to `main` — `pages.yml` does it.
 
    | type | host | value |
    | --- | --- | --- |
-   | `TXT` | `_github-pages-challenge-kellarblack` | `8f6e13355604bb9c980c1c47699b81` |
+   | `TXT` | `_github-pages-challenge-kelllar` | `8f6e13355604bb9c980c1c47699b81` |
 
    Then press **Verify** on `github.com/settings/pages_verified_domains/mdown.cc`.
 
