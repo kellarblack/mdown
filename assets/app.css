@@ -46,7 +46,7 @@
   --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.02) inset;
   --shadow-2: 0 24px 60px -50px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --speed: 160ms;
+  --speed: 120ms;
 }
 
 [data-theme="light"] {
@@ -273,6 +273,10 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   transition: color var(--speed), background var(--speed), border-color var(--speed);
 }
 .icon-btn svg { width: 15px; height: 15px; }
+/* a press is answered in the frame it happens: no easing on the way down */
+.icon-btn:active, .ghost-btn:active, .primary-btn:active, .mode:active,
+.mbar-item:active, .source-chip:active, .addr-copy:active, .sheet-nav-item:active,
+.tool-card:active, .back-btn:active { transition: none; }
 .icon-btn:hover { color: var(--text); background: var(--surface); border-color: var(--stroke); }
 /* the question mark next to settings: same box as every other icon button,
    the glyph is the icon */
@@ -395,7 +399,7 @@ a.ghost-btn { text-decoration: none; }
   width: var(--mw, 0px); transform: translateX(var(--mx, 0px));
   border-radius: var(--r-sm); background: var(--surface-3);
   opacity: 0;
-  transition: transform 300ms var(--ease), width 300ms var(--ease), opacity 160ms ease-out;
+  transition: transform 190ms var(--ease), width 190ms var(--ease), opacity 120ms ease-out;
   pointer-events: none;
 }
 .modes.has-glider .mode-glider { opacity: 1; }
@@ -404,7 +408,7 @@ a.ghost-btn { text-decoration: none; }
   display: inline-flex; align-items: center; gap: 5px;
   height: 26px; padding: 0 10px; border-radius: var(--r-sm);
   color: var(--text-3); font-family: var(--mono); font-size: 0.72rem;
-  transition: color var(--speed), background var(--speed);
+  transition: color 90ms ease-out;
 }
 .mode svg { width: 12px; height: 12px; }
 .mode:hover { color: var(--text-2); }
@@ -1243,7 +1247,7 @@ a.ghost-btn { text-decoration: none; }
   60%  { opacity: 1; }
   to   { transform: none; opacity: 1; }
 }
-main.wrap[data-view-panel]:not([hidden]) { animation: view-in 280ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+main.wrap[data-view-panel]:not([hidden]) { animation: view-in 210ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
 /* a finished row lands: the tick pops once and settles */
 @keyframes done-pop {
   0%   { transform: scale(0.82); }
@@ -1713,7 +1717,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     border-radius: 18px;
     padding: 4px 14px 14px;
     box-shadow: 0 24px 50px -28px rgba(0, 0, 0, 0.9);
-    animation: sources-up 280ms cubic-bezier(0.2, 0.86, 0.3, 1) both;
+    animation: sources-up 230ms cubic-bezier(0.2, 0.86, 0.3, 1) both;
   }
   .sources-panel.is-closing { animation: sources-down 220ms cubic-bezier(0.45, 0, 0.7, 0.2) both; }
   @keyframes sources-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -2001,7 +2005,7 @@ a.donate-value:hover { text-decoration: underline; }
     width: auto; max-height: min(78dvh, 620px); overflow-y: auto;
     border-radius: 18px;
     padding: 4px 14px 14px;
-    animation: tip-up 280ms cubic-bezier(0.2, 0.86, 0.3, 1) both;
+    animation: tip-up 230ms cubic-bezier(0.2, 0.86, 0.3, 1) both;
   }
   .tip-pop.is-closing { animation: tip-down 220ms cubic-bezier(0.45, 0, 0.7, 0.2) both; }
   @keyframes tip-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -2894,7 +2898,7 @@ a.addr-value:hover { color: var(--text); }
     background: var(--surface);
     color: var(--text-3);
     font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.02em;
-    transition: color 160ms, background 160ms, border-color 160ms;
+    transition: color 110ms, background 110ms, border-color 110ms;
   }
   .mbar-item svg { width: 20px; height: 20px; }
   /* a press is answered in the same frame: no transition on the way down */
