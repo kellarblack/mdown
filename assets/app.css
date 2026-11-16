@@ -3090,7 +3090,8 @@ a.addr-value:hover { color: var(--text); }
 /* a phone on its side has ~330px of height: the hero is the first thing that
    has to go, and the column stops centring so the control lands above the bar
    rather than under it */
-@media (orientation: landscape) and (max-height: 500px) {
+/* phones only: a laptop with a short window keeps its logo */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1024px) {
   .hero-logo { display: none; }
   /* the three tools stay: they are the only way to subtitles and metadata on a
      phone, so they move below the fold instead of being removed */
