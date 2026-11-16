@@ -446,7 +446,6 @@
     modalFoot: $("#modal-foot"),
     modalClose: $("#modal-close"),
     toasts: $("#toasts"),
-    footerVersion: $("#footer-version"),
     buildInfo: $("#build-info")
   };
 
@@ -3067,7 +3066,7 @@
       // keep the trigger and an open panel agreeing about the count
       if (dom.sourcesCount) dom.sourcesCount.textContent = String(sourceList().length);
       if (sourcesOpen) renderSources();
-      if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
+      setApiVersion(cobalt.version || "v11");
       const host = hostOf(base) || base;
       // keep the Server pane's health link pointing at the live instance
       if (dom.openHealth) dom.openHealth.href = base.replace(/\/+$/, "") + "/health";
@@ -4019,7 +4018,7 @@
       // keep the trigger and an open panel agreeing about the count
       if (dom.sourcesCount) dom.sourcesCount.textContent = String(sourceList().length);
       if (sourcesOpen) renderSources();
-      if (dom.footerVersion) dom.footerVersion.textContent = "mdown.cc · api " + (cobalt.version || "v11");
+      setApiVersion(cobalt.version || "v11");
       const host = hostOf(base) || base;
       // keep the Server pane's health link pointing at the live instance
       if (dom.openHealth) dom.openHealth.href = base.replace(/\/+$/, "") + "/health";
@@ -4207,6 +4206,24 @@
     });
   }
 
+  /* the footer line: what was deployed, and which API it is talking to. Both
+     arrive asynchronously, so one function owns the text and neither can
+     overwrite the other. */
+  let buildStamp = "";
+  let apiVersion = "";
+  function renderBuild() {
+    if (!dom.buildInfo) return;
+    const parts = [];
+    if (buildStamp) parts.push("build " + buildStamp);
+    if (apiVersion) parts.push("api " + apiVersion);
+    dom.buildInfo.textContent = parts.join(" · ");
+    dom.buildInfo.hidden = !parts.length;
+  }
+  function setApiVersion(version) {
+    apiVersion = String(version || "");
+    renderBuild();
+  }
+
   function boot() {
     renderDonate();
     bindTip();
@@ -4261,8 +4278,8 @@
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (!data || !data.commit) return;
-          dom.buildInfo.textContent = "build " + String(data.commit).slice(0, 7) + " · " + (data.date || "");
-          dom.buildInfo.hidden = false;
+          buildStamp = String(data.commit).slice(0, 7) + (data.date ? " · " + data.date : "");
+          renderBuild();
         })
         .catch(() => {});
     }
@@ -4286,11 +4303,7 @@
       if (location.hash === "#help") openHelp();
     });
 
-    if (dom.footerVersion) {
-      dom.footerVersion.textContent = instanceInfo && instanceInfo.version
-        ? "mdown.cc · api " + instanceInfo.version
-        : "mdown.cc";
-    }
+    setApiVersion(instanceInfo && instanceInfo.version ? instanceInfo.version : "");
   }
 
   if (document.readyState === "loading") {

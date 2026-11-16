@@ -2303,10 +2303,6 @@ a.donate-value:hover { text-decoration: underline; }
 .hero-word {
   animation: hero-fade 420ms var(--ease) both;
 }
-@keyframes hero-arrive {
-  from { opacity: 0; transform: translate3d(0, calc(-1 * var(--drop, 10px)), 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
-}
 @keyframes hero-fade {
   from { opacity: 0; }
   to   { opacity: 1; }
