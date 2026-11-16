@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=224">
+<link rel="stylesheet" href="assets/app.css?v=225">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -399,14 +399,16 @@
          nothing saying so. */
       const measured = data.days.filter((d) => d && d.total);
       const windowDays = measured.length;
-      const perDay = windowDays ? Math.round(data.checks / windowDays) : 0;
+      /* no "a day" average: the first and last days are partial, so dividing
+         the total by the number of days that have data is a number nobody can
+         use. The span and today's count say the same thing without lying. */
       const spanText = windowDays >= 30
         ? "over 30 days"
         : (windowDays ? "since " + shortDate(measured[0].date) : "");
       const today = data.days[data.days.length - 1];
       const todayChecks = today && today.total ? today.total.toLocaleString() : "0";
       $("#uptime-meta").textContent = "· a check a minute · " + data.checks.toLocaleString() +
-        " checks " + spanText + (perDay ? " (" + perDay.toLocaleString() + " a day)" : "") +
+        " checks " + spanText +
         " · today " + todayChecks + " so far (UTC), sampled by the server";
       serverGraph = true;
       uptimeAsked = Date.now();
