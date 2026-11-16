@@ -4380,10 +4380,9 @@
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {
+    /* boot() already paints the recent strip in the first frame; calling it
+       again here built the same list twice */
     boot();
-    /* the strip is part of the first frame, so the centred column never has to
-       re-centre after it appears */
-    renderHistory();
   }
 
   /* dev hook: inspect state from the console / automated checks */
