@@ -1735,8 +1735,14 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   .sources-panel .sources-note { font-size: 0.62rem; }
 }
 @media (max-width: 430px) {
-  .sources-toggle { padding: 0 10px; }
+  /* icon only, and a thumb's worth of it: it sits beside 40px buttons */
+  .sources-wrap { height: 40px; }
+  .sources-toggle {
+    width: 40px; height: 40px; padding: 0;
+    justify-content: center; border-radius: 12px;
+  }
   .sources-toggle .sources-label { display: none; }
+  .sources-glyph { width: 16px; height: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sources-panel, .sources-panel.is-closing { animation: none; }
