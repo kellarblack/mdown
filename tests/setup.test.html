@@ -83,9 +83,9 @@ async function main() {
 
   record("the note stays visible", !note().hidden, "hidden=" + note().hidden);
   record("and says it cannot be reached",
-    /can't reach/i.test(lead()), (lead() + button()).slice(0, 70));
+    /isn't answering/i.test(lead()), (lead() + button()).slice(0, 70));
   record("the button offers to fix it",
-    /address|instance/i.test(button()), button());
+    /settings/i.test(button()), button());
 
   // now a reachable one: the note must go away
   field.value = "http://127.0.0.1:4320";

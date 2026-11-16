@@ -6,8 +6,8 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>mdown.cc — ad-free download tool</title>
-<meta name="description" content="No ads, no account, no tracking. Paste a link and keep the video or audio — plus remux, subtitle and metadata tools that run in your browser.">
+<title>mdown.cc · ad-free download tool</title>
+<meta name="description" content="No ads, no account, no tracking. Paste a link and keep the video or audio, plus remux, subtitle and metadata tools that run in your browser.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta name="keywords" content="media downloader, video downloader, audio downloader, mp4, mp3, remux, subtitle extractor, metadata cleaner, no ads, no account">
 <link rel="alternate" type="text/plain" href="https://mdown.cc/llms.txt" title="llms.txt">
@@ -15,18 +15,18 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="mdown.cc">
 <meta property="og:url" content="https://mdown.cc/">
-<meta property="og:title" content="mdown.cc — ad-free download tool">
+<meta property="og:title" content="mdown.cc · ad-free download tool">
 <meta property="og:description" content="No ads, no account, no tracking. Paste a link and keep the video or audio.">
 <meta property="og:image" content="https://mdown.cc/assets/og-card.png?v=5">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta property="og:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://mdown.cc/assets/og-card.png?v=5">
-<meta name="twitter:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
-<meta name="twitter:title" content="mdown.cc — ad-free download tool">
+<meta name="twitter:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
+<meta name="twitter:title" content="mdown.cc · ad-free download tool">
 <meta name="twitter:description" content="No ads, no account, no tracking. Paste a link and keep the video or audio.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=299">
+<link rel="stylesheet" href="assets/app.css?v=306">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -141,7 +141,7 @@
         {
           "@type": "Question",
           "name": "Which formats can I get?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Video as mp4, or webm or mkv when the source codec needs it — the server picks. Audio as mp3, wav, ogg or opus." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Video as mp4, or webm or mkv when the source codec needs it. The server picks. Audio as mp3, wav, ogg or opus." }
         },
         {
           "@type": "Question",
@@ -170,7 +170,7 @@
         },
         {
           "@type": "Question",
-          "name": "A link failed — why?",
+          "name": "Why did a link fail?",
           "acceptedAnswer": { "@type": "Answer", "text": "Usually the post is private, region-locked or age-gated; the API does not support that service; or it is rate limiting. The row shows which, and retry re-sends it." }
         }
       ]
@@ -186,7 +186,7 @@
 
 
 <header class="topbar">
-  <a class="brand" href="./" title="mdown.cc — media downloader, cc for closed captions">
+  <a class="brand" href="./" title="mdown.cc: media downloader, cc for closed captions">
     <span class="brand-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
@@ -218,7 +218,7 @@
          the queue. Splitting them into two buttons was two things to read. -->
     <div class="health" id="health">
       <button class="instance-pill" id="instance-pill" type="button" data-state="unknown"
-              title="connection — click for health" aria-label="connection: not connected"
+              title="connection: click for health" aria-label="connection: not connected"
               aria-expanded="false" aria-controls="health-pop">
         <span class="dot" aria-hidden="true"></span>
         <span class="instance-pill-label sr-only" id="instance-pill-label">not connected</span>
@@ -292,7 +292,7 @@
 
 
 <p class="file-note" id="file-note" hidden>
-  This page needs to be served over http — the media engine can't start from a double-clicked file.
+  This page needs to be served over http. The media engine can't start from a double-clicked file.
   From this folder run <code>python3 -m http.server 4331</code> and open <code>http://127.0.0.1:4331</code>.
 </p>
 
@@ -309,7 +309,7 @@
         </svg>
       </span>
       <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
-      <span class="sr-only"> — a media downloader for video and audio</span>
+      <span class="sr-only">, a media downloader for video and audio</span>
     </h1>
 
   <section class="composer" id="composer">
@@ -370,7 +370,7 @@
     </form>
 
     <div class="setup-note" id="setup-note" hidden>
-      <p><span id="setup-lead">Not connected — </span><button type="button" class="link-btn" id="setup-open-settings">connect an API</button><span id="setup-tail"> to download.</span></p>
+      <p><span id="setup-lead">Not connected. </span><button type="button" class="link-btn" id="setup-open-settings">connect an API</button><span id="setup-tail"> to download.</span></p>
     </div>
   </section>
 
@@ -378,7 +378,11 @@
 
   <button type="button" class="composer-note" id="composer-note"
           title="copy the link to this site" aria-label="copy the link to mdown.cc">
-    paste a link — or prefix it with <b>mdown.cc/&lt;link&gt;</b>
+    <span class="cn-text">paste a link, or prefix it: <b>mdown.cc/&lt;link&gt;</b></span>
+    <span class="cn-done" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+      link copied
+    </span>
   </button>
 
   <!-- what the file will be, before anything is fetched. Collapses to zero
@@ -393,7 +397,7 @@
 
 
   <div class="quickpick" id="quickpick" hidden>
-    <p class="quickpick-q"><b id="quickpick-service">this link</b> — download as</p>
+    <p class="quickpick-q"><b id="quickpick-service">this link</b>: download as</p>
     <div class="quickpick-actions" role="group" aria-label="Choose what to download">
       <button type="button" class="quickpick-btn" data-pick="audio">audio only</button>
       <button type="button" class="quickpick-btn" data-pick="auto">video + audio</button>
@@ -468,7 +472,7 @@
       </div>
       <div class="explain-item">
         <h3>Where it runs</h3>
-        <p>In this tab, on your device. No upload, no queue, no account — and no server to wait on.</p>
+        <p>In this tab, on your device. No upload, no queue, no account, and no server to wait on.</p>
       </div>
     </div>
 
@@ -477,8 +481,8 @@
       <div class="remux-help-body">
         <p><b>Think of it like a box.</b> The container (MP4, WebM) is the box; the codecs inside (H.264, AAC, VP9) are the contents. Remuxing puts the same contents in a new box. Nothing inside is touched, so nothing gets worse.</p>
         <p><b>It can</b> move existing streams into a compatible container, rebuild the index so seeking works, and recalculate missing durations and timestamps.</p>
-        <p><b>It can't</b> change codecs. If the target container won't accept a codec, that needs a re-encode, which this tool doesn't do — you get an explanation instead of a quietly degraded file. It also can't repair damaged frame data: if the media itself is corrupt, a new container won't save it.</p>
-        <p><b>Good to know</b> — a file whose extension lies (a WebM named .mp4) is detected by its actual bytes, not its name. Your original file is never modified.</p>
+        <p><b>It can't</b> change codecs. If the target container won't accept a codec, that needs a re-encode, which this tool doesn't do, so you get an explanation instead of a quietly degraded file. It also can't repair damaged frame data: if the media itself is corrupt, a new container won't save it.</p>
+        <p><b>Good to know:</b> a file whose extension lies (a WebM named .mp4) is detected by its actual bytes, not its name. Your original file is never modified.</p>
       </div>
     </details>
   </section>
@@ -486,7 +490,7 @@
 
 <main class="wrap" data-view-panel="subs" hidden>
   <h2 class="page-h1">Subtitles</h2>
-  <p class="page-lede">Pull the subtitle tracks out of a video as separate <code>.srt</code> files. Text tracks convert cleanly; image-based ones (PGS, VobSub) can't be turned into text without OCR. The <code>.cc</code> in the domain is for closed captions — this is that tool.</p>
+  <p class="page-lede">Pull the subtitle tracks out of a video as separate <code>.srt</code> files. Text tracks convert cleanly; image-based ones (PGS, VobSub) can't be turned into text without OCR. The <code>.cc</code> in the domain is for closed captions. This is that tool.</p>
 
   <section class="dropzone" id="subs-drop" tabindex="0" role="button" aria-label="Choose a video file">
     <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 14h4M13 14h4M7 10.5h2M11 10.5h6"/></svg>
@@ -845,7 +849,7 @@
           <label class="switch-row" for="always-proxy">
             <span>
               <span class="field-label">Always use the server</span>
-              <span class="field-help">The file never touches the source directly — the thumbnail still does.</span>
+              <span class="field-help">The file never touches the source directly, but the thumbnail still does.</span>
             </span>
             <input type="checkbox" id="always-proxy" class="switch" data-setting="alwaysProxy">
           </label>
@@ -864,7 +868,7 @@
         <div class="field">
           <span class="field-label">Tracking</span>
           <div class="notice">
-            <strong>None.</strong> Requests for links and files go to the server above. Thumbnails are loaded from the source, so that host sees your address — nothing else does.
+            <strong>None.</strong> Requests for links and files go to the server above. Thumbnails are loaded from the source, so that host sees your address. Nothing else does.
           </div>
         </div>
       </section>
@@ -942,7 +946,7 @@
 
 <template id="help-template">
   <div class="help">
-    <p class="help-lede">The page cannot fetch video by itself. A small API does that — the address in Settings is the one it uses — and the file streams straight back to you.</p>
+    <p class="help-lede">The page cannot fetch video by itself. A small API does that. The address in Settings is the one it uses, and the file streams straight back to you.</p>
 
     <ol class="steps">
       <li>
@@ -977,7 +981,7 @@
       </details>
       <details>
         <summary>Does it work on my phone?</summary>
-        <p>Yes — same page, same queue. Bookmark or send <code>mdown.cc/&lt;link&gt;</code> and opening it starts the download.</p>
+        <p>Yes. Same page, same queue. Bookmark or send <code>mdown.cc/&lt;link&gt;</code> and opening it starts the download.</p>
       </details>
       <details>
         <summary>Spotify?</summary>
@@ -985,10 +989,10 @@
       </details>
       <details>
         <summary>Is it open source?</summary>
-        <p>Yes — MIT, all of it: <a id="view-source" href="https://github.com/kelllar/mdown" rel="noopener">github.com/kelllar/mdown</a>. Fork it, run the API yourself, and the downloads never touch this server. <a href="terms.html#source">The terms</a> say the same thing at greater length.</p>
+        <p>Yes. MIT, all of it: <a id="view-source" href="https://github.com/kelllar/mdown" rel="noopener">github.com/kelllar/mdown</a>. Fork it, run the API yourself, and the downloads never touch this server. <a href="terms.html#source">The terms</a> say the same thing at greater length.</p>
       </details>
       <details>
-        <summary>A link failed — why?</summary>
+        <summary>Why did a link fail?</summary>
         <p>Usually private, region-locked, age-gated, longer than 30 minutes, or rate limited. The row says which, and retry re-sends it.</p>
       </details>
       <details>
@@ -1003,7 +1007,7 @@
 
 <noscript>
   <div class="wrap" style="padding-bottom:32px">
-    <h2>mdown.cc — ad-free download tool</h2>
+    <h2>mdown.cc · ad-free download tool</h2>
     <p>mdown.cc is a media downloader for video and audio: no ads, no account, no tracking. It saves MP4, WebM, MKV, MP3, OGG, OPUS and WAV from about thirty services, and includes three tools that run in the browser: a remuxer, a subtitle extractor and a metadata cleaner.</p>
     <p>Downloading needs JavaScript. The <a href="updates.html">changelog</a>, <a href="terms.html">terms</a> and <a href="status.html">status</a> pages do not.</p>
   </div>
@@ -1050,7 +1054,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=141" defer></script>
+<script src="assets/app.js?v=142" defer></script>
 <script type="module" src="assets/nav.js?v=14"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

@@ -6,25 +6,25 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Support — mdown.cc</title>
+<title>Support · mdown.cc</title>
 <meta name="description" content="mdown.cc is free, with no ads and no account. If it saved you an evening you can leave a tip; nothing changes if you don't.">
 <link rel="canonical" href="https://mdown.cc/donate.html">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="mdown.cc">
 <meta property="og:url" content="https://mdown.cc/donate.html">
-<meta property="og:title" content="Support — mdown.cc">
+<meta property="og:title" content="Support · mdown.cc">
 <meta property="og:description" content="mdown.cc is free, with no ads and no account. If it saved you an evening you can leave a tip; nothing changes if you don't.">
 <meta property="og:image" content="https://mdown.cc/assets/og-card.png?v=5">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta property="og:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Support — mdown.cc">
+<meta name="twitter:title" content="Support · mdown.cc">
 <meta name="twitter:description" content="mdown.cc is free, with no ads and no account. If it saved you an evening you can leave a tip; nothing changes if you don't.">
 <meta name="twitter:image" content="https://mdown.cc/assets/og-card.png?v=5">
-<meta name="twitter:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta name="twitter:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
 <link rel="manifest" href="manifest.webmanifest">
@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=299">
+<link rel="stylesheet" href="assets/app.css?v=306">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -92,7 +92,7 @@
       <h2 id="support-title">the tip jar</h2>
       <span class="support-state" id="support-state">open</span>
     </div>
-    <p class="support-lede">pick whichever is easier — a card payment, or a coin straight to an address. the card is one-time; a coin is a coin.</p>
+    <p class="support-lede">pick whichever is easier: a card payment, or a coin straight to an address. the card is one-time; a coin is a coin.</p>
 
     <div class="support-ways" id="funding">
       <a class="support-row support-primary support-card" id="stripe-card"
@@ -126,7 +126,7 @@
 
     <div class="support-empty" id="dormant" hidden>
       <p><b>the jar is closed for now.</b></p>
-      <p>no dead buttons, no placeholder links — when there is somewhere to send a tip, it appears here. until then, the site is the same either way.</p>
+      <p>no dead buttons, no placeholder links. when there is somewhere to send a tip, it appears here. until then, the site is the same either way.</p>
       <p class="support-empty-link"><a href="./">go download something →</a></p>
     </div>
 
@@ -191,7 +191,7 @@
   <section class="share-card" aria-labelledby="share-title">
     <div class="share-head">
       <h2 id="share-title">or just pass it on</h2>
-      <p>one person finding mdown is worth more than a tip. no tracking links, no referral tags — the link is the link.</p>
+      <p>one person finding mdown is worth more than a tip. no tracking links, no referral tags. the link is the link.</p>
     </div>
     <div class="share-actions">
       <button type="button" class="share-copy-btn" id="copy-link">
@@ -387,7 +387,7 @@
   });
 
   var pageURL = "https://mdown.cc";
-  var blurb = "mdown — media downloader for video and audio. no ads, no accounts, no tracking.";
+  var blurb = "mdown: media downloader for video and audio. no ads, no accounts, no tracking.";
   var intents = {
     x: "https://x.com/intent/post?text=" + encodeURIComponent(blurb) + "&url=" + encodeURIComponent(pageURL),
     threads: "https://www.threads.net/intent/post?text=" + encodeURIComponent(blurb + " " + pageURL),
@@ -405,7 +405,7 @@
   shareButton.addEventListener("click", function () {
     copy(pageURL, shareButton);
     if (toast) {
-      toast.textContent = "link copied — thanks for passing it on";
+      toast.textContent = "link copied. thanks for passing it on";
       toast.classList.add("is-on");
       clearTimeout(toast._hide);
       toast._hide = setTimeout(function () { toast.classList.remove("is-on"); }, 2600);

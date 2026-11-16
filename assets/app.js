@@ -120,10 +120,10 @@
   /* DRM-protected services. Nothing here can download from them, and pretending
      otherwise would be a lie, so they get a straight answer instead. */
   const DRM_SERVICES = new Map([
-    ["spotify", "Spotify audio is encrypted — this can't download from it. The same track is usually on YouTube or SoundCloud."],
-    ["deezer", "Deezer audio is encrypted — this can't download from it. Try the same track on YouTube or SoundCloud."],
-    ["tidal", "Tidal audio is encrypted — this can't download from it. Try the same track on YouTube or SoundCloud."],
-    ["apple-music", "Apple Music audio is encrypted — this can't download from it. Try the same track on YouTube or SoundCloud."]
+    ["spotify", "Spotify audio is encrypted, so this can't download from it. The same track is usually on YouTube or SoundCloud."],
+    ["deezer", "Deezer audio is encrypted, so this can't download from it. Try the same track on YouTube or SoundCloud."],
+    ["tidal", "Tidal audio is encrypted, so this can't download from it. Try the same track on YouTube or SoundCloud."],
+    ["apple-music", "Apple Music audio is encrypted, so this can't download from it. Try the same track on YouTube or SoundCloud."]
   ]);
 
   const ERROR_TEXT = {
@@ -148,12 +148,12 @@
     "api.content.post.region": "The post is region-locked.",
     "api.content.short_link.unsupported": "Short links from this service aren't supported.",
     "api.rate_limit": "Rate limit reached. Try again in a moment.",
-    "api.auth.apikey.missing": "This instance needs an API key — add it in Settings → Server.",
+    "api.auth.apikey.missing": "This instance needs an API key. Add it in Settings → Server.",
     "api.auth.apikey.invalid": "That API key was rejected. Check it in Settings → Server.",
     "api.auth.bearer.missing": "This instance requires a session token.",
     "api.auth.bearer.invalid": "The session token was rejected.",
-    "api.auth.turnstile.missing": "The bot check did not finish — reload and try once.",
-    "api.auth.turnstile.invalid": "The bot check failed — reload and try once.",
+    "api.auth.turnstile.missing": "The bot check did not finish. Reload and try once.",
+    "api.auth.turnstile.invalid": "The bot check failed. Reload and try once.",
     "api.instance.version_mismatch": "This API version isn't supported.",
     "api.instance.not_ready": "The instance is still starting up.",
     "api.instance.timed_out": "The instance took too long and gave up. Try a shorter link.",
@@ -851,7 +851,7 @@
       const list = el("ul", { class: "confirm-list" });
       entries.forEach((entry) => {
         list.appendChild(el("li", {
-          text: (entry.title ? entry.title.slice(0, 54) + " — " : "") + "≈ " + formatBytes(entry.bytes)
+          text: (entry.title ? entry.title.slice(0, 54) + " · " : "") + "≈ " + formatBytes(entry.bytes)
         }));
       });
       wrap.appendChild(list);
@@ -917,7 +917,7 @@
       /* a second tap, or the same link hammered: leave what they typed where
          it is, keep the keyboard down, and say it once */
       const starting = usable.some((url) => pendingSubmits.has(url));
-      toast(starting ? "Already starting — one second." : "Already queued — wait for it to finish.", "warn");
+      toast(starting ? "Already starting. One second." : "Already queued. Wait for it to finish.", "warn");
       nudgeComposer();
       return;
     }
@@ -1744,7 +1744,7 @@
   function friendlyError(err) {
     const message = err && err.message ? String(err.message) : "Unknown error";
     if (/Failed to fetch|NetworkError|Load failed/i.test(message)) {
-      return "Can't reach the API — check the address, that it's running, and that CORS is allowed.";
+      return "The API didn't answer. Check the address in settings, then retry.";
     }
     return message;
   }
@@ -1775,7 +1775,7 @@
       if (reason === "daily_cap") {
         text = "This instance has hit its daily download limit. Try again tomorrow.";
       } else if (reason === "too_many_downloads") {
-        text = "That's a lot of downloads in a row — give it a minute and retry.";
+        text = "That's a lot of downloads in a row. Give it a minute and retry.";
       } else if (reason === "queue_full") {
         text = "The queue is full right now. Try again in a moment.";
       } else if (rateRemaining != null) {
@@ -1898,7 +1898,7 @@
       // streaming failed but the URL is still useful
       item.sourceUrl = url;
       item.filename = filename;
-      setStatus(item, "ready", "stream interrupted — open manually");
+      setStatus(item, "ready", "stream interrupted, open manually");
       return;
     }
 
@@ -1990,7 +1990,7 @@
     const label = note || "large file";
 
     if (settings.savingMethod === "ask") {
-      setStatus(item, "ready", label + " — open to save");
+      setStatus(item, "ready", label + ", open to save");
       return;
     }
     if (settings.savingMethod === "copy") {
@@ -1999,7 +1999,7 @@
       return;
     }
     if (!item.sourceUrl) {
-      setStatus(item, "ready", label + " — no direct link");
+      setStatus(item, "ready", label + ", no direct link");
       return;
     }
 
@@ -2049,7 +2049,7 @@
       }
     }
     if (!silentFallback) {
-      if (item.sourceUrl) await copyText(item.sourceUrl, "Sharing isn't supported here — link copied instead.");
+      if (item.sourceUrl) await copyText(item.sourceUrl, "Sharing isn't supported here, so the link was copied instead.");
       else toast("Sharing isn't available in this browser.", "warn");
     }
     return false;
@@ -2206,7 +2206,7 @@
       body.appendChild(el("p", {
         class: "field-help",
         style: "margin-bottom:14px",
-        text: "The API served this media as separate streams (" + (data.type || "unknown") + "). Merge them on your machine — the streams are temporary and expire."
+        text: "The API served this media as separate streams (" + (data.type || "unknown") + "). Merge them on your machine. The streams are temporary and expire."
       }));
 
       const list = el("ul", { class: "step-list" });
@@ -2242,7 +2242,7 @@
     item.modalOpener = opener;
     updateItem(item);
     opener();
-    toast("This media needs local merging — the streams and a ready ffmpeg command are in this dialog.", "warn");
+    toast("This media needs local merging. The streams and a ready ffmpeg command are in this dialog.", "warn");
   }
 
   function buildFfmpegCommand(data, tunnels, filename) {
@@ -2676,10 +2676,10 @@
             href: home,
             target: "_blank",
             rel: "noopener noreferrer",
-            title: id + (host ? " — " + host : "") + (note ? " · " + note : ""),
-            "aria-label": id + (host ? " — open " + host : "")
+            title: id + (host ? " · " + host : "") + (note ? " · " + note : ""),
+            "aria-label": id + (host ? ", open " + host : "")
           })
-        : el("span", { class: "source-chip", title: id + (note ? " — " + note : "") });
+        : el("span", { class: "source-chip", title: id + (note ? ", " + note : "") });
       chip.textContent = id;
       row.appendChild(chip);
     });
@@ -2690,7 +2690,7 @@
        hole in the panel. */
     const note = el("p", { class: "sources-note" });
     note.appendChild(el("b", { text: "download" }));
-    note.appendChild(document.createTextNode(" compatibility only — no affiliation or endorsement"));
+    note.appendChild(document.createTextNode(" compatibility only, no affiliation or endorsement"));
     wrap.appendChild(note);
 
     const more = el("a", {
@@ -2939,7 +2939,7 @@
 
     pop.appendChild(el("p", {
       class: "donate-fine",
-      text: "nothing here unlocks anything — it is just a tip jar."
+      text: "nothing here unlocks anything. it is just a tip jar."
     }));
 
     const more = el("a", { class: "tip-more", href: "donate.html" });
@@ -3011,7 +3011,7 @@
       document.body.appendChild(ta);
       ta.select();
       try { document.execCommand("copy"); toast(message || "Copied", "ok"); return true; }
-      catch { toast("Copy failed — select the text manually.", "err"); return false; }
+      catch { toast("Copy failed. Select the text manually.", "err"); return false; }
       finally { ta.remove(); }
     }
   }
@@ -3051,11 +3051,11 @@
     }
     dom.setupNote.hidden = false;
     if (kind === "unreachable") {
-      dom.setupLead.textContent = "Can't reach the API — ";
-      dom.setupButton.textContent = "check the address";
-      dom.setupTail.textContent = " or try again in a moment.";
+      dom.setupLead.textContent = "The API isn't answering. Retrying. If it stays down, ";
+      dom.setupButton.textContent = "open settings";
+      dom.setupTail.textContent = " to check the address.";
     } else {
-      dom.setupLead.textContent = "Not connected — ";
+      dom.setupLead.textContent = "Not connected. ";
       dom.setupButton.textContent = "connect an API";
       dom.setupTail.textContent = " to download.";
     }
@@ -3063,11 +3063,31 @@
 
   let instanceSeq = 0;
 
+  /* One attempt at the instance, so a dropped request can be retried without
+     carrying its own timeout into the second try. */
+  async function fetchInstance(base, controller) {
+    const res = await fetch(base.replace(/\/+$/, "") + "/", {
+      method: "GET",
+      headers: Object.assign({ Accept: "application/json" }, authHeaders()),
+      signal: controller.signal
+    });
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("The API refused the request (HTTP " + res.status + "). Add or check the API key in Settings → Server.");
+    }
+    if (!res.ok) throw new Error("The API answered HTTP " + res.status + ".");
+    return res.json();
+  }
+
+  let instanceFails = 0;
+  let instanceEverOk = false;
+  let instanceRetry = 0;
+
   async function checkInstance(options) {
     const opts = options || {};
     const stamp = ++instanceSeq;
     const base = normalizeInstance(settings.instance);
     setSetupNote(base ? null : "empty");
+    clearTimeout(instanceRetry);
 
     if (!base) {
       instanceInfo = null;
@@ -3082,22 +3102,25 @@
       setInstanceDetail("checking", "Contacting instance…", []);
     }
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
+    const ask = async () => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 9000);
+      try { return await fetchInstance(base, controller); }
+      finally { clearTimeout(timer); }
+    };
 
     try {
-      const res = await fetch(base.replace(/\/+$/, "") + "/", {
-        method: "GET",
-        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
-        signal: controller.signal
-      });
-      if (res.status === 401 || res.status === 403) {
-        throw new Error("The API refused the request (HTTP " + res.status + "). Add or check the API key in Settings → Server.");
+      let data;
+      try {
+        data = await ask();
+      } catch (first) {
+        if (stamp !== instanceSeq) return false;
+        /* a deploy restarts the service for a second. One quiet retry turns
+           that into a blip instead of a warning on the home page. */
+        await new Promise((resolve) => setTimeout(resolve, 900));
+        data = await ask();
       }
-      if (!res.ok) throw new Error("The API answered HTTP " + res.status + ".");
-      const data = await res.json();
       const cobalt = data && data.cobalt ? data.cobalt : {};
-      const git = data && data.git ? data.git : {};
 
       if (stamp !== instanceSeq) return false;
       instanceInfo = {
@@ -3109,6 +3132,8 @@
         limits: cobalt.limits && typeof cobalt.limits === "object" ? cobalt.limits : null,
         turnstileSiteKey: typeof (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) === "string" ? (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) : ""
       };
+      instanceFails = 0;
+      instanceEverOk = true;
       // keep the trigger and an open panel agreeing about the count
       if (sourcesOpen) renderSources();
       const host = hostOf(base) || base;
@@ -3132,18 +3157,26 @@
       updateComposerState();
       return true;
     } catch (err) {
+      if (stamp !== instanceSeq) return false;
       recordHealth(false);
+      instanceFails += 1;
       const message = err && err.name === "AbortError"
-        ? "The API didn't respond within 12 seconds."
+        ? "The API didn't answer within nine seconds."
         : friendlyError(err);
       instanceInfo = null;
       setInstancePill("bad", "unreachable", message);
       setInstanceDetail("bad", "Can't reach this instance", [], message);
-      setSetupNote("unreachable");
+      /* A person who just pressed "check" wants the answer now. A visitor on
+         the home page gets one retry first, and only sees a line if the API is
+         still silent after that. */
+      setSetupNote(!opts.silent || instanceFails >= 2 ? "unreachable" : null);
       dom.servicesCard.hidden = true;
+      /* keep asking in the background, so the note goes away by itself when
+         the API comes back instead of staying until a reload */
+      if (instanceFails <= 15) {
+        instanceRetry = setTimeout(() => checkInstance({ silent: true }), 20000);
+      }
       return false;
-    } finally {
-      clearTimeout(timer);
     }
   }
 
@@ -3434,6 +3467,22 @@
   }
 
   /* ----------------------------------------------------------
+     help
+     ---------------------------------------------------------- */
+  function openHelp() {
+    const template = $("#help-template");
+    if (!template) return;
+    const body = template.content.cloneNode(true);
+    const close = el("button", { type: "button", class: "primary-btn", text: "got it" });
+    close.addEventListener("click", () => closeModal());
+    const buttons = [close];
+    /* the page, not a dropdown inside a dialog */
+    const tip = el("a", { class: "ghost-btn", href: "donate.html", text: "tip jar" });
+    buttons.unshift(tip);
+    openModal("How it works", body, buttons);
+  }
+
+  /* ----------------------------------------------------------
      health: the dot opens a miniature of the status page
      ---------------------------------------------------------- */
   const HEALTH_KEY = "mdown.uptime";
@@ -3555,7 +3604,7 @@
       }
       if (dom.hpPct) {
         const pct = data.uptime === null || data.uptime === undefined
-          ? "—"
+          ? "n/a"
           : Number(data.uptime).toFixed(1) + "% up";
         dom.hpPct.textContent = pct + " · " + Number(data.checks || 0).toLocaleString() +
           " check" + (Number(data.checks) === 1 ? "" : "s");
@@ -3711,10 +3760,12 @@
     /* the hint is a shortcut: press it, get the link to this site on the
        clipboard, ready to paste into a message */
     if (dom.composerNote) {
+      let noteTimer = 0;
       dom.composerNote.addEventListener("click", () => {
         copyText("https://mdown.cc", "link copied");
         dom.composerNote.classList.add("is-copied");
-        setTimeout(() => dom.composerNote.classList.remove("is-copied"), 1300);
+        clearTimeout(noteTimer);
+        noteTimer = setTimeout(() => dom.composerNote.classList.remove("is-copied"), 1700);
       });
     }
 
@@ -3924,8 +3975,8 @@
         return;
       }
       const blocked = IS_TOUCH
-        ? "Clipboard is blocked here — tap and hold the field to paste."
-        : "Clipboard is blocked here — press ⌘V to paste.";
+        ? "Clipboard is blocked here. Tap and hold the field to paste."
+        : "Clipboard is blocked here. Press ⌘V to paste.";
       if (!navigator.clipboard || typeof navigator.clipboard.readText !== "function") {
         toast(blocked, "warn");
         focusForPaste();
@@ -4083,217 +4134,6 @@
     } catch (e) {}
   }
 
-  /* ----------------------------------------------------------
-     clipboard
-     ---------------------------------------------------------- */
-  async function copyText(text, message) {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast(message || "Copied", "ok");
-      return true;
-    } catch {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); toast(message || "Copied", "ok"); return true; }
-      catch { toast("Copy failed — select the text manually.", "err"); return false; }
-      finally { ta.remove(); }
-    }
-  }
-
-  /* ----------------------------------------------------------
-     instance
-     ---------------------------------------------------------- */
-  /* The note under the composer answers one question: why can't I download?
-     "not set up" and "configured but down" look identical to a visitor, so
-     they must not look identical on screen. */
-
-  async function checkInstance(options) {
-    const opts = options || {};
-    const stamp = ++instanceSeq;
-    const base = normalizeInstance(settings.instance);
-    setSetupNote(base ? null : "empty");
-
-    if (!base) {
-      instanceInfo = null;
-      setInstancePill("unknown", "not connected", "No API connected");
-      setInstanceDetail("empty", "Not connected", []);
-      dom.servicesCard.hidden = true;
-      return false;
-    }
-
-    if (!opts.silent) {
-      setInstancePill("checking", "checking…", base);
-      setInstanceDetail("checking", "Contacting instance…", []);
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
-
-    try {
-      const res = await fetch(base.replace(/\/+$/, "") + "/", {
-        method: "GET",
-        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
-        signal: controller.signal
-      });
-      if (res.status === 401 || res.status === 403) {
-        throw new Error("The API refused the request (HTTP " + res.status + "). Add or check the API key in Settings → Server.");
-      }
-      if (!res.ok) throw new Error("The API answered HTTP " + res.status + ".");
-      const data = await res.json();
-      const cobalt = data && data.cobalt ? data.cobalt : {};
-      const git = data && data.git ? data.git : {};
-
-      if (stamp !== instanceSeq) return false;
-      instanceInfo = {
-        services: Array.isArray(cobalt.services) ? cobalt.services : [],
-        version: cobalt.version || "",
-        // honest capability flag: only an instance that answers /probe gets a
-        // size estimate and a thumbnail, everything else looks exactly as before
-        probe: cobalt.probe === true,
-        limits: cobalt.limits && typeof cobalt.limits === "object" ? cobalt.limits : null,
-        turnstileSiteKey: typeof (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) === "string" ? (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) : ""
-      };
-      // keep the trigger and an open panel agreeing about the count
-      if (sourcesOpen) renderSources();
-      const host = hostOf(base) || base;
-      // keep the Server pane's health link pointing at the live instance
-      if (dom.openHealth) dom.openHealth.href = base.replace(/\/+$/, "") + "/health";
-      const usingDefault = normalizeInstance(settings.instance) === normalizeInstance(DEFAULT_INSTANCE);
-      const detail = base + (cobalt.version ? " · api " + cobalt.version : "");
-      setInstancePill("ok", usingDefault ? "online" : host, detail);
-      recordHealth(true);
-
-      const uptime = cobalt.startTime ? formatUptime(Number(cobalt.startTime)) : "unknown";
-      const hostname = hostOf(base) || base;
-      setInstanceDetail("ok", "Connected", [
-        ["server", hostname],
-        ["services", String(instanceInfo.services.length || "unknown") + " · up " + uptime]
-      ]);
-      dom.instanceDetail.title = "version " + (cobalt.version || "unknown");
-
-      setSetupNote(null);
-      renderServices(instanceInfo.services);
-      updateComposerState();
-      return true;
-    } catch (err) {
-      recordHealth(false);
-      const message = err && err.name === "AbortError"
-        ? "The API didn't respond within 12 seconds."
-        : friendlyError(err);
-      instanceInfo = null;
-      setInstancePill("bad", "unreachable", message);
-      setInstanceDetail("bad", "Can't reach this instance", [], message);
-      setSetupNote("unreachable");
-      dom.servicesCard.hidden = true;
-      return false;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  /* ----------------------------------------------------------
-     settings: reflect + bind
-     ---------------------------------------------------------- */
-  /* The preview is the file, not a label for it: same name the queue will
-     show, the same container and the same quality, for the mode in force. */
-  /* ----------------------------------------------------------
-     help
-     ---------------------------------------------------------- */
-  function openHelp() {
-    const template = $("#help-template");
-    if (!template) return;
-    const body = template.content.cloneNode(true);
-    const close = el("button", { type: "button", class: "primary-btn", text: "got it" });
-    close.addEventListener("click", () => closeModal());
-    const buttons = [close];
-    /* the page, not a dropdown inside a dialog */
-    const tip = el("a", { class: "ghost-btn", href: "donate.html", text: "tip jar" });
-    buttons.unshift(tip);
-    openModal("How it works", body, buttons);
-  }
-
-  /* ----------------------------------------------------------
-     settings sheet
-     ---------------------------------------------------------- */
-
-  /* ----------------------------------------------------------
-     health: the dot opens a miniature of the status page
-     ---------------------------------------------------------- */
-
-  /* a successful instance check is a health sample too, so the graph fills in
-     over visits without a single extra request. One sample a minute is enough. */
-
-  /* Only the newest bar arrives with a rise; the rest are already there.
-     Replaying the whole stagger every minute made a quiet graph look busy. */
-  async function healthSample(endpoint) {
-    try {
-      const res = await fetch(endpoint + "health", {
-        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
-        cache: "no-store"
-      });
-      const body = await res.json().catch(() => null);
-      return {
-        responded: true,
-        limited: res.status === 429,
-        ok: res.ok && (!body || body.status !== "degraded"),
-        body
-      };
-    } catch (e) {
-      return { responded: false, limited: false, ok: false, body: null };
-    }
-  }
-
-  async function checkHealth() {
-    const endpoint = apiEndpoint();
-    if (!endpoint) {
-      setHealthState("bad", "not connected", "");
-      renderHealthBars(readHealth());
-      return;
-    }
-    /* the first look says "checking…". Every look after that keeps whatever it
-       already knows and only pulses the dot: flipping the word once a minute
-       is what made a healthy server look unstable */
-    const known = dom.healthPop && dom.healthPop.dataset.state &&
-      dom.healthPop.dataset.state !== "unknown";
-    if (!known) setHealthState("checking", "checking…", "");
-    else dom.healthPop.dataset.busy = "true";
-
-    let sample;
-    try {
-      sample = await healthSample(endpoint);
-      /* one retry: a deploy restarts the service for a second, and that is not
-         an outage worth drawing in red */
-      if (!sample.responded) {
-        await new Promise((resolve) => setTimeout(resolve, 1200));
-        sample = await healthSample(endpoint);
-      }
-    } finally {
-      if (dom.healthPop) dom.healthPop.dataset.busy = "false";
-    }
-
-    if (sample.limited) {
-      // 429 means the server answered; that is proof of life, not downtime
-      renderHealthBars(readHealth());
-      setHealthState("ok", "online", "");
-      return;
-    }
-
-    if (!sample.responded) {
-      renderHealthBars(pushHealth(null));
-      setHealthState("bad", "unreachable", "");
-      return;
-    }
-
-    renderHealthBars(pushHealth(sample.ok));
-    const up = sample.body && Number(sample.body.uptimeSeconds)
-      ? formatUptime(Date.now() - Number(sample.body.uptimeSeconds) * 1000)
-      : "";
-    setHealthState(sample.ok ? "ok" : "bad", sample.ok ? "online" : "down", up);
-  }
 
   /* ----------------------------------------------------------
      history

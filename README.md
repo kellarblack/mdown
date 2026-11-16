@@ -3,7 +3,7 @@
 [mdown.cc](https://mdown.cc) is a free media downloader: paste a link, pick video or audio, keep
 the file. No ads, no account, no tracking. The page is plain HTML, CSS and JavaScript with no
 build step and no dependencies. The work happens on a small Python 3 API that this repo also
-contains — stdlib http server, yt-dlp and ffmpeg, speaking the cobalt v11 request shape. Both
+contains: stdlib http server, yt-dlp and ffmpeg, speaking the cobalt v11 request shape. Both
 halves are MIT licensed, with one vendored exception noted at the end. The page is static and
 hosted on GitHub Pages; the API is one process on one VPS, because a browser cannot fetch video
 from most sites by itself. There is nothing to buy and nothing to sign up for; the running costs
@@ -19,7 +19,7 @@ python3 -m http.server 4331     # then open http://127.0.0.1:4331/
 
 There is nothing to install and nothing to compile. Any static file server will do.
 
-A fresh clone points at `https://api.mdown.cc` — `DEFAULT_INSTANCE` at the top of
+A fresh clone points at `https://api.mdown.cc`. `DEFAULT_INSTANCE` at the top of
 `assets/app.js`. That instance only accepts requests from `https://mdown.cc`, so locally the page
 loads and nothing downloads. Run your own API with
 `MDOWN_CORS_ORIGINS=http://127.0.0.1:4331`, or open settings (⌘K, ctrl-K elsewhere, or the gear
@@ -32,7 +32,7 @@ with no server connected.
 ## self-host the api
 
 `server/` is the API. One Python process, standard library only, shelling out to `yt-dlp` and
-`ffmpeg`. It is written for Ubuntu 22.04 or 24.04 on 1 vCPU and 1 GB of RAM — no Docker, no
+`ffmpeg`. It is written for Ubuntu 22.04 or 24.04 on 1 vCPU and 1 GB of RAM: no Docker, no
 database, no GPU. For a 1 GB box set `MDOWN_MAX_CONCURRENT=1`.
 
 From this repo, on a machine that can SSH to the VM:
@@ -101,11 +101,11 @@ serve; every byte of media passes through the API, which is the part with a band
 The page adds what the API cannot: a queue with real byte progress and mid-transfer cancel, one to
 five parallel downloads per tab, a picker grid when a post holds several files, service detection
 as you type, and the cobalt v11 settings set mapped one-to-one onto request keys. `404.html` is
-what makes `https://mdown.cc/<pasted link>` work on a static host — the host serves it for unknown
+what makes `https://mdown.cc/<pasted link>` work on a static host: the host serves it for unknown
 paths, and it hands the path back to the app.
 
 `POST /` and `GET /tunnel/<token>` are the cobalt v11 shape, so an ordinary cobalt instance works
-as the backend too. `/probe`, `/report`, `/health` and `/uptime` are mdown's own additions —
+as the backend too. `/probe`, `/report`, `/health` and `/uptime` are mdown's own additions,
 metadata before download, a bug report from the status page, and the numbers that page shows.
 
 The three local tools (`#remux`, `#subs`, `#clean`) run the other way: `assets/vendor/ffmpeg/`
@@ -119,8 +119,8 @@ request carries it. The engine is about 31 MB, so it is imported only when a too
 ./tests/run-all.sh backend  # python only
 ```
 
-**115 backend tests** (`server/tests`: config, jobs, security, server, uptime) and **444 browser
-assertions** across 22 suites — the picker suite runs twice, once at phone width — plus the
+**115 backend tests** (`server/tests`: config, jobs, security, server, uptime) and **455 browser
+assertions** across 23 suites (the picker suite runs twice, once at phone width), plus the
 privacy check that fails the build if the published site carries a name, an email or a tracker.
 The runner starts its own mock API on port 4320 and a static server on 4331, then drives headless
 Chrome.
@@ -132,7 +132,7 @@ On another OS, point `CHROME` at your binary. The backend alone needs no network
 cd server && python3 -m unittest discover -s tests
 ```
 
-Do not pass `--virtual-time-budget` to the browser suites — it freezes the clock the WASM engine
+Do not pass `--virtual-time-budget` to the browser suites: it freezes the clock the WASM engine
 needs and they hang.
 
 ## licence

@@ -6,25 +6,25 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Updates — mdown.cc</title>
+<title>Updates · mdown.cc</title>
 <meta name="description" content="What changed in mdown.cc, newest first: formats, mobile fixes, limits, and the things that broke and got fixed.">
 <link rel="canonical" href="https://mdown.cc/updates.html">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="mdown.cc">
 <meta property="og:url" content="https://mdown.cc/updates.html">
-<meta property="og:title" content="Updates — mdown.cc">
+<meta property="og:title" content="Updates · mdown.cc">
 <meta property="og:description" content="What changed in mdown.cc, newest first: formats, mobile fixes, limits, and the things that broke and got fixed.">
 <meta property="og:image" content="https://mdown.cc/assets/og-card.png?v=5">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta property="og:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Updates — mdown.cc">
+<meta name="twitter:title" content="Updates · mdown.cc">
 <meta name="twitter:description" content="What changed in mdown.cc, newest first: formats, mobile fixes, limits, and the things that broke and got fixed.">
 <meta name="twitter:image" content="https://mdown.cc/assets/og-card.png?v=5">
-<meta name="twitter:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta name="twitter:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
 <link rel="manifest" href="manifest.webmanifest">
@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=299">
+<link rel="stylesheet" href="assets/app.css?v=306">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -66,12 +66,31 @@
   <header class="updates-head">
     <span class="updates-kicker">changelog</span>
     <h1 class="page-h1 updates-title">Updates</h1>
-    <p class="page-lede">Newest first. Every line is something you can check on this site — no roadmap promises.</p>
+    <p class="page-lede">Newest first. Every line is something you can check on this site, no roadmap promises.</p>
   </header>
 
   <div class="timeline">
 
     <article class="cl-entry" data-latest="true">
+      <div class="cl-meta">
+        <span class="cl-version">1.3</span>
+        <time class="cl-date" datetime="2026-11-16">16 nov 2026</time>
+        <span class="cl-tag">latest</span>
+      </div>
+      <div class="cl-body">
+        <h2>Still on arrival</h2>
+        <ul>
+          <li>The page no longer fades up from black, and the logo no longer drops. Nothing above the field moves while the page loads.</li>
+          <li>The field sits lower, where the eye expects it, and stays there: the offset is in <code>svh</code>, so a phone's collapsing toolbar cannot drag it.</li>
+          <li>The hint under the field is a button. Press it and the address of this site goes to your clipboard, ready to paste into a message.</li>
+          <li>When the API does not answer, the page says so once, retries on its own, and clears the line when it comes back.</li>
+          <li>The uptime card reads the server's log in every browser, not the number of times you happened to open it.</li>
+          <li>Downloads and the uptime card come to the front when you touch them, and both stay open.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="cl-entry">
       <div class="cl-meta">
         <span class="cl-version">1.2</span>
         <time class="cl-date" datetime="2026-11-15">15 nov 2026</time>
@@ -80,12 +99,12 @@
       <div class="cl-body">
         <h2>A finished file waits for you</h2>
         <ul>
-          <li>A download no longer lands in your folder on its own. When it finishes, the row grows a <b>save</b> button and stops there — one press, when you are ready. Settings → files → saving still offers save-straight-away, share and copy link.</li>
+          <li>A download no longer lands in your folder on its own. When it finishes, the row grows a <b>save</b> button and stops there. One press, when you are ready. Settings → files → saving still offers save-straight-away, share and copy link.</li>
           <li>The uptime graph on the status page is the server's own log: one bar a day for thirty days, filled from checks it ran, never from a page visit. The line underneath names the count for today.</li>
           <li>A phone on its side gets the phone layout now, not a squeezed desktop one.</li>
           <li>The tip jar is drawn instead of sketched, and the donate page reads top to bottom without a script.</li>
           <li>The recent strip has a <b>clear</b> button.</li>
-          <li>The phone bar is four plain places to go — downloads, remux, settings, donate — instead of a sliding lens. Taps only, no drag, and it sits on the bottom edge where it belongs.</li>
+          <li>The phone bar is four plain places to go (downloads, remux, settings, donate) instead of a sliding lens. Taps only, no drag, and it sits on the bottom edge where it belongs.</li>
         </ul>
       </div>
     </article>
@@ -101,9 +120,8 @@
           <li><b>auto</b> picks from the link: audio for a music service, video for everything else. <b>audio</b> and <b>video</b> force it, and <b>no sound</b> is a switch instead of a fourth button.</li>
           <li>Paste a link and see the size, running time, resolution and a thumbnail before anything starts. The queue keeps the picture.</li>
           <li>The sources list lives in the top bar: a dropdown on a desktop, a sheet on a phone, every supported service, no inner scroll.</li>
-          <li>A bottom bar on phones — <b>downloads</b>, <b>remux</b>, <b>settings</b>, <b>donate</b> — and a small progress bar above it, so the queue never covers the page.</li>
+          <li>A bottom bar on phones (<b>downloads</b>, <b>remux</b>, <b>settings</b>, <b>donate</b>), and a small progress bar above it, so the queue never covers the page.</li>
           <li>A file over <b>250 MB</b> asks before it starts.</li>
-          <li>The logo drops once on load and then stays still.</li>
           <li>A bad link gets a red outline and one short shake. Notices cap at three, and hammering fetch can't bury the page.</li>
           <li>Settings open with the two choices you actually make; the rest sits behind a <b>+</b>. Server is one field, one card, one <b>Check</b>.</li>
           <li>The three browser tools are under the field, the file preview is the file itself, and the footer carries four links and nothing else.</li>

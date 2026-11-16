@@ -6,25 +6,25 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Terms — mdown.cc</title>
+<title>Terms · mdown.cc</title>
 <meta name="description" content="The short, plain version of what mdown.cc does and does not do with your links, your files and your browser.">
 <link rel="canonical" href="https://mdown.cc/terms.html">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="mdown.cc">
 <meta property="og:url" content="https://mdown.cc/terms.html">
-<meta property="og:title" content="Terms — mdown.cc">
+<meta property="og:title" content="Terms · mdown.cc">
 <meta property="og:description" content="The short, plain version of what mdown.cc does and does not do with your links, your files and your browser.">
 <meta property="og:image" content="https://mdown.cc/assets/og-card.png?v=5">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta property="og:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Terms — mdown.cc">
+<meta name="twitter:title" content="Terms · mdown.cc">
 <meta name="twitter:description" content="The short, plain version of what mdown.cc does and does not do with your links, your files and your browser.">
 <meta name="twitter:image" content="https://mdown.cc/assets/og-card.png?v=5">
-<meta name="twitter:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta name="twitter:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
 <link rel="manifest" href="manifest.webmanifest">
@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=299">
+<link rel="stylesheet" href="assets/app.css?v=306">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -66,7 +66,7 @@
 
   <section class="terms">
     <h2><span class="num">01</span>What mdown is</h2>
-    <p id="source">mdown is a page and an API. The page is static: paste a link and it asks an API server to do the work, then hands you the file. You do not have to use this one — point Settings → Server at your own copy and the downloads run through your machine instead. It is open source under the MIT licence at <a href="https://github.com/kelllar/mdown" rel="noopener">github.com/kelllar/mdown</a>; read it, fork it, run it. The server writes each finished file to disk, hands it over once, and deletes it within fifteen minutes. It keeps no library and redistributes nothing.</p>
+    <p id="source">mdown is a page and an API. The page is static: paste a link and it asks an API server to do the work, then hands you the file. You do not have to use this one. Point Settings → Server at your own copy and the downloads run through your machine instead. It is open source under the MIT licence at <a href="https://github.com/kelllar/mdown" rel="noopener">github.com/kelllar/mdown</a>; read it, fork it, run it. The server writes each finished file to disk, hands it over once, and deletes it within fifteen minutes. It keeps no library and redistributes nothing.</p>
 
     <p>Service names are used to describe technical compatibility only. There is no affiliation with, endorsement by, or partnership with any service listed, and none is implied.</p>
 
@@ -84,16 +84,16 @@
     <h2><span class="num">04</span>The API</h2>
     <p>mdown.cc talks to one server, and that server is sized for this page. It checks where requests come from, rate-limits by address, and has a finite daily budget. Pointing another app, bot or reseller at it is not permitted and will be blocked without notice.</p>
     <p>The full policy, with the numbers, is at <a href="api.html">api.html</a> (also as a <a href="assets/api-policy.pdf" download>pdf</a>).</p>
-    <p>The protocol is open and the server code is in the same MIT repository. If you need an API, run your own — that is the intended path, and a small vps is enough.</p>
+    <p>The protocol is open and the server code is in the same MIT repository. If you need an API, run your own. That is the intended path, and a small vps is enough.</p>
 
     <h2><span class="num">05</span>No warranty</h2>
-    <p>Provided as is. No guarantee of uptime, of a particular file, or of fitness for any purpose. You are responsible for what you save and for how you use it. If a download is unlawful where you live, don't do it — that is on you, not on the software.</p>
+    <p>Provided as is. No guarantee of uptime, of a particular file, or of fitness for any purpose. You are responsible for what you save and for how you use it. If a download is unlawful where you live, don't do it. That is on you, not on the software.</p>
 
     <h2 id="privacy"><span class="num">06</span>Privacy</h2>
     <p>Settings and recent links live in your browser's local storage. No account, no cookies, no analytics. Requests for links and files go to the server in Settings. Thumbnails are loaded from the source itself, so that host sees your address; nothing else does. Files processed by the local tools never leave your device, and files downloaded through an API are deleted shortly after they are handed over.</p>
 
     <h2><span class="num">07</span>Donations</h2>
-    <p>If a donate link is shown, it is a tip jar: voluntary, not payment for anything, and not a subscription. Nothing is unlocked by donating — no priority, no extra features, no removal of limits. No account is created, no receipt is issued, and no donor information is stored or seen by the site. Whatever a payment provider or wallet reveals to you is between you and them. Monero is the private one; bitcoin and ethereum are public ledgers, so treat those two addresses as public.</p>
+    <p>If a donate link is shown, it is a tip jar: voluntary, not payment for anything, and not a subscription. Nothing is unlocked by donating: no priority, no extra features, no removal of limits. No account is created, no receipt is issued, and no donor information is stored or seen by the site. Whatever a payment provider or wallet reveals to you is between you and them. Monero is the private one; bitcoin and ethereum are public ledgers, so treat those two addresses as public.</p>
 
     <h2><span class="num">08</span>Changes</h2>
     <p>These terms may change as the tool does. The date below is the version you are agreeing to.</p>

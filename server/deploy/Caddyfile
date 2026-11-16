@@ -53,6 +53,12 @@ api.mdown.cc {
 				request>headers>Referer delete
 				request>headers>Cookie delete
 				request>headers>User-Agent delete
+				# a tunnel URL is a working download for fifteen minutes; the
+				# path is the only place it would ever be written down
+				request>uri delete
+				# and the address itself, which Caddy writes under request.*
+				request>client_ip delete
+				request>remote_port delete
 			}
 		}
 	}

@@ -6,25 +6,25 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Status — mdown.cc</title>
+<title>Status · mdown.cc</title>
 <meta name="description" content="Live health of the mdown.cc API: downloader, ffmpeg, storage and queue depth.">
 <link rel="canonical" href="https://mdown.cc/status.html">
 <meta name="robots" content="noindex">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="mdown.cc">
 <meta property="og:url" content="https://mdown.cc/status.html">
-<meta property="og:title" content="Status — mdown.cc">
+<meta property="og:title" content="Status · mdown.cc">
 <meta property="og:description" content="Live health of the mdown.cc API: downloader, ffmpeg, storage and queue depth.">
 <meta property="og:image" content="https://mdown.cc/assets/og-card.png?v=5">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta property="og:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Status — mdown.cc">
+<meta name="twitter:title" content="Status · mdown.cc">
 <meta name="twitter:description" content="Live health of the mdown.cc API: downloader, ffmpeg, storage and queue depth.">
 <meta name="twitter:image" content="https://mdown.cc/assets/og-card.png?v=5">
-<meta name="twitter:image:alt" content="mdown.cc — ad-free download tool, in monospace on a near-black card.">
+<meta name="twitter:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0a0a0b">
 <link rel="manifest" href="manifest.webmanifest">
@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=299">
+<link rel="stylesheet" href="assets/app.css?v=306">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -60,7 +60,7 @@
   </nav>
 </header>
 
-<main class="wrap">
+<main class="wrap status-page">
   <h1 class="page-h1">Status</h1>
 
   <section class="status-card" id="status-card" data-state="checking" aria-live="polite">
@@ -74,7 +74,7 @@
 
     <div class="uptime" id="uptime" hidden>
       <div class="uptime-head">
-        <span class="uptime-pct" id="uptime-pct">—</span>
+        <span class="uptime-pct" id="uptime-pct">n/a</span>
         <span class="uptime-meta" id="uptime-meta"></span>
         <span class="uptime-live" id="uptime-live" hidden>
           <span class="uptime-live-dot" aria-hidden="true"></span>
@@ -373,7 +373,7 @@
       wrap.hidden = false;
       drawUptimeBars(data.days);
       const pctEl = $("#uptime-pct");
-      pctEl.textContent = data.uptime === null ? "—" : data.uptime.toFixed(1) + "% up";
+      pctEl.textContent = data.uptime === null ? "n/a" : data.uptime.toFixed(1) + "% up";
       /* the count is the server's, not this tab's. Two things used to be
          untrue here: the average divided by the full 30-day window even when
          the log only covered a day, and "today" was the server's UTC date with
@@ -404,7 +404,7 @@
       if (lastAt) {
         if (age > 600) {
           meta.dataset.tone = "err";
-          meta.textContent = "· no check for " + Math.round(age / 60) + " minutes — the server is not reporting. the bars below stop at the last one it did.";
+          meta.textContent = "· no check for " + Math.round(age / 60) + " minutes. the server is not reporting. the bars below stop at the last one it did.";
         } else if (age > 180) {
           meta.dataset.tone = "warn";
           meta.textContent += " · last check " + Math.round(age / 60) + " min ago";
@@ -457,7 +457,7 @@
 
     if (result.error) {
       const ms = result.ms;
-      setState("down", "mdown is not answering", "The API never answered. Nothing on this page can fix that — the API did not answer. the page is static; there is nothing here to fix it.");
+      setState("down", "mdown is not answering", "The API never answered. Nothing on this page can fix that. the API did not answer. the page is static; there is nothing here to fix it.");
       setRow("error", String(result.error && result.error.message ? result.error.message : result.error), "err");
       const dd = setRow("latency", ms + " ms", "warn");
       tween(dd, shownMs === null ? ms : shownMs, ms, (v) => Math.round(v) + " ms");
@@ -488,7 +488,7 @@
       limited
         ? "This address has asked a lot in the last minute, so the server answered with a rate limit instead of a health report. That is the server being alive, not down."
         : healthy
-        ? (checkKeys.length ? "" : "This API does not report dependency checks, so this is the instance answering — not proof that downloads work.")
+        ? (checkKeys.length ? "" : "This API does not report dependency checks, so this is the instance answering, not proof that downloads work.")
         : "The API answered, but " + (failing.length ? failing.join(", ") + " " + (failing.length === 1 ? "is" : "are") + " failing" : "it reports itself as degraded") + ". Downloads may still work; merges and conversions may not."
     );
 
