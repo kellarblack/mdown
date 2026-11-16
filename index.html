@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=250">
+<link rel="stylesheet" href="assets/app.css?v=255">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -273,6 +273,7 @@
   </div>
 </header>
 
+  <div class="tip-veil" id="tip-veil" hidden></div>
   <div class="tip-pop" id="tip-pop" hidden role="dialog" aria-label="tip jar"></div>
 
   <div class="sources-wrap" id="sources-wrap">
@@ -1044,7 +1045,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=127" defer></script>
+<script src="assets/app.js?v=128" defer></script>
 <script type="module" src="assets/nav.js?v=13"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

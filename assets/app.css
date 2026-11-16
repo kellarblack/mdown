@@ -782,20 +782,28 @@ a.ghost-btn { text-decoration: none; }
 .footer a:hover { color: var(--text-2); }
 .footer-meta {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-  gap: 6px; margin: 0;
-  font-family: var(--mono); font-size: 0.72rem; color: var(--text-3);
+  gap: 0; margin: 0;
+  font-family: var(--mono); font-size: 0.7rem; color: var(--text-3);
 }
-/* three words that are obviously pressable, label centred in the pill */
+/* words, not pills: three boxes under a quiet page pulled the eye to the
+   least important thing on it */
 .footer-meta a, .footer-meta .footer-link {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-height: 28px; padding: 0 12px;
-  border: 1px solid var(--stroke); border-radius: 999px;
-  background: transparent; color: var(--text-2);
-  font: inherit; cursor: pointer; text-decoration: none;
-  transition: color 120ms, background 120ms, border-color 120ms;
+  display: inline-flex; align-items: center;
+  min-height: 34px; padding: 0 6px;
+  border: 0; background: none;
+  color: var(--text-2); font: inherit; cursor: pointer; text-decoration: none;
+  transition: color 120ms;
 }
 .footer-meta a:hover, .footer-meta .footer-link:hover {
-  color: var(--text); background: var(--surface-2); border-color: var(--stroke-2);
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--stroke-2);
+}
+/* the separator is a glyph, not a gap */
+.footer-meta > * + *::before {
+  content: "·"; margin-right: 5px; color: var(--text-3); opacity: 0.55;
 }
 .footer-meta .footer-link:focus-visible, .footer-meta a:focus-visible {
   outline: 2px solid var(--ring); outline-offset: 2px;
@@ -1952,7 +1960,8 @@ a.donate-value:hover { text-decoration: underline; }
   animation: drop-in 150ms var(--ease) both;
 }
 .tip-pop.is-closing { animation: drop-out 120ms var(--ease) both; }
-.tip-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tip-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.tip-head .tip-close { justify-content: flex-end; }
 .tip-head b {
   font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3);
@@ -1971,13 +1980,56 @@ a.donate-value:hover { text-decoration: underline; }
 .tip-more:hover { color: var(--text); }
 .tip-more-go { transition: transform 160ms var(--ease); }
 .tip-more:hover .tip-more-go { transform: translateX(2px); }
+.tip-veil {
+  display: none; position: fixed; inset: 0; z-index: 94;
+  background: rgba(0, 0, 0, 0.46);
+  opacity: 0; transition: opacity 200ms var(--ease);
+}
+.tip-veil.is-on { opacity: 1; }
+.tip-close {
+  margin-left: auto; display: grid; place-items: center;
+  width: 28px; height: 28px; border-radius: 8px;
+  color: var(--text-3); background: transparent;
+  transition: color 120ms, background 120ms;
+}
+.tip-close svg { width: 14px; height: 14px; }
+.tip-close:hover { color: var(--text); background: var(--surface-2); }
+
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  /* a sheet, like the sources list: it comes up from the edge you are holding,
+     not down from a button you pressed somewhere else */
+  .tip-veil { display: block; }
   .tip-pop {
-    left: max(8px, env(safe-area-inset-left, 0px));
-    right: max(8px, env(safe-area-inset-right, 0px));
-    width: auto; max-height: calc(100dvh - 130px);
-    top: calc(62px + env(safe-area-inset-top, 0px));
+    position: fixed; left: 8px; right: 8px; top: auto;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    width: auto; max-height: min(78dvh, 620px); overflow-y: auto;
+    border-radius: 18px;
+    padding: 4px 14px 14px;
+    animation: tip-up 280ms cubic-bezier(0.2, 0.86, 0.3, 1) both;
   }
+  .tip-pop.is-closing { animation: tip-down 220ms cubic-bezier(0.45, 0, 0.7, 0.2) both; }
+  @keyframes tip-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes tip-down { from { transform: translateY(0); } to { transform: translateY(100%); } }
+  .tip-pop::before {
+    content: ""; display: block; width: 38px; height: 4px;
+    margin: 8px auto 12px; border-radius: 2px; background: var(--stroke-2);
+  }
+  .tip-head { margin-bottom: 12px; }
+  .tip-close { width: 36px; height: 36px; }
+  .tip-close svg { width: 16px; height: 16px; }
+  /* the three coins read as one group with hairlines, not three cards */
+  .donate-list { gap: 0; border: 1px solid var(--stroke); border-radius: 12px; overflow: hidden; background: var(--bg); }
+  .donate-row { border: 0; border-bottom: 1px solid var(--stroke); border-radius: 0; background: transparent; padding: 10px 12px; }
+  .donate-list .donate-row:last-child { border-bottom: 0; }
+  .donate-id { flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+  .donate-value, .donate-value[data-address] { flex: 1 1 100%; order: -1; min-height: 0; }
+  /* the note is the first thing to go when the row is narrow: the coin name is
+     what you need to check, and the sentence about segwit is not */
+  .donate-hint { display: none; }
+  .donate-label { margin: 0; }
+  /* donate already lives in the bar down here: the footer kept a second copy
+     two lines above it. The selector has to outrank .footer-meta #donate-wrap */
+  .footer-meta #donate-wrap { display: none; }
 }
 
 /* ---------- terms page ---------- */

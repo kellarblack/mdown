@@ -2757,6 +2757,9 @@
         else openTipPop();
       });
     });
+    const tipVeil = document.getElementById("tip-veil");
+    if (tipVeil) tipVeil.addEventListener("click", () => closeTipPop());
+
     document.addEventListener("click", (event) => {
       if (!tipOpen) return;
       if (event === tipOpenedBy) return;
@@ -2843,6 +2846,11 @@
   function closeTipPop() {
     if (!tipOpen) return;
     const pop = dom.tipPop;
+    const veil = document.getElementById("tip-veil");
+    if (veil) {
+      veil.classList.remove("is-on");
+      setTimeout(() => { if (!tipOpen) veil.hidden = true; }, 220);
+    }
     setTipState(false);
     if (pop) {
       pop.classList.add("is-closing");
@@ -2863,6 +2871,10 @@
     const head = el("div", { class: "tip-head" });
     head.appendChild(el("b", { text: "tip jar" }));
     head.appendChild(el("span", { class: "tip-state", text: "open" }));
+    const closeBtn = el("button", { type: "button", class: "tip-close", "aria-label": "close tip jar" });
+    closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+    closeBtn.addEventListener("click", () => closeTipPop());
+    head.appendChild(closeBtn);
     pop.appendChild(head);
 
     if (cfg.stripe) {
@@ -2936,6 +2948,14 @@
     pop.classList.remove("is-closing");
     setTipState(true);
     tipOpenedBy = openerEvent || null;
+    const veil = document.getElementById("tip-veil");
+    if (veil) {
+      if (veil.hidden) {
+        veil.hidden = false;
+        void veil.offsetHeight;
+      }
+      veil.classList.add("is-on");
+    }
     positionTipPop();
   }
 
