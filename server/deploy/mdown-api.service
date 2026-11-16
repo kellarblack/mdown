@@ -3,6 +3,9 @@ Description=mdown media download API
 Documentation=https://mdown.cc
 After=network-online.target
 Wants=network-online.target
+# never give up: a crash loop should keep retrying, not leave the API dead
+# until somebody logs in. There is no second line of defence behind this.
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple

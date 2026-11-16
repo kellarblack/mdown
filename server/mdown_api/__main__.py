@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import signal
 import sys
+import threading
 
 from .config import Config, ConfigError
 from .server import ApiServer
@@ -51,6 +52,10 @@ def main() -> int:
     def shutdown(_signum, _frame):
         log.info("shutting down")
         handler.jobs.stop()
+        try:
+            handler.uptime.flush()
+        except Exception:  # never let a shutdown handler block the stop
+            pass
         # serve_forever runs in this thread; shutdown() must come from another
         threading.Thread(target=server.shutdown, daemon=True).start()
 

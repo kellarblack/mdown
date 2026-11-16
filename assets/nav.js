@@ -70,6 +70,12 @@ function apply() {
 
   if (toolsMenu) toolsMenu.open = false;
 
+  /* only the app page has views: on sources.html (which also loads this file
+     for the shared header) rewriting the title replaced "Sources — mdown.cc"
+     with the app's own, which is a page describing itself wrongly */
+  const isApp = !!document.querySelector("[data-view-panel]");
+  if (!isApp) return;
+
   const meta = META[view] || META.download;
   document.title = meta.title;
   setMeta('meta[name="description"]', meta.desc);

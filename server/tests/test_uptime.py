@@ -86,6 +86,25 @@ class UptimeLogTest(unittest.TestCase):
         log.record(True)
         self.assertNotIn("2000-01-01", log._data)
 
+    def test_flush_writes_without_waiting_for_the_interval(self):
+        log = UptimeLog(self.path)
+        log.record(True)
+        log._last_save = 0          # pretend the interval has not elapsed
+        log.flush()
+        again = UptimeLog(self.path)
+        self.assertEqual(again._data[day()], [1, 1])
+        self.assertGreater(again._last_at, 0)
+
+    def test_a_clean_restart_is_not_an_outage(self):
+        log = UptimeLog(self.path)
+        log.record(True)
+        log.flush()
+        again = UptimeLog(self.path)
+        # ten seconds later, a new process samples again: no missed minutes
+        again._last_at = time.time() - 10
+        again.record(True)
+        self.assertEqual(again.summary(1)["checks"], 2)
+
     def test_the_stamp_is_not_a_day(self):
         log = UptimeLog(self.path)
         log.record(True)

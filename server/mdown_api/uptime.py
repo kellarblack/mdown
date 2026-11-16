@@ -81,6 +81,13 @@ class UptimeLog:
             at += 60
         return missed
 
+    def flush(self) -> None:
+        """Write now, whatever the interval says. Called on the way down so a
+        restart leaves a timestamp behind and the gap check can tell a three
+        second restart from a three hour outage."""
+        with self._lock:
+            self._save()
+
     def record(self, ok: bool) -> None:
         now = time.time()
         day = time.strftime("%Y-%m-%d", time.gmtime(now))
@@ -95,7 +102,7 @@ class UptimeLog:
                 "%Y-%m-%d", time.gmtime(time.time() - self.keep_days * 86400))
             for key in [k for k in self._data if k[:1].isdigit() and k < cutoff]:
                 self._data.pop(key, None)
-            due = time.time() - self._last_save > 300
+            due = time.time() - self._last_save > 120
         if due:
             with self._lock:
                 self._save()

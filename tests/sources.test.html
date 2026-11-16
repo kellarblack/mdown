@@ -141,6 +141,9 @@ async function main() {
     const res = await fetch("../sources.html", { cache: "no-store" });
     const html = await res.text();
     const parsed = new DOMParser().parseFromString(html, "text/html");
+    record("the sources page keeps its own title",
+      /sources/i.test(parsed.title) && !/ad-free download tool/.test(parsed.title),
+      parsed.title);
     const pageRows = [...parsed.querySelectorAll(".source-row")];
     record("the sources page lists every service",
       res.ok && pageRows.length >= 30, pageRows.length + " rows");
