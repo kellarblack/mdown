@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=292">
+<link rel="stylesheet" href="assets/app.css?v=294">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -345,7 +345,9 @@
         <div class="modes" role="radiogroup" aria-label="Download mode" id="modes">
           <span class="mode-glider" aria-hidden="true"></span>
           <button type="button" class="mode" data-mode="auto" role="radio" aria-checked="true" title="pick what suits the link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>
+            <!-- a spark, not a sun: the sun read as a brightness control sitting next to
+                 a theme switch, and this row is about the file, not the screen -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c.5 4.9 3.9 8.3 8.8 8.8-4.9.5-8.3 3.9-8.8 8.8-.5-4.9-3.9-8.3-8.8-8.8 4.9-.5 8.3-3.9 8.8-8.8Z"/></svg>
             <span class="mode-name">auto</span>
           </button>
           <button type="button" class="mode" data-mode="audio" role="radio" aria-checked="false" title="audio only">
