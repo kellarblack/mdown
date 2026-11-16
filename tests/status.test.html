@@ -47,12 +47,9 @@ async function waitFor(fn, ms = 15000) {
 async function main() {
   const frame = document.getElementById("app");
 
-  // 40 checks: 30 up, 10 down => 75%
-  const history = [];
-  for (let i = 0; i < 40; i++) history.push({ t: Date.now() - (40 - i) * 30000, ok: i >= 10 });
-
-  frame.contentWindow.localStorage.setItem("mdown.settings", JSON.stringify({ instance: "http://127.0.0.1:4320" }));
-  frame.contentWindow.localStorage.setItem("mdown.uptime", JSON.stringify(history));
+  // the mock's /uptime-on tree answers /uptime with 30 days of real counts, and
+  // /health with a bare ok — exactly what the box reports
+  frame.contentWindow.localStorage.setItem("mdown.settings", JSON.stringify({ instance: "http://127.0.0.1:4320/uptime-on" }));
   frame.src = "../status.html?t=" + Date.now();
 
   const doc = () => frame.contentDocument;
@@ -72,16 +69,21 @@ async function main() {
   record("missing checks are called out",
     !note.hidden && /does not report dependency checks/i.test(note.textContent), note.textContent.slice(0, 60));
 
-  // uptime maths: 30 of 40 = 75%
-  // 30 of the 40 seeded checks are up; the page also records its own check on
-  // load, so allow for that extra sample rather than assuming a frozen count
-  const pct = doc().querySelector("#uptime-pct").textContent;
-  record("uptime percentage is correct", /7[0-9]\.\d% up/.test(pct), pct);
+  // the graph is the server's: 30 days, one bar each
+  const drew = await waitFor(() => doc().querySelectorAll(".uptime-bar").length === 30, 10000);
+  record("strip draws the server's days", drew, doc().querySelectorAll(".uptime-bar").length + " bars");
 
-  const bars = doc().querySelectorAll(".uptime-bar");
-  record("strip draws every check it has", bars.length >= 40 && bars.length <= 42, bars.length + " bars");
-  const down = [...bars].filter((b) => b.getAttribute("data-ok") === "false").length;
-  record("failed checks are marked", down === 10, down + " red");
+  const pct = doc().querySelector("#uptime-pct").textContent;
+  record("uptime percentage comes from the server", /9[0-9]\.\d% up/.test(pct), pct);
+
+  const meta = doc().querySelector("#uptime-meta").textContent;
+  record("the line says who measured it", /sampled by the server/.test(meta), meta.slice(-46));
+
+  const bars = [...doc().querySelectorAll(".uptime-bar")];
+  const down = bars.filter((b) => b.getAttribute("data-ok") === "false").length;
+  // the mock has three bad days (0%, 0%, and 46/48 which is under the 97% line)
+  record("failed days are marked", down === 3, down + " red");
+  record("today is the live end of the strip", bars[29].dataset.live === "true", "live=" + bars[29].dataset.live);
 
   // details start closed, and open on demand
   const details = doc().querySelector(".status-more");
@@ -94,6 +96,19 @@ async function main() {
   // the report copies something useful
   const report = doc().querySelector("#status-report");
   record("report button exists", !!report && /report/i.test(report.textContent));
+
+  // a visit must not draw anything: with the instance reporting no log at all,
+  // the strip stays empty however many times the page is loaded
+  frame.contentWindow.localStorage.setItem("mdown.settings", JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  const seeded = [];
+  for (let i = 0; i < 40; i++) seeded.push({ t: Date.now() - (40 - i) * 30000, ok: i >= 10 });
+  frame.contentWindow.localStorage.setItem("mdown.uptime", JSON.stringify(seeded));
+  frame.src = "../status.html?nolocal=" + Date.now();
+  await waitFor(() => frame.contentDocument && frame.contentDocument.querySelector("#status-card"), 15000);
+  await sleep(900);
+  record("a visit never draws a bar",
+    frame.contentDocument.querySelectorAll(".uptime-bar").length === 0,
+    frame.contentDocument.querySelectorAll(".uptime-bar").length + " bars");
 
   // last: no stored settings at all, which is what a first-time visitor has
   frame.contentWindow.localStorage.clear();

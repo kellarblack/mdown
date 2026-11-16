@@ -266,7 +266,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 }
 .hp-link:hover { color: var(--text); }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .health-pop { width: min(280px, calc(100vw - 16px)); }
 }
 
@@ -589,7 +589,23 @@ a.ghost-btn { text-decoration: none; }
   font-family: var(--mono); font-size: 0.7rem;
 }
 .q-meta .sep { width: 2px; height: 2px; border-radius: 50%; background: currentColor; opacity: 0.5; }
-.q-meta .q-err { color: var(--err); }
+.q-meta /* the file is ready: saving is a named action, not a fourth icon */
+.q-save {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 26px; padding: 0 9px 0 8px;
+  border-radius: 7px; border: 1px solid var(--stroke-2);
+  background: var(--surface-2); color: var(--text);
+  font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.02em;
+  cursor: pointer; flex: none;
+  transition: background var(--speed), border-color var(--speed), translate var(--speed);
+}
+.q-save svg { width: 13px; height: 13px; }
+.q-save:hover { background: var(--surface-3); border-color: color-mix(in srgb, var(--text) 40%, transparent); }
+.q-save:active { translate: 0 1px; }
+.q-save:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+@media (hover: none) { .q-save { height: 32px; padding: 0 12px 0 10px; font-size: 0.72rem; } }
+
+.q-err { color: var(--err); }
 
 .q-actions { display: flex; align-items: center; gap: 3px; }
 .q-actions .icon-btn { width: 26px; height: 26px; border-radius: 5px; }
@@ -689,7 +705,7 @@ a.ghost-btn { text-decoration: none; }
   font-size: 0.68rem; color: var(--text-3);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .tool-strip { gap: 6px; }
   .tool-card { flex-direction: column; justify-content: center; gap: 6px; padding: 9px 6px; }
   .tool-card-body { justify-items: center; }
@@ -1256,7 +1272,7 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
   .chips { gap: 4px; }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   /* the pill is no longer the rightmost control, so the popover anchors to the
      screen instead of to the pill: 296px hanging off a 390px phone fell off
      the left edge */
@@ -1384,7 +1400,7 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
 
 /* ---------- footer proof ---------- */
 /* ---------- navigation ---------- */
-.nav { display: flex; align-items: center; gap: 0; margin-right: auto; margin-left: 6px; }
+.nav { display: flex; align-items: center; gap: 0; margin-right: auto; margin-left: -8px; }
 /* the way back out of a tool, shown only while a tool is open */
 .nav-download { display: none; }
 body[data-view="remux"] .nav-download,
@@ -1615,7 +1631,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 
 /* ---------- sources panel (shared) ---------- */
 .sources { display: grid; gap: 5px; min-width: 0; }
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   /* a sheet above the bottom bar, aligned to the screen, never the wordmark */
   /* a tap at the top of the screen has to open something at the top of the
      screen. this used to be a sheet at the bottom, a foot away from the
@@ -1748,7 +1764,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 .updates-foot a { color: var(--text-2); text-decoration: none; border-bottom: 1px solid var(--stroke-2); }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .timeline { margin-top: 24px; }
   .timeline::before { display: none; }
   .cl-entry { grid-template-columns: 1fr; gap: 8px; padding-bottom: 28px; }
@@ -1861,7 +1877,7 @@ a.donate-value:hover { text-decoration: underline; }
 .tip-more:hover { color: var(--text); }
 .tip-more-go { transition: transform 160ms var(--ease); }
 .tip-more:hover .tip-more-go { transform: translateX(2px); }
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .tip-pop {
     left: max(8px, env(safe-area-inset-left, 0px));
     right: max(8px, env(safe-area-inset-right, 0px));
@@ -1921,7 +1937,7 @@ a.donate-value:hover { text-decoration: underline; }
 }
 /* on a phone the bar already carries donate; a second floating button would
    sit in the thumb's way */
-@media (max-width: 720px) { .coin-jar { display: none; } }
+@media (max-width: 720px), (hover: none) and (max-height: 520px) { .coin-jar { display: none; } }
 
 /* ---------- terms page ---------- */
 .terms { max-width: 64ch; margin: 22px auto 0; }
@@ -2008,7 +2024,7 @@ a.donate-value:hover { text-decoration: underline; }
 .remux-help-body p { color: var(--text-3); font-size: 0.8rem; line-height: 1.65; }
 .remux-help-body b { color: var(--text-2); font-weight: 600; }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .nav { margin-left: 10px; }
   .nav-link { padding: 5px 6px; font-size: 0.68rem; }
   .dropzone { padding: 26px 16px 22px; }
@@ -2120,7 +2136,7 @@ a.donate-value:hover { text-decoration: underline; }
 .out-name { flex: 1; min-width: 0; font-family: var(--mono); font-size: 0.74rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .out-meta { color: var(--text-3); font-family: var(--mono); font-size: 0.66rem; }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .tag { flex-direction: column; gap: 2px; }
   .tag-key { width: auto; }
   .track { grid-template-columns: 18px 1fr; row-gap: 6px; }
@@ -2270,7 +2286,7 @@ a.donate-value:hover { text-decoration: underline; }
 }
 
 .services { margin-top: 10px; }
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .intro { margin-bottom: 14px; }
   .intro-title { font-size: clamp(1.5rem, 7vw, 1.9rem); }
 }
@@ -2303,7 +2319,7 @@ a.donate-value:hover { text-decoration: underline; }
 .dock-panel .queue-list { gap: 6px; }
 .dock-panel .empty { padding: 8px 2px 4px; }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .dock-panel {
     position: fixed;
     top: calc(54px + env(safe-area-inset-top));
@@ -2352,7 +2368,7 @@ a.donate-value:hover { text-decoration: underline; }
 .nav-menu a:focus-visible { outline: 2px solid var(--text-2); outline-offset: -2px; }
 .nav-menu a.is-active { background: var(--surface-2); }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .nav-tools > summary { padding: 7px 8px; min-height: 34px; }
   .nav-menu { left: 0; right: auto; min-width: 150px; }
 }
@@ -2401,7 +2417,7 @@ a.donate-value:hover { text-decoration: underline; }
   color: var(--text-2); font-size: 0.9rem; line-height: 1.65;
 }
 .donate-hero-art { color: var(--text-3); opacity: 0.9; }
-.donate-hero-art svg { display: block; width: 100%; max-width: 240px; height: auto; }
+.donate-hero-art svg { display: block; width: 100%; max-width: 260px; height: auto; }
 /* this used to spin. rotating a clipped, dash-patterned SVG group re-rasterises
    the whole disc every frame, and on a throttled phone that cost a full second
    before the page could paint at all. static ring, same look. */
@@ -2619,7 +2635,7 @@ a.addr-value:hover { color: var(--text); }
 }
 .share-toast.is-on { opacity: 1; }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .donate-page { padding-bottom: 40px; }
   .donate-hero { grid-template-columns: 1fr; gap: 10px; padding-bottom: 26px; }
   .donate-hero-art { width: 128px; order: -1; margin: 2px 0 0; }
@@ -2640,7 +2656,7 @@ a.addr-value:hover { color: var(--text); }
 
 /* ---------- mini progress ---------- */
 .mini-dock { display: none; }
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .mini-dock {
     display: flex; align-items: center; gap: 10px;
     position: fixed; left: 8px; right: 8px; z-index: 54;
@@ -2694,7 +2710,7 @@ a.addr-value:hover { color: var(--text); }
 /* ---------- mobile bar ---------- */
 /* one thumb-reachable row for the four things a phone actually needs */
 .mobile-bar { display: none; }
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   /* flex, not five columns: the bar has four items and a fixed five-column
      grid left a dead slot at the end */
   .mobile-bar {
@@ -2893,7 +2909,7 @@ a.addr-value:hover { color: var(--text); }
 }
 .composer-note b { color: var(--text-2); font-weight: 500; }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   #paste-btn { width: 118px; height: 42px; }
   #tune-mode { width: 40px; height: 40px; }
   .composer-cta .hint { font-size: 0.82rem; }
@@ -2981,7 +2997,7 @@ a.addr-value:hover { color: var(--text); }
 }
 [data-theme="light"] .tool-card:hover { background: var(--bg-elev); }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .tool-strip { gap: 6px; }
   .tool-card { flex-direction: column; justify-content: center; gap: 7px; padding: 12px 6px 10px; }
   .tool-card-body { justify-items: center; }
@@ -2996,7 +3012,7 @@ a.addr-value:hover { color: var(--text); }
    thing that stacks above it reads the same number. */
 :root { --mbar-lift: 0px; }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .mobile-bar {
     padding-bottom: calc(5px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px));
   }
@@ -3008,7 +3024,7 @@ a.addr-value:hover { color: var(--text); }
 
 /* standalone has no Safari toolbar to clear */
 @supports (-webkit-touch-callout: none) {
-  @media (max-width: 720px) and (hover: none) and (display-mode: browser) {
+  @media (max-width: 720px), (hover: none) and (max-height: 520px) and (hover: none) and (display-mode: browser) {
     :root { --mbar-lift: 46px; }
   }
 }
@@ -3153,7 +3169,7 @@ a.addr-value:hover { color: var(--text); }
 /* the sources pill is position: fixed and centred by a hardcoded row height:
    it sat 3px above the bar's centre line on a phone */
 .sources-wrap { top: 9px; height: var(--h); }
-@media (max-width: 720px) { .sources-wrap { height: 40px; top: 9px; } }
+@media (max-width: 720px), (hover: none) and (max-height: 520px) { .sources-wrap { height: 40px; top: 9px; } }
 .sources-toggle {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 28px; padding: 0 10px; line-height: 1;

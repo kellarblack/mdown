@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=212">
+<link rel="stylesheet" href="assets/app.css?v=216">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -77,15 +77,28 @@
     </div>
     <div class="donate-hero-art" aria-hidden="true">
       <!-- a jar with coins in it, because that is what this page is -->
-      <svg viewBox="0 0 300 300" role="presentation" fill="none" stroke="currentColor"
+      <svg viewBox="0 0 120 178" role="presentation" fill="none" stroke="currentColor"
            stroke-linecap="round" stroke-linejoin="round">
-        <path d="M110 144h80v66a26 26 0 0 1-26 26h-28a26 26 0 0 1-26-26z" stroke-width="2.2"/>
-        <rect x="114" y="126" width="72" height="15" rx="7.5" stroke-width="2.2"/>
-        <circle cx="134" cy="198" r="10" stroke-width="1.8"/>
-        <circle cx="166" cy="198" r="10" stroke-width="1.8"/>
-        <circle cx="150" cy="176" r="10" stroke-width="1.8"/>
-        <circle cx="150" cy="88" r="11" stroke-width="2"/>
-        <path d="M150 104v10" stroke-width="1.6" stroke-dasharray="2 7" opacity=".5"/>
+        <!-- the jar: straight shoulder, tapered foot, rounded base -->
+        <path d="M22 66h76l-5 74a19 19 0 0 1-19 18H46a19 19 0 0 1-19-18z" stroke-width="2.4"/>
+        <!-- the neck and its lid -->
+        <rect x="27" y="48" width="66" height="14" rx="7" stroke-width="2.4"/>
+        <path d="M22 66h76" stroke-width="2.4"/>
+        <!-- a sliver of light down the left of the glass -->
+        <path d="M33 78v56" stroke-width="2" opacity=".28"/>
+        <!-- coins in the jar -->
+        <circle cx="46" cy="118" r="11" stroke-width="2"/>
+        <circle cx="46" cy="118" r="4.2" stroke-width="1.5" opacity=".7"/>
+        <circle cx="74" cy="118" r="11" stroke-width="2"/>
+        <circle cx="74" cy="118" r="4.2" stroke-width="1.5" opacity=".7"/>
+        <circle cx="60" cy="97" r="11" stroke-width="2"/>
+        <circle cx="60" cy="97" r="4.2" stroke-width="1.5" opacity=".7"/>
+        <!-- the one on its way in -->
+        <circle cx="60" cy="20" r="11" stroke-width="2.2"/>
+        <path d="M60 20v.01" stroke-width="2.4" opacity=".55"/>
+        <path d="M60 36v9" stroke-width="2" stroke-dasharray="1.5 7" opacity=".45"/>
+        <!-- it sits on something -->
+        <ellipse cx="60" cy="164" rx="31" ry="4.4" fill="currentColor" stroke="none" opacity=".16"/>
       </svg>
     </div>
     </div>

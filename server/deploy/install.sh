@@ -170,6 +170,8 @@ install -m 0644 "$SRC_DIR/deploy/mdown-health.timer" /etc/systemd/system/mdown-h
 # systemd restarts a crashed process, not a wedged one: this restarts on a
 # failed /health, at most once every ten minutes
 install -m 0755 "$SRC_DIR/deploy/mdown-health.sh" /usr/local/sbin/mdown-health
+# daily digest of problem reports; silent until /etc/mdown/notify.env exists
+install -m 0755 "$SRC_DIR/deploy/report-digest.sh" /opt/mdown/report-digest.sh
 systemctl daemon-reload
 # enable on boot, then RESTART — `enable --now` is a no-op on a running service,
 # which means a redeploy would keep executing the old code

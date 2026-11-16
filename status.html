@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=212">
+<link rel="stylesheet" href="assets/app.css?v=216">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -226,6 +226,7 @@
   function renderHistory(history, added) {
     const wrap = $("#uptime");
     const strip = $("#uptime-strip");
+    if (serverGraph) return;
     if (!history.length) { wrap.hidden = true; return; }
     wrap.hidden = false;
 
@@ -322,8 +323,9 @@
   let serverGraph = false;
 
   function noteCheck(ok) {
-    const history = pushHistory(ok);
-    if (!serverGraph) renderHistory(history);
+    /* the visit is recorded for the local log, but the strip is the server's:
+       drawing it from clicks is what made it look like it filled on demand */
+    pushHistory(ok);
   }
 
   function drawUptimeBars(days) {
@@ -387,9 +389,11 @@
       /* the count is the server's, not this tab's: one sample a minute, so a
          full day is 1,440 checks and the total is what the box actually ran */
       const perDay = data.days.length ? Math.round(data.checks / data.days.length) : 0;
+      const today = data.days[data.days.length - 1];
+      const todayChecks = today && today.total ? today.total.toLocaleString() : "0";
       $("#uptime-meta").textContent = "· one check a minute · " + data.checks.toLocaleString() +
         " checks over 30 days" + (perDay ? " (" + perDay.toLocaleString() + " a day)" : "") +
-        ", sampled by the server";
+        " · today " + todayChecks + ", sampled by the server";
       serverGraph = true;
       uptimeAsked = Date.now();
       stampLive();
@@ -409,7 +413,6 @@
       setRow("api", "(none)");
       pruneRows();
       last = { api: "", state: "no-instance" };
-      if (!serverGraph) renderHistory(readHistory());
       return;
     }
 
@@ -584,7 +587,6 @@
     }, 4000);
   }
 
-  renderHistory(readHistory());
   $("#status-refresh").addEventListener("click", check);
   $("#status-report").addEventListener("click", openReport);
   $("#report-copy").addEventListener("click", () => copyText(reportText(), "report copied"));

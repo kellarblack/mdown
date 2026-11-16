@@ -54,7 +54,7 @@
     convertGif: true,
     allowH265: false,
     tiktokFullAudio: false,
-    savingMethod: "download",
+    savingMethod: "ask",
     concurrency: 3,
     theme: "auto"
   };
@@ -1354,6 +1354,13 @@
 
   function renderActions(item, container) {
     const buttons = [];
+    /* a labelled action: the one primary thing on a finished row */
+    const labelBtn = (svg, text, aria, handler) => {
+      const b = el("button", { type: "button", class: "q-save", title: aria, "aria-label": aria },
+        svg + '<span>' + text + "</span>");
+      b.addEventListener("click", handler);
+      return b;
+    };
     const iconBtn = (svg, label, handler, cls) => {
       const b = el("button", { type: "button", class: "icon-btn" + (cls ? " " + cls : ""), title: label, "aria-label": label }, svg);
       b.addEventListener("click", handler);
@@ -1375,9 +1382,12 @@
       ));
     }
     if ((item.status === "ready" || item.status === "done") && item.blob) {
-      buttons.push(iconBtn(
+      /* the file is done: saving is the one thing left, so it gets a labelled
+         button instead of another icon in a row of icons */
+      buttons.push(labelBtn(
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg>',
-        "Save file",
+        "save",
+        "Save " + (item.filename || "file"),
         () => saveBlob(item)
       ));
       if (navigator.share) {
@@ -1921,7 +1931,7 @@
     } else if (settings.savingMethod === "copy" && item.sourceUrl) {
       copyText(item.sourceUrl, "Link copied");
     } else if (settings.savingMethod === "ask") {
-      toast("Ready — use the buttons on the queue item to save.", "ok");
+      /* nothing is pushed at you: the row turns into a save button and waits */
     }
   }
 

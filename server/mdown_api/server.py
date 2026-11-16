@@ -139,7 +139,10 @@ class Handler(BaseHTTPRequestHandler):
         return self.server_version
 
     def log_message(self, fmt: str, *args: Any) -> None:  # keep noise down
-        log.info("%s %s", self.address_string(), fmt % args)
+        # No address in the log: the service promises nothing is stored about a
+        # visitor, and an IP in a log file is still a record of one. Methods,
+        # paths and statuses are enough to run the box.
+        log.info("%s", fmt % args)
 
     def _client_ip(self) -> str:
         # A proxy *appends* the address it saw to any header the client sent.
