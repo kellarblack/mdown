@@ -3,7 +3,9 @@
 **Donations are off by default.** Fill in `assets/donate.js` to show a tip jar.
 Crypto addresses only, or a tip page that is not in your name — the dialog never
 loads anything from a third party. `python3 tests/privacy_check.py` fails the
-build if the published site ever carries a name, an email or a tracker.
+build if the published site ever carries a name, an email or a tracker. The
+handle it must refuse is read from `tests/owner-handle.txt`, which is gitignored
+— the guard never spells out the name it is guarding.
 
 **Open source, MIT.** The front-end is plain HTML/CSS/JS with no build step; the
 API is Python stdlib + yt-dlp + ffmpeg. Fork it, run your own instance, send a PR.

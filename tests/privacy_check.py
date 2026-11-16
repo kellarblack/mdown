@@ -32,13 +32,24 @@ SITE = [
     "robots.txt", "sitemap.xml", "llms.txt", "manifest.webmanifest", "_headers",
 ]
 
-# a name, an address, or a handle that would dox the operator
+# The handle this build must never carry is read from a local file that is not
+# published and not committed: the guard used to spell it out in its own source,
+# which is a strange way to keep a secret. Absent file, one less rule.
+OWNER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "owner-handle.txt")
+OWNER = ""
+try:
+    with open(OWNER_FILE, "r", encoding="utf-8") as handle:
+        OWNER = handle.read().strip()
+except OSError:
+    OWNER = ""
+
 IDENTITY = [
-    (re.compile(r"kellar", re.I), "the owner's handle"),
     (re.compile(r"[\w.+-]+@[\w-]+\.[a-z]{2,}", re.I), "an email address"),
     (re.compile(r'<meta[^>]+name=["\']author["\']', re.I), "an author meta tag"),
     (re.compile(r"©|&copy;", re.I), "a copyright notice"),
 ]
+if OWNER:
+    IDENTITY.insert(0, (re.compile(re.escape(OWNER), re.I), "the owner's handle"))
 
 # hosts that would mean the page phones somewhere
 TRACKERS = re.compile(

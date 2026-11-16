@@ -390,7 +390,6 @@
     openHealth: $("#open-health"),
     openSources: $("#open-sources"),
     sourcesPanel: $("#sources-panel"),
-    sourcesCount: $("#sources-count"),
     sourcesWrap: $("#sources-wrap"),
     donateWrap: $("#donate-wrap"),
     setupOpenSettings: $("#setup-open-settings"),
@@ -3126,7 +3125,6 @@
         turnstileSiteKey: typeof cobalt.turnstileSitekey === "string" ? cobalt.turnstileSitekey : ""
       };
       // keep the trigger and an open panel agreeing about the count
-      if (dom.sourcesCount) dom.sourcesCount.textContent = String(sourceList().length);
       if (sourcesOpen) renderSources();
       const host = hostOf(base) || base;
       // keep the Server pane's health link pointing at the live instance
@@ -4094,7 +4092,6 @@
         turnstileSiteKey: typeof cobalt.turnstileSitekey === "string" ? cobalt.turnstileSitekey : ""
       };
       // keep the trigger and an open panel agreeing about the count
-      if (dom.sourcesCount) dom.sourcesCount.textContent = String(sourceList().length);
       if (sourcesOpen) renderSources();
       const host = hostOf(base) || base;
       // keep the Server pane's health link pointing at the live instance
