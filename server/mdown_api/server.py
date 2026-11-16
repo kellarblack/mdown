@@ -209,6 +209,8 @@ class Handler(BaseHTTPRequestHandler):
         headers = {}
         if error.code == "api.rate_limit":
             headers["Retry-After"] = str(error.context.get("retry") or 30)
+        if error.detail and not error.expose:
+            log.warning("%s %s: %s", error.status, error.code, error.detail)
         self._json(error.status, error.payload(), headers)
 
     # -- auth --------------------------------------------------------------
@@ -272,6 +274,18 @@ class Handler(BaseHTTPRequestHandler):
     def do_HEAD(self) -> None:  # noqa: N802
         self.do_GET()
 
+    def _method_not_allowed(self) -> None:
+        """JSON, with Allow, because the default is an HTML 501 that names the
+        Python version and says nothing a client can act on."""
+        error = ApiError.bad_method()
+        self._json(error.status, error.payload(),
+                   {"Allow": "GET, HEAD, POST, OPTIONS"})
+
+    do_PUT = _method_not_allowed      # noqa: N815
+    do_DELETE = _method_not_allowed   # noqa: N815
+    do_PATCH = _method_not_allowed    # noqa: N815
+    do_TRACE = _method_not_allowed    # noqa: N815
+
     def do_GET(self) -> None:  # noqa: N802
         try:
             self._route_get()
@@ -326,7 +340,7 @@ class Handler(BaseHTTPRequestHandler):
                 token = (parse_qs(query).get("id") or [""])[0]
             self._serve_tunnel(unquote(token))
         else:
-            raise ApiError.not_found()
+            raise ApiError.no_route()
 
     def _split(self) -> Tuple[str, str]:
         parts = urlsplit(self.path)
@@ -482,7 +496,7 @@ class Handler(BaseHTTPRequestHandler):
 
         path, _ = self._split()
         if path not in ("/", "", "/probe", "/report"):
-            raise ApiError.not_found()
+            raise ApiError.no_route()
 
         self._check_auth()
         self._check_origin()
@@ -704,7 +718,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _read_json(self) -> Dict[str, Any]:
         if not self._body_consumed:
-            raise ApiError.url_invalid("body too large")
+            raise ApiError.too_large()
         raw = self._raw_body
         if not raw:
             raise ApiError.url_missing()

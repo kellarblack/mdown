@@ -21,19 +21,23 @@ class ApiError(Exception):
         status: int = 400,
         context: Optional[Dict[str, Any]] = None,
         detail: str = "",
+        expose: bool = True,
     ) -> None:
         super().__init__(detail or code)
         self.code = code
         self.status = status
         self.context = context or {}
         self.detail = detail
+        # a 500 carries whatever the toolchain said, and a temp path or a job
+        # token is not the client's business: keep it for the log
+        self.expose = expose
 
     def payload(self) -> Dict[str, Any]:
         error: Dict[str, Any] = {"code": self.code}
         if self.context:
             error["context"] = self.context
         body: Dict[str, Any] = {"status": "error", "error": error}
-        if self.detail:
+        if self.detail and self.expose:
             # not part of the cobalt schema, but harmless and useful in logs
             body["error"]["detail"] = self.detail
         return body
@@ -88,6 +92,18 @@ class ApiError(Exception):
         return cls("api.content.video.unavailable", 404, detail="job not found or expired")
 
     @classmethod
+    def no_route(cls) -> "ApiError":
+        return cls("api.content.video.unavailable", 404, detail="no such endpoint")
+
+    @classmethod
+    def too_large(cls) -> "ApiError":
+        return cls("api.request.too_large", 413, detail="body too large")
+
+    @classmethod
+    def bad_method(cls) -> "ApiError":
+        return cls("api.request.method", 405, detail="method not allowed")
+
+    @classmethod
     def internal(cls, detail: str = "") -> "ApiError":
         # deliberately vague in the payload; the detail goes to the log only
-        return cls("api.content.video.unavailable", 500, detail=detail)
+        return cls("api.content.video.unavailable", 500, detail=detail, expose=False)

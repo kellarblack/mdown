@@ -266,7 +266,41 @@ class ServerTest(unittest.TestCase):
     def test_unknown_route(self):
         status, _, raw = self.call("GET", "/nope")
         self.assertEqual(status, 404)
-        self.assertEqual(json.loads(raw)["error"]["code"], "api.content.video.unavailable")
+        body = json.loads(raw)
+        self.assertEqual(body["error"]["code"], "api.content.video.unavailable")
+        self.assertEqual(body["error"]["detail"], "no such endpoint")
+
+    def test_unknown_post_route(self):
+        status, _, raw = self.call("POST", "/nope", {"url": URL})
+        self.assertEqual(status, 404)
+        self.assertEqual(json.loads(raw)["error"]["detail"], "no such endpoint")
+
+    def test_wrong_method_is_json_with_allow(self):
+        for method in ("PUT", "DELETE", "PATCH"):
+            status, headers, raw = self.call(method, "/")
+            self.assertEqual(status, 405, method)
+            self.assertIn("GET", headers.get("Allow", ""), method)
+            self.assertEqual(json.loads(raw)["error"]["code"], "api.request.method")
+
+    def test_oversized_body_is_413(self):
+        big = b'{"url":"https://example.com/' + b"x" * (17 * 1024) + b'"}'
+        request = urllib.request.Request(self.base + "/", data=big, method="POST")
+        request.add_header("Content-Type", "application/json")
+        request.add_header("Origin", "https://mdown.cc")
+        try:
+            urllib.request.urlopen(request, timeout=20)
+            self.fail("expected an error")
+        except urllib.error.HTTPError as error:
+            self.assertEqual(error.code, 413)
+            self.assertEqual(json.loads(error.read())["error"]["code"],
+                             "api.request.too_large")
+
+    def test_internal_errors_do_not_leak_their_detail(self):
+        from mdown_api.errors import ApiError
+        error = ApiError.internal("/tmp/mdown/tunnel/abc123 died")
+        self.assertEqual(error.status, 500)
+        self.assertNotIn("abc123", json.dumps(error.payload()))
+        self.assertIn("abc123", error.detail)
 
     # -- cors --------------------------------------------------------------
     def test_preflight_allowed_origin(self):

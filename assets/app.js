@@ -618,10 +618,8 @@
 
     if (!text.trim()) {
       if (urls.length > 1) dom.hint.textContent = urls.length + " links";
-      if (dom.composerNote) dom.composerNote.hidden = false;
       return;
     }
-    if (dom.composerNote) dom.composerNote.hidden = true;
     if (!urls.length) {
       dom.hint.textContent = "not a link";
       dom.hint.dataset.tone = "err";

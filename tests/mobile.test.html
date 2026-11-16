@@ -116,6 +116,7 @@ async function main() {
       small.length ? small.map((f) => f.id + "=" + f.size + "px").join(", ") : "ok");
 
     // one control: paste turns into download where it already sits
+    const composerTopBefore = Math.round(doc.querySelector(".composer").getBoundingClientRect().top);
     const mobField = doc.querySelector("#url-input");
     const setMob = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, "value").set;
     setMob.call(mobField, "https://youtu.be/armedcheck");
@@ -132,6 +133,16 @@ async function main() {
     record(device.name + ": and it sits above the fold",
       ctaRect.bottom <= device.h + 1,
       "bottom=" + Math.round(ctaRect.bottom) + " of " + device.h);
+
+    /* pasting a link is the moment the page used to lift: the hint collapsed
+       and everything under the field moved up. It stays put now. */
+    const composerTopAfter = Math.round(doc.querySelector(".composer").getBoundingClientRect().top);
+    record(device.name + ": a link does not move the field",
+      Math.abs(composerTopAfter - composerTopBefore) <= 1,
+      composerTopBefore + " -> " + composerTopAfter);
+    record(device.name + ": the hint keeps its place",
+      !doc.querySelector("#composer-note").hidden,
+      "hidden=" + doc.querySelector("#composer-note").hidden);
     setMob.call(mobField, "");
     mobField.dispatchEvent(new win.Event("input", { bubbles: true }));
     await sleep(200);
