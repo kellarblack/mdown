@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>queue test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 390px; height: 844px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The downloads panel has one job beyond listing: getting rid of things. With
+  saving set to ask, a finished file sits in "ready" until it is saved — and a
+  "clear finished" that ignored "ready" could not clear anything at all.
+
+    python3 tests/mock-api.py 4320 --uptime-on &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/queue.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320", savingMethod: "ask" }));
+  frame.src = "../index.html?q=" + Date.now();
+
+  const booted = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
+  record("the app boots", booted);
+  if (!booted) { window.__results = { total: results.length, failures, results }; return; }
+
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  const $ = (sel) => doc.querySelector(sel);
+  await sleep(800);
+
+  const submit = (url) => {
+    const field = $("#url-input");
+    const set = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, "value").set;
+    set.call(field, url);
+    field.dispatchEvent(new win.Event("input", { bubbles: true }));
+    $("#fetch-form").dispatchEvent(new win.Event("submit", { bubbles: true, cancelable: true }));
+  };
+
+  // one finished file, one refused link
+  submit("https://youtube.com/watch?v=demo");
+  submit("https://youtube.com/watch?v=error");
+  const arrived = await waitFor(() => doc.querySelectorAll(".qitem").length >= 2, 15000);
+  record("two links land in the queue", arrived, doc.querySelectorAll(".qitem").length + " rows");
+
+  const ready = await waitFor(() =>
+    [...doc.querySelectorAll(".qitem")].some((el) => el.dataset.status === "ready"), 12000);
+  record("a finished file waits in ready", ready,
+    [...doc.querySelectorAll(".qitem")].map((el) => el.dataset.status).join(","));
+
+  // the panel is reachable from the phone bar
+  $("#mbar-queue").click();
+  await sleep(400);
+  const panel = $("#queue-panel");
+  record("the bar opens the downloads panel", panel && !panel.hidden);
+
+  const clear = $("#clear-finished");
+  record("clear finished is offered while something is finished", !!clear && !clear.hidden,
+    clear ? "hidden=" + clear.hidden : "missing");
+
+  const box = clear ? clear.getBoundingClientRect() : null;
+  record("and it is on screen, not pushed out of the panel",
+    !!box && box.left >= -1 && box.right <= win.innerWidth + 1 && box.top >= 0 && box.bottom <= win.innerHeight + 1,
+    box ? Math.round(box.left) + ".." + Math.round(box.right) + " of " + win.innerWidth : "missing");
+
+  clear.click();
+  await sleep(500);
+  record("pressing it clears every finished row", doc.querySelectorAll(".qitem").length === 0,
+    doc.querySelectorAll(".qitem").length + " rows left");
+  record("and the panel says so", !$("#empty-state").hidden);
+
+  const badge = $("#queue-badge");
+  record("the badge goes with them", !badge || badge.hidden, badge ? "hidden=" + badge.hidden : "none");
+
+  // nothing left to clear, so the control goes away rather than doing nothing
+  record("clear finished hides once there is nothing to clear", $("#clear-finished").hidden);
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

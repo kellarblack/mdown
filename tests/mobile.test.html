@@ -123,8 +123,10 @@ async function main() {
     await sleep(320);
     const cta = doc.querySelector("#paste-btn");
     const ctaRect = cta.getBoundingClientRect();
+    /* on the narrowest phones the control drops its word and keeps its glyph,
+       so 44px is the size that matters, not 100 */
     record(device.name + ": the download control is a real thumb target",
-      cta.dataset.state === "get" && ctaRect.height >= 40 && ctaRect.width >= 100,
+      cta.dataset.state === "get" && ctaRect.height >= 40 && ctaRect.width >= 44,
       cta.dataset.state + " " + Math.round(ctaRect.width) + "x" + Math.round(ctaRect.height));
 
     record(device.name + ": and it sits above the fold",
@@ -350,26 +352,24 @@ async function main() {
     const items = [...bar.querySelectorAll(".mbar-item")];
     record("the phone bar holds four items", items.length === 4, items.length + " items");
 
-    const target = items[2];   /* settings: the donate item is a page link now */
-    const rect = target.getBoundingClientRect();
-    const start = items[0].getBoundingClientRect();
-    const y = Math.round(rect.top + rect.height / 2);
-    const fire = (type, x) => bar.dispatchEvent(new win.PointerEvent(type, {
-      bubbles: true, clientX: x, clientY: y, pointerType: "touch", isPrimary: true
-    }));
-    fire("pointerdown", start.left + 20);
-    for (let x = start.left + 20; x < rect.left + rect.width / 2; x += 22) {
-      fire("pointermove", x);
-      await sleep(8);
-    }
-    const near = bar.querySelector(".mbar-item.is-near");
-    record("sliding across the bar marks the item under the finger", !!near,
-      near ? near.textContent.trim() : "none");
-    fire("pointerup", rect.left + rect.width / 2);
-    await sleep(420);
+    const widths = items.map((el) => Math.round(el.getBoundingClientRect().width));
+    record("the items share the bar evenly",
+      Math.max(...widths) - Math.min(...widths) <= 2, widths.join(", "));
+
+    const heights = items.map((el) => Math.round(el.getBoundingClientRect().height));
+    record("and each one is a thumb target", Math.min(...heights) >= 44, heights.join(", "));
+
+    /* no lens, no drag: a tap is the whole interaction, and nothing follows a
+       finger across the bar */
+    record("the bar has nothing that follows a finger",
+      !doc.querySelector("#mbar-lens") && !doc.querySelector(".mbar-lens"),
+      doc.querySelector(".mbar-lens") ? "lens still there" : "clean");
+
+    items[2].click();   /* settings: the donate item is a page link now */
+    await sleep(320);
     const sheet = doc.querySelector("#settings");
-    record("and releasing there opens that item", !!sheet && !sheet.hidden,
-      sheet ? "hidden=" + sheet.hidden : "(no sheet)");
+    record("and tapping an item opens it", !!sheet && !sheet.hidden,
+      sheet ? "hidden=" + sheet.hidden : "no sheet");
   }
 
   window.__results = { total: results.length, failures, results };

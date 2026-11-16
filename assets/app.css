@@ -303,7 +303,9 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 
 /* ---------- layout ---------- */
 .wrap {
-  position: relative; z-index: 1;
+  /* above the footer (both were 1): the queue panel lives in here, and 1-vs-1
+     let the footer's pills paint over an open panel */
+  position: relative; z-index: 2;
   width: 100%; max-width: 900px;
   margin: 0 auto; padding: clamp(24px, 4.5vw, 44px) clamp(16px, 4vw, 26px) 40px;
 }
@@ -1388,22 +1390,26 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
   .icon-btn { width: 44px; height: 44px; }
   .q-actions .icon-btn, .rq-actions .icon-btn { width: 40px; height: 40px; }
   .mode { height: 40px; flex: 1 1 0; justify-content: center; }
-  .modes { flex: 1 1 100%; }
-  /* stack the foot: modes, then format + tune, then the hint, then a full-width
-     fetch. On a phone the primary action should never share a line. */
-  .composer-foot { flex-direction: column; align-items: stretch; gap: 8px; }
-  .mode-group, .modes { width: 100%; }
-  .composer-cta { width: 100%; flex-wrap: wrap; row-gap: 8px; justify-content: flex-end; }
-  .composer-cta .format-note { margin-right: auto; }
-  .composer-cta .hint { order: 4; width: 100%; max-width: none; text-align: left; font-size: 0.72rem; }
+  /* one row: the three modes fill it, the format switch ends it. Anything the
+     composer has to say wraps underneath, full width. */
+  .composer-foot { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .mode-group { flex: 1 1 auto; min-width: 0; }
+  .mode-group, .modes { width: auto; }
+  .modes { flex: 1 1 auto; }
+  .composer-cta { display: contents; }
+  .composer-cta .format-note { display: none; }
+  .composer-cta .hint {
+    order: 9; flex-basis: 100%; width: 100%;
+    max-width: none; text-align: left; font-size: 0.72rem;
+  }
 
   /* the one action, sized for a thumb: sitting at the field's right edge while
      it is still "paste", then full width the moment it becomes the action */
   /* the field owns its line, and the control sits at the right end of the row
      under it — never floating in the middle of a wide empty box */
-  .composer-main { row-gap: 7px; }
-  #url-input { flex: 1 1 100%; }
-  .composer-tools { margin-left: auto; }
+  .composer-main { flex-wrap: nowrap; column-gap: 8px; }
+  #url-input { flex: 1 1 auto; min-width: 0; }
+  .composer-tools { margin-left: auto; flex: none; }
   /* one width for both jobs: the control must not resize under the thumb that
      is already on it */
   #paste-btn { width: 118px; height: 44px; }
@@ -2786,59 +2792,29 @@ a.addr-value:hover { color: var(--text); }
 /* one thumb-reachable row for the four things a phone actually needs */
 .mobile-bar { display: none; }
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
-  /* flex, not five columns: the bar has four items and a fixed five-column
-     grid left a dead slot at the end */
+  /* A plain bar: four equal places to go, no lens, no drag, no lift. Every
+     pixel here has to hold on hardware nobody in this repo owns, so there is
+     nothing to land a hair off. */
   .mobile-bar {
-    display: flex; isolation: isolate;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
-    background: color-mix(in srgb, var(--bg) 78%, transparent);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    backdrop-filter: blur(20px) saturate(180%);
+    background: var(--bg);
     border-top: 1px solid var(--stroke);
-    padding: 5px max(6px, env(safe-area-inset-right, 0px))
+    padding: 5px max(8px, env(safe-area-inset-right, 0px))
              calc(5px + env(safe-area-inset-bottom, 0px))
-             max(6px, env(safe-area-inset-left, 0px));
-    touch-action: pan-y;
-    user-select: none; -webkit-user-select: none;
+             max(8px, env(safe-area-inset-left, 0px));
   }
-  /* the soft pill that follows your thumb across the bar */
-  .mbar-lens {
-    position: absolute; z-index: 0;
-    left: 0; top: var(--y, 4px);
-    width: var(--w, 0px); height: var(--h, 44px);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--text) 9%, transparent);
-    border: 1px solid var(--stroke-2);
-    opacity: 0; transform: translateX(var(--tx, 0px)) scale(0.94);
-    /* transform only: a drag must not relayout the bar on every frame */
-    transition: transform 190ms var(--ease), opacity 140ms ease-out;
-    pointer-events: none;
-  }
-  .mbar-lens.is-on { opacity: 1; transform: translateX(var(--tx, 0px)) scale(1); }
   .mbar-item {
-    position: relative; z-index: 1;
-    flex: 1 1 0; min-width: 0;
-    display: grid; justify-items: center; gap: 3px;
-    padding: 6px 0 5px; border-radius: 8px;
-    color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
-    transition: color 140ms, background 120ms;
+    display: grid; justify-items: center; align-content: center; gap: 4px;
+    min-height: 48px; padding: 4px 0; border-radius: 9px;
+    color: var(--text-3);
+    font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.02em;
+    transition: color 120ms, background 120ms;
   }
-  .mbar-item svg {
-    width: 19px; height: 19px;
-    transition: transform 200ms var(--ease);
-    transform-origin: 50% 60%;
-  }
-  /* under the thumb the glyph grows, not the box: the pill and the item have to
-     stay the same size or one peeks out from under the other */
-  .mbar-item.is-near { color: var(--text); }
-  .mbar-item.is-near svg { transform: translateY(-1px) scale(1.16); color: var(--text); }
-  .mbar-item svg { width: 19px; height: 19px; }
-  .mbar-item:hover, .mbar-item:active { color: var(--text-2); background: var(--surface); }
-  .mbar-item#mbar-donate {
-    color: var(--text-2); background: var(--surface);
-    box-shadow: inset 0 0 0 1px var(--stroke);
-  }
-  .mbar-item#mbar-donate svg { color: var(--text); }
+  .mbar-item svg { width: 20px; height: 20px; }
+  /* two states only: under your finger, and open */
+  .mbar-item:active { background: var(--surface-2); color: var(--text); }
+  .mbar-item[aria-expanded="true"] { color: var(--text); }
   .mbar-item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   /* the bar replaces the two actions it duplicates */
   .topbar-actions #queue-toggle, .topbar-actions #open-settings { display: none; }
@@ -3081,12 +3057,6 @@ a.addr-value:hover { color: var(--text); }
   .recent-line { gap: 0 2px; }
 }
 
-/* ---------- the phone bar, its lift, and everything that sits on it ------
-   Safari floats a toolbar over the bottom of the page. The bar keeps its
-   background at bottom: 0 and moves its contents up by --mbar-lift, and every
-   thing that stacks above it reads the same number. */
-:root { --mbar-lift: 0px; }
-
 /* a phone on its side has ~330px of height: the hero is the first thing that
    has to go, and the column stops centring so the control lands above the bar
    rather than under it */
@@ -3101,31 +3071,15 @@ a.addr-value:hover { color: var(--text); }
 }
 
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
-  .mobile-bar {
-    padding-bottom: calc(5px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px));
-  }
-  body { padding-bottom: calc(66px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px)); }
-  .mini-dock, .dock-panel { bottom: calc(70px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px)); }
-  .toasts { bottom: calc(76px + var(--mbar-lift) + env(safe-area-inset-bottom, 0px)); }
-  .footer { padding-bottom: calc(96px + var(--mbar-lift) + env(safe-area-inset-bottom)); }
-}
-
-/* standalone has no Safari toolbar to clear */
-@supports (-webkit-touch-callout: none) {
-  @media (max-width: 720px), (hover: none) and (max-height: 520px) and (hover: none) and (display-mode: browser) {
-    :root { --mbar-lift: 46px; }
-  }
+  /* the bar is 58px tall; anything floating above it clears that and the
+     home-indicator inset */
+  body { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+  .mini-dock, .dock-panel { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  .toasts { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .footer { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 }
 
 /* the lens: transform only, and its own variables so it stops reading --h */
-.mbar-lens {
-  left: 0; top: 0;
-  width: var(--lens-w, 0px); height: var(--lens-h, 44px);
-  transform: translate3d(var(--lens-x, 0px), var(--lens-y, 4px), 0) scale(0.94);
-  transition: transform 150ms var(--ease), opacity 120ms ease-out;
-  will-change: transform;
-}
-.mbar-lens.is-on { transform: translate3d(var(--lens-x, 0px), var(--lens-y, 4px), 0) scale(1); }
 
 /* ---------- light theme: elevation and readable greys ---------------------
    On white, a 1px hairline tops out around 1.5:1, and --shadow-2 was a 50px
@@ -3187,23 +3141,9 @@ a.addr-value:hover { color: var(--text); }
 
 /* the phone bar: 78% white plus saturate(180%) turned into pastel sludge */
 [data-theme="light"] .mobile-bar {
-  background: rgba(255, 255, 255, 0.93);
-  -webkit-backdrop-filter: blur(16px) saturate(115%);
-  backdrop-filter: blur(16px) saturate(115%);
+  background: #fff;
   border-top-color: rgba(0, 0, 0, 0.14);
-  box-shadow: 0 -10px 30px -22px rgba(12, 12, 16, 0.40);
 }
-[data-theme="light"] .mbar-lens {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.16);
-  box-shadow: 0 1px 2px rgba(12, 12, 16, 0.06);
-}
-[data-theme="light"] .mbar-item#mbar-donate {
-  background: rgba(0, 0, 0, 0.045);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
-}
-[data-theme="light"] .mbar-item.is-near { color: var(--text); }
-
 [data-theme="light"] .coin-icon {
   border-color: rgba(0, 0, 0, 0.16);
   background: rgba(0, 0, 0, 0.035);
@@ -3296,3 +3236,11 @@ a.addr-value:hover { color: var(--text); }
 .sources-foot { margin: 18px auto 0; max-width: 62ch; text-align: center; color: var(--text-3); font-size: 0.78rem; line-height: 1.6; }
 
 [data-theme="light"] .source-row { background: #fff; }
+
+/* The narrowest phones give the link field its room back by dropping the word
+   from the paste control. It is the same button, the same width in both states,
+   and the label is still what a screen reader says. */
+@media (max-width: 380px) {
+  #paste-btn { width: 48px; padding: 0; }
+  #paste-btn .pb-label { display: none; }
+}

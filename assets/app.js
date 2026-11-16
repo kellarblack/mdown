@@ -1510,7 +1510,10 @@
     dom.queueCount.textContent = String(count);
     dom.queueCount.hidden = count === 0;
     dom.emptyState.hidden = count > 0;
-    dom.clearFinished.hidden = !queue.some((i) => ["done", "error", "cancelled"].includes(i.status));
+    /* "ready" is finished too: with saving set to ask, a completed file waits on
+       the row until you save it, and a bar that cannot clear it is a bar that
+       cannot clear anything */
+    dom.clearFinished.hidden = !queue.some((i) => FINISHED_STATUS.includes(i.status));
 
     const live = queue.find((i) => ["downloading", "working", "queued"].includes(i.status));
     const ready = queue.find((i) => i.status === "ready");
@@ -1563,12 +1566,14 @@
     updateQueueMeta();
   }
 
+  const FINISHED_STATUS = ["done", "error", "cancelled", "ready"];
+
   function clearFinished() {
-    queue.filter((q) => ["done", "error", "cancelled"].includes(q.status)).forEach((item) => {
+    queue.filter((q) => FINISHED_STATUS.includes(q.status)).forEach((item) => {
       if (item.blobUrl) URL.revokeObjectURL(item.blobUrl);
       if (item.node) item.node.remove();
     });
-    queue = queue.filter((q) => !["done", "error", "cancelled"].includes(q.status));
+    queue = queue.filter((q) => !FINISHED_STATUS.includes(q.status));
     updateQueueMeta();
   }
 
@@ -4177,108 +4182,6 @@
     });
   }
 
-  /* the phone bar answers a slide, not only a tap: drag across it and the item
-     under your thumb grows, release and that item opens */
-  function bindMobileBar() {
-    const bar = document.querySelector(".mobile-bar");
-    const lens = document.getElementById("mbar-lens");
-    if (!bar || !lens) return;
-    const items = Array.from(bar.querySelectorAll(".mbar-item"));
-
-    let active = null;
-    let dragging = false;
-    let moved = false;
-    let startX = 0;
-    let startY = 0;
-    let pointerId = null;
-    let rects = [];
-    let rectsAt = 0;
-    let swallow = 0;
-    let raf = 0;
-
-    const measure = () => {
-      rects = items.map((node) => node.getBoundingClientRect());
-      rectsAt = Date.now();
-    };
-    const itemAt = (x) => {
-      if (!rects.length || Date.now() - rectsAt > 1000) measure();
-      const index = rects.findIndex((rect) => x >= rect.left && x <= rect.right);
-      return index === -1 ? null : items[index];
-    };
-    const mark = (item) => {
-      if (item === active) return;
-      active = item;
-      items.forEach((node) => node.classList.toggle("is-near", node === item));
-      if (!item) { lens.classList.remove("is-on"); return; }
-      const barRect = bar.getBoundingClientRect();
-      const box = item.getBoundingClientRect();
-      /* the bar's padding box, not its border box: 1px of border was offsetting
-         the pill downwards */
-      const left = barRect.left + bar.clientLeft;
-      const top = barRect.top + bar.clientTop;
-      lens.style.setProperty("--lens-x", (box.left - left).toFixed(1) + "px");
-      lens.style.setProperty("--lens-y", (box.top - top).toFixed(1) + "px");
-      lens.style.setProperty("--lens-w", box.width.toFixed(1) + "px");
-      lens.style.setProperty("--lens-h", box.height.toFixed(1) + "px");
-      lens.classList.add("is-on");
-    };
-
-    bar.addEventListener("pointerdown", (event) => {
-      if (event.pointerType === "mouse" || !event.isPrimary) return;
-      dragging = true;
-      moved = false;
-      pointerId = event.pointerId;
-      startX = event.clientX;
-      startY = event.clientY;
-      measure();
-      try { bar.setPointerCapture(event.pointerId); } catch (e) {}
-      mark(itemAt(event.clientX));   /* a tap lights the bar too */
-    });
-
-    bar.addEventListener("pointermove", (event) => {
-      if (!dragging || event.pointerId !== pointerId) return;
-      const dx = event.clientX - startX;
-      const dy = event.clientY - startY;
-      /* 10px, and horizontal has to win: a scroll that starts on the bar is
-         not a drag */
-      if (!moved && (Math.abs(dx) < 10 || Math.abs(dx) <= Math.abs(dy))) return;
-      moved = true;
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        mark(itemAt(event.clientX));
-      });
-    });
-
-    const settle = (event) => {
-      if (!dragging || (event.pointerId != null && event.pointerId !== pointerId)) return;
-      dragging = false;
-      pointerId = null;
-      try { if (bar.hasPointerCapture(event.pointerId)) bar.releasePointerCapture(event.pointerId); } catch (e) {}
-      const end = itemAt(event.clientX);
-      if (!moved) {
-        setTimeout(() => mark(null), 110);
-        return;
-      }
-      mark(null);
-      if (!end) return;
-      /* exactly one synthesised click is swallowed below, so the item opens once */
-      swallow += 1;
-      setTimeout(() => { swallow = Math.max(0, swallow - 1); }, 700);
-      end.click();
-    };
-    bar.addEventListener("pointerup", settle);
-    bar.addEventListener("pointercancel", settle);
-
-    document.addEventListener("click", (event) => {
-      if (!event.isTrusted || !swallow) return;
-      if (!event.target.closest || !event.target.closest(".mobile-bar")) return;
-      swallow -= 1;
-      event.preventDefault();
-      event.stopPropagation();
-    }, true);
-  }
-
   function boot() {
     renderDonate();
     bindTip();
@@ -4289,7 +4192,6 @@
     } else {
       setTimeout(() => renderSources(), 1500);
     }
-    bindMobileBar();
     warmTools();
     applyTheme();
     reflectSettings();
