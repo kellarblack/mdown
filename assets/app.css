@@ -781,36 +781,36 @@ a.ghost-btn { text-decoration: none; }
 .footer a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .footer a:hover { color: var(--text-2); }
 .footer-meta {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center;
   gap: 0; margin: 0;
   font-family: var(--mono); font-size: 0.7rem; color: var(--text-3);
 }
-/* words, not pills: three boxes under a quiet page pulled the eye to the
-   least important thing on it */
+/* Four words, one rule: a dot between them and a line that grows under the one
+   you are pointing at. No boxes, no pills, no border — a footer should not be
+   the loudest row on the page. */
 .footer-meta a, .footer-meta .footer-link {
-  display: inline-flex; align-items: center;
-  min-height: 30px; padding: 0 9px; border-radius: 8px;
-  border: 0; background: none;
-  color: var(--text-2); font: inherit; cursor: pointer; text-decoration: none;
-  transition: color 120ms, background 120ms;
+  position: relative;
+  display: inline-block; padding: 7px 9px;
+  color: var(--text-2); font: inherit;
+  cursor: pointer; text-decoration: none;
+  transition: color 140ms ease-out;
 }
-/* no underline: a line that long under a four-word footer sits at a different
-   height in every browser. A tint says "pressable" without drawing anything. */
-.footer-meta a:hover, .footer-meta .footer-link:hover {
-  color: var(--text); background: var(--surface-2); text-decoration: none;
-}
-/* the separator is a glyph, not a gap */
 .footer-meta > * + *::before {
-  content: "·"; margin: 0 5px; color: var(--text-3); opacity: 0.55;
+  content: ""; position: absolute; left: -1px; top: 50%;
+  width: 2px; height: 2px; margin-top: -1px; border-radius: 50%;
+  background: currentColor; opacity: 0.4;
 }
-.footer-meta .footer-link:focus-visible, .footer-meta a:focus-visible {
+.footer-meta a::after, .footer-meta .footer-link::after {
+  content: ""; position: absolute; left: 9px; right: 9px; bottom: 3px; height: 1px;
+  background: currentColor; opacity: 0.9;
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform 180ms var(--ease);
+}
+.footer-meta a:hover, .footer-meta .footer-link:hover { color: var(--text); }
+.footer-meta a:hover::after, .footer-meta .footer-link:hover::after { transform: scaleX(1); }
+.footer-meta a:focus-visible, .footer-meta .footer-link:focus-visible {
   outline: 2px solid var(--ring); outline-offset: 2px;
 }
-.footer-meta #donate-wrap { display: contents; }
-.footer-meta #donate-wrap a { color: var(--text); border-color: var(--stroke-2); }
-.footer-meta #donate-wrap[hidden] { display: none; }
-.footer-meta a { color: var(--text-3); text-decoration: none; border-bottom: 1px solid transparent; }
-.footer-meta a:hover { color: var(--text-2); border-bottom-color: var(--stroke-2); }
 
 /* ---------- help ---------- */
 .help-lede { max-width: 60ch; color: var(--text-2); font-size: 0.86rem; line-height: 1.6; }
@@ -2062,8 +2062,8 @@ a.donate-value:hover { text-decoration: underline; }
   .donate-hint { display: none; }
   .donate-label { margin: 0; }
   /* donate already lives in the bar down here: the footer kept a second copy
-     two lines above it. The selector has to outrank .footer-meta #donate-wrap */
-  .footer-meta #donate-wrap { display: none; }
+     two lines above it */
+  .footer-meta #donate-link { display: none; }
 }
 
 /* ---------- terms page ---------- */
@@ -2595,8 +2595,21 @@ a.donate-value:hover { text-decoration: underline; }
   color: var(--text-2); font-size: 0.92rem; line-height: 1.62;
 }
 /* the drawing is a line, so it sits at the same weight as the text beside it */
-.donate-hero-art { color: var(--text-2); }
-.donate-hero-art svg { display: block; width: 100%; max-width: 232px; height: auto; }
+/* the illustration is type: a dollar sign, and the change it leaves. One mark,
+   not a drawing next to a symbol — the coins tuck under the glyph. */
+.donate-hero-art {
+  display: grid; justify-items: center;
+  color: var(--text-2);
+}
+.tip-glyph {
+  font-family: var(--mono); font-weight: 400;
+  font-size: clamp(4.2rem, 9vw, 6.2rem); line-height: 0.9;
+  letter-spacing: -0.05em; color: var(--text-2);
+}
+.tip-change {
+  display: block; width: min(126px, 100%); height: auto;
+  margin-top: -10px; opacity: 0.9;
+}
 /* this used to spin. rotating a clipped, dash-patterned SVG group re-rasterises
    the whole disc every frame, and on a throttled phone that cost a full second
    before the page could paint at all. static ring, same look. */
@@ -2812,7 +2825,7 @@ a.addr-value:hover { color: var(--text); }
 .share-chip:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* a phone is 390-430 wide: four buttons means ~88px each, so the label gets
    smaller rather than truncated ("thre…" is not a brand) */
-@media (max-width: 430px) {
+@media (max-width: 480px) {
   .share-chip { gap: 6px; padding: 0 6px; font-size: 0.64rem; }
   .share-icon, .share-icon svg { width: 16px; height: 16px; }
 }
@@ -2833,7 +2846,8 @@ a.addr-value:hover { color: var(--text); }
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .donate-page { padding-bottom: 40px; }
   .donate-hero { grid-template-columns: 1fr; gap: 10px; padding-bottom: 26px; }
-  .donate-hero-art { width: 104px; order: 1; margin: 14px 0 0; }
+  .donate-hero-art { width: auto; order: 1; margin: 16px 0 0; justify-items: start; }
+  .tip-glyph { font-size: 4.6rem; }
   .donate-headline { font-size: clamp(1.85rem, 8.6vw, 2.4rem); }
   .donate-sub { font-size: 0.86rem; }
   .donate-facts { grid-template-columns: 1fr; }
@@ -3293,8 +3307,6 @@ a.addr-value:hover { color: var(--text); }
 }
 [data-theme="light"] .donate-row { background: #fff; box-shadow: var(--shadow-1); }
 [data-theme="light"] .donate-card { background: #fff; border-color: rgba(0, 0, 0, 0.22); box-shadow: var(--shadow-1); }
-[data-theme="light"] .footer-meta a,
-[data-theme="light"] .footer-meta .footer-link { background: transparent; border-color: transparent; }
 [data-theme="light"] .share-chip,
 [data-theme="light"] .share-copy-btn,
 [data-theme="light"] .addr-copy { border-color: rgba(0, 0, 0, 0.16); }

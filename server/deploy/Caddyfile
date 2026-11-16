@@ -1,11 +1,28 @@
 # /etc/caddy/Caddyfile
 # TLS is issued and renewed automatically.
 
+{
+	# Bound how long a client may take to send its request and how long an
+	# idle keep-alive connection is held open, so nobody can pin a connection
+	# indefinitely. read_body is not a response timer: streaming a large file
+	# back to the client is unaffected, which is why no write timeout is set.
+	servers {
+		timeouts {
+			read_body 20s
+			idle 60s
+		}
+	}
+}
+
 api.mdown.cc {
 	# request bodies are tiny; downloads are responses
 	request_body {
 		max_size 64KB
 	}
+
+	# this host is HTTPS-only; tell browsers to stop trying plain HTTP.
+	# includeSubDomains is safe here: there are no other subdomains in use.
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
 	reverse_proxy 127.0.0.1:9000 {
 		# stream bytes as they are read from disk instead of buffering them
@@ -25,6 +42,18 @@ api.mdown.cc {
 			roll_size 20mb
 			roll_keep 5
 		}
-		format json
+		# The log is for diagnosing the service, not for profiling its users:
+		# drop every field that carries who the client was.
+		format filter {
+			wrap json
+			fields {
+				request>remote_ip delete
+				client_ip delete
+				request>headers>X-Forwarded-For delete
+				request>headers>Referer delete
+				request>headers>Cookie delete
+				request>headers>User-Agent delete
+			}
+		}
 	}
 }

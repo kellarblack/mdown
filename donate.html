@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=288">
+<link rel="stylesheet" href="assets/app.css?v=292">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -71,21 +71,17 @@
       <p class="donate-sub">no ads, no accounts, no tracking, and nothing planned that changes any of that. if it earned an evening, leave a tip. if it didn't, keep using it.</p>
     </div>
     <div class="donate-hero-art" aria-hidden="true">
-      <!-- One object, drawn once: a jar with a lid, three coins resting in it.
-           Proportions are the whole drawing — no trail, no shadow, no floating
-           coin, nothing decorative. The faint fills give it weight without a
-           gradient or a glow. -->
-      <svg viewBox="0 0 100 158" role="presentation" fill="none" stroke="currentColor"
+      <!-- a dollar sign and the change under it: money, said in type, not in a
+           drawing of a jar -->
+      <span class="tip-glyph">$</span>
+      <svg class="tip-change" viewBox="0 0 96 40" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="25" y="10" width="50" height="12.5" rx="6.25"/>
-        <path d="M31 22.5V32M69 22.5V32"/>
-        <path d="M21 32h58l-3.4 92.5A17.5 17.5 0 0 1 58.1 141H41.9a17.5 17.5 0 0 1-17.5-16.5z"
-              fill="currentColor" fill-opacity="0.035"/>
-        <path d="M21 32h58"/>
-        <!-- a stack, in perspective: three coins, each a little above the last -->
-        <ellipse cx="50" cy="123" rx="15" ry="4.4" fill="currentColor" fill-opacity="0.05"/>
-        <ellipse cx="50" cy="115" rx="15" ry="4.4" fill="currentColor" fill-opacity="0.05"/>
-        <ellipse cx="50" cy="107" rx="15" ry="4.4" fill="currentColor" fill-opacity="0.05"/>
+        <ellipse cx="34" cy="31" rx="15" ry="4.6" fill="currentColor" fill-opacity="0.05"/>
+        <ellipse cx="34" cy="23" rx="15" ry="4.6" fill="currentColor" fill-opacity="0.05"/>
+        <ellipse cx="34" cy="15" rx="15" ry="4.6" fill="currentColor" fill-opacity="0.05"/>
+        <circle cx="70" cy="24" r="8"/>
+        <circle cx="70" cy="24" r="3" opacity=".7"/>
+        <circle cx="82" cy="12" r="5.5"/>
       </svg>
     </div>
   </section>

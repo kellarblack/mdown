@@ -1,0 +1,258 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>footer test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 700px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The footer: four words, no boxes. terms / updates / source / donate, a dot
+  between them, a rule that grows under the one you point at — and on a phone
+  the donate word gets out of the way of the bar that already carries it.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/footer.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(120); }
+  return false;
+}
+
+const NAMES = [
+  "the footer holds four links: terms, updates, source, donate",
+  "every one of them points at a real local page or the repository",
+  "on a 390px frame donate is hidden and the other three are visible",
+  "on a 1280px frame all four are visible",
+  "nothing in the footer overflows horizontally at 320, 390 or 1280",
+  "the links are words, not pills: no background, no border, in both themes",
+  "the dot separators exist between the links",
+  "hovering a link is wired to a colour change",
+  "the animated underline sits at scaleX(0) at rest",
+  "the footer sits above the phone bar at 390",
+  "light theme does not paint a white background behind the footer links"
+];
+
+/* every rule in every stylesheet, flattened, so a rule's existence can be
+   asserted. A cross-origin sheet (there is none, but keep it honest) throws on
+   cssRules and is skipped rather than failing the suite. */
+function allRules(win) {
+  const out = [];
+  const walk = (list) => {
+    for (let i = 0; i < list.length; i++) {
+      const rule = list[i];
+      out.push(rule);
+      if (rule.cssRules) walk(rule.cssRules);
+    }
+  };
+  for (const sheet of [...win.document.styleSheets]) {
+    try { walk(sheet.cssRules); } catch (e) { /* cross-origin: not ours to read */ }
+  }
+  return out;
+}
+const selectorText = (rule) => (rule.selectorText || rule.cssText || "");
+
+async function main() {
+  const frame = document.getElementById("app");
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+  frame.src = "../index.html?footer=" + Date.now();
+
+  const booted = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
+  if (!booted) {
+    NAMES.forEach((n) => record(n, false, "the app never booted"));
+    window.__results = { total: results.length, failures, results };
+    return;
+  }
+  await sleep(350);
+
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  const footer = doc.querySelector(".footer");
+  const meta = doc.querySelector(".footer-meta");
+  const links = () => [...doc.querySelectorAll(".footer-meta a")];
+  const visible = (el) => {
+    const r = el.getBoundingClientRect();
+    return win.getComputedStyle(el).display !== "none" && r.width > 0 && r.height > 0;
+  };
+  const setWidth = async (w, h) => {
+    frame.style.width = w + "px";
+    frame.style.height = h + "px";
+    await sleep(400);
+  };
+  const scrollToBottom = async () => {
+    win.scrollTo(0, doc.documentElement.scrollHeight);
+    await sleep(250);
+  };
+
+  /* ---- 1. four words --------------------------------------------------- */
+  const words = links().map((a) => a.textContent.trim().toLowerCase());
+  record(NAMES[0],
+    !!footer && !!meta && words.length === 4 &&
+      ["terms", "updates", "source", "donate"].every((w) => words.indexOf(w) >= 0),
+    words.join(" · ") || "no footer links");
+
+  /* ---- 2. every word is a door ---------------------------------------- */
+  const hrefs = links().map((a) => a.getAttribute("href") || "");
+  const repo = hrefs.find((h) => /^https:\/\/github\.com\/kelllar\/mdown\/?$/.test(h));
+  const locals = hrefs.filter((h) => /\.html$/.test(h));
+  const pages = await Promise.all(
+    ["terms.html", "updates.html", "donate.html"].map((p) =>
+      fetch("../" + p, { cache: "no-store" }).then((r) => ({ page: p, ok: r.ok })).catch(() => ({ page: p, ok: false }))
+    )
+  );
+  const missing = pages.filter((p) => !p.ok).map((p) => p.page);
+  const wantLocal = ["terms.html", "updates.html", "donate.html"].every((p) => locals.indexOf(p) >= 0);
+  record(NAMES[1], !!repo && wantLocal && missing.length === 0 && locals.length === 3,
+    missing.length ? "missing: " + missing.join(", ") : hrefs.join(" ") || "no hrefs");
+
+  /* ---- 4. wide: all four ----------------------------------------------- */
+  await setWidth(1280, 800);
+  const wideShown = links().filter(visible).map((a) => a.textContent.trim());
+  record(NAMES[3], wideShown.length === 4, wideShown.join(",") || "none visible");
+
+  /* ---- 3. phone: donate steps out ------------------------------------- */
+  await setWidth(390, 780);
+  const phoneVisible = links().filter(visible).map((a) => a.textContent.trim());
+  const donateLink = doc.querySelector("#donate-link");
+  const donateShown = !!donateLink && visible(donateLink);
+  record(NAMES[2],
+    !donateShown && phoneVisible.length === 3 &&
+      ["terms", "updates", "source"].every((w) => phoneVisible.indexOf(w) >= 0),
+    "visible: " + (phoneVisible.join(",") || "none") + "; donate " + (donateShown ? "shown" : "hidden"));
+
+  /* ---- 5. never sideways ---------------------------------------------- */
+  const spills = [];
+  for (const w of [320, 390, 1280]) {
+    await setWidth(w, w === 1280 ? 800 : 720);
+    const limit = w + 1;
+    const foot = doc.querySelector(".footer");
+    const wide = [foot, ...foot.querySelectorAll("*")].filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && (r.right > limit || r.left < -1);
+    });
+    const own = foot.scrollWidth > foot.clientWidth + 1;
+    if (wide.length || own) {
+      spills.push(w + "px: " + (wide.map((el) => el.textContent.trim().slice(0, 18) || el.className).join(",") || "scrollWidth"));
+    }
+  }
+  record(NAMES[4], spills.length === 0, spills.join(" | ") || "clean at 320, 390, 1280");
+
+  /* ---- 6. words, not pills -------------------------------------------- */
+  const pills = [];
+  const borderSides = ["borderTopStyle", "borderRightStyle", "borderBottomStyle", "borderLeftStyle"];
+  for (const theme of ["dark", "light"]) {
+    doc.documentElement.setAttribute("data-theme", theme);
+    await sleep(120);
+    links().forEach((a) => {
+      const cs = win.getComputedStyle(a);
+      const word = a.textContent.trim();
+      if (cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent") {
+        pills.push(theme + "/" + word + " bg " + cs.backgroundColor);
+      }
+      borderSides.forEach((side) => {
+        const v = cs[side];
+        if (v !== "none" && v !== "0px") pills.push(theme + "/" + word + " " + side + " " + v);
+      });
+    });
+  }
+  doc.documentElement.setAttribute("data-theme", "dark");
+  await sleep(120);
+  record(NAMES[5], !!footer && links().length === 4 && pills.length === 0,
+    pills.slice(0, 3).join("; ") || "transparent, borderless");
+
+  /* ---- 7. the dots ---------------------------------------------------- */
+  const second = links()[1];
+  const dot = second ? win.getComputedStyle(second, "::before") : null;
+  const first = links()[0];
+  const noDot = first ? win.getComputedStyle(first, "::before") : null;
+  record(NAMES[6],
+    !!dot && dot.content !== "none" && dot.width !== "0px" &&
+      (!noDot || noDot.content === "none" || noDot.width === "0px"),
+    dot ? "content=" + dot.content + " w=" + dot.width : "no second link");
+
+  /* ---- 8. hover is wired ---------------------------------------------- */
+  const rules = allRules(win);
+  const hoverRules = rules.filter((r) => /\.footer-meta\s+a:hover/.test(selectorText(r)));
+  const underlineRules = rules.filter((r) => /\.footer-meta\s+a::after/.test(selectorText(r)));
+  record(NAMES[7], hoverRules.length > 0 &&
+      hoverRules.some((r) => /color/.test(r.style ? r.style.cssText : "")),
+    hoverRules.length + " rule(s): " + hoverRules.map((r) => selectorText(r)).join(" / ").slice(0, 80));
+
+  /* ---- 9. the underline waits at zero -------------------------------- */
+  const rest = links()[0] ? win.getComputedStyle(links()[0], "::after") : null;
+  let scaleX = null;
+  if (rest && rest.transform && rest.transform !== "none") {
+    const m = rest.transform.match(/matrix\(([-\d.]+)/);
+    if (m) scaleX = parseFloat(m[1]);
+  }
+  record(NAMES[8], underlineRules.length > 0 && scaleX === 0,
+    rest ? rest.transform + " (scaleX " + scaleX + ")" : "no ::after");
+
+  /* ---- 10. above the bar --------------------------------------------- */
+  await setWidth(390, 780);
+  await scrollToBottom();
+  const footRect = footer.getBoundingClientRect();
+  const bar = doc.querySelector(".mobile-bar");
+  const barRect = bar ? bar.getBoundingClientRect() : null;
+  record(NAMES[9],
+    !!bar && visible(bar) && footRect.bottom <= barRect.top + 1,
+    barRect ? "footer ends at " + Math.round(footRect.bottom) + ", bar starts at " + Math.round(barRect.top)
+      : "no phone bar");
+
+  /* ---- 11. light theme is not a white box ---------------------------- */
+  doc.documentElement.setAttribute("data-theme", "light");
+  await sleep(150);
+  const lightBgs = links().map((a) => win.getComputedStyle(a).backgroundColor);
+  const whiteRules = allRules(win).filter((r) => {
+    const sel = selectorText(r);
+    if (!/\[data-theme="light"\]/.test(sel) || !/\.footer-meta\s+(a|\.footer-link)\b/.test(sel)) return false;
+    const css = r.style ? r.style.cssText : "";
+    return /(?:^|[;\s])background(?:-color)?\s*:[^;]*(?:#fff\b|#ffffff\b|255,\s*255,\s*255|white\b)/i.test(css);
+  });
+  record(NAMES[10],
+    whiteRules.length === 0 &&
+      lightBgs.every((bg) => bg === "rgba(0, 0, 0, 0)" || bg === "transparent"),
+    whiteRules.length ? "rule: " + selectorText(whiteRules[0]).slice(0, 60)
+      : "computed " + (lightBgs[0] || "no links"));
+
+  window.__results = { total: results.length, failures, results };
+}
+main().catch((e) => {
+  const done = results.length;
+  NAMES.slice(done).forEach((n) => record(n, false, String(e)));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results)) }).catch(() => {});
+    } else if (Date.now() - started > 60000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

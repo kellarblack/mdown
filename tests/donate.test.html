@@ -50,14 +50,13 @@ async function main() {
 
   const doc = () => frame.contentDocument;
   const win = () => frame.contentWindow;
-  const ready = await waitFor(() => doc() && doc().querySelector("#donate-wrap") && win().md, 20000);
+  const ready = await waitFor(() => doc() && doc().querySelector("#donate-link") && win().md, 20000);
   record("app loads", ready);
   if (!ready) { window.__results = { total: results.length, failures, results }; return; }
 
-  const wrap = doc().querySelector("#donate-wrap");
   const link = doc().querySelector("#donate-link");
 
-  record("donations are on by default", wrap.hidden === false, "hidden=" + wrap.hidden);
+  record("donations are on by default", link.hidden === false, "hidden=" + link.hidden);
 
   // flip the config on, the way donate.js would
   win().MDOWN_DONATE = {
@@ -72,7 +71,7 @@ async function main() {
   win().md.refreshDonate();
   await sleep(120);
 
-  record("enabling it shows the footer link", wrap.hidden === false && !link.hidden, "hidden=" + wrap.hidden);
+  record("enabling it shows the footer link", link.hidden === false, "hidden=" + link.hidden);
 
   record("the footer donate button points at the full page",
     /donate\.html$/.test(link.getAttribute("href") || ""), link.getAttribute("href"));

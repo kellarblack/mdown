@@ -395,7 +395,6 @@
     openSources: $("#open-sources"),
     sourcesPanel: $("#sources-panel"),
     sourcesWrap: $("#sources-wrap"),
-    donateWrap: $("#donate-wrap"),
     setupOpenSettings: $("#setup-open-settings"),
     quickpick: $("#quickpick"),
     quickpickService: $("#quickpick-service"),
@@ -2778,10 +2777,8 @@
     if (settingsDonate) settingsDonate.hidden = !cfg;
     const tip = $("#open-donate-top");
     if (tip) tip.hidden = !cfg;
-    if (!dom.donateLink || !dom.donateWrap) return;
-    /* the wrapper carries the leading separator, so hide that rather than
-       leaving a dangling " · " when donations are off */
-    dom.donateWrap.hidden = !cfg;
+    if (!dom.donateLink) return;
+    dom.donateLink.hidden = !cfg;
     if (!cfg) return;
     /* the link may have been rendered before the config existed */
     dom.donateLink.removeAttribute("aria-disabled");
