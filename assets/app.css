@@ -2585,16 +2585,18 @@ a.donate-value:hover { text-decoration: underline; }
   letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-3);
 }
 .donate-headline {
-  margin: 0 0 14px;
-  font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 600;
-  line-height: 1.04; letter-spacing: -0.04em;
+  margin: 0 0 16px;
+  font-size: clamp(2.1rem, 5.4vw, 3.1rem); font-weight: 600;
+  line-height: 0.98; letter-spacing: -0.045em;
+  text-wrap: balance;
 }
 .donate-sub {
-  margin: 0; max-width: 46ch;
-  color: var(--text-2); font-size: 0.9rem; line-height: 1.65;
+  margin: 0; max-width: 44ch;
+  color: var(--text-2); font-size: 0.92rem; line-height: 1.62;
 }
-.donate-hero-art { color: var(--text-3); opacity: 0.9; }
-.donate-hero-art svg { display: block; width: 100%; max-width: 260px; height: auto; }
+/* the drawing is a line, so it sits at the same weight as the text beside it */
+.donate-hero-art { color: var(--text-2); }
+.donate-hero-art svg { display: block; width: 100%; max-width: 232px; height: auto; }
 /* this used to spin. rotating a clipped, dash-patterned SVG group re-rasterises
    the whole disc every frame, and on a throttled phone that cost a full second
    before the page could paint at all. static ring, same look. */
