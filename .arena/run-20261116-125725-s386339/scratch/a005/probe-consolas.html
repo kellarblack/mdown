@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../assets/app.css">
+<style>
+.hero-logo{display:flex;align-items:baseline;justify-content:center;gap:.18em;margin:0;font-family:Consolas,monospace;font-size:38.4px;line-height:1;white-space:nowrap}
+.hero-mark{display:block;flex:none;width:.76em;height:.76em;overflow:visible}
+.hero-mark svg{display:block;width:100%;height:100%;overflow:visible}
+.hero-word{font-weight:500;letter-spacing:-0.012em}
+.hero-word-dot{color:var(--accent);margin:0 -0.25em 0 -0.14em}
+.hero-word-sub{color:var(--text-2)}
+</style></head><body>
+<h1 class="hero-logo"><span class="hero-mark"><svg viewBox="3 2 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg></span><span class="hero-word">m<span>down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span><span id="probe" style="display:inline-block;width:0;height:0"></span></span></h1>
+<pre id="out"></pre>
+<script>
+const fs = 38.4;
+const m = document.querySelector(".hero-mark").getBoundingClientRect();
+const p = document.getElementById("probe").getBoundingClientRect();
+const w = document.querySelector(".hero-word").getBoundingClientRect();
+const h1 = document.querySelector(".hero-logo").getBoundingClientRect();
+const svg = parseFloat(getComputedStyle(document.querySelector(".hero-mark")).width);
+document.getElementById("out").textContent = JSON.stringify({
+  markBoxEm: +(m.height/fs).toFixed(4),
+  markPx: +m.height.toFixed(2),
+  strokePx: +(2/18*m.height).toFixed(2),
+  strokeEm: +(2/18*m.height/fs).toFixed(4),
+  textStemEm: 0.0875,
+  strokeVsStem: +((2/18*m.height/fs)/0.0875).toFixed(2),
+  markBottomMinusBaseline: +(m.bottom - p.top).toFixed(2),
+  markTopMinusCapLine: +(m.top - (p.top - 0.7266*fs)).toFixed(2),
+  travelPx: +(2.4/18*m.height).toFixed(2),
+  travelEm: +(2.4/18*m.height/fs).toFixed(4),
+  wordFallPx: +(0.1*fs).toFixed(2),
+  h1Height: +h1.height.toFixed(2),
+  lockupWidth: +(m.width + 0.18*fs + w.width).toFixed(1),
+  dotLeftGapEm: +(((0.2788) - 0.14 - 0.012)).toFixed(3),
+  dotRightGapEm: +(((0.3354) - 0.25 - 0.012)).toFixed(3)
+}, null, 1);
+</script></body></html>

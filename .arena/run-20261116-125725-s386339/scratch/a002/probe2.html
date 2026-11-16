@@ -1,0 +1,20 @@
+<!doctype html><body><pre id=o>pending</pre>
+<iframe id=f src="http://127.0.0.1:4399/index.html" width=320 height=780></iframe>
+<script>
+const f=document.getElementById('f');
+f.onload=()=>{
+ const d=f.contentDocument, W=f.contentWindow;
+ const w=d.querySelector('.hero-word'), m=d.querySelector('.hero-mark'), hl=d.querySelector('.hero-logo');
+ const cs=W.getComputedStyle(w), mr=m.getBoundingClientRect(), wr=w.getBoundingClientRect(), hr=hl.getBoundingClientRect();
+ const mark=m.querySelector('svg').getBoundingClientRect();
+ document.getElementById('o').textContent=JSON.stringify({
+  wordColor:cs.color, heroColor:W.getComputedStyle(hl).color, markColor:W.getComputedStyle(m).color,
+  fontSize:cs.fontSize, letterSpacing:cs.letterSpacing,
+  markBox:[+mr.width.toFixed(2),+mr.height.toFixed(2)],
+  svgBox:[+mark.width.toFixed(2),+mark.height.toFixed(2)],
+  wordW:+wr.width.toFixed(2), hint:+hr.height.toFixed(2),
+  lockupW:+(wr.right-mr.left).toFixed(2),
+  overflow:[d.documentElement.scrollWidth,d.documentElement.clientWidth]
+ },null,1);
+};
+</script></body>

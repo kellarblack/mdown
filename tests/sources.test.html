@@ -95,7 +95,30 @@ async function main() {
     "panel top " + Math.round(panelRect.top) + " vs button bottom " + Math.round(buttonRect.bottom));
 
 
-  record("there is no filter to maintain", !doc.querySelector("#sources-search"), "no search field");
+  /* the list is 33 names: it has to narrow while you type */
+  const search = doc.querySelector("#sources-search");
+  record("there is a field to narrow the list", !!search);
+  if (search) {
+    const setter = Object.getOwnPropertyDescriptor(win.HTMLInputElement.prototype, "value").set;
+    setter.call(search, "tube");
+    search.dispatchEvent(new win.Event("input", { bubbles: true }));
+    await sleep(120);
+    const visible = [...doc.querySelectorAll("#sources-panel .source-chip")].filter((c) => !c.hidden);
+    record("typing narrows it to the matches",
+      visible.length > 0 && visible.length < 6 &&
+        visible.every((c) => /tube/.test(c.textContent.toLowerCase())),
+      visible.map((c) => c.textContent.trim()).join(","));
+    setter.call(search, "zzzz");
+    search.dispatchEvent(new win.Event("input", { bubbles: true }));
+    await sleep(120);
+    record("and it says so when nothing matches", !doc.querySelector("#sources-empty").hidden);
+    setter.call(search, "");
+    search.dispatchEvent(new win.Event("input", { bubbles: true }));
+    await sleep(120);
+    record("clearing brings the whole list back",
+      [...doc.querySelectorAll("#sources-panel .source-chip")].every((c) => !c.hidden) &&
+        doc.querySelector("#sources-empty").hidden);
+  }
 
   // each chip is a door to the site it names
   const links = rows().filter((r) => r.tagName === "A" && r.getAttribute("href"));

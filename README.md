@@ -1,6 +1,6 @@
 # mdown
 
-**Donations are off by default.** Fill in `assets/donate.js` to show a tip jar.
+**Donations are on.** `assets/donate.js` ships `enabled: true` with a Stripe link; set it to `false` to close the jar.
 Crypto addresses only, or a tip page that is not in your name — the dialog never
 loads anything from a third party. `python3 tests/privacy_check.py` fails the
 build if the published site ever carries a name, an email or a tracker. The
@@ -41,7 +41,7 @@ python3 -m http.server 4331
 # open http://127.0.0.1:4331/index.html
 ```
 
-Then: **Settings → Connection → API address**, paste e.g. `https://cobalt.example.com`,
+Then: **Settings → server**, paste e.g. `https://cobalt.example.com`,
 press **Check**. A green pill in the header means the instance answered.
 
 Anything that can serve static files works (GitHub Pages, Caddy, nginx). There is nothing to
@@ -83,7 +83,7 @@ code is already there.
   bar reflects actual bytes from `Content-Length` / `Estimated-Content-Length`. Cancel any
   transfer mid-flight.
 - **Multiple links at once.** Paste a block of links (or several lines) and up to 10 are queued,
-  with 3 running concurrently.
+  with up to 3 running at once.
 - **Picker support.** Services that return several photos/videos open a selectable grid, plus
   the background audio option when the API offers it.
 - **Local-processing dialog.** If the instance returns separate streams (`merge`, `remux`,
@@ -102,7 +102,7 @@ code is already there.
   (`mp4 · 1080p`, `wav`, `mp3 · 128k`, `mp4 · muted`), and the sliders icon jumps straight to
   the matching format pane.
 - **Transfer telemetry.** Percentage, bytes of total, current speed and an ETA, not just a bar.
-- **Parallel downloads** you can tune (1–5) from Advanced.
+- **Parallel downloads** you can tune (1–5); the server runs 2 at a time and queues the rest.
 - **Drag and drop.** Drop links — or a `.txt` of links — anywhere on the page to queue them.
 - **Audio-first suggestions.** SoundCloud, Bandcamp, Mixcloud, Audiomack and hearthis.at links
   offer a one-click switch to audio mode instead of assuming video.
@@ -163,7 +163,7 @@ The **Advanced → Request preview** pane shows the exact JSON body for the curr
 - **Memory**: files are read into memory once, so very large files (multi-GB) can run out of
   memory. That failure is reported instead of silently failing.
 
-## Traffic: what 400+ people actually costs
+## Traffic: what it actually costs
 
 The site is static and the remux tool is client-side, so **the page itself scales for free** —
 no server executes anything for a visitor.
@@ -176,18 +176,18 @@ no server executes anything for a visitor.
 
 Pick the host accordingly:
 
-- **GitHub Pages — what mdown.cc uses.** Free, 100 GB/month soft limit, and it ignores
+- **GitHub Pages — what mdown.cc uses.** Free, with a soft bandwidth limit, and it ignores
   `_headers`, so cache policy comes from the query-versioned asset URLs.
-- **Cloudflare Pages — free, unlimited bandwidth, honours `_headers`.** The better host if you
+- **Cloudflare Pages — free tier with generous bandwidth, honours `_headers`.** The better host if you
   expect the engine to be fetched a lot; `_headers` is already written for it.
-- **Netlify — free, 100 GB/month, also honours `_headers`.**
+- **Netlify — free tier, also honours `_headers`.**
 
 `_headers` sets a one-year immutable cache on the engine there, so repeat visits cost nothing.
 The `.wasm` is ~31 MB, compressed automatically to roughly 10 MB.
 
 The real ceiling is the **API instance**, not this site. Every download is a stream through it.
-400 people doing one download each is fine for a well-provisioned instance; 400 people pulling
-3 at once is not. Limits that keep it alive: the client never runs more than 3 fetches per
+a few hundred downloads a day is fine for a well-provisioned instance; 400 people pulling
+3 at once is not. Limits that keep it alive: the client runs up to 5 fetches per
 visitor, the instance has its own rate limits, and the queue is per-tab. If you expect sustained
 traffic, put the API behind Cloudflare too and cap its rate limit deliberately.
 
@@ -230,7 +230,7 @@ open http://127.0.0.1:4331/tests/status.test.html  # 11 assertions (needs mock-a
 ```
 
 **Everything at once:** `./tests/run-all.sh` — backend plus every browser suite
-(102 backend + 378 browser). It starts the mock and a static server itself.
+(115 backend + 441 browser). It starts the mock and a static server itself.
 
 Backend alone: `cd server && python3 -m unittest discover -s tests`.
 
@@ -332,7 +332,7 @@ assets/app.js       API client, queue, settings, UI wiring
 DEPLOY.md           how to stand up the backend and publish the site
 server/             the download API (stdlib HTTP + yt-dlp + ffmpeg)
 server/deploy/      systemd unit, Caddyfile, install script
-server/tests/       97 unit + contract tests, no network needed
+server/tests/       115 unit + contract tests, no network needed
 tests/mock-api.py   mock cobalt API (stdlib only)
 tests/visual.html   screenshot harness
 tests/remux.test.html  90 assertions for the remux tool

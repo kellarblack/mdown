@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset=utf-8><style>
+html,body{margin:0;background:#15151a;font:10px monospace;color:#999}
+.f{display:inline-block;vertical-align:top;margin:6px}
+iframe{border:0;display:block;background:#0a0a0b}
+</style></head><body>
+<div class="f"><iframe id=a src="http://127.0.0.1:4399/index.html" width="720" height="620"></iframe></div>
+<script>
+document.getElementById('a').onload = () => {
+  const d = document.getElementById('a').contentDocument;
+  // freeze the first frame of the entrance
+  const st = d.createElement('style');
+  st.textContent = `.hero-logo, .hero-word, .hero-mark, .mark-arrow, .hero-word-down { animation-play-state: paused !important; animation-delay: -0.001s !important; }`;
+  d.head.appendChild(st);
+};
+</script></body></html>

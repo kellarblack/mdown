@@ -1,0 +1,59 @@
+.hero { width: 100%; }
+
+/* One line of type and one mark, built on the same two rules: the tray is the
+   text baseline, the arrow is the cap height. Every size below is em or cap, so
+   the whole lockup scales from the one font-size here — the mark can no longer
+   drift out of ratio with the word as the viewport changes. */
+.hero-logo {
+  display: flex; align-items: baseline; justify-content: center;
+  gap: .28em;
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  font-family: var(--mono);
+  font-size: clamp(1.75rem, 4.2vw, 2.4rem);
+  font-weight: 500; line-height: 1; letter-spacing: -.03em;
+  color: var(--text);
+}
+
+/* The mark is drawn on a 20-unit cap inside a 28-unit box: the spare 8 units at
+   the top are head-room, so the arrow has somewhere to fall from and the drop
+   never leaves the lockup or gets clipped. Box = 1.4 × cap; width = .72 × cap,
+   which is the ink width of one mono letter at this size. `cap` is the real cap
+   height of whichever mono the platform gives us; the em line above it is the
+   fallback and keeps the same ratios, so nothing shifts if `cap` is unsupported. */
+.hero-mark {
+  display: flex; flex: none;
+  height: 1.01em; height: 1.4cap;
+  width: .52em; width: .72cap;
+  color: var(--text);
+}
+.hero-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.hero-word { display: block; white-space: nowrap; }
+
+/* In mono the full stop sits in a .6em cell with its ink left of centre, so even
+   at .6em it renders as a hole: 0.23em of air on the n side and 0.29em on the c
+   side. Pulling .14em off each side lands it about one letter-space from both,
+   which is what lets it read as the full stop of the name and the one
+   full-strength mark in the tail. */
+.hero-word-dot { color: var(--accent); margin: 0 -.14em; }
+
+/* the domain: one step down in size, one step quieter in tone — and the name's
+   weight and tracking kept, so the suffix is the same wordmark set smaller
+   instead of a second treatment bolted on the end */
+.hero-word-sub { font-size: .8em; color: var(--text-2); }
+
+/* One gesture: the arrow drops into the tray and stops. Nothing else moves — no
+   fade on the name, no second beat, no overshoot — and the tray itself never
+   moves, so the line the lockup is built on holds for the whole 620ms. Four
+   units of the mark's own 20-unit cap is 5.6px at the desktop size and 4.1px on
+   a 320px phone: proportional by construction. */
+.hero-mark .mark-arrow { animation: arrow-drop 620ms var(--ease) both; }
+@keyframes arrow-drop {
+  from { transform: translate3d(0, -4px, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+/* nobody asked for motion: show the mark landed and be done */
+@media (prefers-reduced-motion: reduce) {
+  .hero-mark .mark-arrow { animation: none; }
+}

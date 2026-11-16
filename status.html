@@ -40,12 +40,11 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=273">
+<link rel="stylesheet" href="assets/app.css?v=285">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 
-</div>
 
 <header class="topbar">
   <a class="brand" href="./" aria-label="mdown home">
@@ -458,7 +457,7 @@
 
     if (result.error) {
       const ms = result.ms;
-      setState("down", "mdown is down lol", "The API never answered. Nothing on this page can fix that — the page is static, the server is the half that's sulking.");
+      setState("down", "mdown is not answering", "The API never answered. Nothing on this page can fix that — the API did not answer. the page is static; there is nothing here to fix it.");
       setRow("error", String(result.error && result.error.message ? result.error.message : result.error), "err");
       const dd = setRow("latency", ms + " ms", "warn");
       tween(dd, shownMs === null ? ms : shownMs, ms, (v) => Math.round(v) + " ms");

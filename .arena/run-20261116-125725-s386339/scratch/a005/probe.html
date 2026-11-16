@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../assets/app.css">
+<style>
+.hero-logo{display:flex;align-items:baseline;justify-content:center;gap:.18em;margin:0;font-family:var(--mono);font-size:38.4px;line-height:1;white-space:nowrap}
+.hero-mark{display:block;flex:none;width:.74em;height:.74em;overflow:visible}
+.hero-mark svg{display:block;width:100%;height:100%;overflow:visible}
+.hero-word{font-weight:500;letter-spacing:-0.012em}
+.hero-word-dot{color:var(--accent);margin:0 -0.25em 0 -0.14em}
+.hero-word-sub{color:var(--text-2)}
+</style></head><body>
+<h1 class="hero-logo"><span class="hero-mark"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 .75v8.3"/><path d="M3.4 6.9 7 10.5l3.6-3.6"/><path d="M.75 13.25h12.5"/></svg></span><span class="hero-word">m<span>down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span><span id="probe" style="display:inline-block;width:0;height:0;vertical-align:baseline"></span></span></h1>
+<pre id="out"></pre>
+<script>
+const mark=document.querySelector(".hero-mark").getBoundingClientRect();
+const probe=document.getElementById("probe").getBoundingClientRect();
+const word=document.querySelector(".hero-word").getBoundingClientRect();
+const h1=document.querySelector(".hero-logo").getBoundingClientRect();
+document.getElementById("out").textContent = JSON.stringify({
+  fontSize: getComputedStyle(document.querySelector(".hero-logo")).fontSize,
+  markBox: { top:+mark.top.toFixed(2), bottom:+mark.bottom.toFixed(2), h:+mark.height.toFixed(2) },
+  baselineY: +probe.top.toFixed(2),
+  wordBox: { top:+word.top.toFixed(2), bottom:+word.bottom.toFixed(2) },
+  h1Box: { top:+h1.top.toFixed(2), bottom:+h1.bottom.toFixed(2), h:+h1.height.toFixed(2) },
+  markBottomMinusBaseline: +(mark.bottom - probe.top).toFixed(2),
+  markTopMinusCapLine: +(mark.top - (probe.top - 0.7266*38.4)).toFixed(2),
+  markHeightEm: +(mark.height/38.4).toFixed(4)
+}, null, 1);
+</script></body></html>

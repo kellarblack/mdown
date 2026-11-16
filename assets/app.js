@@ -8,6 +8,10 @@
 (function () {
   "use strict";
 
+  /* A refresh should start at the top of the page. Browsers restore the old
+     scroll offset *after* layout, which reads as the composer jumping. */
+  try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) {}
+
   /* ----------------------------------------------------------
      constants
      ---------------------------------------------------------- */
@@ -952,8 +956,8 @@
       updateComposerState();
       if (IS_TOUCH) { try { dom.input.blur(); } catch (e) {} }
       renderQueue();
-      const firstQueued = queue.find((item) => item.status === "queued");
-      if (firstQueued && firstQueued.node) firstQueued.node.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      /* no scrollIntoView: on the main page that dragged the whole layout up
+         under the user. The queue panel has its own scroll. */
       pump();
     } finally {
       fresh.forEach((url) => pendingSubmits.delete(url));
@@ -2663,6 +2667,43 @@
     close.addEventListener("click", () => closeSources());
     head.appendChild(close);
     wrap.appendChild(head);
+
+    /* A list of 33 is something you scan, not something you read: type and it
+       narrows. Cobalt's picker does the same, and it is the difference between
+       a wall of names and a thing you use. */
+    const search = el("input", {
+      type: "search",
+      class: "sources-search",
+      id: "sources-search",
+      placeholder: "find a service",
+      autocomplete: "off",
+      spellcheck: "false",
+      "aria-label": "filter the list"
+    });
+    search.addEventListener("input", () => filterChips(search.value));
+    search.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && search.value) {
+        event.stopPropagation();
+        search.value = "";
+        filterChips("");
+      }
+    });
+    wrap.appendChild(search);
+    const empty = el("p", { class: "sources-empty", id: "sources-empty", hidden: true, text: "nothing here matches that" });
+    const countEl = head.querySelector(".sources-count");
+    const filterChips = (query) => {
+      const q = String(query || "").trim().toLowerCase();
+      let shownCount = 0;
+      row.querySelectorAll(".source-chip").forEach((chip) => {
+        const hit = !q || chip.textContent.toLowerCase().indexOf(q) >= 0;
+        chip.hidden = !hit;
+        if (hit) shownCount += 1;
+      });
+      empty.hidden = shownCount > 0;
+      if (countEl) {
+        countEl.textContent = q ? shownCount + " of " + all.length : all.length + " services";
+      }
+    };
     const row = el("div", { class: "source-chips" });
     shown.forEach(([id, note]) => {
       const home = SOURCE_HOME[id] || "";
@@ -2683,6 +2724,7 @@
       row.appendChild(chip);
     });
     wrap.appendChild(row);
+    wrap.appendChild(empty);
 
     /* the foot of the sheet: the thing you came here to do, then the full list,
        then the small print. It used to be note → gap → link, which read as a
@@ -3108,7 +3150,7 @@
         // size estimate and a thumbnail, everything else looks exactly as before
         probe: cobalt.probe === true,
         limits: cobalt.limits && typeof cobalt.limits === "object" ? cobalt.limits : null,
-        turnstileSiteKey: typeof cobalt.turnstileSitekey === "string" ? cobalt.turnstileSitekey : ""
+        turnstileSiteKey: typeof (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) === "string" ? (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) : ""
       };
       // keep the trigger and an open panel agreeing about the count
       if (sourcesOpen) renderSources();
@@ -3651,7 +3693,6 @@
       if (view !== "download") {
         if (dockOpen) setDock(false);
         location.hash = "";
-        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
       setDock(!dockOpen);
@@ -4078,7 +4119,7 @@
         // size estimate and a thumbnail, everything else looks exactly as before
         probe: cobalt.probe === true,
         limits: cobalt.limits && typeof cobalt.limits === "object" ? cobalt.limits : null,
-        turnstileSiteKey: typeof cobalt.turnstileSitekey === "string" ? cobalt.turnstileSitekey : ""
+        turnstileSiteKey: typeof (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) === "string" ? (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) : ""
       };
       // keep the trigger and an open panel agreeing about the count
       if (sourcesOpen) renderSources();
@@ -4304,6 +4345,10 @@
   }
 
   function boot() {
+    /* and the page arrives where it was painted: no scroll jump on reload */
+    try {
+      if (!location.hash && window.scrollY > 0) window.scrollTo(0, 0);
+    } catch (e) {}
     renderDonate();
     bindTip();
     /* build the sources list while the page is idle, so the first tap on a

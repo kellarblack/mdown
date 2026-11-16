@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>sizes</title>
+<style>
+:root { --bg:#0a0a0b; --text:#ededee; --text-2:#a1a1a6; --text-3:#8b8b93; --accent:#ededee;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); }
+.row { padding: 12px 20px; border-bottom:1px solid #17171a; }
+.lab { font: 9px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:#5a5a61; margin-bottom:10px; }
+.lock { display:flex; align-items:baseline; justify-content:center; gap:var(--g,.2em); margin:0;
+  font-family:var(--mono); font-size:38.4px; line-height:1; color:var(--text); white-space:nowrap; }
+.lock .m { flex:none; display:block; width:var(--s,.7em); height:var(--s,.7em); overflow:visible; }
+.lock .m svg { display:block; width:100%; height:100%; }
+.lock .w { font-weight:500; letter-spacing:-0.012em; }
+.lock .dot { color:var(--accent); margin:0 -0.2em; }
+.lock .sub { color:var(--text-2); }
+</style>
+</head>
+<body>
+<script>
+const inner = '<path d="M10 3.75v8.3"/><path d="M6.4 9.9 10 13.5 13.6 9.9"/><path d="M3.75 16.25h12.5"/>';
+const svg = `<svg viewBox="3 3 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const variants = [
+  [".70 / gap .20", ".70em", ".20em"],
+  [".74 / gap .20", ".74em", ".20em"],
+  [".78 / gap .20", ".78em", ".20em"],
+  [".74 / gap .16", ".74em", ".16em"],
+  [".74 / gap .24", ".74em", ".24em"],
+  [".80 / gap .18", ".80em", ".18em"],
+];
+document.write(variants.map(([lab, s, g]) => `
+  <div class="row"><div class="lab">mark ${lab}</div>
+  <h1 class="lock" style="--s:${s};--g:${g}"><span class="m">${svg}</span><span class="w"><span>m</span><span>down</span><span class="dot">.</span><span class="sub">cc</span></span></h1></div>`).join(""));
+</script>
+</body>
+</html>

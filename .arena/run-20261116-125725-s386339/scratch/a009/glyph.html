@@ -1,0 +1,16 @@
+<!DOCTYPE html><html data-theme="dark"><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/app.css"></head><body>
+<pre id="o"></pre><script>
+const cv = document.createElement('canvas').getContext('2d');
+const stack = 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+const out = [];
+for (const [size, weight] of [[38.4, 500], [38.4, 400], [28, 500]]) {
+  cv.font = `${weight} ${size}px ${stack}`;
+  const d = cv.measureText('d'), x = cv.measureText('x'), m = cv.measureText('m'), p = cv.measureText('.');
+  out.push(`${size}px/${weight}: asc(d)=${d.actualBoundingBoxAscent.toFixed(2)} (${(d.actualBoundingBoxAscent/size).toFixed(3)}em) ` +
+    `xh(x)=${x.actualBoundingBoxAscent.toFixed(2)} (${(x.actualBoundingBoxAscent/size).toFixed(3)}em) ` +
+    `stemM=${m.actualBoundingBoxLeft.toFixed(2)} adv=${m.width.toFixed(2)} (${(m.width/size).toFixed(3)}em) ` +
+    `dotW=${(p.actualBoundingBoxRight + p.actualBoundingBoxLeft).toFixed(2)} dotAsc=${p.actualBoundingBoxAscent.toFixed(2)}`);
+}
+document.getElementById('o').textContent = out.join('\n');
+</script></body></html>

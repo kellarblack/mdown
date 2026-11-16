@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>junction</title>
+<style>
+:root{--bg:#0a0a0b;--text:#ededee;--text-2:#a1a1a6;--text-3:#8b8b93;--accent:#ededee;
+ --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}
+.row{padding:10px 24px;border-bottom:1px solid #141417}
+.lab{font:9px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#5a5a61;margin-bottom:8px}
+.lock{display:flex;align-items:baseline;gap:.18em;margin:0;font-family:var(--mono);font-size:80px;line-height:1;white-space:nowrap}
+.m{flex:none;display:block;width:.74em;height:.74em;overflow:visible}
+.m svg{display:block;width:100%;height:100%}
+.w{font-weight:500;letter-spacing:-0.012em}
+.dot{color:var(--accent)}
+.sub{color:var(--text-2)}
+.j1 .dot{margin:0 -0.2em}
+.j2 .dot{margin:0 -0.24em 0 -0.14em}
+.j3 .dot{margin:0 -0.28em 0 -0.12em}
+.j4 .dot{margin:0 -0.24em 0 -0.2em}
+.j5 .dot{margin:0 -0.32em 0 -0.1em}
+.w400 .sub{font-weight:400}
+</style></head><body>
+<script>
+const inner='<path d="M7 .75v8.3"/><path d="M3.4 6.9 7 10.5l3.6-3.6"/><path d="M.75 13.25h12.5"/>';
+const svg=`<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const v=[["j1 dot -0.2 / -0.2 · cc 500","j1",""],["j2 dot -0.14 left / -0.24 right · cc 500","j2",""],
+["j3 dot -0.12 left / -0.28 right · cc 500","j3",""],["j4 dot -0.2 left / -0.24 right · cc 400","j4","w400"],
+["j5 dot -0.1 left / -0.32 right · cc 500","j5",""],["j2 · cc 400","j2","w400"]];
+document.write(v.map(([l,c,k])=>`<div class="row"><div class="lab">${l}</div>
+<h1 class="lock ${c} ${k}"><span class="m">${svg}</span><span class="w">m<span>down</span><span class="dot">.</span><span class="sub">cc</span></span></h1></div>`).join(""));
+</script></body></html>

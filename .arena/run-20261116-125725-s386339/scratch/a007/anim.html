@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" data-theme="dark"><meta charset="utf-8"><title>anim frames</title>
+<link rel="stylesheet" href="app.css">
+<style>
+ body{background:#0a0a0b;margin:0;padding:30px 26px;font-family:var(--mono)}
+ .lab{color:#8b8b93;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:16px 0 4px}
+ .hero-logo.jc{justify-content:flex-start;font-size:115.2px;margin:0}
+ .hero-logo.jc .hero-mark{outline:1px solid rgba(255,60,60,.5)}
+ .f0 .mark-arrow{animation-delay:-1ms;animation-play-state:paused}
+ .f1 .mark-arrow{animation-delay:-200ms;animation-play-state:paused}
+ .f2 .mark-arrow{animation-delay:-400ms;animation-play-state:paused}
+ .f3 .mark-arrow{animation-delay:-620ms;animation-play-state:paused}
+ .f4 .mark-arrow{animation:none}
+</style>
+<div class="lab">t = 0 (start) · red line = the mark's box</div>
+<div class="f0"><h1 class="hero-logo jc"><span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 14.4 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M7.2 8.6v16.6"/><path d="m2.2 20.2 5 5 5-5"/></g><path class="mark-tray" d="M0 28h14.4"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1></div>
+
+<div class="lab">t = 200ms</div>
+<div class="f1"><h1 class="hero-logo jc"><span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 14.4 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M7.2 8.6v16.6"/><path d="m2.2 20.2 5 5 5-5"/></g><path class="mark-tray" d="M0 28h14.4"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1></div>
+
+<div class="lab">t = 400ms</div>
+<div class="f2"><h1 class="hero-logo jc"><span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 14.4 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M7.2 8.6v16.6"/><path d="m2.2 20.2 5 5 5-5"/></g><path class="mark-tray" d="M0 28h14.4"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1></div>
+
+<div class="lab">t = 620ms (landed)</div>
+<div class="f3"><h1 class="hero-logo jc"><span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 14.4 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M7.2 8.6v16.6"/><path d="m2.2 20.2 5 5 5-5"/></g><path class="mark-tray" d="M0 28h14.4"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1></div>
+
+<div class="lab">reduced-motion path (animation: none)</div>
+<div class="f4"><h1 class="hero-logo jc"><span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 14.4 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M7.2 8.6v16.6"/><path d="m2.2 20.2 5 5 5-5"/></g><path class="mark-tray" d="M0 28h14.4"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1></div>

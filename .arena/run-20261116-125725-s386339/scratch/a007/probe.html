@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<body style="margin:0;background:#000;color:#fff;font:12px monospace">
+<pre id="o"></pre>
+<script>
+const l = document.querySelector('.hero-logo');
+setTimeout(() => {
+  document.getElementById('o').textContent = JSON.stringify({
+    innerWidth, innerHeight, dpr: devicePixelRatio,
+    cw: document.documentElement.clientWidth,
+    fs: l ? getComputedStyle(l).fontSize : null
+  });
+}, 100);
+</script>

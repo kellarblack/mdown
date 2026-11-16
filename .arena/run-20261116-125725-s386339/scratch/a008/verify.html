@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>verify</title>
+<style>
+  html, body { margin: 0; background: #16161a; }
+  #clip { overflow: hidden; }
+  iframe { border: 0; display: block; }
+</style>
+</head>
+<body>
+<div id="clip"><iframe id="f" src="/mdown/index.html"></iframe></div>
+<script>
+const P = new URLSearchParams(location.search);
+const W = +(P.get('w') || 1440);
+const THEME = P.get('theme') || 'dark';
+const CROP = P.get('crop') === '1';
+const TOP = +(P.get('top') || 245);
+const CLIPH = +(P.get('cliph') || 170);
+
+const HTML = `<span class="hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 21.175" fill="none" stroke="currentColor" stroke-width="1.15"
+             stroke-linecap="round" stroke-linejoin="round">
+          <g class="mark-arrow"><path d="M12 4.2v10.2"/><path d="m7.9 10.3 4.1 4.1 4.1-4.1"/></g>
+          <path class="mark-tray" d="M5 17.6V19a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 19v-1.4"/>
+        </svg>
+      </span>
+      <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span>cc</span>
+      <span class="sr-only"> — a media downloader for video and audio</span>`;
+
+const f = document.getElementById('f');
+f.width = W; f.height = +(P.get('h') || 900);
+if (CROP) {
+  f.style.marginTop = (-TOP) + 'px';
+  document.getElementById('clip').style.height = CLIPH + 'px';
+}
+
+f.addEventListener('load', () => setTimeout(async () => {
+  const doc = f.contentDocument;
+  const win = doc.defaultView;
+  if (THEME === 'light') doc.documentElement.setAttribute('data-theme', 'light');
+  if (P.get('orig') === '1') {
+    const oh = doc.querySelector('.hero-logo').getBoundingClientRect();
+    document.title = 'ready ' + JSON.stringify({ orig: true, fs: win.getComputedStyle(doc.querySelector('.hero-word')).fontSize,
+      h1: [Math.round(oh.width), Math.round(oh.height)], top: Math.round(oh.top),
+      composerTop: Math.round(doc.querySelector('.composer').getBoundingClientRect().top) });
+    return;
+  }
+  const css = await (await fetch('/mdown/.arena/run-20261116-125725-s386339/scratch/a008/from_md.css')).text();
+  const s = doc.createElement('style');
+  s.textContent = css;
+  doc.head.appendChild(s);
+  // kill the old hero-specific rules that the new block replaces by name
+  const kill = doc.createElement('style');
+  kill.textContent = `
+    .hero-word-m, .hero-word-sub, .hero-type { display: inline !important; font-size: inherit !important;
+      color: inherit !important; font-weight: inherit !important; letter-spacing: inherit !important; margin: 0 !important; }
+    .hero-mark { display: block !important; height: auto !important; width: 1.06em !important;
+      color: var(--text) !important; }
+    .hero-mark svg { width: 100% !important; height: auto !important; }
+    .hero-logo { animation: none !important; }
+    .hero-word { font-size: inherit !important; letter-spacing: inherit !important;
+      font-weight: inherit !important; color: inherit !important; }
+    .hero-word-dot { font-size: inherit !important; letter-spacing: inherit !important;
+      color: var(--accent) !important; vertical-align: baseline !important; margin: 0 -0.18em 0 -0.12em !important; }
+    .hero-word-down { color: inherit !important; margin: 0 !important; }
+  `;
+  doc.head.appendChild(kill);
+  const h = doc.querySelector('.hero-logo');
+  h.innerHTML = HTML;
+
+  const R = (el) => el.getBoundingClientRect();
+  const word = h.querySelector('.hero-word');
+  const mark = h.querySelector('.hero-mark');
+  const tray = h.querySelector('.mark-tray');
+  const shaft = h.querySelector('.mark-arrow path');
+  const dot = h.querySelector('.hero-word-dot');
+  const cs = win.getComputedStyle(h);
+
+  // baseline probe
+  const p = doc.createElement('span');
+  p.style.cssText = 'display:inline-block;width:0;height:0';
+  word.appendChild(p);
+  const baseline = R(p).bottom;
+  p.remove();
+
+  // canvas metrics for the same font
+  const c = doc.createElement('canvas').getContext('2d');
+  c.font = `${cs.fontWeight} ${parseFloat(cs.fontSize)}px ${cs.fontFamily}`;
+  const asc = c.measureText('d').actualBoundingBoxAscent;
+  const xh = c.measureText('m').actualBoundingBoxAscent;
+  const cell = c.measureText('m').width;
+
+  const scale = R(mark).height / 21.175;
+  const stroke = 1.15 * scale;
+  const trayR = R(tray);
+  const inkBottom = trayR.bottom + stroke / 2;
+  const inkTop = R(shaft).top - stroke / 2;
+  const markRect = R(mark);
+  const markInkLeft = markRect.left + (5 - 1.15 / 2) / 24 * markRect.width;
+  const markInkRight = markRect.left + (19 + 1.15 / 2) / 24 * markRect.width;
+  const mInkLeft = R(word).left - c.measureText('m').actualBoundingBoxLeft;
+  const dotR = R(dot);
+  const letterGap = (cell - c.measureText('n').actualBoundingBoxRight) + (-c.measureText('o').actualBoundingBoxLeft);
+  const ascPx = asc;
+
+  // content width of the lockup (mark + word, ink to ink)
+  const lastText = [...word.childNodes].filter(n => n.nodeType === 3).pop();
+  const rng = doc.createRange(); rng.selectNodeContents(lastText);
+  const lastRect = rng.getBoundingClientRect();
+
+  const off = doc.createElement('style');
+  off.textContent = '.mark-arrow, .hero-word-down { animation: none !important; }';
+  doc.head.appendChild(off);
+  const g = h.querySelector('.mark-arrow');
+  const gBefore = R(shaft).top;
+  g.style.transform = 'translateY(-2.6px)';
+  const gShift = gBefore - R(shaft).top;
+  g.style.transform = '';
+  const dw = h.querySelector('.hero-word-down');
+  const dBefore = R(dw).top;
+  dw.style.transform = 'translateY(-0.115em)';
+  const dShift = dBefore - R(dw).top;
+  dw.style.transform = '';
+
+  off.remove();
+  const anims = win.getComputedStyle(dw).animation;
+  const motion = win.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.title = 'ready ' + JSON.stringify({
+    vw: W, fs: Math.round(parseFloat(cs.fontSize) * 10) / 10,
+    lockW: Math.round(markRect.width + R(word).width),
+    inkW_left: Math.round(markInkLeft), inkW_right: Math.round(lastRect.right),
+    contentPx: Math.round(lastRect.right - markInkLeft),
+    markBox: [Math.round(markRect.width * 10) / 10, Math.round(markRect.height * 10) / 10],
+    strokePx: Math.round(stroke * 100) / 100,
+    inkOverAsc: Math.round(((inkBottom - inkTop) / ascPx) * 1000) / 1000,
+    trayVsBase: Math.round((inkBottom - baseline) * 100) / 100,
+    gapMarkToM: Math.round((mInkLeft - markInkRight) * 10) / 10,
+    gapEm: Math.round(((mInkLeft - markInkRight) / parseFloat(cs.fontSize)) * 1000) / 1000,
+    dotGapL: Math.round((dotR.left - c.measureText('.').actualBoundingBoxLeft - ((dotR.left - parseFloat(win.getComputedStyle(dot).marginLeft)) - (cell - c.measureText('n').actualBoundingBoxRight))) * 10) / 10,
+    letterGap: Math.round(letterGap * 10) / 10,
+    h1: [Math.round(R(h).width), Math.round(R(h).height)],
+    h1Top: Math.round(R(h).top),
+    composerTop: Math.round(R(doc.querySelector('.composer')).top),
+    arrowShift: Math.round(gShift * 100) / 100,
+    wordShift: Math.round(dShift * 100) / 100,
+    anim: anims,
+    disp: win.getComputedStyle(h).display,
+    text: h.textContent.replace(/\s+/g, ' ').trim(),
+    h1Scroll: h.scrollWidth, h1Client: h.clientWidth,
+  }, null, 0);
+}, 400));
+</script>
+</body>
+</html>

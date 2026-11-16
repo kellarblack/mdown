@@ -1,0 +1,8 @@
+<!doctype html><html data-theme="dark"><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/app.css">
+<style>html,body{background:var(--bg)}body{margin:0;padding:40px 0}.stage{display:flex;justify-content:center;zoom:2.5}</style>
+</head><body><div class="stage"><h1 class="hero-logo"><span class="hero-mark" aria-hidden="true"><svg viewBox="3.5 2.5 17 17" fill="none" stroke="currentColor" stroke-width="1"><g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g><path class="mark-tray" d="M4 19h16"/></svg></span><span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1></div>
+<pre id="o">?</pre><script>
+var r=[...document.querySelectorAll('.hero-logo,.hero-mark,.hero-word')].map(e=>e.className+':'+JSON.stringify(e.getBoundingClientRect().toJSON()));
+document.getElementById('o').textContent=r.join('\n')+'\nop='+getComputedStyle(document.querySelector('.hero-logo')).opacity+' anims='+document.getAnimations().length;
+</script></body></html>

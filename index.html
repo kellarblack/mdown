@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=273">
+<link rel="stylesheet" href="assets/app.css?v=285">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -136,12 +136,12 @@
         {
           "@type": "Question",
           "name": "Where do my files go?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Into your browser's normal downloads. Nothing is stored on a server, and the queue disappears when you close the tab." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Into your browser's normal downloads. The queue disappears when you close the tab; on the server a finished file exists only long enough to hand it over." }
         },
         {
           "@type": "Question",
           "name": "Which formats can I get?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Video as mp4, webm or mkv depending on the codec. Audio as mp3, wav, ogg or opus." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Video as mp4, or webm or mkv when the source codec needs it — the server picks. Audio as mp3, wav, ogg or opus." }
         },
         {
           "@type": "Question",
@@ -184,7 +184,6 @@
 
 <a class="skip-link" href="#url-input">skip to the link field</a>
 
-</div>
 
 <header class="topbar">
   <a class="brand" href="./" title="mdown.cc — media downloader, cc for closed captions">
@@ -397,7 +396,7 @@
       <button type="button" class="quickpick-btn" data-pick="auto">video + audio</button>
       <button type="button" class="quickpick-btn" data-pick="mute">video only</button>
     </div>
-    <button type="button" class="quickpick-close" id="quickpick-cancel" aria-label="dismiss">esc</button>
+    <button type="button" class="quickpick-close" id="quickpick-cancel" aria-label="dismiss"><span class="kbd-only">esc</span><span class="tap-only">close</span></button>
   </div>
 
   </div>
@@ -405,7 +404,7 @@
   <nav class="tool-strip" aria-label="Tools that run in your browser">
     <a class="tool-card" href="#remux" data-view="remux">
       <span class="tool-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h11"/><path d="m7 6-3 3 3 3"/><path d="M20 15H9"/><path d="m17 12 3 3-3 3"/></svg></span>
-      <span class="tool-card-body"><b>remux</b><span>fix broken files</span></span>
+      <span class="tool-card-body"><b>remux</b><span>fix what won't play</span></span>
     </a>
     <a class="tool-card" href="#subs" data-view="subs">
       <span class="tool-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z"/><path d="M8 10h8M8 13.5h5"/></svg></span>
@@ -431,7 +430,7 @@
   <section class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose or drop media files">
     <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4.5 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/></svg>
     <p class="dropzone-title">Drop files here</p>
-    <p class="dropzone-hint">MP4 · MOV · WebM · M4A · MP3 · OGG · OPUS · WAV</p>
+    <p class="dropzone-hint">MKV · MP4 · MOV · WebM · M4A · MP3 · OGG · OPUS · WAV</p>
     <span class="primary-btn" id="browse-btn">choose files</span>
     <input type="file" id="remux-input" class="sr-only" tabindex="-1" aria-hidden="true" multiple
            accept=".mp4,.m4a,.mov,.webm,.mkv,.mp3,.ogg,.oga,.opus,.wav,video/*,audio/*">
@@ -832,7 +831,7 @@
                 <option value="th">ไทย</option>
               </select>
             </div>
-            <p class="field-help">Burned in as a track when the source has one for that language.</p>
+            <p class="field-help">Added as a subtitle track when the source has one for that language.</p>
           </div>
         </details>
       </section>
@@ -843,7 +842,7 @@
           <label class="switch-row" for="always-proxy">
             <span>
               <span class="field-label">Always use the server</span>
-              <span class="field-help">The source never sees you — only your server does.</span>
+              <span class="field-help">The file never touches the source directly — the thumbnail still does.</span>
             </span>
             <input type="checkbox" id="always-proxy" class="switch" data-setting="alwaysProxy">
           </label>
@@ -854,15 +853,15 @@
           <div class="seg" data-setting="localProcessing" role="radiogroup" aria-label="Local processing">
             <button type="button" data-value="disabled">server merges</button>
             <button type="button" data-value="preferred">ask me</button>
-            <button type="button" data-value="forced">this browser</button>
+            <button type="button" data-value="forced">give me the command</button>
           </div>
-          <p class="field-help">Some videos arrive as separate picture and sound. This decides where they are joined.</p>
+          <p class="field-help">Some videos arrive as separate picture and sound. The server can join them, or this page hands you a ready ffmpeg command and you do it yourself.</p>
         </div>
 
         <div class="field">
           <span class="field-label">Tracking</span>
           <div class="notice">
-            <strong>None.</strong> Nothing is sent anywhere except the server above.
+            <strong>None.</strong> Requests for links and files go to the server above. Thumbnails are loaded from the source, so that host sees your address — nothing else does.
           </div>
         </div>
       </section>
@@ -940,7 +939,7 @@
 
 <template id="help-template">
   <div class="help">
-    <p class="help-lede">A downloader with no server of its own. It hands the link to a server you point it at, streams the file back, and keeps nothing.</p>
+    <p class="help-lede">The page cannot fetch video by itself. A small API does that — the address in Settings is the one it uses — and the file streams straight back to you.</p>
 
     <ol class="steps">
       <li>
@@ -971,7 +970,7 @@
       </details>
       <details>
         <summary>Where do my files go?</summary>
-        <p>Your normal downloads. The queue disappears when you close the tab, and nothing is stored on the server.</p>
+        <p>Your normal downloads. The queue is gone when you close the tab. On the server the file exists only long enough to hand it over.</p>
       </details>
       <details>
         <summary>Does it work on my phone?</summary>
@@ -1048,7 +1047,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=135" defer></script>
+<script src="assets/app.js?v=138" defer></script>
 <script type="module" src="assets/nav.js?v=14"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<meta charset="utf-8">
+<title>lockup variants r2</title>
+<style>
+:root{
+  --bg:#0a0a0b; --text:#ededee; --text-2:#a1a1a6; --text-3:#8b8b93; --accent:#ededee;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono);padding:40px 32px;display:flex;flex-direction:column;gap:44px;}
+.row{display:flex;flex-direction:column;gap:14px;}
+.tag{color:var(--text-3);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)}
+.lock{font-family:var(--mono);font-size:38.4px;font-weight:500;line-height:1;margin:0;
+  display:flex;align-items:baseline;gap:0.28em;color:var(--text);}
+.mark{display:flex;flex:none;height:1.4cap;width:0.78cap;color:var(--text);}
+.mark svg{display:block;height:100%;width:100%;overflow:visible;}
+.word{display:block;white-space:nowrap;letter-spacing:-0.03em;}
+.dot{margin-left:-0.10em;margin-right:-0.10em;color:var(--accent);}
+.tail{font-size:.8em;color:var(--text-2);letter-spacing:0;}
+.probe{display:block;width:0;height:0;flex:none;align-self:baseline}
+</style>
+
+<div class="row"><div class="tag">A · gap .28 · tail .8em text-2 · dot accent</div>
+<h1 class="lock"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="dot">.</span><span class="tail">cc</span></span><i class="probe"></i></h1></div>
+
+<div class="row"><div class="tag">B · gap .18</div>
+<h1 class="lock" style="gap:.18em"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="dot">.</span><span class="tail">cc</span></span><i class="probe"></i></h1></div>
+
+<div class="row"><div class="tag">C · gap .36</div>
+<h1 class="lock" style="gap:.36em"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="dot">.</span><span class="tail">cc</span></span><i class="probe"></i></h1></div>
+
+<div class="row"><div class="tag">D · weight 400</div>
+<h1 class="lock" style="font-weight:400"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="dot">.</span><span class="tail">cc</span></span><i class="probe"></i></h1></div>
+
+<div class="row"><div class="tag">E · tail .86em text-2</div>
+<h1 class="lock"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="dot">.</span><span class="tail" style="font-size:.86em">cc</span></span><i class="probe"></i></h1></div>
+
+<div class="row"><div class="tag">F · mark + tray heavier test: stroke 1.7 vs 2</div>
+<h1 class="lock"><span class="mark" aria-hidden="true" style="width:0.9cap"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="dot">.</span><span class="tail">cc</span></span><i class="probe"></i></h1></div>
+
+<pre id="out" style="color:#8b8b93;font-size:10px;line-height:1.6"></pre>
+<script>
+const rows = [...document.querySelectorAll('.row')].map((r, i) => {
+  const lock = r.querySelector('.lock');
+  const probe = r.querySelector('.probe');
+  const mark = r.querySelector('.mark');
+  const svg = r.querySelector('svg');
+  const word = r.querySelector('.word');
+  const rect = e => e.getBoundingClientRect();
+  const base = rect(probe).top;
+  const lr = rect(lock), mr = rect(mark), wr = rect(word);
+  // a span of height 1cap to confirm the unit resolves
+  const capp = document.createElement('span');
+  capp.style.cssText = 'display:inline-block;height:1cap;width:0';
+  lock.appendChild(capp);
+  const cap = rect(capp).height;
+  capp.remove();
+  return {
+    row: r.querySelector('.tag').textContent.slice(0, 2),
+    baselineFromLockTop: +(base - lr.top).toFixed(2),
+    lockH: +lr.height.toFixed(2),
+    markBox: [+mr.width.toFixed(2), +mr.height.toFixed(2)],
+    markBottomToBaseline: +(mr.bottom - base).toFixed(2),
+    wordW: +wr.width.toFixed(2),
+    wordH: +wr.height.toFixed(2),
+    gapPx: +(mr.right - wr.left).toFixed(2),
+    capUnit: +cap.toFixed(2),
+    emPx: parseFloat(getComputedStyle(lock).fontSize),
+    markInkH: +(20 / 28 * mr.height).toFixed(2),
+    markInkToWord: +(wr.left - mr.right).toFixed(2)
+  };
+});
+document.getElementById('out').textContent = JSON.stringify(rows, null, 1);
+</script>

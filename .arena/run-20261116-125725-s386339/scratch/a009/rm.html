@@ -1,0 +1,23 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>
+<iframe id="f" src="/.arena/run-20261116-125725-s386339/scratch/a009/page-minh.html" width="1440" height="700" style="border:0"></iframe>
+<pre id="o"></pre>
+<script>
+document.getElementById('f').addEventListener('load', () => {
+  const f = document.getElementById('f'), d = f.contentDocument, w = f.contentWindow;
+  requestAnimationFrame(() => {
+    const logo = d.querySelector('.hero-logo');
+    const arrow = d.querySelector('.mark-arrow');
+    const svg = d.querySelector('.hero-mark svg');
+    const reduce = w.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const la = w.getComputedStyle(logo);
+    const aa = w.getComputedStyle(arrow);
+    document.getElementById('o').textContent = JSON.stringify({
+      reduce, logoOpacity: la.opacity, logoAnim: la.animationName,
+      arrowAnim: aa.animationName, arrowTransform: aa.transform,
+      arrowTop: +arrow.getBoundingClientRect().top.toFixed(2),
+      svgTop: +svg.getBoundingClientRect().top.toFixed(2),
+      anims: d.getAnimations().length,
+    });
+  });
+});
+</script></body></html>

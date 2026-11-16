@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>measure frames</title>
+<style>
+ html,body{margin:0;background:#111;color:#ddd;font:11px ui-monospace,monospace}
+ .strip{display:flex;gap:8px;padding:6px;flex-wrap:wrap}
+ iframe{border:1px solid #333;display:block;background:#0a0a0b}
+ pre{white-space:pre-wrap;padding:8px}
+</style>
+<div class="strip">
+  <iframe id="f320" src="preview.html" width="320" height="780"></iframe>
+  <iframe id="f360" src="preview.html" width="360" height="780"></iframe>
+  <iframe id="f390" src="preview.html" width="390" height="780"></iframe>
+  <iframe id="f768" src="preview.html" width="768" height="780"></iframe>
+  <iframe id="f1024" src="preview.html" width="1024" height="780"></iframe>
+</div>
+<pre id="out">…</pre>
+<script>
+const ids = ["f320", "f360", "f390", "f768", "f1024"];
+const res = {};
+let tries = 0;
+const t = setInterval(() => {
+  tries++;
+  let ready = 0;
+  for (const id of ids) {
+    const w = document.getElementById(id).contentWindow;
+    if (w && w.__probe) {
+      if (!res[id]) res[id] = w.__probe();
+      ready++;
+    }
+  }
+  if (ready === ids.length || tries > 100) {
+    clearInterval(t);
+    document.getElementById('out').textContent = JSON.stringify(res, null, 1);
+  }
+}, 60);
+</script>

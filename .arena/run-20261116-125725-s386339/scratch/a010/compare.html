@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../../assets/app.css">
+<style>
+  body { background: var(--bg); padding: 20px 24px; }
+  .row { margin-bottom: 26px; }
+  .tag { font: 11px/1 ui-monospace, monospace; color: #666; margin-bottom: 6px; }
+  .hero-logo {
+    font-size: 48px;
+    display: flex; align-items: center; justify-content: flex-start;
+    gap: 0.2em; margin: 0; color: var(--text);
+  }
+  .hero-mark { flex: none; display: block; width: 0.73em; height: 0.73em; transform: translateY(var(--nudge, 0)); }
+  .hero-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .hero-word { font-family: var(--mono); font-weight: 500; font-size: 1em; line-height: 1; letter-spacing: -0.015em; white-space: nowrap; }
+  .hero-word-dot { color: var(--accent); margin: 0 -0.188em 0 -0.211em; }
+  .hero-word-sub { color: var(--text-3); }
+  .r400 .hero-word { font-weight: 400; }
+  .baseline { position: absolute; left: 0; right: 0; border-top: 1px solid #ff005533; }
+</style>
+</head>
+<body>
+<div id="stack"></div>
+<script>
+const MARK = (s) => `<span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="${s}" stroke-linecap="round" stroke-linejoin="round"><path d="M10 0.55v9.9"/><path d="m5.9 6.4 4.1 4.1 4.1-4.1"/><path d="M0.9 12.6v5.25a1.6 1.6 0 0 0 1.6 1.6h15a1.6 1.6 0 0 0 1.6-1.6V12.6"/></svg></span>`;
+const WORD = `<span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>`;
+const variants = [
+  ["stroke 1.1  nudge -0.025em", 1.1, "-0.025em", ""],
+  ["stroke 1.4  nudge -0.025em", 1.4, "-0.025em", ""],
+  ["stroke 1.8  nudge -0.025em", 1.8, "-0.025em", ""],
+  ["stroke 2.2  nudge -0.025em", 2.2, "-0.025em", ""],
+  ["stroke 1.4  nudge 0  (flex centre)", 1.4, "0", ""],
+  ["stroke 1.4  nudge -0.05em", 1.4, "-0.05em", ""],
+  ["stroke 1.4  weight 400", 1.4, "-0.025em", "r400"],
+  ["no mark: word only", 1.4, "0", "hide"]
+];
+const stack = document.getElementById("stack");
+for (const [tag, s, nudge, cls] of variants) {
+  const row = document.createElement("div");
+  row.className = "row " + cls;
+  row.innerHTML = `<div class="tag">${tag}</div><div class="hero-logo" style="--nudge:${nudge}">${cls === "hide" ? "" : MARK(s)}${WORD}</div>`;
+  stack.appendChild(row);
+}
+</script>
+</body>
+</html>

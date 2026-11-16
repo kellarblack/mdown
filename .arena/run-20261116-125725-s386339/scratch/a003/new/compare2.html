@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>stroke compare</title>
+<link rel="stylesheet" href="app.css">
+<style>
+  body { margin: 0; background: var(--bg); }
+  .v { display: block; padding: 12px 24px; border-bottom: 1px solid #17171a; }
+  .cmp {
+    display: flex; align-items: center; justify-content: center;
+    gap: .22em; font-size: 46.4px; line-height: 1; color: var(--text);
+  }
+  .cmp .mk { flex: none; width: 1em; height: 1em; margin-inline: -.083em; }
+  .cmp .mk svg { display: block; width: 100%; height: 100%; }
+  .cmp .wd { font-family: var(--mono); font-weight: 500; letter-spacing: -.02em; white-space: nowrap; }
+  .cmp .dot, .cmp .tld { font-size: .72em; font-weight: 400; letter-spacing: 0; }
+  .cmp .dot { color: var(--text-2); margin: 0 -.21em 0 -.14em; }
+  .cmp .tld { color: var(--text-3); }
+  .tag { font: 9px var(--mono); color: #4a4a52; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+
+<div class="v"><div class="tag">stroke 1.5</div>
+<div class="cmp">
+<span class="mk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg></span>
+<span class="wd">mdown<span class="dot">.</span><span class="tld">cc</span></span>
+</div></div>
+
+<div class="v"><div class="tag">stroke 1.7</div>
+<div class="cmp">
+<span class="mk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg></span>
+<span class="wd">mdown<span class="dot">.</span><span class="tld">cc</span></span>
+</div></div>
+
+<div class="v"><div class="tag">stroke 1.9</div>
+<div class="cmp">
+<span class="mk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg></span>
+<span class="wd">mdown<span class="dot">.</span><span class="tld">cc</span></span>
+</div></div>
+
+</body>
+</html>

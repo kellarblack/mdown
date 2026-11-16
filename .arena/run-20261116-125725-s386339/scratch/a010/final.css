@@ -1,0 +1,66 @@
+/* ---------- hero lockup ---------- */
+.hero { width: 100%; }
+.hero-logo {
+  /* one number sizes the whole lockup: mark box, wordmark, gap and drop are
+     all em, so nothing can drift apart between 320px and 1440px */
+  font-size: clamp(2.125rem, 1.15rem + 2.45vw, 3rem);   /* 34px → 48px */
+  display: flex;
+  align-items: baseline;      /* the mark's ink sits on the name's baseline */
+  justify-content: center;
+  gap: 0.16em;                /* 8px between the boxes at 1440, 10px of air
+                                 between the inks: wider than any gap inside the
+                                 name, so it stays two objects and one lockup */
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  color: var(--text);
+  animation: hero-in 380ms var(--ease) both;
+}
+
+.hero-mark {
+  flex: none;
+  display: block;
+  /* 0.73em is the cap height of the wordmark at every size, so the mark is
+     exactly one cap tall and its ink runs baseline to cap line */
+  width: 0.73em;
+  height: 0.73em;
+  /* the arrow's first frame is above the box: nothing may clip it */
+  overflow: visible;
+}
+
+.hero-word {
+  /* inline-flex, not inline-block: whitespace between the spans is ignored, so
+     a reformat of the markup cannot open a gap inside the name. It also gives
+     transform a box to move — transforms do nothing on an inline box. */
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 1em;
+  line-height: 1;
+  letter-spacing: -0.015em;   /* mono is loose at display size; 1.5% is enough */
+  white-space: nowrap;
+  animation: hero-word-in 760ms var(--ease) both;
+}
+
+/* the period is one 0.602em mono cell with 0.19em of bearing on its left and
+   0.24em on its right. Pulling 0.155em / 0.22em off leaves 5px and 4.5px of
+   air at 1440px: a full stop that was placed, not a gap that happened. */
+.hero-word-dot { color: var(--accent); margin: 0 -0.22em 0 -0.155em; }
+
+/* the tld at the same size, one step down in value — the move the top bar
+   already makes with .brand-sub, so hero and header are the same mark */
+.hero-word-sub { color: var(--text-3); }
+
+/* one paired move, no stagger, no bounce: the arrow drops into the tray while
+   the name settles with it, same curve, same 760ms. The name is never split,
+   so no seam can open inside it. Transform and opacity only, and it ends on
+   the layout it started on. */
+@keyframes hero-in { from { opacity: 0.6; } to { opacity: 1; } }
+@keyframes hero-word-in { from { transform: translateY(-0.06em); } to { transform: translateY(0); } }
+@keyframes arrow-in { from { transform: translateY(-4px); } to { transform: translateY(0); } }
+/* -4px is 4 of the mark's 20 grid units (0.2 x the mark): 7px at 1440, 5px at
+   360 — the drop scales with the lockup instead of shrinking into a nudge */
+.mark-arrow { animation: arrow-in 760ms var(--ease) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-logo, .hero-word, .mark-arrow { animation: none; }
+}

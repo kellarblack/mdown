@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" data-theme="dark"><meta charset="utf-8"><title>closeup final</title>
+<link rel="stylesheet" href="app.css">
+<style>
+ body{background:#0a0a0b;margin:0;padding:34px 30px;font-family:var(--mono)}
+ .box{position:relative;padding:20px 0}
+ .gl{position:absolute;left:0;right:0;height:1px;background:rgba(255,70,70,.5);pointer-events:none}
+ .gl.cap{background:rgba(90,150,255,.45)}
+ .lab{color:#8b8b93;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:14px 0 0}
+ .oldlogo{display:flex;align-items:center;justify-content:flex-start;gap:14px;margin:0;
+  font-family:var(--mono);font-size:38.4px;font-weight:500;line-height:1;letter-spacing:-.03em;color:#ededee}
+ .oldlogo .hero-mark{display:grid;place-items:center;flex:none;width:44px;height:44px;color:#ededee}
+ .oldlogo .hero-mark svg{width:100%;height:100%}
+ .oldlogo .hero-word-dot{color:#ededee;margin:0 -.14em}
+ .oldlogo .hero-word-sub{font-size:.72em;font-weight:400;color:#8b8b93;letter-spacing:0;margin-left:2px}
+ .hero-logo.jc{justify-content:flex-start}
+</style>
+
+<div class="lab">old · 38px</div>
+<div class="box" id="b1">
+  <h1 class="oldlogo"><span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g><path class="mark-tray" d="M4 19h16"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1>
+</div>
+
+<div class="lab">new · 38px · red = baseline, blue = cap line</div>
+<div class="box" id="b2">
+  <h1 class="hero-logo jc"><span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 14.4 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M7.2 8.6v16.6"/><path d="m2.2 20.2 5 5 5-5"/></g><path class="mark-tray" d="M0 28h14.4"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1>
+</div>
+
+<div class="lab">old · 3× (115px)</div>
+<div class="box" id="b4">
+  <h1 class="oldlogo" style="font-size:115.2px;gap:42px"><span class="hero-mark" aria-hidden="true" style="width:132px;height:132px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g><path class="mark-tray" d="M4 19h16"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1>
+</div>
+
+<div class="lab">new · 3× — the drawing itself</div>
+<div class="box" id="b3">
+  <h1 class="hero-logo jc" style="font-size:115.2px"><span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 14.4 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M7.2 8.6v16.6"/><path d="m2.2 20.2 5 5 5-5"/></g><path class="mark-tray" d="M0 28h14.4"/></svg></span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></h1>
+</div>
+
+<script>
+for (const id of ["b1", "b2", "b3", "b4"]) {
+  const box = document.getElementById(id);
+  const logo = box.querySelector("h1");
+  const probe = document.createElement("span");
+  probe.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+  logo.appendChild(probe);
+  const base = probe.getBoundingClientRect().bottom - box.getBoundingClientRect().top - 20;
+  const cap = parseFloat(getComputedStyle(logo).fontSize) * 0.7286;
+  probe.remove();
+  for (const [cls, y] of [["", base], [" cap", base - cap]]) {
+    const d = document.createElement("div");
+    d.className = "gl" + cls;
+    d.style.top = y + "px";
+    box.appendChild(d);
+  }
+}
+</script>

@@ -1,0 +1,17 @@
+<!doctype html>
+<html><body><pre id="out"></pre><script>
+const c = document.createElement('canvas').getContext('2d');
+c.font = '500 100px ui-monospace, "SF Mono", Menlo, monospace';
+const out = {};
+for (const ch of ['d','o','n','w','m','c','.']) {
+  const m = c.measureText(ch);
+  out[ch] = {adv:+m.width.toFixed(2), asc:+m.actualBoundingBoxAscent.toFixed(2), desc:+m.actualBoundingBoxDescent.toFixed(2), left:+m.actualBoundingBoxLeft.toFixed(2), right:+m.actualBoundingBoxRight.toFixed(2)};
+}
+// font metrics
+c.font = '500 100px ui-monospace, "SF Mono", Menlo, monospace';
+const tm = c.measureText('mdown.cc');
+out.fontAscent = +tm.fontBoundingBoxAscent.toFixed(2);
+out.fontDescent = +tm.fontBoundingBoxDescent.toFixed(2);
+out.width8ch = +tm.width.toFixed(2);
+document.getElementById('out').textContent = JSON.stringify(out,null,1);
+</script></body></html>

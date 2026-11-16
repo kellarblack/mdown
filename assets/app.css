@@ -70,7 +70,7 @@
   --btn: #121213;
   --btn-hover: #2b2b2e;
   --btn-line: transparent;
-  --ok: #16a34a;
+  --ok: #15803d;
   --warn: #b45309;
   --err: #dc2626;
   --ring: rgba(0, 0, 0, 0.18);
@@ -94,6 +94,8 @@ html {
 html, body, body * { touch-action: manipulation; }
 body {
   margin: 0;
+  /* late content below the fold must not drag what is above it around */
+  overflow-anchor: none;
   min-height: 100vh;
   /* 100vh on iOS includes the collapsed toolbar, so the page jumps as it
      hides and reappears; dvh tracks the visible area */
@@ -157,7 +159,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   background: transparent; color: var(--accent);
   border: 1px solid var(--stroke-2);
 }
-.brand-mark svg { width: 15px; height: 15px; animation: mark-in 620ms var(--ease) both; }
+.brand-mark svg { width: 15px; height: 15px; overflow: visible; animation: mark-in 620ms var(--ease) both; }
 
 /* one small drop on load, and again when you point at it — the only thing in
    the header that moves, and it stops when you stop */
@@ -799,7 +801,7 @@ a.ghost-btn { text-decoration: none; }
 }
 /* the separator is a glyph, not a gap */
 .footer-meta > * + *::before {
-  content: "·"; margin-right: 5px; color: var(--text-3); opacity: 0.55;
+  content: "·"; margin: 0 5px; color: var(--text-3); opacity: 0.55;
 }
 .footer-meta .footer-link:focus-visible, .footer-meta a:focus-visible {
   outline: 2px solid var(--ring); outline-offset: 2px;
@@ -1314,8 +1316,12 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 210ms cubic-bezier
   .nav-link { padding: 5px 6px; }
   .brand { gap: 6px; }
   .topbar-actions { gap: 3px; }
-  .topbar .icon-btn { width: 36px; height: 36px; }
-  .topbar .brand-text { font-size: 0.86rem; }
+  .topbar .icon-btn,
+  .topbar .instance-pill,
+  .sources-toggle { width: 36px; height: 36px; }
+  .topbar-actions { gap: 2px; }
+  .sources-wrap { height: 36px; }
+  .topbar .brand-text { font-size: 0.82rem; }
   .composer-tools { gap: 2px; }
   .chips { gap: 4px; }
 }
@@ -1375,8 +1381,8 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 210ms cubic-bezier
   .icon-btn.labeled { width: 30px; padding: 0; }
   /* the pill is the queue on a phone too — it was hidden, which would have
      taken downloads away with it */
-  .instance-pill { width: 34px; height: 34px; padding: 0; }
-  .dock-btn { width: 34px; height: 34px; }
+  .instance-pill { width: 40px; height: 40px; padding: 0; }
+  .dock-btn { width: 40px; height: 40px; }
   .dock-badge { min-width: 13px; height: 13px; font-size: 8px; animation: none !important; }
   .lede { font-size: 0.82rem; }
   .composer-main { flex-wrap: wrap; }
@@ -1663,8 +1669,9 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 .sources-panel.is-closing { animation: sources-out 140ms var(--ease) both; }
 @keyframes sources-in {
-  from { opacity: 0; transform: translate(-50%, -6px) scale(0.99); }
-  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  0%   { opacity: 0; transform: translate(-50%, -7px) scale(0.975); }
+  70%  { opacity: 1; transform: translate(-50%, 1px) scale(1.004); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 @keyframes sources-out {
   from { opacity: 1; transform: translate(-50%, 0) scale(1); }
@@ -1683,13 +1690,30 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 .sources-close {
   margin-left: auto; display: grid; place-items: center;
-  width: 28px; height: 28px; border-radius: 8px;
+  width: 30px; height: 30px; border-radius: 9px;
+  border: 1px solid transparent;
   color: var(--text-3); background: transparent;
-  transition: color 120ms, background 120ms;
+  transition: color 110ms, background 110ms, border-color 110ms, transform 110ms;
 }
+.sources-close:hover { color: var(--text); background: var(--surface-2); border-color: var(--stroke); }
+.sources-close:active { transform: scale(0.94); transition: none; }
 .sources-close svg { width: 14px; height: 14px; }
 .sources-close:hover { color: var(--text); background: var(--surface-2); }
 .sources-handle { display: none; }
+
+/* the field is the interaction: 16px on a phone so Safari does not zoom */
+.sources-search {
+  width: 100%; height: 34px; margin: 0 0 9px;
+  padding: 0 10px; border-radius: 9px;
+  border: 1px solid var(--stroke); background: var(--bg);
+  color: var(--text); font-family: var(--mono); font-size: 0.74rem;
+  -webkit-appearance: none; appearance: none;
+}
+.sources-search::placeholder { color: var(--text-3); }
+.sources-search:focus { outline: none; border-color: var(--stroke-2); }
+@media (max-width: 720px) {
+  .sources-search { height: 40px; font-size: 16px; }
+}
 
 /* the chips are a block, not a ragged wrap: same columns, same rhythm */
 .sources-panel .source-chips {
@@ -1711,16 +1735,20 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     /* it floats just above the bar instead of under it: the bar is how you
        leave, so it stays visible and tappable */
     position: fixed; left: 8px; right: 8px; top: auto;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
     width: auto; max-height: min(74dvh, 560px);
     transform: none; transform-origin: bottom center;
     border-radius: 18px;
     padding: 4px 14px 14px;
     box-shadow: 0 24px 50px -28px rgba(0, 0, 0, 0.9);
-    animation: sources-up 230ms cubic-bezier(0.2, 0.86, 0.3, 1) both;
+    animation: sources-up 300ms cubic-bezier(0.22, 0.9, 0.28, 1) both;
   }
   .sources-panel.is-closing { animation: sources-down 220ms cubic-bezier(0.45, 0, 0.7, 0.2) both; }
-  @keyframes sources-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes sources-up {
+    0%   { transform: translateY(100%); }
+    72%  { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+  }
   @keyframes sources-down { from { transform: translateY(0); } to { transform: translateY(100%); } }
   .sources-handle {
     display: block; width: 38px; height: 4px; margin: 8px auto 12px;
@@ -1766,6 +1794,8 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .source-chip:hover {
   color: var(--text); border-color: var(--stroke-2); background: var(--surface);
 }
+.source-chip:active { background: var(--surface-2); transform: scale(0.98); transition: none; }
+.source-chip[hidden] { display: none; }
 .source-chip.is-muted { color: var(--text-3); border-style: dashed; opacity: 0.8; }
 .sources-foot { margin: 0; color: var(--text-3); font-size: 0.6rem; line-height: 1.4; }
 .sources-empty { margin: 0; color: var(--text-3); font-size: 0.70rem; text-align: center; }
@@ -2001,14 +2031,18 @@ a.donate-value:hover { text-decoration: underline; }
   .tip-veil { display: block; }
   .tip-pop {
     position: fixed; left: 8px; right: 8px; top: auto;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
     width: auto; max-height: min(78dvh, 620px); overflow-y: auto;
     border-radius: 18px;
     padding: 4px 14px 14px;
-    animation: tip-up 230ms cubic-bezier(0.2, 0.86, 0.3, 1) both;
+    animation: tip-up 300ms cubic-bezier(0.22, 0.9, 0.28, 1) both;
   }
   .tip-pop.is-closing { animation: tip-down 220ms cubic-bezier(0.45, 0, 0.7, 0.2) both; }
-  @keyframes tip-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes tip-up {
+    0%   { transform: translateY(100%); }
+    72%  { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+  }
   @keyframes tip-down { from { transform: translateY(0); } to { transform: translateY(100%); } }
   .tip-pop::before {
     content: ""; display: block; width: 38px; height: 4px;
@@ -2286,16 +2320,21 @@ a.donate-value:hover { text-decoration: underline; }
   font-family: var(--mono); font-size: 0.62rem; cursor: pointer;
 }
 .quickpick-close:hover { color: var(--text-2); border-color: var(--stroke-2); }
+.quickpick-close .tap-only { display: none; }
+@media (hover: none) {
+  .quickpick-close .kbd-only { display: none; }
+  .quickpick-close .tap-only { display: inline; }
+}
 
 /* one quiet line under the composer: shortcut + the local tools */
 /* the download view: one centred column, nothing else competing */
 #download-view {
   display: flex; flex-direction: column;
-  /* centred, and `safe` keeps the composer reachable when the viewport is
-     shorter than the content. The recent strip is rendered before the first
-     frame, so centring no longer causes a jump. */
-  justify-content: center;
-  justify-content: safe center;
+  /* Anchored, not centred. Centring meant every late arrival — the API note,
+     the recent strip, a probe — changed the column height and slid the logo up
+     or down. A fixed offset never moves, whatever arrives after it. */
+  justify-content: flex-start;
+  padding-top: clamp(44px, 11vh, 120px);
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
@@ -2317,7 +2356,10 @@ a.donate-value:hover { text-decoration: underline; }
    compositor properties, so the animation never re-lays-out the page, never
    repaints text, and finishes in about half a second. No overshoot: a bounce at
    this size reads as a toy. */
-.hero-mark svg { width: 100%; height: 100%; }
+/* the arrow starts fifteen units above its resting place, which is outside the
+   24x24 viewBox: without this the browser clips it at the top edge and the drop
+   begins as a half arrow */
+.hero-mark svg { width: 100%; height: 100%; overflow: visible; }
 
 /* The lockup does not move as a block — that is what made the page feel like it
    jumped. It fades in where it already is, and then the arrow drops into the
@@ -2328,17 +2370,21 @@ a.donate-value:hover { text-decoration: underline; }
   to   { opacity: 1; }
 }
 .mark-arrow {
-  animation: arrow-drop 760ms cubic-bezier(0.22, 0.75, 0.2, 1) both;
+  animation: arrow-drop 1020ms cubic-bezier(0.16, 0.84, 0.24, 1) 40ms both;
 }
 @keyframes arrow-drop {
-  from { transform: translate3d(0, -9px, 0); }
+  from { transform: translate3d(0, -15px, 0); }
   to   { transform: translate3d(0, 0, 0); }
 }
+/* The half that falls starts a whole cap-height above where it lands, so the
+   eye sees distance, and takes its time getting there. This is the one place
+   the site is allowed to be theatrical: it costs 1.1s, once, on load. */
 .hero-word-down {
-  animation: word-drop 760ms cubic-bezier(0.22, 0.75, 0.2, 1) 70ms both;
+  animation: word-drop 1080ms cubic-bezier(0.16, 0.84, 0.24, 1) 60ms both;
+  will-change: transform;
 }
 @keyframes word-drop {
-  from { transform: translate3d(0, -0.14em, 0); }
+  from { transform: translate3d(0, -0.62em, 0); }
   to   { transform: translate3d(0, 0, 0); }
 }
 
@@ -2353,13 +2399,20 @@ a.donate-value:hover { text-decoration: underline; }
 
 .hero-word-m { display: inline; }
 .hero-word-down { display: inline-block; margin-left: 0.05em;
-  /* the hair of margin is what keeps the grey letters off the white m while
-     they fall; it stays after they land, so nothing reflows */ }
+  /* the quieter half of the name, and the hair of margin is what keeps the grey
+     letters off the white m while they fall */ 
+  color: var(--text-2); }
 /* nobody asked for motion: show the lockup and be done */
 @media (prefers-reduced-motion: reduce) {
   .hero-logo, .mark-arrow, .hero-word-down { animation: none; }
 }
-.hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
+/* a period set at the size of the word is a blob. Smaller, pulled in, and
+   nudged onto the baseline so the two halves stay one word. */
+.hero-word-dot {
+  color: var(--accent);
+  font-size: 0.6em;
+  margin: 0 -0.01em;
+}
 .hero-word-sub {
   /* the tld, set smaller than the name: it reads as mdown.cc rather than
      mdowncc, and the dot still does the separating */
@@ -2778,7 +2831,7 @@ a.addr-value:hover { color: var(--text); }
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .donate-page { padding-bottom: 40px; }
   .donate-hero { grid-template-columns: 1fr; gap: 10px; padding-bottom: 26px; }
-  .donate-hero-art { width: 128px; order: -1; margin: 2px 0 0; }
+  .donate-hero-art { width: 104px; order: 1; margin: 14px 0 0; }
   .donate-headline { font-size: clamp(1.85rem, 8.6vw, 2.4rem); }
   .donate-sub { font-size: 0.86rem; }
   .donate-facts { grid-template-columns: 1fr; }
@@ -2809,7 +2862,7 @@ a.addr-value:hover { color: var(--text); }
   .mini-dock {
     display: flex; align-items: center; gap: 10px;
     position: fixed; left: 8px; right: 8px; z-index: 54;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
     padding: 9px 11px; border-radius: 12px;
     background: var(--bg-elev); border: 1px solid var(--stroke-2);
     text-align: left;
@@ -2829,7 +2882,8 @@ a.addr-value:hover { color: var(--text); }
   .mini-line b { color: var(--text-2); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mini-line span { color: var(--text-3); flex: none; font-variant-numeric: tabular-nums; }
   .mini-pct { color: var(--text) !important; font-weight: 600; }
-  .mini-sub { font-size: 0.6rem; }
+  .mini-sub { font-size: 0.74rem; }
+  .mini-line b, .mini-line span { font-size: 0.78rem; }
   .mini-track { height: 4px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
   .mini-go { width: 22px; height: 22px; flex: none; display: grid; place-items: center; color: var(--text-3); }
   .mini-go svg { width: 14px; height: 14px; }
@@ -2897,7 +2951,7 @@ a.addr-value:hover { color: var(--text); }
     border-radius: 11px; border: 1px solid var(--stroke);
     background: var(--surface);
     color: var(--text-3);
-    font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.02em;
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.02em;
     transition: color 110ms, background 110ms, border-color 110ms;
   }
   .mbar-item svg { width: 20px; height: 20px; }
@@ -2912,7 +2966,7 @@ a.addr-value:hover { color: var(--text); }
   /* the queue is a sheet above the bar, because its old anchor is gone */
   .dock-panel {
     position: fixed; left: 8px; right: 8px; top: auto; width: auto;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
     transform-origin: bottom center;
     max-height: min(42vh, 380px); overflow-y: auto;
     padding: 9px;
@@ -3238,7 +3292,7 @@ a.addr-value:hover { color: var(--text); }
 [data-theme="light"] .donate-row { background: #fff; box-shadow: var(--shadow-1); }
 [data-theme="light"] .donate-card { background: #fff; border-color: rgba(0, 0, 0, 0.22); box-shadow: var(--shadow-1); }
 [data-theme="light"] .footer-meta a,
-[data-theme="light"] .footer-meta .footer-link { background: #fff; border-color: rgba(0, 0, 0, 0.18); }
+[data-theme="light"] .footer-meta .footer-link { background: transparent; border-color: transparent; }
 [data-theme="light"] .share-chip,
 [data-theme="light"] .share-copy-btn,
 [data-theme="light"] .addr-copy { border-color: rgba(0, 0, 0, 0.16); }

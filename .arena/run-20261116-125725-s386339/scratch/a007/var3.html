@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<meta charset="utf-8">
+<title>lockup variants r3</title>
+<style>
+:root{
+  --bg:#0a0a0b; --text:#ededee; --text-2:#a1a1a6; --text-3:#8b8b93; --accent:#ededee;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono);padding:40px 32px;display:flex;flex-direction:column;gap:40px;}
+.row{display:flex;flex-direction:column;gap:12px;}
+.tag{color:var(--text-3);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)}
+.lock{font-family:var(--mono);font-size:38.4px;font-weight:500;line-height:1;margin:0;
+  display:flex;align-items:baseline;gap:0.28em;color:var(--text);}
+.mark{display:flex;flex:none;height:1.4cap;width:0.78cap;color:var(--text);}
+.mark svg{display:block;height:100%;width:100%;overflow:visible;}
+.word{display:block;white-space:nowrap;letter-spacing:-0.03em;}
+.tail{font-size:.8em;color:var(--text-2);letter-spacing:0;}
+.dt{color:var(--accent);margin-left:-.10em;margin-right:-.10em}
+.big{display:flex;gap:40px;align-items:flex-start;color:var(--text)}
+.big svg{display:block;overflow:visible;height:160px;width:auto}
+</style>
+
+<div class="row"><div class="tag">G · tail .cc at .8em — dot inside the tail</div>
+<h1 class="lock"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="tail"><span class="dt">.</span>cc</span></span></h1></div>
+
+<div class="row"><div class="tag">H · tail .cc at .8em, cc text-3</div>
+<h1 class="lock"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="tail" style="color:var(--text-3)"><span class="dt">.</span>cc</span></span></h1></div>
+
+<div class="row"><div class="tag">I · tail .cc at .86em text-2</div>
+<h1 class="lock"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="tail" style="font-size:.86em"><span class="dt">.</span>cc</span></span></h1></div>
+
+<div class="row"><div class="tag">J · weight 400 whole lockup</div>
+<h1 class="lock" style="font-weight:400"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="tail"><span class="dt">.</span>cc</span></span></h1></div>
+
+<div class="row"><div class="tag">K · tail same size, text-2, dot accent</div>
+<h1 class="lock"><span class="mark" aria-hidden="true"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g class="a"><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></span><span class="word">mdown<span class="tail" style="font-size:1em"><span class="dt" style="margin-left:-.09em;margin-right:-.12em">.</span>cc</span></span></h1></div>
+
+<div class="row"><div class="tag">the mark at 160px, to judge the drawing itself</div>
+<div class="big"><svg viewBox="2.2 0 15.6 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g><path d="M10 8.6V23.4"/><path d="M5.4 18.8 10 23.4l4.6-4.6"/></g><path d="M2.2 28h15.6"/></svg></div></div>

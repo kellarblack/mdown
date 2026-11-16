@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="app.css">
+<style>
+  body { margin: 0; background: var(--bg); color: var(--text); }
+  .row { display: flex; align-items: center; gap: 30px; padding: 16px 24px; }
+  .row svg { display: block; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+  .ns svg path, .ns svg g { vector-effect: non-scaling-stroke; }
+  .s24 { width: 24px; height: 24px; }
+  .s48 { width: 48px; height: 48px; }
+  .s96 { width: 96px; height: 96px; }
+  .lab { font: 9px var(--mono); color: #4a4a52; width: 90px; }
+</style>
+</head>
+<body>
+<div class="row ns"><span class="lab">non-scaling</span>
+  <svg class="s24" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg>
+  <svg class="s48" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg>
+  <svg class="s96" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg>
+</div>
+<div class="row"><span class="lab">scaling</span>
+  <svg class="s24" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg>
+  <svg class="s48" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg>
+  <svg class="s96" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg>
+</div>
+<script>
+window.addEventListener('load', function () {
+  var p = document.querySelector('.ns svg path');
+  var q = document.querySelector('.row:not(.ns) svg path');
+  var pre = document.createElement('pre'); pre.id = 'probe';
+  pre.textContent = JSON.stringify({
+    ns_path: [getComputedStyle(p).vectorEffect, getComputedStyle(p).strokeWidth],
+    plain_path: [getComputedStyle(q).vectorEffect, getComputedStyle(q).strokeWidth]
+  });
+  document.documentElement.appendChild(pre);
+});
+</script>
+</body>
+</html>

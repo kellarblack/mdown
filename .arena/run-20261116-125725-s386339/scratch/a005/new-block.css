@@ -1,0 +1,68 @@
+/* ---------- hero lockup ----------
+   One object: the mark's ink is one cap height and a hair tall, it stands on
+   the same baseline as the letters, and the gap is measured in the type's own
+   em. Every number below is in em, so the lockup is the same drawing at 320px
+   and at 1440px and nothing needs a breakpoint of its own.
+
+   Nothing here redraws the logo: these are the header's paths, re-cropped to
+   the ink they already occupy and given the stroke weight that belongs to 38px
+   type rather than 13px text. */
+.hero { width: 100%; }
+
+.hero-logo {
+  display: flex; align-items: baseline; justify-content: center;
+  gap: 0.18em;                                  /* 6.9px at 38.4px */
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  font-family: var(--mono);
+  font-size: clamp(1.75rem, 4.2vw, 2.4rem);     /* 28px at 320, 38.4px on desktop */
+  line-height: 1;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* The box is the drawing: 18 units square, cropped to the ink, so 0.76em of box
+   is 0.76em of mark with no hidden air to compensate for. And 0.76em is the
+   height of the "d" next to it (SF Mono's ascender measures 0.7598em), so on a
+   shared baseline the mark fills exactly one letter's slot: top level with the
+   "d", tray on its feet. No centring guess, and it survives a fallback to
+   Menlo or Consolas. */
+.hero-mark {
+  display: block; flex: none;
+  width: 0.76em; height: 0.76em;
+  color: var(--text);
+  overflow: visible;                            /* the arrow starts above the box */
+}
+.hero-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.hero-word { font-weight: 500; letter-spacing: -0.012em; }
+/* "down" is its own box so it can fall; no margins, so the mono advance does
+   the spacing and the word stays one word */
+.hero-word-down {
+  display: inline-block;
+  animation: hero-word-fall 640ms var(--ease) both;
+}
+/* In mono a period carries 0.28em of air on its left and 0.34em on its right.
+   Pulling back 0.14em and 0.25em leaves 0.13em and 0.07em, so the dot sits
+   nearer "cc" than "n" — the way a domain reads — while the two halves stay
+   one word. */
+.hero-word-dot { color: var(--accent); margin: 0 -0.25em 0 -0.14em; }
+/* the tld is the same size, weight and rhythm as the name — only its value
+   changes, so it ends the word instead of hanging off it like a badge */
+.hero-word-sub { color: var(--text-2); }
+
+/* One gesture in two places: the arrow falls the last 2.4 units into the tray
+   and the "down" of the name falls 0.1em with it — same distance (0.1em ≈ 4px
+   at 38.4px), same start, same curve, 640ms, no overshoot. Transform only, so
+   nothing reflows and nothing leaves the lockup. */
+.mark-arrow { animation: hero-arrow-fall 640ms var(--ease) both; }
+@keyframes hero-arrow-fall {
+  from { transform: translate3d(0, -2.4px, 0); }  /* 2.4 of the mark's 18 units */
+  to   { transform: translate3d(0, 0, 0); }
+}
+@keyframes hero-word-fall {
+  from { transform: translate3d(0, -0.1em, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mark-arrow, .hero-word-down { animation: none; }
+}

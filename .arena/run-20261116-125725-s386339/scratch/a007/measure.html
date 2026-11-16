@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>measure</title>
+<style>
+ html,body{margin:0;background:#111;font:11px ui-monospace,monospace;color:#888}
+ .strip{display:flex;gap:10px;padding:6px}
+ iframe{border:1px solid #333;display:block;background:#0a0a0b}
+ pre{color:#dcdcdc;font-size:11px;line-height:1.5;padding:6px}
+</style>
+<div class="strip">
+  <figure><figcaption>old · 1440</figcaption><iframe id="fo" src="old.html" width="1440" height="700"></iframe></figure>
+</div>
+<div class="strip">
+  <figure><figcaption>new · 1440</figcaption><iframe id="fn" src="preview.html" width="1440" height="700"></iframe></figure>
+</div>
+<div class="strip">
+  <figure><figcaption>new · 360</figcaption><iframe id="fn3" src="preview.html" width="360" height="700"></iframe></figure>
+</div>
+<div class="strip">
+  <figure><figcaption>new · 320</figcaption><iframe id="fn2" src="preview.html" width="320" height="700"></iframe></figure>
+</div>
+<pre id="out">measuring…</pre>
+<script>
+const R = (e) => { const b = e.getBoundingClientRect(); return { x:+b.x.toFixed(2), y:+b.y.toFixed(2), w:+b.width.toFixed(2), h:+b.height.toFixed(2), t:+b.top.toFixed(2), b:+b.bottom.toFixed(2) }; };
+function probe(w) {
+  const d = w.document;
+  const logo = d.querySelector('.hero-logo');
+  const mark = d.querySelector('.hero-mark');
+  const svg = d.querySelector('.hero-mark svg');
+  const word = d.querySelector('.hero-word');
+  const dot = d.querySelector('.hero-word-dot');
+  const sub = d.querySelector('.hero-word-sub');
+  const comp = d.querySelector('.composer');
+  // baseline probe
+  const p = d.createElement('span');
+  p.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+  logo.appendChild(p);
+  const base = R(p).b; p.remove();
+  const cs = w.getComputedStyle(logo);
+  const fs = parseFloat(cs.fontSize);
+  const markCS = w.getComputedStyle(mark);
+  const tray = svg.getBoundingClientRect();
+  return {
+    vw: w.innerWidth,
+    heroFontSize: +fs.toFixed(2),
+    lockupHeight: +R(logo).h.toFixed(2),
+    lockupWidth: +R(logo).w.toFixed(2),
+    baselineY: +base.toFixed(2),
+    markBox: [+R(mark).w.toFixed(2), +R(mark).h.toFixed(2)],
+    svgBox: [+tray.w.toFixed(2), +tray.h.toFixed(2)],
+    svgBottomMinusBaseline: +(tray.bottom - base).toFixed(2),
+    inkWidthPx: +(tray.w).toFixed(2),
+    gapMarkToWordPx: +(R(word).x - R(mark).x - R(mark).w).toFixed(2),
+    wordWidth: +R(word).w.toFixed(2),
+    dotBox: [+R(dot).w.toFixed(2), +R(dot).h.toFixed(2)],
+    subFontSize: +parseFloat(w.getComputedStyle(sub).fontSize).toFixed(2),
+    subColor: w.getComputedStyle(sub).color,
+    composerTop: +R(comp).t.toFixed(2),
+    composerWidth: +R(comp).w.toFixed(2),
+    docScrollWidth: d.documentElement.scrollWidth,
+    overflowX: d.documentElement.scrollWidth > w.innerWidth
+  };
+}
+function when(id, cb) {
+  const f = document.getElementById(id);
+  if (f.contentDocument && f.contentDocument.readyState === 'complete') cb(f.contentWindow);
+  else f.addEventListener('load', () => cb(f.contentWindow));
+}
+const res = {};
+let n = 0;
+const done = () => { if (++n === 4) document.getElementById('out').textContent = JSON.stringify(res, null, 1); };
+when('fo', w => { res.old1440 = probe(w); done(); });
+when('fn', w => { res.new1440 = probe(w); done(); });
+when('fn3', w => { res.new360 = probe(w); done(); });
+when('fn2', w => { res.new320 = probe(w); done(); });
+</script>

@@ -1,0 +1,97 @@
+/* hero: the lockup --------------------------------------------------------
+   One font-size drives the whole lockup — the name, the mark, the gap, the dot
+   are all in em, so it scales as a single object and needs no second
+   breakpoint. The mark is baseline-aligned: its tray rests on the same line as
+   the feet of the letters. */
+.hero { width: 100%; }
+
+.hero-logo {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.32em;
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  font-family: var(--mono);
+  font-size: clamp(1.9rem, 5vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: var(--text);
+}
+
+/* the mark: an arrow and the tray it lands in, drawn at one weight. The box is
+   trimmed to the drawing, so its bottom edge is the tray's underside and the
+   mark stands on the baseline instead of floating beside the word. */
+.hero-mark {
+  flex: none;
+  padding-top: 0.17em;   /* the arrow's flight path, kept inside the lockup */
+  color: var(--text);
+}
+.hero-mark svg {
+  display: block;
+  width: 0.93em;         /* 1.12 × 0.83: the viewBox's own ratio, so nothing is letterboxed */
+  height: 1.12em;
+  overflow: visible;     /* the arrow starts above its resting place */
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.15;    /* the drawing's units — 2.7px at the 2.5rem size */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* the name: one run of type, split only where it moves */
+.hero-word { display: inline-block; }
+.hero-word-m { display: inline; }
+.hero-word-down { display: inline-block; }
+
+/* the dot is the joint between the name and the tld, so it gets its own 0.15em
+   slot instead of a whole 0.6em mono cell — that cell of air on both sides is
+   what made the name and the tld look unrelated. It is drawn rather than typed:
+   a period is a square in Menlo and a different shape in every other mono. */
+.hero-word-dot {
+  display: inline-block;
+  position: relative;
+  width: 0.15em;         /* the dot's own advance, not a whole 0.6em mono cell */
+  height: 1em;           /* a box to hold it; a shorter one notches the selection */
+  overflow: hidden;      /* its baseline is now its bottom edge, the type's baseline */
+  margin: 0 0.065em;
+  color: transparent;    /* the glyph is the text; the dot below is its ink */
+}
+.hero-word-dot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;             /* the baseline */
+  width: 0.15em;
+  height: 0.15em;
+  margin-left: -0.075em;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* the tld: a step down in size and one in colour, on the same baseline */
+.hero-word-sub {
+  font-size: 0.8em;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-2);
+}
+
+/* one gesture: the arrow drops into the tray and the half of the name it hangs
+   over falls with it — same distance, same curve, same 760ms, no delay, no
+   overshoot. The curve is the site's own (--ease), the one the mode switch
+   rides. */
+@keyframes hero-arrow-drop {
+  from { transform: translateY(-2.7px); }   /* the drawing's units: 6.4px at 40px */
+  to   { transform: translateY(0); }
+}
+@keyframes hero-word-drop {
+  from { transform: translateY(-0.16em); }  /* the same 6.4px at 40px */
+  to   { transform: translateY(0); }
+}
+.mark-arrow     { animation: hero-arrow-drop 760ms var(--ease) backwards; }
+.hero-word-down { animation: hero-word-drop  760ms var(--ease) backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mark-arrow, .hero-word-down { animation: none; }
+}

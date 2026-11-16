@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>lockup close-up — final</title>
+<link rel="stylesheet" href="/assets/app.css">
+<style>
+  * { animation: none !important; }
+  body { padding: 24px 16px 40px; }
+  .row { max-width: 1180px; margin: 0 auto 18px; }
+  .row h2 { font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+            color: var(--text-3); margin: 0 0 2px; padding-top: 6px; border-top: 1px solid var(--stroke); }
+  .stage { display: flex; justify-content: center; padding: 4px 0 8px; }
+  .z3 { zoom: 3; }
+  .z1 { zoom: 1; }
+
+  /* ---- old ---- */
+  .old .hero-logo { display: flex; align-items: center; justify-content: center; gap: 14px;
+                    margin: 0 auto; color: var(--text); }
+  .old .hero-mark { display: grid; place-items: center; flex: none;
+                    width: clamp(34px, 5vw, 44px); height: clamp(34px, 5vw, 44px); }
+  .old .hero-mark svg { width: 100%; height: 100%; }
+  .old .hero-word { font-family: var(--mono); font-weight: 500;
+                    font-size: clamp(1.75rem, 4.2vw, 2.4rem); letter-spacing: -0.03em; line-height: 1; }
+  .old .hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
+  .old .hero-word-sub { font-size: 0.72em; font-weight: 400; color: var(--text-3);
+                        letter-spacing: 0; margin-left: 2px; }
+  .old .hero-word-down { display: inline-block; margin-left: 0.05em; }
+
+  /* ---- final ---- */
+  .new .hero-logo { min-height: clamp(34px, 5vw, 44px); --logo: clamp(1.75rem, 4.2vw, 2.4rem);
+                    display: flex; align-items: baseline; justify-content: center;
+                    gap: 0.22em; margin: 0 auto; font-size: var(--logo); color: var(--text); }
+  .new .hero-mark { display: inline-block; flex: none; line-height: 0; }
+  .new .hero-mark svg { display: inline; vertical-align: baseline; width: 0.86em; height: 0.86em; }
+  .new .hero-word { font-family: var(--mono); font-weight: 500; font-size: 1em; line-height: 1;
+                    letter-spacing: 0; white-space: nowrap; }
+  .new .hero-word-dot { color: var(--accent); margin-inline: -0.125em; }
+  .new .hero-word-sub { font-size: 0.7em; font-weight: 400; color: var(--text-2);
+                        letter-spacing: 0.035em; margin-left: 0.06em; }
+</style>
+</head>
+<body>
+
+<div class="row old"><h2>old — 3×</h2><div class="stage z3">
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+        <path class="mark-tray" d="M4 19h16"/>
+      </svg>
+    </span>
+    <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
+  </h1>
+</div></div>
+
+<div class="row new"><h2>dot at 0.7em — 3×</h2><div class="stage z3 dotb">
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 4.25V16"/><path d="M6.4 10.4l5.6 5.6 5.6-5.6"/></g>
+        <path class="mark-tray" d="M1.25 18.75v4h21.5v-4"/>
+      </svg>
+    </span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+  </h1>
+</div></div>
+<div class="row new"><h2>new — 3×</h2><div class="stage z3">
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 4.25V16"/><path d="M6.4 10.4l5.6 5.6 5.6-5.6"/></g>
+        <path class="mark-tray" d="M1.25 18.75v4h21.5v-4"/>
+      </svg>
+    </span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+  </h1>
+</div></div>
+
+<div class="row old"><h2>old — 1×</h2><div class="stage z1">
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+        <path class="mark-tray" d="M4 19h16"/>
+      </svg>
+    </span>
+    <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
+  </h1>
+</div></div>
+
+<div class="row new"><h2>new — 1×</h2><div class="stage z1">
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 4.25V16"/><path d="M6.4 10.4l5.6 5.6 5.6-5.6"/></g>
+        <path class="mark-tray" d="M1.25 18.75v4h21.5v-4"/>
+      </svg>
+    </span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+  </h1>
+</div></div>
+
+</body>
+</html>

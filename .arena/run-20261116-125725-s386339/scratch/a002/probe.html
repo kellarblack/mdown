@@ -1,0 +1,16 @@
+<!doctype html><body><pre id=o>…</pre>
+<iframe id=f src="http://127.0.0.1:4399/index.html" width=360 height=780 style="position:absolute;left:-9999px"></iframe>
+<script>
+const f=document.getElementById('f');
+f.onload=()=>{setTimeout(()=>{
+ const d=f.contentDocument, w=d.querySelector('.hero-word'), m=d.querySelector('.hero-mark');
+ const cs=f.contentWindow.getComputedStyle(w), csm=f.contentWindow.getComputedStyle(m);
+ const hl=d.querySelector('.hero-logo');
+ const r=w.getBoundingClientRect(), mr=m.getBoundingClientRect(), hr=hl.getBoundingClientRect();
+ document.getElementById('o').textContent=JSON.stringify({
+   wordColor:cs.color, wordOpacity:cs.opacity, wordFont:cs.fontSize, wordWeight:cs.fontWeight,
+   markBox:[mr.width,mr.height,mr.top,mr.bottom], wordRect:[r.width,r.height,r.top,r.bottom],
+   h1:[hr.width,hr.height], docW:d.documentElement.scrollWidth, clientW:d.documentElement.clientWidth
+ },null,1);
+},1200)};
+</script></body>

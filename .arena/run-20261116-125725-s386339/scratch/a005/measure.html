@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8"><title>m</title></head><body><pre id="out">…</pre>
+<script>
+const c = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+function stem(px, weight) {
+  const W = 60 * px, H = 3 * px;
+  c.canvas.width = W; c.canvas.height = H;
+  c.font = weight + " " + px + "px ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, Consolas";
+  c.textBaseline = "alphabetic";
+  c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
+  c.fillStyle = "#fff"; c.fillText("m", 4, px * 2);
+  const d = c.getImageData(0, 0, W, H).data;
+  const y = Math.round(px * 2 - px * 0.25);
+  let runs = [], run = 0;
+  for (let x = 0; x < W; x++) {
+    const v = d[(y * W + x) * 4];
+    if (v > 90) run++; else if (run) { runs.push(run); run = 0; }
+  }
+  c.font = weight + " " + px + "px ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, Consolas";
+  const m = c.measureText("m"), M = c.measureText("M"), xh = c.measureText("x");
+  return { px, weight, stems: runs, adv: +(m.width / px).toFixed(4),
+    cap: +(M.actualBoundingBoxAscent / px).toFixed(4), xheight: +(xh.actualBoundingBoxAscent / px).toFixed(4),
+    asc: +(m.fontBoundingBoxAscent / px).toFixed(4), desc: +(m.fontBoundingBoxDescent / px).toFixed(4) };
+}
+const rows = [stem(200, 500), stem(200, 400), stem(76.8, 500), stem(38.4, 500), stem(38.4, 400), stem(28, 500)];
+document.getElementById("out").textContent = rows.map(r => JSON.stringify(r)).join("\n");
+</script></body></html>

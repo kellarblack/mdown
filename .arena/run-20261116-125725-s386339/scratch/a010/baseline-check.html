@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>baseline check</title>
+<style>
+  html, body { margin: 0; background: #0a0a0b; }
+  iframe { display: block; border: 0; }
+  #log { font: 11px/1.45 ui-monospace, monospace; color: #7f7; white-space: pre; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<script>
+const q = new URLSearchParams(location.search);
+const width = +(q.get("w") || 1440);
+
+const OLD_MARKUP = `<h1 class="hero-logo">
+      <span class="hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+          <path class="mark-tray" d="M4 19h16"/>
+        </svg>
+      </span>
+      <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
+      <span class="sr-only"> — a media downloader for video and audio</span>
+    </h1>`;
+
+const OLD_CSS = `
+.hero-logo {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin: 0 auto 10px;
+  color: var(--text);
+}
+.hero-mark {
+  display: grid; place-items: center; flex: none;
+  width: clamp(34px, 5vw, 44px); height: clamp(34px, 5vw, 44px);
+  color: var(--text);
+}
+.hero-mark svg { width: 100%; height: 100%; }
+.hero-word {
+  position: relative;
+  font-family: var(--mono); font-weight: 500;
+  font-size: clamp(1.75rem, 4.2vw, 2.4rem);
+  letter-spacing: -0.03em; line-height: 1;
+}
+.hero-type { display: inline-block; }
+.hero-word-m { display: inline; }
+.hero-word-down { display: inline-block; margin-left: 0.05em; }
+.hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
+.hero-word-sub {
+  font-size: 0.72em; font-weight: 400; color: var(--text-3);
+  letter-spacing: 0; margin-left: 2px;
+}
+.hero-logo { margin-bottom: clamp(18px, 3vh, 28px); }
+`;
+
+localStorage.setItem("mdown.settings", JSON.stringify({
+  instance: "http://127.0.0.1:4320", savingMethod: "ask", theme: "dark",
+  downloadMode: "auto", filenameStyle: "pretty"
+}));
+
+const frame = document.createElement("iframe");
+frame.style.width = width + "px";
+frame.style.height = (q.get("h") || 860) + "px";
+frame.src = "/index.html";
+document.body.appendChild(frame);
+
+frame.addEventListener("load", async () => {
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  await new Promise((r) => setTimeout(r, 200));
+  doc.querySelector("h1.hero-logo").outerHTML = OLD_MARKUP;
+  const css = await (await fetch("/assets/app.css")).text();
+  const start = css.indexOf("/* one flow: the arrow rises");
+  const end = css.indexOf(".meta-line {", start);
+  const patched = css.slice(0, start) + OLD_CSS + "\n" + css.slice(end);
+  doc.querySelectorAll('link[rel="stylesheet"]').forEach((l) => l.remove());
+  const st = doc.createElement("style");
+  st.textContent = patched + "\n.hero-logo, .hero-mark, .hero-word, .mark-arrow, .hero-word-down { animation: none !important; }";
+  doc.head.appendChild(st);
+
+  const L = doc.querySelector(".hero-logo");
+  const M = doc.querySelector(".hero-mark");
+  const Msvg = doc.querySelector(".hero-mark svg");
+  const W = doc.querySelector(".hero-word");
+  const cs = win.getComputedStyle(W);
+  const px = parseFloat(cs.fontSize);
+  const c = doc.createElement("canvas").getContext("2d");
+  c.font = cs.fontWeight + " " + px + "px " + cs.fontFamily;
+  const m = (t) => c.measureText(t);
+  // baseline probe
+  const probe = doc.createElement("span");
+  probe.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+  W.appendChild(probe);
+  const baseY = probe.getBoundingClientRect().bottom;
+  probe.remove();
+  const out = [];
+  out.push("OLD at width " + win.innerWidth + "  font " + px.toFixed(2) + "px   letter-spacing -0.03em");
+  out.push("mark box " + M.getBoundingClientRect().width.toFixed(2) + "   stroke renders " +
+    (2 * M.getBoundingClientRect().width / 24).toFixed(2) + "px   (text stems ~" + (4.5 * px / 48).toFixed(2) + "px)");
+  out.push("lockup ink: mark left " + M.getBoundingClientRect().left.toFixed(1) + "  word right " +
+    W.getBoundingClientRect().right.toFixed(1) + "  width " + (W.getBoundingClientRect().right - M.getBoundingClientRect().left).toFixed(1));
+  out.push("mark box left " + M.getBoundingClientRect().left.toFixed(1) + "  word box left " + W.getBoundingClientRect().left.toFixed(1) +
+    "  gap(declared) 14  optical gap " + (W.getBoundingClientRect().left - M.getBoundingClientRect().left - M.getBoundingClientRect().width).toFixed(1));
+  out.push("baseline y " + baseY.toFixed(2) + "  cap " + m("H").actualBoundingBoxAscent.toFixed(2) +
+    "  x " + m("x").actualBoundingBoxAscent.toFixed(2));
+  const svgbb = Msvg.getBBox();
+  const sc = M.getBoundingClientRect().width / 24;
+  const inkBottom = M.getBoundingClientRect().top + (svgbb.y + svgbb.height) * sc;
+  out.push("mark ink bottom " + inkBottom.toFixed(2) + "  vs baseline " + baseY.toFixed(2) +
+    "  -> " + (inkBottom - baseY).toFixed(2) + "px below the baseline");
+  const capCentre = baseY - m("H").actualBoundingBoxAscent / 2;
+  const inkCentre = M.getBoundingClientRect().top + (svgbb.y + svgbb.height / 2) * sc;
+  out.push("cap band centre " + capCentre.toFixed(2) + "  mark ink centre " + inkCentre.toFixed(2) +
+    "  -> mark sits " + (inkCentre - capCentre).toFixed(2) + "px low");
+  const dot = doc.querySelector(".hero-word-dot");
+  const sub = doc.querySelector(".hero-word-sub");
+  const peri = m(".");
+  const db = dot.getBoundingClientRect();
+  const sb = sub.getBoundingClientRect();
+  out.push("period cell " + peri.width.toFixed(2) + "  ink " + (-peri.actualBoundingBoxLeft).toFixed(2) +
+    " -> " + peri.actualBoundingBoxRight.toFixed(2));
+  out.push("dot box " + db.width.toFixed(2) + "   sub font " + win.getComputedStyle(sub).fontSize +
+    "   sub margin-left " + win.getComputedStyle(sub).marginLeft);
+  const pre = document.createElement("pre");
+  pre.id = "log";
+  pre.textContent = out.join("\n");
+  document.body.appendChild(pre);
+});
+</script>
+</body>
+</html>

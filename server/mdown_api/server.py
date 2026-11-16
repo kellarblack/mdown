@@ -124,7 +124,10 @@ class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
     server_version = "mdown"
     sys_version = ""
-    timeout = 120
+    # A client that sends headers and then nothing must not own a thread for two
+    # minutes: 250 of those wedged every worker. Twenty seconds is longer than
+    # any real body takes (16 KB cap) and short enough to be harmless.
+    timeout = 20
 
     # injected by the server factory
     config: Config
@@ -510,8 +513,16 @@ class Handler(BaseHTTPRequestHandler):
             error = ApiError.rate_limit(0)
             error.context["retry"] = burst["retry"]
             error.context["reason"] = "too_many_downloads"
-            headers["Retry-After"] = str(burst["retry"])
-            self._json(429, error.payload(), headers)
+            # say which window actually said no, or a client obeying
+            # RateLimit-Reset retries instantly and loops
+            burst_headers = {
+                "RateLimit-Limit": str(self.job_limiter.maximum),
+                "RateLimit-Remaining": str(burst["remaining"]),
+                "RateLimit-Reset": str(burst["retry"]),
+                "RateLimit-Policy": "%d;w=%d" % (self.job_limiter.maximum, self.job_limiter.window),
+                "Retry-After": str(burst["retry"]),
+            }
+            self._json(429, error.payload(), burst_headers)
             return
 
         body = self._read_json()
@@ -723,6 +734,11 @@ def _quote(value: str) -> str:
 class ApiServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
+    # 64 concurrent sockets is more than a one-vCPU box can serve anyway; beyond
+    # that the kernel queue is the right place to wait, not a thread per socket
+    request_queue_size = 64
+    max_connections = 120
+    _live = None
 
     def __init__(self, config: Config) -> None:
         handler = type("BoundHandler", (Handler,), {
@@ -766,6 +782,30 @@ class ApiServer(ThreadingHTTPServer):
             time.sleep(120)
             for item in (limiter, jobs, probes, reads, reports):
                 item.prune()
+
+    def process_request(self, request, client_address) -> None:  # noqa: D401
+        # Refuse politely rather than spawn thread 121; the kernel accept queue
+        # still holds the rest, so nothing is silently dropped.
+        if self._live is None:
+            import threading
+            self._live = threading.Semaphore(self.max_connections)
+        if not self._live.acquire(blocking=False):
+            try:
+                request.close()
+            except OSError:
+                pass
+            return
+        try:
+            super().process_request(request, client_address)
+        except Exception:
+            self._live.release()
+            raise
+
+    def process_request_thread(self, request, client_address) -> None:
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self._live.release()
 
     def server_bind(self) -> None:
         # skip HTTPServer's getfqdn() call, which blocks for seconds on a host

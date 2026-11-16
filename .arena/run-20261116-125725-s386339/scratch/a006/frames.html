@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><title>frames</title>
+<style>body{margin:0;background:#111;color:#ddd;font:11px monospace}iframe{border:0;display:block}
+.wrap{display:inline-block;vertical-align:top;margin:0 8px}</style></head><body>
+<pre id="log">…</pre>
+<script>
+const SRC = new URLSearchParams(location.search).get('src') || 'index-probe.html';
+const WIDTHS = (new URLSearchParams(location.search).get('w') || '320,360,390').split(',').map(Number);
+const slots = [];
+for (const w of WIDTHS) {
+  const box = document.createElement('div');
+  box.className = 'wrap';
+  const f = document.createElement('iframe');
+  f.width = w; f.height = 720; f.src = SRC;
+  box.appendChild(f);
+  document.body.insertBefore(box, document.getElementById('log'));
+  slots.push([w, f]);
+}
+const out = {};
+const t0 = Date.now();
+const tick = setInterval(() => {
+  let done = 0;
+  for (const [w, f] of slots) {
+    try {
+      const pre = f.contentDocument && f.contentDocument.getElementById('probe-out');
+      if (pre) { out[w] = JSON.parse(pre.textContent); done++; }
+    } catch (e) { out[w] = 'ERR ' + e.message; done++; }
+  }
+  if (done === slots.length || Date.now() - t0 > 12000) {
+    clearInterval(tick);
+    document.getElementById('log').textContent = JSON.stringify(out, null, 1);
+  }
+}, 200);
+</script></body></html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>ink metrics</title></head>
+<body style="background:#111;color:#ddd;font:12px monospace">
+<pre id="out">[
+ {
+  "font": "stack",
+  "advanceEm": 0.6021,
+  "nameInkR": 103,
+  "nameBoxW": 104.9,
+  "dotInk": [
+   6,
+   13
+  ],
+  "dotCellAirLeft": 6,
+  "cInkLAtSub": 2,
+  "gapNameToDot": 7.9,
+  "gapDotToC": 9.98,
+  "periodW": 7,
+  "periodTop": 7,
+  "periodH": -1
+ },
+ {
+  "font": "sf-mono",
+  "advanceEm": 0.7778,
+  "nameInkR": 105,
+  "nameBoxW": 137.42,
+  "dotInk": [
+   3,
+   8
+  ],
+  "dotCellAirLeft": 3,
+  "cInkLAtSub": 0,
+  "gapNameToDot": 35.42,
+  "gapDotToC": 19.48,
+  "periodW": 5,
+  "periodTop": 2,
+  "periodH": 0
+ },
+ {
+  "font": "menlo",
+  "advanceEm": 0.6021,
+  "nameInkR": 103,
+  "nameBoxW": 104.9,
+  "dotInk": [
+   6,
+   13
+  ],
+  "dotCellAirLeft": 6,
+  "cInkLAtSub": 2,
+  "gapNameToDot": 7.9,
+  "gapDotToC": 9.98,
+  "periodW": 7,
+  "periodTop": 7,
+  "periodH": -1
+ },
+ {
+  "font": "courier",
+  "advanceEm": 0.6001,
+  "nameInkR": 104,
+  "nameBoxW": 104.54,
+  "dotInk": [
+   7,
+   14
+  ],
+  "dotCellAirLeft": 7,
+  "cInkLAtSub": 1,
+  "gapNameToDot": 7.54,
+  "gapDotToC": 7.91,
+  "periodW": 7,
+  "periodTop": 5,
+  "periodH": 0
+ }
+]</pre>
+<script>
+const FAMILIES = [
+  ['stack', 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace'],
+  ['sf-mono', '"SF Mono"'],
+  ['menlo', 'Menlo'],
+  ['courier', 'Courier'],
+];
+const F = 37;            // lockup font-size, px
+const S = -0.035 * F;    // letter-spacing
+const SUB = 0.8;         // .hero-word-sub font-size ratio
+let log = [];
+
+function inkFor(font, str, size, spacing) {
+  const c = document.createElement('canvas');
+  c.width = 1600; c.height = 240;
+  const x = c.getContext('2d');
+  x.font = `${size}px ${font}`;
+  if ('letterSpacing' in x) x.letterSpacing = spacing + 'px';
+  x.textBaseline = 'alphabetic';
+  x.fillStyle = '#fff';
+  x.fillText(str, 100, 190);
+  const d = x.getImageData(0, 0, 1600, 240).data;
+  let L = null, R = null, T = null, B = null;
+  for (let px = 0; px < 1600; px++) {
+    for (let py = 0; py < 240; py++) {
+      if (d[(py * 1600 + px) * 4 + 3] > 60) {
+        if (L === null) L = px;
+        R = px;
+        if (T === null) T = py;
+        B = py;
+        break;
+      }
+    }
+  }
+  return { L: L - 100, R: R - 100, T: 190 - T, B: 190 - B };
+}
+
+function advanceOf(font, size) {
+  const c = document.createElement('canvas');
+  const x = c.getContext('2d');
+  x.font = `${size}px ${font}`;
+  return x.measureText('mmmmmmmmmm').width / 10;
+}
+
+for (const [name, font] of FAMILIES) {
+  const a = advanceOf(font, F);
+  const nameInk = inkFor(font, 'mdown', F, S);
+  const dotInk = inkFor(font, '.', F, S);
+  const cInk = inkFor(font, 'c', F * SUB, 0);
+  // box edges: the name span holds 5 chars + 5 trailing letter-spacings
+  const nameBoxW = 5 * a + 5 * S;
+  const dotBoxW = a + S;
+  const gap1 = (nameBoxW - nameInk.R) + dotInk.L;            // name ink -> dot ink
+  const gap2 = (dotBoxW - (dotInk.R - dotInk.L) - dotInk.L) + cInk.L; // dot ink -> c ink
+  log.push({
+    font: name,
+    advanceEm: +(a / F).toFixed(4),
+    nameInkR: +nameInk.R.toFixed(2),
+    nameBoxW: +nameBoxW.toFixed(2),
+    dotInk: [dotInk.L, dotInk.R],
+    dotCellAirLeft: +dotInk.L.toFixed(2),
+    cInkLAtSub: +cInk.L.toFixed(2),
+    gapNameToDot: +gap1.toFixed(2),
+    gapDotToC: +gap2.toFixed(2),
+    periodW: +(dotInk.R - dotInk.L).toFixed(2),
+    periodTop: +dotInk.T.toFixed(2),
+    periodH: +(dotInk.T - dotInk.B).toFixed(2),
+  });
+}
+document.fonts.ready.then(() => {
+  document.getElementById('out').textContent = JSON.stringify(log, null, 1);
+});
+</script>
+
+</body></html>

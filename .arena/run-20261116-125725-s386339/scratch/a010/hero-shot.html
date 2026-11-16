@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>hero shot</title>
+<style>
+  html, body { margin: 0; background: #0a0a0b; }
+  iframe { display: block; border: 0; width: 100%; height: 900px; }
+  #log { font: 11px/1.45 ui-monospace, monospace; color: #7f7; white-space: pre; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<script>
+const q = new URLSearchParams(location.search);
+const width = q.get("w") || "1440";
+const theme = q.get("theme") || "dark";
+const stroke = q.get("stroke") || "2.5";
+const gap = q.get("gap") || "0.16em";
+const kernL = q.get("kernL") || "0.155";
+const kernR = q.get("kernR") || "0.22";
+const kernL2 = 1;
+const animate = q.get("anim") !== "0";
+const log = q.get("log") === "1";
+
+const MARK = `<svg class="hero-mark" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="${stroke}"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path class="mark-arrow" d="M10 1.25V10.15"/>
+          <path class="mark-arrow" d="m6.2 6.35 3.8 3.8 3.8-3.8"/>
+          <path d="M1.25 13.85V17.2a1.55 1.55 0 0 0 1.55 1.55h14.4a1.55 1.55 0 0 0 1.55-1.55V13.85"/>
+        </svg>`;
+const HTML = `<h1 class="hero-logo">
+      ${MARK}
+      <span class="hero-word">
+        mdown
+        <span class="hero-word-dot">.</span>
+        <span class="hero-word-sub">cc</span>
+      </span>
+      <span class="sr-only"> — a media downloader for video and audio</span>
+    </h1>`;
+
+
+const mode = q.get("mode") || "1";
+const sz = "clamp(2.125rem, 1.15rem + 2.45vw, 3rem)";
+let MODE_CSS = "";
+if (mode === "2") MODE_CSS = ".hero-mark { display: contents; } .hero-mark svg { width: 0.73em; height: 0.73em; }";
+if (mode === "3") MODE_CSS = `
+.hero-logo { --hero-size: ${sz}; font-size: 0; display: block; text-align: center; }
+.hero-mark { font-size: var(--hero-size); display: inline; width: 0.73em; height: 0.73em; margin-right: ${gap}; vertical-align: baseline; }
+.hero-word { font-size: var(--hero-size); display: inline-block; }
+`;
+if (mode === "4") MODE_CSS = ".hero-mark { height: auto; aspect-ratio: 1; }";
+if (mode === "5") MODE_CSS = ".hero-mark { display: block; contain: size; }";
+const tFreeze = q.get("t");
+const CSS = `
+.hero { width: 100%; }
+.hero-logo {
+  font-size: clamp(2.125rem, 1.15rem + 2.45vw, 3rem);
+  display: flex; align-items: baseline; justify-content: center;
+  gap: ${gap};
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  color: var(--text);
+  ${animate ? "animation: hero-lockup-in 380ms var(--ease) both;" : ""}
+}
+.hero-mark {
+  flex: none; display: block;
+  width: 0.73em; height: 0.73em;
+  /* no optical nudge needed: baseline alignment puts the ink on the baseline */
+}
+.hero-mark { overflow: visible; }
+.hero-word {
+  display: inline-flex;
+  font-family: var(--mono); font-weight: 500;
+  font-size: 1em; line-height: 1; letter-spacing: -0.015em;
+  white-space: nowrap;
+  ${animate ? "animation: hero-word-in 760ms var(--ease) both;" : ""}
+}
+.hero-word-dot { color: var(--accent); margin: 0 -${kernR}em 0 -${kernL}em; }
+.hero-word-sub { color: var(--text-3); }
+.mark-arrow { ${animate ? "animation: arrow-in 760ms var(--ease) both;" : "animation: none;"} }
+@keyframes hero-lockup-in { from { opacity: 0.6; } to { opacity: 1; } }
+@keyframes hero-word-in { from { transform: translateY(-0.06em); } to { transform: none; } }
+@keyframes arrow-in { from { transform: translateY(-4px); } to { transform: none; } }
+${tFreeze ? `.hero-logo, .hero-word, .mark-arrow { animation-delay: -${tFreeze}ms !important; animation-play-state: paused !important; }` : ""}
+@media (prefers-reduced-motion: reduce) {
+  .hero-logo, .hero-word, .mark-arrow { animation: none; }
+}
+`;
+
+localStorage.setItem("mdown.settings", JSON.stringify({
+  instance: "http://127.0.0.1:4320", savingMethod: "ask", theme: theme,
+  downloadMode: "auto", filenameStyle: "pretty"
+}));
+
+const frame = document.createElement("iframe");
+frame.style.width = width + "px";
+frame.style.height = (q.get("h") || "820") + "px";
+frame.src = "/index.html";
+document.body.appendChild(frame);
+
+frame.addEventListener("load", async () => {
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  await new Promise((r) => setTimeout(r, 250));
+  // the hero markup, exactly as it ships
+  doc.querySelector("h1.hero-logo").outerHTML = HTML;
+  // swap app.css for the patched copy so the render equals a real file swap
+  const css = await (await fetch("/assets/app.css")).text();
+  const start = css.indexOf("/* one flow: the arrow rises");
+  const end = css.indexOf(".meta-line {", start);
+  const patched = css.slice(0, start) + CSS + "\n" + css.slice(end);
+  doc.querySelectorAll('link[rel="stylesheet"]').forEach((l) => l.remove());
+  const st = doc.createElement("style");
+  st.textContent = patched + "\n" + MODE_CSS;
+  doc.head.appendChild(st);
+
+  if (log) {
+    const lines = [];
+    const L = doc.querySelector(".hero-logo");
+    const M = doc.querySelector(".hero-mark");
+    const W = doc.querySelector(".hero-word");
+    const S = doc.querySelector(".hero-word svg");
+    const cs = win.getComputedStyle(W);
+    const px = parseFloat(cs.fontSize);
+    const c = doc.createElement("canvas").getContext("2d");
+    c.font = cs.fontWeight + " " + px + "px " + cs.fontFamily;
+    const m = (t) => c.measureText(t);
+    // baseline position: an empty inline-block sits its bottom edge on the baseline
+    const probe = doc.createElement("span");
+    probe.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+    doc.querySelector(".hero-word").appendChild(probe);
+    const baseY = probe.getBoundingClientRect().bottom;
+    probe.remove();
+    const box = L.getBoundingClientRect();
+    const mb = M.getBoundingClientRect();
+    const wb = W.getBoundingClientRect();
+    const words = ["m", "n", "d", "c", "cc", "H", "x", "."];
+    lines.push("viewport " + win.innerWidth + "  font " + px + "px/" + cs.fontWeight + "  " + cs.fontFamily.split(",")[0]);
+    lines.push("MODE " + mode);
+    lines.push("lockup w " + box.width.toFixed(1) + " h " + box.height.toFixed(1) + "   container " +
+      doc.getElementById("download-view").getBoundingClientRect().width.toFixed(1));
+    lines.push("mark box " + mb.width.toFixed(2) + "  ink fills box;  stroke " +
+      (parseFloat(stroke) * mb.width / 20).toFixed(2) + "px");
+    lines.push("word box w " + wb.width.toFixed(2) + "   advance-metrics '" + words[0] + "' " + m("m").width.toFixed(2));
+    lines.push("baseline y " + baseY.toFixed(2) + "  box top " + box.top.toFixed(2) +
+      "  box centre " + (box.top + box.height / 2).toFixed(2));
+    lines.push("cap " + m("H").actualBoundingBoxAscent.toFixed(2) +
+      "  x " + m("x").actualBoundingBoxAscent.toFixed(2) +
+      "  dAsc " + m("d").actualBoundingBoxAscent.toFixed(2) +
+      "  desc " + m("mdown.cc").actualBoundingBoxDescent.toFixed(2));
+    const markInkTop = mb.top + 0.0; // ink == box for this viewBox
+    lines.push("mark ink top " + markInkTop.toFixed(2) + " bottom " + (mb.top + mb.height).toFixed(2) +
+      "   capTop " + (baseY - m("H").actualBoundingBoxAscent).toFixed(2) +
+      "   gap-to-baseline " + (baseY - (mb.top + mb.height)).toFixed(2) +
+      "   overhang-above-cap " + ((baseY - m("H").actualBoundingBoxAscent) - markInkTop).toFixed(2));
+    // dot gaps: measure element boxes + ink bearings
+    const dot = doc.querySelector(".hero-word-dot");
+    const sub = doc.querySelector(".hero-word-sub");
+    const db = dot.getBoundingClientRect();
+    const sb = sub.getBoundingClientRect();
+    const peri = m(".");
+    const nRight = m("n").actualBoundingBoxRight;
+    const firstCLeft = -m("c").actualBoundingBoxLeft;
+    const gapNtoDot = (db.left - (-peri.actualBoundingBoxLeft)) - (wb.left + nRight + 0);
+    lines.push("period: adv " + peri.width.toFixed(2) + " inkLeft " + (-peri.actualBoundingBoxLeft).toFixed(2) +
+      " inkRight " + peri.actualBoundingBoxRight.toFixed(2));
+    lines.push("gap n->dot " + (db.left + (-peri.actualBoundingBoxLeft) - (wb.left + 5 * m("m").width - (m("n").width - nRight))).toFixed(2) +
+      "   gap dot->c " + (sb.left + firstCLeft - (db.left + peri.actualBoundingBoxRight)).toFixed(2));
+    lines.push("dot box " + db.width.toFixed(2) + "  sub box " + sb.width.toFixed(2) + "  cc ink w " + (m("cc").width).toFixed(2));
+    lines.push("landscape-hide check: display=" + win.getComputedStyle(doc.querySelector(".hero-logo")).display + " vp " + win.innerWidth + "x" + win.innerHeight + " orientation " + (win.innerWidth>win.innerHeight?"landscape":"portrait"));
+    lines.push("no-wrap: " + (W.getBoundingClientRect().height <= px * 1.05 ? "single line OK" : "WRAPPED"));
+    lines.push("overflow: lockup " + box.width.toFixed(1) + " vs available " +
+      (doc.getElementById("download-view").clientWidth).toFixed(1));
+    const pre = document.createElement("pre");
+    pre.id = "log";
+    pre.textContent = lines.join("\n");
+    document.body.appendChild(pre);
+  }
+});
+</script>
+</body>
+</html>

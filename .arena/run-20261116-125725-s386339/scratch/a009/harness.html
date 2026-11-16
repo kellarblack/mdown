@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>narrow viewport harness</title>
+<style>
+  html, body { margin: 0; background: #222; }
+  iframe { border: 0; display: block; }
+  #m { position: fixed; left: 0; bottom: 0; font: 10px/1.5 ui-monospace, monospace;
+       color: #9f9; background: #000a; padding: 4px; white-space: pre; margin: 0; }
+</style>
+</head>
+<body>
+<pre id="m">waiting</pre>
+<script>
+const q = new URLSearchParams(location.search);
+const w = +(q.get('w') || 360), h = +(q.get('h') || 760);
+const v = q.get('v') || 'new';  // v may be 'new', 'old', 'minh'
+const theme = q.get('theme') || '';
+const frame = document.createElement('iframe');
+frame.width = w; frame.height = h;
+document.body.insertBefore(frame, document.getElementById('m'));
+frame.src = `page-${v}.html` + (theme ? `?t=${theme}` : '');
+frame.addEventListener('load', () => {
+  const d = frame.contentDocument;
+  const win = frame.contentWindow;
+  if (theme) d.documentElement.dataset.theme = theme;
+  requestAnimationFrame(() => {
+    const r = (el) => el.getBoundingClientRect();
+    const word = d.querySelector('.hero-word');
+    const svg = d.querySelector('.hero-mark svg');
+    const logo = d.querySelector('.hero-logo');
+    const comp = d.querySelector('.composer');
+    const probe = d.createElement('span');
+    probe.style.cssText = 'display:inline-block;width:1px;height:0;vertical-align:baseline';
+    word.appendChild(probe);
+    const base = r(probe).bottom;
+    probe.remove();
+    const cs = win.getComputedStyle(word);
+    document.getElementById('m').textContent = JSON.stringify({
+      vw: win.innerWidth, font: cs.fontSize,
+      baseline: +base.toFixed(2), trayVsBaseline: +(r(svg).bottom - base).toFixed(2),
+      markBox: +r(svg).width.toFixed(2), gapPx: +(r(word).left - r(svg).right).toFixed(2),
+      logoH: +r(logo).height.toFixed(2), composerTop: +r(comp).top.toFixed(2),
+      lockupW: +(r(word).right - r(svg).left).toFixed(2),
+      overflowX: d.documentElement.scrollWidth - win.innerWidth,
+      heroRight: +r(word).right.toFixed(2), docW: d.documentElement.clientWidth,
+    });
+  });
+});
+</script>
+</body>
+</html>

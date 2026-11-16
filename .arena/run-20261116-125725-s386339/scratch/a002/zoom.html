@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+:root{
+  --bg:#0a0a0b; --text:#ededee; --text-2:#a1a1a6; --text-3:#8b8b93; --accent:#ededee;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono)}
+.row{padding:30px 24px;border-bottom:1px solid rgba(255,255,255,.08);position:relative}
+.hero-logo{
+  display:flex;align-items:baseline;justify-content:center;gap:.3em;margin:0;
+  font-family:var(--mono);font-size:110px;line-height:1;color:var(--text);font-weight:400;
+}
+.hero-mark{flex:none;width:.72em;height:.72em}
+.hero-mark svg{display:block;width:100%;height:100%;overflow:visible}
+.hero-word{font-weight:500;letter-spacing:-.02em;white-space:nowrap}
+.hero-word-down{display:inline-block}
+.hero-word-dot{color:var(--accent);margin:0 -.06em}
+.hero-word-tld{color:var(--text-3)}
+.zero .hero-word-dot{margin:0}
+.plus .hero-word-dot{margin:0 -.12em}
+.g{position:absolute;left:0;right:0;height:1px;background:rgba(255,60,60,.55);pointer-events:none}
+.g.x{background:rgba(60,160,255,.55)}
+.g.cap{background:rgba(255,200,60,.5)}
+.g.label{font-size:9px;color:#888;background:none;height:auto}
+</style></head>
+<body>
+<div class="row">
+  <h1 class="hero-logo" id="h1">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g>
+        <path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/>
+      </svg>
+    </span>
+    <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span>
+  </h1>
+</div>
+<div class="row zero">
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g>
+        <path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/>
+      </svg>
+    </span>
+    <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span>
+  </h1>
+</div>
+<div class="row plus">
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g>
+        <path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/>
+      </svg>
+    </span>
+    <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span>
+  </h1>
+</div>
+<script>
+// draw baseline, x-height and ascender guides on the first row
+const row = document.querySelector('.row');
+const h1 = row.querySelector('.hero-logo');
+const word = row.querySelector('.hero-word');
+const r = row.getBoundingClientRect(), w = word.getBoundingClientRect();
+if (true) {}
+</script>
+</body></html>

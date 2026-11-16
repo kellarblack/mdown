@@ -1,0 +1,119 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+:root{
+  --bg:#0a0a0b; --text:#ededee; --text-2:#a1a1a6; --text-3:#8b8b93; --accent:#ededee;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --ease: cubic-bezier(0.22,0.61,0.36,1);
+}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono)}
+.lab{display:flex;align-items:flex-start;gap:16px;padding:14px 20px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.tag{font-size:10px;color:var(--text-3);width:96px;flex:none;padding-top:8px;letter-spacing:.05em}
+.stage{flex:1;min-width:0}
+.rule{height:1px;background:rgba(255,255,255,.14);margin:6px 0 0}
+
+/* ---------- A: current (baseline) ---------- */
+.a .hero-logo{display:flex;align-items:center;justify-content:center;gap:14px;margin:0;color:var(--text);font-weight:400}
+.a .hero-mark{display:grid;place-items:center;flex:none;width:44px;height:44px;color:var(--text)}
+.a .hero-mark svg{width:100%;height:100%}
+.a .hero-word{font-family:var(--mono);font-weight:500;font-size:2.4rem;letter-spacing:-.03em;line-height:1}
+.a .hero-type{display:inline-block}
+.a .hero-word-m{display:inline}
+.a .hero-word-down{display:inline-block;margin-left:.05em}
+.a .hero-word-dot{color:var(--accent);margin:0 -.14em}
+.a .hero-word-sub{font-size:.72em;font-weight:400;color:var(--text-3);letter-spacing:0;margin-left:2px}
+
+/* ---------- B / C / D: candidates ---------- */
+.b .hero-logo,.c .hero-logo,.d .hero-logo{
+  display:flex;align-items:baseline;justify-content:center;gap:.3em;margin:0;
+  font-family:var(--mono);font-size:2.4rem;line-height:1;color:var(--text);
+}
+.b .hero-mark,.c .hero-mark,.d .hero-mark{flex:none;width:.72em;height:.72em}
+.c .hero-mark{width:.62em;height:.62em}
+.b .hero-mark svg,.c .hero-mark svg,.d .hero-mark svg{display:block;width:100%;height:100%;overflow:visible}
+.b .hero-word,.c .hero-word,.d .hero-word{font-weight:500;letter-spacing:-.02em;white-space:nowrap}
+.b .hero-word-down,.c .hero-word-down,.d .hero-word-down{display:inline-block}
+.b .hero-word-dot,.c .hero-word-dot,.d .hero-word-dot{color:var(--accent);margin:0 -.06em}
+.b .hero-word-tld,.c .hero-word-tld,.d .hero-word-tld{color:var(--text-3)}
+.c .hero-logo{gap:.26em}
+.d .hero-logo{gap:.36em}
+.d .hero-word{letter-spacing:0}
+
+/* small-size rows */
+.small .hero-logo{font-size:1.75rem}
+</style></head>
+<body>
+
+<div class="lab a"><div class="tag">A current</div><div class="stage">
+<h1 class="hero-logo">
+  <span class="hero-mark" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+      <path class="mark-tray" d="M4 19h16"/>
+    </svg>
+  </span>
+  <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
+</h1>
+</div></div>
+
+<div class="lab b"><div class="tag">B 0.72em / .3em</div><div class="stage">
+<h1 class="hero-logo">
+  <span class="hero-mark" aria-hidden="true">
+    <svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g>
+      <path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/>
+    </svg>
+  </span>
+  <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span>
+</h1>
+</div></div>
+
+<div class="lab c"><div class="tag">C 0.62em / .26em</div><div class="stage">
+<h1 class="hero-logo">
+  <span class="hero-mark" aria-hidden="true">
+    <svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g>
+      <path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/>
+    </svg>
+  </span>
+  <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span>
+</h1>
+</div></div>
+
+<div class="lab d"><div class="tag">D 0.72em / .36em</div><div class="stage">
+<h1 class="hero-logo">
+  <span class="hero-mark" aria-hidden="true">
+    <svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g>
+      <path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/>
+    </svg>
+  </span>
+  <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span>
+</h1>
+</div></div>
+
+<div class="lab b small"><div class="tag">B at 28px</div><div class="stage">
+<h1 class="hero-logo">
+  <span class="hero-mark" aria-hidden="true">
+    <svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g>
+      <path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/>
+    </svg>
+  </span>
+  <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span>
+</h1>
+</div></div>
+
+<div class="lab a small"><div class="tag">A at 28px</div><div class="stage">
+<h1 class="hero-logo">
+  <span class="hero-mark" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+      <path class="mark-tray" d="M4 19h16"/>
+    </svg>
+  </span>
+  <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
+</h1>
+</div></div>
+
+</body></html>

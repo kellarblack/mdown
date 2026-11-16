@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><pre id="o"></pre><script>
+const c=document.createElement("canvas");c.width=300;c.height=200;
+const x=c.getContext("2d",{willReadFrequently:true});
+const stack='ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace';
+function stem(weight,ch){
+ x.clearRect(0,0,300,200); x.font=`${weight} 100px ${stack}`; x.fillStyle="#fff"; x.fillText(ch,40,150);
+ const d=x.getImageData(0,0,300,200).data; const runs=[]; let s=-1;
+ for(let i=0;i<300;i++){let on=false;for(let y=0;y<200;y++){if(d[(y*300+i)*4+3]>60){on=true;break;}}
+  if(on&&s<0)s=i; if(!on&&s>=0){runs.push([s,i-1,i-s]);s=-1;}}
+ return runs;
+}
+document.getElementById("o").textContent=JSON.stringify({I500:stem(500,"I"),I400:stem(400,"I"),l500:stem(500,"l")});
+</script>

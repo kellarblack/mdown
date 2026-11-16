@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>hero lockup — measure + zoom</title>
+<link rel="stylesheet" href="/assets/app.css">
+<style>
+  body { padding: 28px 20px 60px; }
+  .row { max-width: 900px; margin: 0 auto 10px; }
+  .row h2 { font: 500 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+            color: var(--text-3); margin: 0 0 8px; padding-top: 8px; border-top: 1px solid var(--stroke); }
+  .stage { position: relative; }
+  .stage.zoom { zoom: 2.6; }
+  .base-rule { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,60,60,.45); }
+
+  /* shared new-lockup CSS */
+  .nl .hero-logo {
+    --logo: clamp(1.75rem, 4.2vw, 2.4rem);
+    display: flex; align-items: baseline; justify-content: center;
+    gap: var(--gap, 0.24em); margin: 0 auto; font-size: var(--logo); color: var(--text);
+  }
+  .nl .hero-mark { display: inline-block; flex: none; }
+  .nl .hero-mark svg {
+    display: inline; vertical-align: baseline;
+    width: var(--m, 0.78em); height: var(--m, 0.78em);
+  }
+  .nl .hero-word {
+    font-family: var(--mono); font-weight: 500; font-size: 1em; line-height: 1;
+    letter-spacing: 0; white-space: nowrap;
+  }
+  .nl .hero-word-dot { color: var(--accent); margin-inline: -0.125em; }
+  .nl .hero-word-sub {
+    font-size: 0.7em; font-weight: 400; color: var(--text-2);
+    letter-spacing: 0.035em; margin-left: 0.06em;
+  }
+
+  /* old */
+  .old .hero-logo {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    margin: 0 auto; color: var(--text);
+  }
+  .old .hero-mark {
+    display: grid; place-items: center; flex: none;
+    width: clamp(34px, 5vw, 44px); height: clamp(34px, 5vw, 44px);
+  }
+  .old .hero-mark svg { width: 100%; height: 100%; }
+  .old .hero-word {
+    font-family: var(--mono); font-weight: 500;
+    font-size: clamp(1.75rem, 4.2vw, 2.4rem);
+    letter-spacing: -0.03em; line-height: 1;
+  }
+  .old .hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
+  .old .hero-word-sub { font-size: 0.72em; font-weight: 400; color: var(--text-3); letter-spacing: 0; margin-left: 2px; }
+  .old .hero-word-down { display: inline-block; margin-left: 0.05em; }
+
+  #out { max-width: 900px; margin: 26px auto 40px; font: 11px/1.7 var(--mono); color: var(--text-2);
+         white-space: pre; background: var(--surface); padding: 12px; border: 1px solid var(--stroke); }
+</style>
+</head>
+<body>
+<div id="cases"></div>
+<pre id="out"></pre>
+
+<script>
+const MARK_FLAT = (s) => `
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${s}" stroke-linecap="round" stroke-linejoin="round">
+    <g class="mark-arrow"><path d="M12 4.15v11.85"/><path d="M7 11l5 5 5-5"/></g>
+    <path class="mark-tray" d="M1.15 22.85h21.7"/>
+  </svg>`;
+const MARK_WALLS = (s) => `
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${s}" stroke-linecap="round" stroke-linejoin="round">
+    <g class="mark-arrow"><path d="M12 4.15v11.85"/><path d="M7 11l5 5 5-5"/></g>
+    <path class="mark-tray" d="M1.15 19.4v3.45h21.7V19.4"/>
+  </svg>`;
+const MARK_OLD = `
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+    <path class="mark-tray" d="M4 19h16"/>
+  </svg>`;
+
+const NEW_WORD = `mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span>`;
+const OLD_WORD = `<span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>`;
+
+const cases = [
+  { id: 'old',   name: 'old (reference)',        cls: 'old',  mark: MARK_OLD,   word: OLD_WORD, vars: {} },
+  { id: 'A',     name: 'A flat tray, s2.3, gap .24em', cls: 'nl', mark: MARK_FLAT(2.3),  word: NEW_WORD, vars: {} },
+  { id: 'B',     name: 'B walled tray, s2.3, gap .24em', cls: 'nl', mark: MARK_WALLS(2.3), word: NEW_WORD, vars: {} },
+  { id: 'C',     name: 'C flat tray, s2.3, gap .30em', cls: 'nl', mark: MARK_FLAT(2.3),  word: NEW_WORD, vars: { '--gap': '0.30em' } },
+  { id: 'D',     name: 'D walled tray, s2.3, gap .19em', cls: 'nl', mark: MARK_WALLS(2.3), word: NEW_WORD, vars: { '--gap': '0.19em' } },
+  { id: 'E',     name: 'E flat tray, s2.0, gap .24em', cls: 'nl', mark: MARK_FLAT(2.0),  word: NEW_WORD, vars: {} },
+  { id: 'F',     name: 'F flat tray, mark .70em, gap .24em', cls: 'nl', mark: MARK_FLAT(2.3), word: NEW_WORD, vars: { '--m': '0.70em' } },
+  { id: 'G',     name: 'G walled tray, s2.3, mark .72em, gap .22em', cls: 'nl', mark: MARK_WALLS(2.3), word: NEW_WORD, vars: { '--m': '0.72em', '--gap': '0.22em' } },
+];
+
+const host = document.getElementById('cases');
+for (const c of cases) {
+  const sec = document.createElement('section');
+  sec.className = 'row';
+  sec.innerHTML = `<h2>${c.name}</h2>
+    <div class="stage zoom ${c.cls}" id="stage-${c.id}">
+      <h1 class="hero-logo"><span class="hero-mark" aria-hidden="true">${c.mark}</span><span class="hero-word">${c.word}</span></h1>
+    </div>`;
+  host.appendChild(sec);
+  const stage = sec.querySelector('.stage');
+  for (const [k, v] of Object.entries(c.vars)) stage.style.setProperty(k, v);
+}
+
+// ---- measure ----
+const out = [];
+const fmt = (n) => (Math.round(n * 100) / 100).toFixed(2);
+for (const c of cases) {
+  const stage = document.querySelector(`#stage-${c.id}`);
+  // unzoom to measure in CSS px
+  const wasZoom = stage.classList.contains('zoom');
+  stage.classList.remove('zoom');
+  const logo = stage.querySelector('.hero-logo');
+  const word = stage.querySelector('.hero-word');
+  const mark = stage.querySelector('.hero-mark');
+  const svg = stage.querySelector('svg');
+
+  // baseline probe: zero-height inline-block, bottom edge == text baseline
+  const probe = document.createElement('span');
+  probe.style.cssText = 'display:inline-block;width:1px;height:0;vertical-align:baseline';
+  word.appendChild(probe);
+  const baseline = probe.getBoundingClientRect().bottom;
+  const svgR = svg.getBoundingClientRect();
+  const wordR = word.getBoundingClientRect();
+  const logoR = logo.getBoundingClientRect();
+  probe.remove();
+
+  // ink edge of the "m": advance box start + left bearing, via canvas metrics
+  const cs = getComputedStyle(word);
+  const cv = document.createElement('canvas').getContext('2d');
+  cv.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const m = cv.measureText('m');
+  const bearing = m.actualBoundingBoxLeft * -1;           // px between advance origin and ink
+  const inkLeft = wordR.left + (bearing > 0 ? 0 : 0);
+
+  const rows = [
+    `baseline y=${fmt(baseline)}  svg.bottom y=${fmt(svgR.bottom)}  delta=${fmt(baseline - svgR.bottom)}`,
+    `mark box ${fmt(svgR.width)}x${fmt(svgR.height)}  font-size ${cs.fontSize}  ink-height-ratio ${fmt(svgR.height / parseFloat(cs.fontSize))}`,
+    `gap css=${fmt(mark ? parseFloat(getComputedStyle(logo).gap) : NaN)}px  mark.left=${fmt(svgR.left)}  word.left=${fmt(wordR.left)}`,
+    `lockup w=${fmt(logoR.width)} h=${fmt(logoR.height)} top=${fmt(logoR.top)}`,
+    `m advance=${fmt(m.width)} ink=${fmt(m.actualBoundingBoxRight + m.actualBoundingBoxLeft)} bearingL=${fmt(m.actualBoundingBoxLeft)}`,
+  ];
+  out.push(`--- ${c.id}: ${c.name}\n` + rows.map(r => '    ' + r).join('\n'));
+  if (wasZoom) stage.classList.add('zoom');
+}
+document.getElementById('out').textContent = out.join('\n');
+</script>
+</body>
+</html>

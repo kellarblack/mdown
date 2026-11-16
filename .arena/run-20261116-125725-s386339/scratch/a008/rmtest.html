@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>rm</title>
+<style>
+:root { --bg:#0a0a0b; --text:#ededee; --accent:#ededee; --ease: cubic-bezier(0.22,0.61,0.36,1);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+body { margin:0; background:var(--bg); color:var(--text); }
+</style>
+</head><body>
+<div class="hero"><h1 class="hero-logo">
+  <span class="hero-mark" aria-hidden="true"><svg viewBox="0 0 24 21.175" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M12 4.2v10.2"/><path d="m7.9 10.3 4.1 4.1 4.1-4.1"/></g><path class="mark-tray" d="M5 17.6V19a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 19v-1.4"/></svg></span>
+  <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span>cc</span>
+</h1></div>
+<link rel="stylesheet" href="/mdown/.arena/run-20261116-125725-s386339/scratch/a008/final.css">
+<style>@media (orientation: landscape) and (max-height: 500px) and (max-width: 1024px) { .hero-logo { display: none; } }</style>
+<script>
+addEventListener('load', () => {
+  const dw = document.querySelector('.hero-word-down');
+  const ar = document.querySelector('.mark-arrow');
+  document.title = 'ready ' + JSON.stringify({
+    reduced: matchMedia('(prefers-reduced-motion: reduce)').matches,
+    word: getComputedStyle(dw).animationName, wordDur: getComputedStyle(dw).animationDuration,
+    arrow: getComputedStyle(ar).animationName, arrowDur: getComputedStyle(ar).animationDuration,
+    wordT: getComputedStyle(dw).transform,
+    land: matchMedia('(orientation: landscape) and (max-height: 500px) and (max-width: 1024px)').matches,
+    display: getComputedStyle(document.querySelector('.hero-logo')).display,
+  });
+});
+</script>
+</body></html>

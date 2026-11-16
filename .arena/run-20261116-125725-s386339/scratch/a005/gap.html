@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+.lock{display:flex;align-items:baseline;font-family:ui-monospace,"SF Mono",Menlo;font-size:200px;line-height:1;color:#ededee;white-space:nowrap;margin:0}
+.w{font-weight:500;letter-spacing:-0.012em}
+.dot{color:#ededee;margin:0 -0.25em 0 -0.14em}
+.sub{color:#a1a1a6}
+</style></head><body>
+<h1 class="lock"><span class="w">m<span>down</span><span class="dot" id="dot">.</span><span class="sub" id="sub">cc</span></span></h1>
+<pre id="out"></pre>
+<script>
+const fs = 200;
+const c = document.createElement("canvas").getContext("2d");
+c.font = '500 1000px ui-monospace, "SF Mono", Menlo';
+const ink = ch => { const m = c.measureText(ch); return { L: -m.actualBoundingBoxLeft/1000, R: m.actualBoundingBoxRight/1000, adv: m.width/1000 }; };
+const n = ink("n"), d = ink("."), k = ink("c");
+const dot = document.getElementById("dot").getBoundingClientRect();
+const sub = document.getElementById("sub").getBoundingClientRect();
+// left edge of the dot's advance box; ink starts at L inside it (relative to the glyph origin)
+const dotBoxL = dot.left, dotBoxR = dot.left + d.adv * fs;
+const dotInkL = dotBoxL + d.L * fs, dotInkR = dotBoxL + d.R * fs;
+// the "n" before it: its advance box ends where the dot's box begins (margins aside)
+const nInkR = dotBoxL - 0 * fs - 0; // placeholder replaced below
+document.getElementById("out").textContent = JSON.stringify({
+  dotBoxL: +dotBoxL.toFixed(2), dotBoxR: +dotBoxR.toFixed(2),
+  dotInkL: +dotInkL.toFixed(2), dotInkR: +dotInkR.toFixed(2),
+  dotInkWidthPx: +(dotInkR - dotInkL).toFixed(2),
+  subLeft: +sub.left.toFixed(2),
+  gapInkToC: +((sub.left + k.L * fs) - dotInkR).toFixed(2),
+  note: "gap to n needs the n's ink; see next probe"
+}, null, 1);
+</script></body></html>

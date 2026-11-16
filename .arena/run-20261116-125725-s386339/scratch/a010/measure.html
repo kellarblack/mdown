@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hero measure</title>
+<link rel="stylesheet" href="../../../../assets/app.css">
+<style>
+/* ===== candidate block, pasted exactly as it will go in app.css ===== */
+.hero { width: 100%; }
+.hero-logo {
+  font-size: clamp(2.125rem, 1.15rem + 2.45vw, 3rem);
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.22em;
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  color: var(--text);
+}
+.hero-mark { flex: none; display: block; width: 0.95em; height: 0.95em; }
+.hero-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hero-word {
+  font-family: var(--mono); font-weight: 500;
+  font-size: 1em; line-height: 1; letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+.hero-word-dot { color: var(--accent); margin: 0 -0.19em 0 -0.21em; }
+.hero-word-sub { color: var(--text-3); }
+body { background: var(--bg); }
+</style>
+</head>
+<body>
+<main class="wrap" id="download-view">
+  <div class="hero">
+    <h1 class="hero-logo">
+      <span class="hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3.9v9.6"/><path d="m7.7 9.1 4.3 4.4 4.3-4.4"/>
+          <path d="M3.9 15v3a1.6 1.6 0 0 0 1.6 1.6h13a1.6 1.6 0 0 0 1.6-1.6v-3"/>
+        </svg>
+      </span>
+      <span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+    </h1>
+  </div>
+</main>
+<div id="out" style="font:12px monospace;white-space:pre;color:#9f9"></div>
+<script>
+function stem(px, weight, ch) {
+  const c = document.createElement("canvas");
+  c.width = Math.ceil(px * 3); c.height = Math.ceil(px * 2);
+  const x = c.getContext("2d");
+  x.fillStyle = "#fff"; x.textBaseline = "alphabetic";
+  x.font = weight + " " + px + "px ui-monospace, Menlo, monospace";
+  x.fillText(ch, px * 0.4, px * 1.4);
+  const d = x.getImageData(0, 0, c.width, c.height).data;
+  const rows = [];
+  for (let y = 0; y < c.height; y++) {
+    let runs = 0, inRun = false;
+    for (let xx = 0; xx < c.width; xx++) {
+      const a = d[(y * c.width + xx) * 4 + 3] > 128;
+      if (a && !inRun) { runs++; inRun = true; } else if (!a) inRun = false;
+    }
+    if (runs) rows.push({ y, runs });
+  }
+  // count horizontal run lengths on the row with the most runs (x-height band)
+  const best = rows.slice().sort((a, b) => b.runs - a.runs)[0];
+  let lens = [], inRun = false, start = 0;
+  for (let xx = 0; xx < c.width; xx++) {
+    const a = d[(best.y * c.width + xx) * 4 + 3] > 128;
+    if (a && !inRun) { inRun = true; start = xx; }
+    else if (!a && inRun) { inRun = false; lens.push(xx - start); }
+  }
+  return { row: best.y, runs: best.runs, runsPx: lens };
+}
+function go() {
+  const logo = document.querySelector(".hero-logo");
+  const mark = document.querySelector(".hero-mark");
+  const word = document.querySelector(".hero-word");
+  const svg = document.querySelector(".hero-mark svg");
+  const cs = getComputedStyle(word);
+  const px = parseFloat(cs.fontSize);
+  const weight = cs.fontWeight;
+  const c = document.createElement("canvas").getContext("2d");
+  c.font = weight + " " + px + "px " + cs.fontFamily;
+  const m = c.measureText("mdown.cc");
+  const mH = c.measureText("H");
+  const mX = c.measureText("x");
+  const peri = c.measureText(".");
+  const md = c.measureText("d");
+  const markBox = mark.getBoundingClientRect();
+  const wordBox = word.getBoundingClientRect();
+  const logoBox = logo.getBoundingClientRect();
+  const bb = svg.getBBox();
+  const sc = markBox.width / 24;
+  const out = {
+    viewport: innerWidth + "x" + innerHeight,
+    wordFontSize: px,
+    wordWeight: weight,
+    wordFamily: cs.fontFamily,
+    wordAdvance: +m.width.toFixed(2),
+    wordInkAscent: +m.actualBoundingBoxAscent.toFixed(2),
+    wordInkDescent: +m.actualBoundingBoxDescent.toFixed(2),
+    capHeight_H: +mH.actualBoundingBoxAscent.toFixed(2),
+    xHeight: +mX.actualBoundingBoxAscent.toFixed(2),
+    dAscender: +md.actualBoundingBoxAscent.toFixed(2),
+    periodInkLeftRelOrigin: +(-peri.actualBoundingBoxLeft).toFixed(3),
+    periodInkRightRelOrigin: +peri.actualBoundingBoxRight.toFixed(3),
+    periodAdvance: +peri.width.toFixed(2),
+    markBoxW: +markBox.width.toFixed(2),
+    markBoxH: +markBox.height.toFixed(2),
+    markInk: { x: +bb.x.toFixed(2), y: +bb.y.toFixed(2), w: +bb.width.toFixed(2), h: +bb.height.toFixed(2) },
+    markScale: +sc.toFixed(4),
+    markStrokePx: +(1.05 * sc).toFixed(2),
+    markInkPxH: +(bb.height * sc).toFixed(2),
+    markInkPxW: +(bb.width * sc).toFixed(2),
+    wordBoxW: +wordBox.width.toFixed(2),
+    wordBoxH: +wordBox.height.toFixed(2),
+    logoW: +logoBox.width.toFixed(2),
+    logoH: +logoBox.height.toFixed(2),
+    containerW: +(document.getElementById("download-view").getBoundingClientRect().width).toFixed(2),
+    /** vertical: where is the wordmark's ink inside its box, and the mark's ink inside its box */
+    wordInkTopFromBoxTop: +(wordBox.height / 2 - (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2).toFixed(2),
+    markInkCentreOffset: +((bb.y + bb.height / 2) * sc - markBox.height / 2).toFixed(2),
+    stem500_m: stem(px, 400, "m"),
+    stem500_m_500: stem(px, 500, "m")
+  };
+  document.getElementById("out").textContent = JSON.stringify(out, null, 1);
+}
+window.addEventListener("load", () => setTimeout(go, 60));
+</script>
+</body>
+</html>

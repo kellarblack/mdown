@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0}iframe{width:320px;height:700px;border:0;display:block}</style>
+<iframe id="f" src="index.html"></iframe>
+<script>
+document.getElementById('f').addEventListener('load',function(){
+  setTimeout(function(){
+    var d=document.getElementById('f').contentDocument, w=document.getElementById('f').contentWindow;
+    var h=d.querySelector('.hero-logo').getBoundingClientRect();
+    var wr=d.querySelector('.hero-word').getBoundingClientRect();
+    var pre=document.createElement('pre'); pre.id='probe';
+    pre.textContent='vw '+w.innerWidth+' scrollW '+d.documentElement.scrollWidth+' clientW '+d.documentElement.clientWidth
+      +' | logo '+h.width.toFixed(2)+'x'+h.height.toFixed(2)+' centre '+(h.x+h.width/2).toFixed(2)
+      +' | wordlines '+Math.round(wr.height)+' h1lines '+h.height.toFixed(1);
+    document.body.appendChild(pre);
+  },600);
+});
+</script>

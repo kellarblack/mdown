@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+  body { margin: 0; background: #000; font: 11px monospace; color: #ddd; }
+  iframe { border: 0; }
+</style></head>
+<body>
+<iframe src="/probe2.html" width="320" height="640"></iframe>
+<iframe src="/probe2.html" width="360" height="640"></iframe>
+<iframe src="/probe2.html" width="390" height="640"></iframe>
+<pre id="out">waiting</pre>
+<script>
+setTimeout(function () {
+  var res = [];
+  document.querySelectorAll('iframe').forEach(function (f) {
+    try {
+      var p = f.contentDocument.getElementById('probe');
+      res.push(JSON.parse(p.textContent).overflowX + '@' + f.width);
+    } catch (e) { res.push('err'); }
+  });
+  document.getElementById('out').textContent = 'overflowX ' + res.join(' ');
+}, 1800);
+</script>
+</body></html>

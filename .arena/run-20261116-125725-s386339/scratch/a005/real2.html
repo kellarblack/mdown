@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hero in situ — final</title>
+<link rel="stylesheet" href="../../../../assets/app.css">
+<style>
+/* ==== candidate block, pasted exactly as it would ship ==== */
+.hero { width: 100%; }
+
+.hero-logo {
+  display: flex; align-items: baseline; justify-content: center;
+  gap: 0.18em;
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  font-family: var(--mono);
+  font-size: clamp(1.75rem, 4.2vw, 2.4rem);
+  line-height: 1;
+  color: var(--text);
+  white-space: nowrap;
+}
+.hero-mark {
+  display: block; flex: none;
+  width: 0.74em; height: 0.74em;
+  color: var(--text);
+  overflow: visible;
+}
+.hero-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.hero-word { font-weight: 500; letter-spacing: -0.012em; }
+.hero-word-down { display: inline-block; }
+.hero-word-dot { color: var(--accent); margin: 0 -0.25em 0 -0.14em; }
+.hero-word-sub { color: var(--text-2); }
+
+.mark-arrow { animation: hero-arrow-fall 640ms var(--ease) both; }
+.hero-word-down { animation: hero-word-fall 640ms var(--ease) both; }
+@keyframes hero-arrow-fall {
+  from { transform: translate3d(0, -1.9px, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+@keyframes hero-word-fall {
+  from { transform: translate3d(0, -0.1em, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mark-arrow, .hero-word-down { animation: none; }
+}
+/* ==== end candidate block ==== */
+.fake-composer { height: 64px; border: 1px solid var(--stroke); border-radius: 12px; background: var(--bg-elev); }
+body { min-height: 0; }
+</style>
+</head>
+<body>
+<main class="wrap" id="download-view">
+  <div class="hero">
+    <h1 class="hero-logo">
+      <span class="hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <g class="mark-arrow"><path d="M7 .75v8.3"/><path d="M3.4 6.9 7 10.5l3.6-3.6"/></g>
+          <path d="M.75 13.25h12.5"/>
+        </svg>
+      </span>
+      <span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+      <span class="sr-only"> — a media downloader for video and audio</span>
+    </h1>
+    <div class="fake-composer"></div>
+  </div>
+</main>
+<script>
+  const q = new URLSearchParams(location.search);
+  const t = q.get("theme");
+  if (t) document.documentElement.dataset.theme = t;
+  const v = q.get("v");
+  if (v === "old") {
+    document.querySelector(".hero-mark svg").outerHTML =
+      '<svg viewBox="3 2 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>' +
+      '<path d="M4 19h16"/></svg>';
+  }
+  const mk = q.get("mark");
+  if (mk) document.querySelector(".hero-mark").style.setProperty("width", mk).style.setProperty("height", mk);
+  const f = q.get("t");
+  if (f !== null) {
+    document.querySelectorAll(".mark-arrow, .hero-word-down").forEach(el => {
+      el.style.animationDelay = "-" + f + "ms";
+      el.style.animationPlayState = "paused";
+    });
+  }
+  if (q.get("report") !== null) {
+    const out = document.createElement("pre");
+    const logo = document.querySelector(".hero-logo");
+    const mark = document.querySelector(".hero-mark");
+    const word = document.querySelector(".hero-word");
+    const cs = getComputedStyle(logo);
+    const lr = logo.getBoundingClientRect(), mr = mark.getBoundingClientRect(), wr = word.getBoundingClientRect();
+    out.style.cssText = "font:10px/1.5 ui-monospace,Menlo,monospace;color:#8b8b93;padding:12px";
+    out.textContent = [
+      `viewport ${innerWidth}x${innerHeight}  docScroll ${document.documentElement.scrollWidth}  bodyScroll ${document.body.scrollWidth}`,
+      `overflow-x: ${document.documentElement.scrollWidth > innerWidth ? "YES" : "no"}`,
+      `h1 height ${lr.height.toFixed(2)}  word ${wr.width.toFixed(2)}x${wr.height.toFixed(2)}  mark ${mr.width.toFixed(2)}x${mr.height.toFixed(2)}`,
+      `mark bottom vs word bottom-baseline: ${(mr.bottom - (wr.bottom - wr.height + parseFloat(cs.fontSize) * 0.1484)).toFixed(2)}px`,
+      `lockup left ${lr.left.toFixed(1)} right ${lr.right.toFixed(1)} (viewport centre ${(innerWidth / 2).toFixed(1)}, lockup centre ${((lr.left + lr.right) / 2).toFixed(1)})`,
+      `gap ${cs.gap}  font ${cs.fontSize}  computed lockup width ${(mr.width + parseFloat(cs.gap) + wr.width).toFixed(1)}`,
+    ].join("\n");
+    document.body.prepend(out);
+  }
+</script>
+</body>
+</html>

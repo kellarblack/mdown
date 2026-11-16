@@ -1,0 +1,23 @@
+<!doctype html><html><body><script>
+function stem(fontSize) {
+  var c = document.createElement('canvas');
+  c.width = 120; c.height = 240;
+  var g = c.getContext('2d');
+  g.font = '500 ' + fontSize + 'px ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace';
+  g.fillStyle = '#fff';
+  g.textBaseline = 'alphabetic';
+  g.fillText('l', 40, 180);
+  var d = g.getImageData(0, 0, 120, 240).data;
+  var best = 0;
+  for (var y = 150; y < 178; y++) {
+    var run = 0;
+    for (var x = 0; x < 120; x++) {
+      var a = d[(y * 120 + x) * 4 + 3];
+      if (a > 60) { run++; best = Math.max(best, run); } else { run = 0; }
+    }
+  }
+  return best;
+}
+var o = {s464: stem(46.4), s272: stem(27.2), s384: stem(38.4), mark1440: +(46.4/24*1.7).toFixed(2), mark360: +(27.2/24*1.7).toFixed(2), old44: +(44/24*2).toFixed(2)};
+document.body.textContent = JSON.stringify(o);
+</script></body></html>

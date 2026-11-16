@@ -1,0 +1,83 @@
+/* ---------- hero lockup -----------------------------------------------------
+   Replaces, from the comment "one gesture, on the same curve …" down to the
+   old `.hero-logo { margin-bottom: … }`: .hero-logo, .hero-mark, .hero-mark svg,
+   .mark-arrow and @keyframes arrow-drop, .hero-word, .hero-type, .hero-word-m,
+   .hero-word-down and @keyframes word-drop, @keyframes hero-fade-in,
+   .hero-word-dot, .hero-word-sub, and the prefers-reduced-motion rule.
+
+   The mark is drawn as part of the wordmark, not as an icon set beside it: the
+   foot of its tray lands on the text baseline, its ink is the height of the
+   ascender in "down", its stroke is proportionally thinner than the page's
+   icons, and every dimension is an em of the lockup's own type size — so the
+   two cannot drift apart at any width. */
+.hero { width: 100%; }
+
+.hero-logo {
+  display: flex;
+  align-items: baseline;      /* the mark's foot lands on the text baseline */
+  justify-content: center;
+  gap: 0;                     /* the mark's own box carries its side air */
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  font-family: var(--mono);
+  font-size: clamp(1.75rem, 4.3vw, 2.6rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* 24 × 21.175, with the tray's ink ending exactly on the bottom edge of the
+   box: flex baseline alignment then puts that edge on the same line the
+   letters stand on — no per-size nudging, and nothing to re-tune if the type
+   size changes. 1.06em makes the ink exactly as tall as the ascender. */
+.hero-mark {
+  flex: none;
+  display: block;
+  line-height: 0;
+  width: 1.06em;
+  color: var(--text);
+}
+.hero-mark svg { display: block; width: 100%; height: auto; }
+
+/* The name needs no rule of its own: size, tracking and colour are the
+   lockup's, so "mdown.cc" is one run of type instead of three fragments with
+   their own sizes. Only the part that moves and the period that must be
+   kerned get a hook. */
+
+/* The period is kerned, not left in its cell: monospace puts about 0.24em of
+   air on each side of it, which is what makes the name read as "mdown . cc".
+   These two values close that air to the gap between any two letters. The
+   right one is 0.06em deeper because a period's ink sits left of centre in
+   its cell; the accent token stays on so the dot still follows it. */
+.hero-word-dot {
+  color: var(--accent);
+  margin-left: -0.12em;
+  margin-right: -0.18em;
+}
+
+/* One gesture in two parts: the arrow drops into the tray and the second half
+   of the name falls with it. Same curve, same duration, same start, and the
+   same distance — 2.6 units of the mark and 0.115em of the type are the same
+   0.115em, so they stay paired at every size. Transform only, one shot, no
+   overshoot, and nothing leaves the lockup. */
+.hero-word-down {
+  display: inline-block;
+  animation: word-drop 760ms var(--ease) both;
+}
+
+.mark-arrow { animation: mark-drop 760ms var(--ease) both; }
+
+@keyframes mark-drop {
+  from { transform: translateY(-2.6px); }    /* 2.6 user units = 0.115em */
+  to   { transform: translateY(0); }
+}
+@keyframes word-drop {
+  from { transform: translateY(-0.115em); }
+  to   { transform: translateY(0); }
+}
+
+/* nobody asked for motion: show the lockup and be done */
+@media (prefers-reduced-motion: reduce) {
+  .mark-arrow, .hero-word-down { animation: none; }
+}

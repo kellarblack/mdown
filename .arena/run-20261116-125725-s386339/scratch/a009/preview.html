@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>hero lockup — variants</title>
+<link rel="stylesheet" href="/assets/app.css">
+<style>
+  body { padding: 40px 20px 80px; }
+  .case { max-width: 900px; margin: 0 auto 54px; }
+  .case > h2 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--text-3); margin: 0 0 6px;
+    border-top: 1px solid var(--stroke); padding-top: 8px;
+  }
+  /* the composer's footprint, so the lockup is judged at the size it lives at */
+  .probe-composer {
+    height: 46px; border: 1px solid var(--stroke); border-radius: var(--r-lg);
+    background: var(--bg-elev);
+  }
+
+  /* ---------- variant: old (baseline) ---------- */
+  .v-old .hero-logo {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    margin: 0 auto 24px; color: var(--text);
+  }
+  .v-old .hero-mark {
+    display: grid; place-items: center; flex: none;
+    width: clamp(34px, 5vw, 44px); height: clamp(34px, 5vw, 44px);
+  }
+  .v-old .hero-mark svg { width: 100%; height: 100%; }
+  .v-old .hero-word {
+    font-family: var(--mono); font-weight: 500;
+    font-size: clamp(1.75rem, 4.2vw, 2.4rem);
+    letter-spacing: -0.03em; line-height: 1;
+  }
+  .v-old .hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
+  .v-old .hero-word-sub {
+    font-size: 0.72em; font-weight: 400; color: var(--text-3);
+    letter-spacing: 0; margin-left: 2px;
+  }
+  .v-old .hero-word-down { display: inline-block; margin-left: 0.05em; }
+
+  /* ---------- variant: new ---------- */
+  .v-new .hero-logo {
+    --logo: clamp(1.75rem, 4.2vw, 2.4rem);
+    display: flex; align-items: baseline; justify-content: center;
+    gap: 0.24em; margin: 0 auto 24px;
+    font-size: var(--logo); color: var(--text);
+  }
+  .v-new .hero-mark { display: inline-block; flex: none; }
+  .v-new .hero-mark svg {
+    display: inline; vertical-align: baseline;
+    width: 0.70em; height: 0.70em; overflow: visible;
+  }
+  .v-new .hero-word {
+    font-family: var(--mono); font-weight: 500; font-size: 1em; line-height: 1;
+    letter-spacing: 0; white-space: nowrap;
+  }
+  .v-new .hero-word-dot { color: var(--accent); margin-inline: -0.125em; }
+  .v-new .hero-word-sub {
+    font-size: 0.7em; font-weight: 400; color: var(--text-2);
+    letter-spacing: 0.035em; margin-left: 0.06em;
+  }
+
+  /* ---------- variant: wide gap ---------- */
+  .v-gap .hero-logo { gap: 0.32em; }
+
+  /* ---------- variant: taller mark ---------- */
+  .v-tall .hero-mark svg { width: 0.78em; height: 0.78em; }
+  .v-tall .hero-logo { gap: 0.20em; }
+
+  /* ---------- variant: tray with walls ---------- */
+  /* (markup swap only) */
+
+  /* ---------- variant: x-height mark ---------- */
+  .v-x .hero-mark svg { width: 0.58em; height: 0.58em; }
+  .v-x .hero-logo { gap: 0.22em; }
+
+  /* baseline guide */
+  .guide { position: relative; }
+  .guide::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 24px;
+    border-top: 1px dashed rgba(255, 60, 60, .35);
+  }
+
+  @media (prefers-reduced-motion: reduce) { .no-anim * { animation: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="case v-old guide">
+  <h2>1 — old</h2>
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+        <path class="mark-tray" d="M4 19h16"/>
+      </svg>
+    </span>
+    <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
+  </h1>
+  <div class="probe-composer"></div>
+</div>
+
+<div class="case v-new guide no-anim">
+  <h2>2 — new (mark 0.70em, gap 0.24em, flat tray)</h2>
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 1.3v14.7"/><path d="m7 11 5 5 5-5"/></g>
+        <path class="mark-tray" d="M1.3 22.7h21.4"/>
+      </svg>
+    </span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+  </h1>
+  <div class="probe-composer"></div>
+</div>
+
+<div class="case v-new v-gap guide no-anim">
+  <h2>3 — new, gap 0.32em</h2>
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 1.3v14.7"/><path d="m7 11 5 5 5-5"/></g>
+        <path class="mark-tray" d="M1.3 22.7h21.4"/>
+      </svg>
+    </span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+  </h1>
+  <div class="probe-composer"></div>
+</div>
+
+<div class="case v-new v-tall guide no-anim">
+  <h2>4 — new, mark 0.78em, gap 0.20em</h2>
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 1.3v14.7"/><path d="m7 11 5 5 5-5"/></g>
+        <path class="mark-tray" d="M1.3 22.7h21.4"/>
+      </svg>
+    </span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+  </h1>
+  <div class="probe-composer"></div>
+</div>
+
+<div class="case v-new v-x guide no-anim">
+  <h2>5 — new, mark 0.58em (x-height), gap 0.22em</h2>
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 1.3v14.7"/><path d="m7 11 5 5 5-5"/></g>
+        <path class="mark-tray" d="M1.3 22.7h21.4"/>
+      </svg>
+    </span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+  </h1>
+  <div class="probe-composer"></div>
+</div>
+
+<div class="case v-new guide no-anim">
+  <h2>6 — new, tray with walls (mark 0.70em)</h2>
+  <h1 class="hero-logo">
+    <span class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <g class="mark-arrow"><path d="M12 1.3v14.7"/><path d="m7 11 5 5 5-5"/></g>
+        <path class="mark-tray" d="M1.3 19.6v3.1h21.4v-3.1"/>
+      </svg>
+    </span><span class="hero-word">mdown<span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span>
+  </h1>
+  <div class="probe-composer"></div>
+</div>
+
+</body>
+</html>

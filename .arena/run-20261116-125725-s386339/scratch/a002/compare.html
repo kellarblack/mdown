@@ -1,0 +1,66 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+:root{
+  --bg:#0a0a0b; --text:#ededee; --text-2:#a1a1a6; --text-3:#8b8b93; --accent:#ededee;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --ease: cubic-bezier(0.22,0.61,0.36,1);
+}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono)}
+.lab{padding:18px 20px 20px;border-bottom:1px solid rgba(255,255,255,.07);position:relative}
+.tag{font-size:9.5px;color:var(--text-3);letter-spacing:.06em;margin-bottom:6px}
+
+/* ===== the candidate block ===== */
+.hero-logo{
+  display:flex; align-items:baseline; justify-content:center; gap:.3em;
+  margin:0; font-family:var(--mono); font-size:2.4rem; line-height:1; color:var(--text);
+}
+.hero-mark{flex:none; width:.72em; height:.72em}
+.hero-mark svg{display:block; width:100%; height:100%; overflow:visible}
+.hero-word{font-weight:500; letter-spacing:-.02em; white-space:nowrap}
+.hero-word-down{display:inline-block}
+.hero-word-dot{color:var(--accent); margin-right:-.06em}
+.hero-word-tld{color:var(--text-3)}
+
+.m76 .hero-mark{width:.76em;height:.76em}
+.m68 .hero-mark{width:.68em;height:.68em}
+.g34 .hero-logo{gap:.34em}
+.deep .mark-arrow{transform:translateY(2px)}
+/* guides */
+.guide{position:absolute;left:0;right:0;height:1px;background:rgba(255,64,64,.45)}
+</style></head>
+<body>
+
+<div class="lab" id="r1"><div class="tag">1 &nbsp;mark .72em &nbsp;gap .30em</div>
+<h1 class="hero-logo"><span class="hero-mark" aria-hidden="true"><svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g><path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/></svg></span><span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span></h1>
+</div>
+
+<div class="lab m76" id="r2"><div class="tag">2 &nbsp;mark .76em &nbsp;gap .30em</div>
+<h1 class="hero-logo"><span class="hero-mark" aria-hidden="true"><svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g><path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/></svg></span><span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span></h1>
+</div>
+
+<div class="lab m76 g34" id="r3"><div class="tag">3 &nbsp;mark .76em &nbsp;gap .34em</div>
+<h1 class="hero-logo"><span class="hero-mark" aria-hidden="true"><svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g><path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/></svg></span><span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span></h1>
+</div>
+
+<div class="lab m68" id="r4"><div class="tag">4 &nbsp;mark .68em &nbsp;gap .30em</div>
+<h1 class="hero-logo"><span class="hero-mark" aria-hidden="true"><svg viewBox="1 1 30 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="mark-arrow"><path d="M16 2v17"/><path d="m10.5 13.5 5.5 5.5 5.5-5.5"/></g><path d="M2 20v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7"/></svg></span><span class="hero-word">m<span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-tld">cc</span></span></h1>
+</div>
+
+<script>
+// baseline guide + ascender guide for each row, using SF Mono metrics:
+// line-height:1, font ascent .93em descent .24em -> baseline at (.93 - (1.17-1)/2)em = .845em from line-box top
+for (const lab of document.querySelectorAll('.lab')) {
+  const w = lab.querySelector('.hero-word');
+  const wr = w.getBoundingClientRect(), lr = lab.getBoundingClientRect();
+  const fs = parseFloat(getComputedStyle(w).fontSize);
+  const baseline = wr.top - lr.top + 0.845 * fs;
+  const asc = baseline - 0.7598 * fs;
+  for (const [y,c] of [[baseline,'rgba(255,64,64,.5)'],[asc,'rgba(80,170,255,.45)']]) {
+    const d = document.createElement('div');
+    d.style.cssText = `position:absolute;left:0;right:0;height:1px;top:${y}px;background:${c}`;
+    lab.appendChild(d);
+  }
+}
+</script>
+</body></html>

@@ -1,0 +1,58 @@
+/* One object, not two things parked beside each other. The lockup has one unit
+   of size — the em of this block. The mark is a square that size, the gap is a
+   fifth of it, the drop is a little less again, so the three hold their ratio
+   from 320px to 1440px instead of drifting apart the way two separate clamps
+   with a fixed pixel gap do. */
+.hero-logo {
+  display: flex; align-items: center; justify-content: center; gap: 0.2em;
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  color: var(--text);
+  font-size: clamp(1.85rem, 0.9rem + 2.2vw, 2.5rem);   /* 29.6px … 40px */
+  line-height: 1;
+}
+
+/* The box is a square and the drawing is inset only enough to hold its stroke,
+   so the row centres ink rather than padding. Stroke is 1.5 of 20 = 0.075em,
+   the icon system's own ratio (1.7 of 24): 3px at 40px, sitting under the
+   wordmark's 3–4px stems. A hair under the name, never over it. */
+.hero-mark {
+  flex: none; width: 1em; height: 1em;
+  color: var(--text);
+  /* the tray is a solid horizontal and a solid horizontal reads low: lift the
+     whole mark about a pixel so the eye puts it level with the word */
+  transform: translateY(-0.03em);
+}
+.hero-mark svg { display: block; width: 100%; height: 100%; }
+
+/* The wordmark. Mono already has a rhythm, so the name is not re-spaced here:
+   the old block tracked it to -0.03em and kept a permanent 0.05em margin
+   between the m and "down" — a break in the grid that never came off. */
+.hero-word {
+  display: flex; align-items: baseline; letter-spacing: 0; white-space: nowrap;
+  font-family: var(--mono); font-weight: 500;
+}
+
+/* The suffix steps down once in size (0.84em) and once in ink (--text-2), and
+   the period goes with it: at that size SF Mono's square period reads as a
+   period rather than a 7px bullet, and .cc is punctuation for the domain, not a
+   full stop after the name. The -0.05em is the only tracking in the lockup —
+   a mono cell leaves 14px of air around a full-size period at 40px, and closing
+   it puts an even 10.5px on both sides. The weight stays 500: three separate
+   de-emphases are what made the old tld look like a footnote. */
+.hero-word-tld { font-size: 0.84em; letter-spacing: -0.05em; color: var(--text-2); }
+
+/* One gesture in two parts: the arrow falls into the tray while "down" falls
+   with it — the same distance, on the switch's curve, 760ms, once. No stagger
+   (a stagger is what made the old entrance read as two events), no fade, no
+   bounce. Transform only, so nothing re-lays-out and nothing leaves the box. */
+.hero-word-down, .mark-arrow { animation: hero-drop 760ms var(--ease) both; }
+.hero-word-down { --drop: -0.13em; }  /* em of the wordmark */
+.mark-arrow     { --drop: -2.6px; }   /* svg units: 2.6 of 20 is the same 0.13em */
+@keyframes hero-drop {
+  from { transform: translateY(var(--drop, 0)); }
+  to   { transform: translateY(0); }
+}
+/* nobody asked for motion: show the lockup and be done */
+@media (prefers-reduced-motion: reduce) {
+  .hero-word-down, .mark-arrow { animation: none; }
+}

@@ -1,0 +1,58 @@
+<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/app.css">
+<style>html,body{background:var(--bg);}body{margin:0;padding:26px 0}.stage{display:flex;justify-content:center;zoom:2.5}
+.freeze .hero-logo,.freeze .mark-arrow,.freeze .hero-word-down{animation:none!important}</style>
+<style>/* ---------- hero lockup ---------- */
+/* One type size for the whole lockup; every other measurement is em, so the
+   mark, the gap and the word keep their proportions at any width. */
+.hero { width: 100%; }
+.hero-logo {
+  display: flex; align-items: baseline; justify-content: center;
+  flex-wrap: nowrap; gap: 0.34em;
+  font-size: clamp(1.75rem, 4.2vw, 2.4rem);
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  color: var(--text);
+  animation: hero-in 260ms var(--ease) both;
+}
+@keyframes hero-in { from { opacity: 0; } to { opacity: 1; } }
+
+.hero-mark {
+  flex: none; width: 0.84em; height: 0.84em;
+  color: var(--text);
+}
+.hero-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.mark-arrow { animation: mark-drop 600ms var(--ease) both; }
+@keyframes mark-drop {
+  from { transform: translate3d(0, -2.73px, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+.hero-word {
+  font-family: var(--mono); font-weight: 500;
+  line-height: 1; letter-spacing: -0.03em; white-space: nowrap;
+}
+.hero-word-down { display: inline-block; animation: word-drop 600ms var(--ease) both; }
+@keyframes word-drop {
+  from { transform: translate3d(0, -0.135em, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+.hero-word-dot { color: var(--accent); margin: 0 -0.12em 0 -0.09em; }
+.hero-word-sub { font-weight: 400; color: var(--text-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-logo, .mark-arrow, .hero-word-down { animation: none; }
+}
+</style><style></style></head>
+<body class="freeze"><div class="stage">    <h1 class="hero-logo">
+      <span class="hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- the arrow is its own group so it can travel into the tray: the
+               mark reads as something being downloaded, not as a shape fading -->
+          <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+          <path class="mark-tray" d="M4 19h16"/>
+        </svg>
+      </span>
+      <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
+      <span class="sr-only"> — a media downloader for video and audio</span>
+    </h1></div></body></html>

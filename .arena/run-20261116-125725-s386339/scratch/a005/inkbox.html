@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><pre id="out">…</pre>
+<script>
+const c = document.createElement("canvas").getContext("2d");
+c.font = '500 1000px ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas';
+function ink(ch) { const m = c.measureText(ch); return { L: -m.actualBoundingBoxLeft, R: m.actualBoundingBoxRight, adv: m.width }; }
+const n = ink("n"), d = ink("."), k = ink("c"), m = ink("m");
+const a = n.adv;
+const g1 = (a + d.L) - n.R;      // n -> .
+const g2 = (a + k.L) - d.R;      // . -> c
+document.getElementById("out").textContent = JSON.stringify({
+  adv: +(a / 1000).toFixed(4),
+  n: { L: +(n.L / 1000).toFixed(4), R: +(n.R / 1000).toFixed(4) },
+  dot: { L: +(d.L / 1000).toFixed(4), R: +(d.R / 1000).toFixed(4), w: +((d.R - d.L) / 1000).toFixed(4) },
+  c: { L: +(k.L / 1000).toFixed(4), R: +(k.R / 1000).toFixed(4) },
+  gap_n_dot_em: +(g1 / 1000).toFixed(4),
+  gap_dot_c_em: +(g2 / 1000).toFixed(4),
+  with_J2: { left: +((g1 / 1000) - 0.14).toFixed(4), right: +((g2 / 1000) - 0.24).toFixed(4) },
+  with_J1: { left: +((g1 / 1000) - 0.2).toFixed(4), right: +((g2 / 1000) - 0.2).toFixed(4) },
+}, null, 1);
+</script></body></html>

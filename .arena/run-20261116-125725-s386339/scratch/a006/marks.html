@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mark lab</title>
+<style>
+  :root{--bg:#0a0a0b;--text:#ededee;--mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono);}
+  body{padding:28px;}
+  h2{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#67676f;margin:0 0 4px;font-weight:400;}
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-bottom:26px;}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:18px;padding:10px 0;border-left:1px solid #191919;}
+  .cell:first-child{border-left:0;}
+  svg{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;overflow:visible;}
+  .big svg{height:150px;width:134px;stroke-width:1.25;}
+  .small svg{height:37px;width:33px;stroke-width:1.25;}
+  .word{font-size:37px;font-weight:500;letter-spacing:-.035em;}
+</style>
+</head>
+<body>
+
+<div class="grid">
+  <div class="cell"><h2>M1 wide</h2>
+    <svg class="big" viewBox="3.4 2.4 17.2 19.2"><g><path d="M12 3.6V12.2"/><path d="m7.9 8.2 4.1 4 4.1-4"/></g><path d="M4.6 14v3.9a2.5 2.5 0 0 0 2.5 2.5h9.8a2.5 2.5 0 0 0 2.5-2.5V14"/></svg></div>
+  <div class="cell"><h2>M2 narrow</h2>
+    <svg class="big" viewBox="4.4 2.4 15.4 19.2"><g><path d="M12 3.6V12.2"/><path d="m7.9 8.2 4.1 4 4.1-4"/></g><path d="M5.4 14v3.6a2.4 2.4 0 0 0 2.4 2.4h8.4a2.4 2.4 0 0 0 2.4-2.4V14"/></svg></div>
+  <div class="cell"><h2>M3 shallow</h2>
+    <svg class="big" viewBox="3.4 2.4 17.2 19.2"><g><path d="M12 3.8V12.6"/><path d="m7.9 8.6 4.1 4 4.1-4"/></g><path d="M4.6 15.2v1.6a2.6 2.6 0 0 0 2.6 2.6h9.6a2.6 2.6 0 0 0 2.6-2.6v-1.6"/></svg></div>
+  <div class="cell"><h2>M4 deep narrow</h2>
+    <svg class="big" viewBox="4.4 2.4 15.4 19.2"><g><path d="M12 3.4V11.4"/><path d="m8.1 7.6 3.9 3.8 3.9-3.8"/></g><path d="M5.4 13.2v4.6a2.2 2.2 0 0 0 2.2 2.2h8.8a2.2 2.2 0 0 0 2.2-2.2v-4.6"/></svg></div>
+  <div class="cell"><h2>M5 arrow inside</h2>
+    <svg class="big" viewBox="3.4 2.4 17.2 19.2"><g><path d="M12 3.4V13.6"/><path d="m8 9.6 4 4 4-4"/></g><path d="M4.6 15.4v2.5a2.5 2.5 0 0 0 2.5 2.5h9.8a2.5 2.5 0 0 0 2.5-2.5v-2.5"/></svg></div>
+  <div class="cell"><h2>M6 line only</h2>
+    <svg class="big" viewBox="3.4 3.4 17.2 17.2"><g><path d="M12 4.2V13.4"/><path d="m7.9 9.4 4.1 4 4.1-4"/></g><path d="M4.6 16.6h14.8"/></svg></div>
+</div>
+
+<div class="grid">
+  <div class="cell"><h2>&nbsp;</h2><svg class="small" viewBox="3.4 2.4 17.2 19.2"><g><path d="M12 3.6V12.2"/><path d="m7.9 8.2 4.1 4 4.1-4"/></g><path d="M4.6 14v3.9a2.5 2.5 0 0 0 2.5 2.5h9.8a2.5 2.5 0 0 0 2.5-2.5V14"/></svg><span class="word">mdown.cc</span></div>
+  <div class="cell"><h2>&nbsp;</h2><svg class="small" viewBox="4.4 2.4 15.4 19.2"><g><path d="M12 3.6V12.2"/><path d="m7.9 8.2 4.1 4 4.1-4"/></g><path d="M5.4 14v3.6a2.4 2.4 0 0 0 2.4 2.4h8.4a2.4 2.4 0 0 0 2.4-2.4V14"/></svg><span class="word">mdown.cc</span></div>
+  <div class="cell"><h2>&nbsp;</h2><svg class="small" viewBox="3.4 2.4 17.2 19.2"><g><path d="M12 3.8V12.6"/><path d="m7.9 8.6 4.1 4 4.1-4"/></g><path d="M4.6 15.2v1.6a2.6 2.6 0 0 0 2.6 2.6h9.6a2.6 2.6 0 0 0 2.6-2.6v-1.6"/></svg><span class="word">mdown.cc</span></div>
+  <div class="cell"><h2>&nbsp;</h2><svg class="small" viewBox="4.4 2.4 15.4 19.2"><g><path d="M12 3.4V11.4"/><path d="m8.1 7.6 3.9 3.8 3.9-3.8"/></g><path d="M5.4 13.2v4.6a2.2 2.2 0 0 0 2.2 2.2h8.8a2.2 2.2 0 0 0 2.2-2.2v-4.6"/></svg><span class="word">mdown.cc</span></div>
+  <div class="cell"><h2>&nbsp;</h2><svg class="small" viewBox="3.4 2.4 17.2 19.2"><g><path d="M12 3.4V13.6"/><path d="m8 9.6 4 4 4-4"/></g><path d="M4.6 15.4v2.5a2.5 2.5 0 0 0 2.5 2.5h9.8a2.5 2.5 0 0 0 2.5-2.5v-2.5"/></svg><span class="word">mdown.cc</span></div>
+  <div class="cell"><h2>&nbsp;</h2><svg class="small" viewBox="3.4 3.4 17.2 17.2"><g><path d="M12 4.2V13.4"/><path d="m7.9 9.4 4.1 4 4.1-4"/></g><path d="M4.6 16.6h14.8"/></svg><span class="word">mdown.cc</span></div>
+</div>
+
+</body>
+</html>

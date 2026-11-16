@@ -1,0 +1,28 @@
+<!DOCTYPE html><html data-theme="dark"><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/app.css"></head><body>
+<pre id="o"></pre><script>
+const stack = 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+const out = [];
+for (const weight of [400, 500, 600]) {
+  const S = 400;
+  const c = document.createElement('canvas');
+  c.width = 400; c.height = 600;
+  const g = c.getContext('2d');
+  g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height);
+  g.font = `${weight} ${S}px ${stack}`;
+  g.fillStyle = '#fff'; g.textBaseline = 'alphabetic';
+  g.fillText('l', 100, 400);
+  const img = g.getImageData(0, 0, c.width, c.height).data;
+  // widest run of bright pixels at the vertical middle of the stem (y = 300)
+  let best = 0;
+  for (let y = 250; y < 350; y++) {
+    let run = 0;
+    for (let x = 0; x < c.width; x++) {
+      const v = img[(y * c.width + x) * 4];
+      if (v > 128) { run++; best = Math.max(best, run); } else run = 0;
+    }
+  }
+  out.push(`weight ${weight}: stem ${best}px at ${S}px = ${(best / S).toFixed(4)}em, ${(best * 38.4 / S).toFixed(2)}px at 38.4px`);
+}
+document.getElementById('o').textContent = out.join('\n');
+</script></body></html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html><body><pre id="out"></pre><script>
+const c = document.createElement('canvas').getContext('2d');
+c.font = '500 100px ui-monospace, "SF Mono", Menlo, monospace';
+const F = 100;
+function ink(ch){ const m = c.measureText(ch); return {
+  ch, adv:+m.width.toFixed(2),
+  l:+m.actualBoundingBoxLeft.toFixed(2), r:+m.actualBoundingBoxRight.toFixed(2),
+  asc:+m.actualBoundingBoxAscent.toFixed(2), desc:+m.actualBoundingBoxDescent.toFixed(2) }; }
+// measure ascender of 'd', x-height of 'o', cap-not-needed
+const per = ink('.');
+const n = ink('n'), cc = ink('c');
+// ink of '.' inside its cell: left edge = (adv/2 - l) ... use left/right relative to origin
+document.getElementById('out').textContent = JSON.stringify({
+  em:F, period:per, n:n, c:cc,
+  dotInkLeftFromOrigin: per.l, dotInkRightFromOrigin: per.r,
+  note:'actualBoundingBoxLeft is distance left of origin (positive=ink extends left)',
+}, null, 1);
+</script></body></html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>frames</title>
+<style>body{margin:0;background:#111;color:#ddd;font:11px monospace}iframe{border:0;display:block}
+.wrap{display:inline-block;vertical-align:top;margin:0 8px}</style></head><body>
+<div class="wrap"><iframe width="320" height="720" src="index-probe.html"></iframe></div><div class="wrap"><iframe width="360" height="720" src="index-probe.html"></iframe></div><pre id="log">{
+ "320": {
+  "viewport": {
+   "w": 320,
+   "h": 720,
+   "scrollW": 320
+  },
+  "fontSize": 30.4,
+  "baselineY": 180.83,
+  "mark": {
+   "l": 78.92,
+   "t": 146.78,
+   "r": 107.19,
+   "b": 180.83,
+   "w": 28.27,
+   "h": 34.05
+  },
+  "word": {
+   "l": 116.91,
+   "t": 155.83,
+   "r": 241.06,
+   "b": 186.23,
+   "w": 124.16,
+   "h": 30.41
+  },
+  "dot": {
+   "l": 205.25,
+   "t": 171.72,
+   "r": 209.5,
+   "b": 180.83,
+   "w": 4.25,
+   "h": 9.11
+  },
+  "down": {
+   "l": 134.16,
+   "t": 155.29,
+   "r": 203.13,
+   "b": 185.7,
+   "w": 68.97,
+   "h": 30.41
+  },
+  "logo": {
+   "l": 16,
+   "t": 141.63,
+   "r": 304,
+   "b": 186.23,
+   "w": 288,
+   "h": 44.61
+  },
+  "composer": {
+   "l": 16,
+   "t": 207.83,
+   "r": 304,
+   "b": 337.83,
+   "w": 288,
+   "h": 130
+  },
+  "px": {
+   "markBottomMinusBaseline": 0,
+   "dotBottomMinusBaseline": 0,
+   "markHeight": 34.05,
+   "markWidth": 28.27,
+   "capEstimate_px": 21.89,
+   "markGap": 9.72,
+   "logoHeight": 44.61,
+   "wordWidth": 124.16,
+   "overflowX": 0
+  },
+  "line": "30.4px / letter-spacing -1.064px",
+  "wordWraps": false,
+  "arrowTransform": "matrix(1, 0, 0, 1, 0, -0.298294)",
+  "downTransform": "matrix(1, 0, 0, 1, 0, -0.537371)"
+ },
+ "360": {
+  "viewport": {
+   "w": 360,
+   "h": 720,
+   "scrollW": 360
+  },
+  "fontSize": 30.4,
+  "baselineY": 189.83,
+  "mark": {
+   "l": 98.92,
+   "t": 155.78,
+   "r": 127.19,
+   "b": 189.83,
+   "w": 28.27,
+   "h": 34.05
+  },
+  "word": {
+   "l": 136.91,
+   "t": 164.83,
+   "r": 261.06,
+   "b": 195.23,
+   "w": 124.16,
+   "h": 30.41
+  },
+  "dot": {
+   "l": 225.25,
+   "t": 180.72,
+   "r": 229.5,
+   "b": 189.83,
+   "w": 4.25,
+   "h": 9.11
+  },
+  "down": {
+   "l": 154.16,
+   "t": 159.96,
+   "r": 223.13,
+   "b": 190.37,
+   "w": 68.97,
+   "h": 30.41
+  },
+  "logo": {
+   "l": 16,
+   "t": 150.63,
+   "r": 344,
+   "b": 195.23,
+   "w": 328,
+   "h": 44.61
+  },
+  "composer": {
+   "l": 16,
+   "t": 216.83,
+   "r": 344,
+   "b": 346.83,
+   "w": 328,
+   "h": 130
+  },
+  "px": {
+   "markBottomMinusBaseline": 0,
+   "dotBottomMinusBaseline": 0,
+   "markHeight": 34.05,
+   "markWidth": 28.27,
+   "capEstimate_px": 21.89,
+   "markGap": 9.72,
+   "logoHeight": 44.61,
+   "wordWidth": 124.16,
+   "overflowX": 0
+  },
+  "line": "30.4px / letter-spacing -1.064px",
+  "wordWraps": false,
+  "arrowTransform": "matrix(1, 0, 0, 1, 0, -2.7)",
+  "downTransform": "matrix(1, 0, 0, 1, 0, -4.864)"
+ }
+}</pre>
+<script>
+const SRC = new URLSearchParams(location.search).get('src') || 'index-probe.html';
+const WIDTHS = (new URLSearchParams(location.search).get('w') || '320,360,390').split(',').map(Number);
+const slots = [];
+for (const w of WIDTHS) {
+  const box = document.createElement('div');
+  box.className = 'wrap';
+  const f = document.createElement('iframe');
+  f.width = w; f.height = 720; f.src = SRC;
+  box.appendChild(f);
+  document.body.insertBefore(box, document.getElementById('log'));
+  slots.push([w, f]);
+}
+const out = {};
+const t0 = Date.now();
+const tick = setInterval(() => {
+  let done = 0;
+  for (const [w, f] of slots) {
+    try {
+      const pre = f.contentDocument && f.contentDocument.getElementById('probe-out');
+      if (pre) { out[w] = JSON.parse(pre.textContent); done++; }
+    } catch (e) { out[w] = 'ERR ' + e.message; done++; }
+  }
+  if (done === slots.length || Date.now() - t0 > 12000) {
+    clearInterval(tick);
+    document.getElementById('log').textContent = JSON.stringify(out, null, 1);
+  }
+}, 200);
+</script></body></html>

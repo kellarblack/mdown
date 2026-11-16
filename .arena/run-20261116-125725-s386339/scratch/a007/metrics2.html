@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8">
+<pre id="out"></pre>
+<script>
+const S = 100;
+const c = document.createElement("canvas");
+c.width = 1000; c.height = 200;
+const ctx = c.getContext("2d", { willReadFrequently: true });
+const stack = 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace';
+function runs(text, size, trackingEm) {
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.font = `500 ${size}px ${stack}`;
+  ctx.letterSpacing = (trackingEm * size) + "px";
+  ctx.fillStyle = "#fff";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(text, 20, 150);
+  const d = ctx.getImageData(0, 0, c.width, c.height).data;
+  const cols = [];
+  for (let x = 0; x < c.width; x++) {
+    let on = false;
+    for (let y = 0; y < c.height; y++) {
+      if (d[(y * c.width + x) * 4 + 3] > 60) { on = true; break; }
+    }
+    cols.push(on);
+  }
+  const out = [];
+  let start = -1;
+  for (let x = 0; x < cols.length; x++) {
+    if (cols[x] && start < 0) start = x;
+    if (!cols[x] && start >= 0) { out.push([start, x - 1, x - start]); start = -1; }
+  }
+  return out;
+}
+const r1 = runs("mdown.cc", S, -0.03);
+const r2 = runs("mdown", S, -0.03);
+const gaps = [];
+for (let i = 1; i < r1.length; i++) gaps.push(+(r1[i][0] - r1[i - 1][1] - 1).toFixed(2));
+document.getElementById("out").textContent = JSON.stringify({
+  runs_mdown_dot_cc: r1, runs_mdown: r2, gaps_between_clusters_units_per_100px: gaps,
+  note: "gaps[4] = n->dot, gaps[5] = dot->c ; units are px at 100px font"
+}, null, 1);
+</script>

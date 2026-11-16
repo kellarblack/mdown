@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>landscape check</title>
+<style>
+ body{margin:0;background:#111;color:#ddd;font:11px ui-monospace,monospace}
+ pre{white-space:pre-wrap;padding:8px}
+ iframe{border:1px solid #333;display:block;flex:none}
+ .s{display:flex;gap:6px;padding:6px}
+</style>
+<div class="s">
+  <iframe id="a" src="preview.html" width="844" height="390"></iframe>
+  <iframe id="b" src="preview.html" width="1440" height="400"></iframe>
+  <iframe id="c" src="preview.html" width="390" height="844"></iframe>
+</div>
+<pre id="out">…</pre>
+<script>
+const targets = [
+  ["a", "844×390 (phone on its side)"],
+  ["b", "1440×400 (short laptop window)"],
+  ["c", "390×844 (phone upright)"]
+];
+let tries = 0;
+const t = setInterval(() => {
+  tries++;
+  const rows = [];
+  let ready = 0;
+  for (const [id, label] of targets) {
+    const w = document.getElementById(id).contentWindow;
+    const d = w && w.document;
+    const el = d && d.querySelector(".hero-logo");
+    if (el) {
+      const cs = w.getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      rows.push({ viewport: label, display: cs.display, height: +r.height.toFixed(1) });
+      ready++;
+    }
+  }
+  if (ready === targets.length || tries > 80) {
+    clearInterval(t);
+    document.getElementById("out").textContent = JSON.stringify(rows, null, 1);
+  }
+}, 80);
+</script>

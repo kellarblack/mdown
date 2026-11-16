@@ -1,14 +1,14 @@
 # mdown
 
 > mdown.cc is a media downloader that runs in the browser: paste a link, keep
-> the file. No ads, no account, no tracking. Nothing is stored on a server.
+> the file. No ads, no account, no tracking. A finished file lives on the server only until it is handed over, then it is deleted.
 
 ## What it does
 
 - Downloads video and audio from a pasted link, in auto (video + audio), audio-only, or muted mode.
 - Offers mp4, webm and mkv for video; the untouched source stream, or mp3, wav, ogg and opus for audio.
 - Includes three tools that run entirely in the browser tab, with no upload:
-  - **Remux** — repackages streams into a different container without re-encoding, so quality is unchanged and it finishes in seconds.
+  - **Remux** — repackages streams into a different container without re-encoding, so quality is unchanged.
   - **Subtitle extractor** — exports embedded text subtitle tracks as SRT, and explains when a track is image-based and cannot be exported.
   - **Metadata cleaner** — strips container tags such as title, artist, comment and creation time, leaving the streams untouched.
 - Accepts a media link after the domain (`https://mdown.cc/<link>`) so a download can be started from a bookmark or a message.
@@ -27,7 +27,7 @@ The code is open source under the MIT licence.
 
 - Maximum resolution: 8k (4320p), decided by the instance.
 - Maximum duration: 30 minutes.
-- The downloader needs a compatible API instance; the page has no backend of its own and says so when none is configured.
+- The downloader needs a compatible API instance; the page talks to the API in Settings; mdown.cc points it at its own small one.
 
 ## Pages
 
@@ -60,5 +60,5 @@ mdown.cc is an ad-free media downloader: paste a link, pick video or audio, keep
 - URL: https://mdown.cc/
 - Price: free, no account
 - License: MIT (open source)
-- Limits per instance: 4320p, 30 minutes, one download at a time per address
-- Contact: the status page's report form reaches the operator without an email address
+- Limits per instance: 4320p, 30 minutes, two downloads at a time and six waiting per address
+- Contact: the status page can copy a diagnostic report; GitHub issues reach the operator too

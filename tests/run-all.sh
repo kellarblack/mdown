@@ -59,10 +59,17 @@ report_suite() {
     fail=1
     return
   fi
-  if python3 - "$name" "$expect" <<'PY'
-import json, sys
+  if python3 - "$name" "$expect" "$url" <<'PY'
+import json, re, sys
 name, expect = sys.argv[1], int(sys.argv[2])
+want = re.search(r"/tests/([\w.-]+\.test\.html)", sys.argv[3])
 d = json.load(open("/tmp/mdown-report.json"))
+# A report from a previous suite is not this suite's report. Suites post as they
+# finish, so a slow Chrome can land a late file after the next one starts.
+page = str(d.get("page") or "")
+if want and page and not page.endswith(want.group(1)):
+    print("%-8s stale report (got %s)" % (name, page))
+    sys.exit(1)
 total, failures = d.get("total", 0), d.get("failures", 0)
 ok = failures == 0 and total == expect
 print("%-8s %d/%d  %s" % (name, total - failures, total, "ok" if ok else "FAILED"))
@@ -108,7 +115,7 @@ report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1"
 report_suite buttons "http://127.0.0.1:$WEB_PORT/tests/buttons.test.html?report=1" 19
 report_suite queue   "http://127.0.0.1:$WEB_PORT/tests/queue.test.html?report=1" 11
 report_suite tip     "http://127.0.0.1:$WEB_PORT/tests/tip.test.html?report=1" 7
-report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 25
+report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 28
 report_suite probe   "http://127.0.0.1:$WEB_PORT/tests/probe.test.html?report=1" 21
 report_suite health  "http://127.0.0.1:$WEB_PORT/tests/health.test.html?report=1" 11
 report_suite spam    "http://127.0.0.1:$WEB_PORT/tests/spam.test.html?report=1" 9

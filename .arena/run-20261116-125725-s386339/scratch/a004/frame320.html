@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}iframe{width:320px;height:640px;border:0;display:block}</style></head>
+<body><iframe id="f" src="/.arena/run-20261116-125725-s386339/scratch/a004/final-new.html"></iframe>
+<pre id="o">?</pre><script>
+var f=document.getElementById('f');
+f.addEventListener('load',function(){
+  var d=f.contentDocument, w=f.contentWindow;
+  var h1=d.querySelector('.hero-logo'), word=d.querySelector('.hero-word'), svg=d.querySelector('.hero-mark svg');
+  var probe=d.createElement('span'); probe.style.cssText='display:inline-block;width:0;height:0;overflow:hidden;vertical-align:baseline';
+  word.appendChild(probe); var bl=probe.getBoundingClientRect().top; probe.remove();
+  var lock=word.getBoundingClientRect().right - svg.getBoundingClientRect().left;
+  document.getElementById('o').textContent='MEASURE '+JSON.stringify({vw:w.innerWidth,font:getComputedStyle(word).fontSize,
+    lockupW:Math.round(lock*100)/100, avail:h1.clientWidth, h1w:h1.clientWidth, h1scroll:h1.scrollWidth,
+    svgH:svg.getBoundingClientRect().height, stroke:Math.round(parseFloat(getComputedStyle(svg).strokeWidth)*svg.getBoundingClientRect().height/17*100)/100,
+    trayOnBaseline:Math.round((bl-svg.getBoundingClientRect().bottom)*100)/100, lines:word.getClientRects().length,
+    hidden:getComputedStyle(h1).display});
+});
+</script></body></html>

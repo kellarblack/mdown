@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>final check</title>
+<style>
+  html, body { margin: 0; background: #0a0a0b; }
+  iframe { display: block; border: 0; }
+  #log { font: 11px/1.45 ui-monospace, monospace; color: #7f7; white-space: pre; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<script>
+const q = new URLSearchParams(location.search);
+const width = +(q.get("w") || 1440);
+const theme = q.get("theme") || "dark";
+const freeze = q.get("t");
+const log = q.get("log") === "1";
+
+localStorage.setItem("mdown.settings", JSON.stringify({
+  instance: "http://127.0.0.1:4320", savingMethod: "ask", theme: theme,
+  downloadMode: "auto", filenameStyle: "pretty"
+}));
+
+const frame = document.createElement("iframe");
+frame.style.width = width + "px";
+frame.style.height = (q.get("h") || 860) + "px";
+frame.src = "/index.html";
+document.body.appendChild(frame);
+
+frame.addEventListener("load", async () => {
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  await new Promise((r) => setTimeout(r, 200));
+
+  const markup = await (await fetch("final-markup.html")).text();
+  doc.querySelector("h1.hero-logo").outerHTML = markup;
+
+  const css = await (await fetch("/assets/app.css")).text();
+  const hero = await (await fetch("final.css")).text();
+  const start = css.indexOf("/* one flow: the arrow rises");
+  const end = css.indexOf(".meta-line {", start);
+  if (start < 0 || end < 0) throw new Error("hero block not found");
+  const patched = css.slice(0, start) + hero + "\n" + css.slice(end);
+
+  doc.querySelectorAll('link[rel="stylesheet"]').forEach((l) => l.remove());
+  const st = doc.createElement("style");
+  st.textContent = patched + (freeze
+    ? `\n.hero-logo, .hero-word, .mark-arrow { animation-delay: -${freeze}ms !important; animation-play-state: paused !important; }`
+    : "");
+  doc.head.appendChild(st);
+
+  if (log) {
+    const L = doc.querySelector(".hero-logo");
+    const M = doc.querySelector(".hero-mark");
+    const W = doc.querySelector(".hero-word");
+    const cs = win.getComputedStyle(W);
+    const px = parseFloat(cs.fontSize);
+    const c = doc.createElement("canvas").getContext("2d");
+    c.font = cs.fontWeight + " " + px + "px " + cs.fontFamily;
+    const m = (t) => c.measureText(t);
+    const out = [];
+    out.push("viewport " + win.innerWidth + "x" + win.innerHeight + "  font " + px.toFixed(2) + "px " + cs.fontWeight);
+    out.push("h1 display " + win.getComputedStyle(L).display +
+             "   h1 height " + L.getBoundingClientRect().height.toFixed(2) +
+             "   container " + doc.getElementById("download-view").clientWidth.toFixed(1));
+    const mb = M.getBoundingClientRect();
+    out.push("mark box " + mb.width.toFixed(2) + " x " + mb.height.toFixed(2) +
+             "   cap height of word " + m("H").actualBoundingBoxAscent.toFixed(2) +
+             "   delta " + (mb.height - m("H").actualBoundingBoxAscent).toFixed(2));
+    const wb = W.getBoundingClientRect();
+    out.push("word box " + wb.width.toFixed(2) + " x " + wb.height.toFixed(2) +
+             "   single line: " + (wb.height <= px * 1.05));
+    out.push("word left " + wb.left.toFixed(1) + "  mark right " + (mb.left + mb.width).toFixed(1) +
+             "  gap " + (wb.left - mb.left - mb.width).toFixed(1));
+    out.push("lockup ink " + mb.left.toFixed(1) + " → " + (wb.left + wb.width).toFixed(1) +
+             "  (available " + (doc.getElementById("download-view").clientWidth - 2 * 16).toFixed(0) + "+)");
+    out.push("centred: left margin " + (mb.left - doc.getElementById("download-view").getBoundingClientRect().left).toFixed(1) +
+             "  right margin " + (doc.getElementById("download-view").getBoundingClientRect().right - wb.right).toFixed(1));
+    out.push("lockup rect top " + L.getBoundingClientRect().top.toFixed(2) + " bottom " + L.getBoundingClientRect().bottom.toFixed(2) + " left " + L.getBoundingClientRect().left.toFixed(2));
+    out.push("dot margins " + win.getComputedStyle(doc.querySelector(".hero-word-dot")).margin);
+    out.push("cc colour " + win.getComputedStyle(doc.querySelector(".hero-word-sub")).color +
+             "  size " + win.getComputedStyle(doc.querySelector(".hero-word-sub")).fontSize);
+    out.push("mark overflow " + win.getComputedStyle(M).overflow);
+    const pre = document.createElement("pre");
+    pre.id = "log";
+    pre.textContent = out.join("\n");
+    document.body.appendChild(pre);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>inspect</title>
+<style>
+:root { --bg:#0a0a0b; --text:#ededee; --text-2:#a1a1a6; --text-3:#8b8b93; --accent:#ededee;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font: 15px/1.5 -apple-system, sans-serif; }
+.block { padding: 18px 24px 30px; }
+.tag { font: 10px/1 var(--mono); letter-spacing:.18em; text-transform:uppercase; color:#5c5c63; margin: 0 0 10px; }
+.rule { height:1px; background:#1c1c1f; margin: 0 0 18px; }
+
+/* old */
+.o { display:flex; align-items:center; justify-content:center; gap:14px; color:var(--text); }
+.o .m { display:grid; place-items:center; width:44px; height:44px; }
+.o .m svg { width:100%; height:100%; }
+.o .w { font-family:var(--mono); font-weight:500; font-size:80px; letter-spacing:-0.03em; line-height:1; }
+.o .dot { color:var(--accent); margin:0 -0.14em; }
+.o .sub { font-size:.72em; font-weight:400; color:var(--text-3); margin-left:2px; }
+
+/* new */
+.n { display:flex; align-items:baseline; justify-content:center; gap:0.2em; margin:0;
+     font-family:var(--mono); font-size:80px; line-height:1; color:var(--text); white-space:nowrap; }
+.n .m { flex:none; display:block; width:.7em; height:.7em; overflow:visible; }
+.n .m svg { display:block; width:100%; height:100%; }
+.n .w { font-weight:500; letter-spacing:-0.012em; }
+.n .dot { color:var(--accent); margin:0 -0.055em 0 -0.01em; }
+.n .sub { color:var(--text-2); }
+
+.big svg { width: 240px; height: 240px; }
+</style>
+</head>
+<body>
+<div class="block">
+  <div class="tag">old — mark 44 / word 80 scaled x1.66</div>
+  <div class="o"><span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/></svg></span><span class="w"><span>m</span><span>down</span><span class="dot">.</span><span class="sub">cc</span></span></div>
+</div>
+<div class="rule"></div>
+<div class="block">
+  <div class="tag">new — 80px</div>
+  <div class="n"><span class="m"><svg viewBox="3 3 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.75v8.3"/><path d="M6.4 9.9 10 13.5 13.6 9.9"/><path d="M3.75 13.9v2.35h12.5v-2.35"/></svg></span><span class="w"><span>m</span><span>down</span><span class="dot">.</span><span class="sub">cc</span></span></div>
+</div>
+<div class="rule"></div>
+<div class="block">
+  <div class="tag">mark alone, tight viewBox 3 3 14 14, stroke 1.5</div>
+  <span class="m big"><svg viewBox="3 3 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.75v8.3"/><path d="M6.4 9.9 10 13.5 13.6 9.9"/><path d="M3.75 13.9v2.35h12.5v-2.35"/></svg></span>
+</div>
+<div class="block">
+  <div class="tag">mark with 3 units of air all round (box 20x20, stroke 1.5)</div>
+  <span class="m big"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.75v8.3"/><path d="M6.4 9.9 10 13.5 13.6 9.9"/><path d="M3.75 13.9v2.35h12.5v-2.35"/></svg></span>
+</div>
+</body>
+</html>
