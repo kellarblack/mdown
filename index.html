@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=258">
+<link rel="stylesheet" href="assets/app.css?v=259">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -263,7 +263,13 @@
 
     <button class="icon-btn help-btn" id="open-help-top" type="button"
             aria-haspopup="dialog" aria-label="how it works" title="how it works">
-      <span aria-hidden="true">?</span>
+      <!-- a glyph from the same set as its neighbours, not a bold letter -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.1"/>
+        <path d="M9.7 9.4a2.4 2.4 0 0 1 4.7.7c0 1.7-2.4 2-2.4 3.5"/>
+        <path d="M12 16.9v.01"/>
+      </svg>
     </button>
 
     <button class="icon-btn labeled" id="open-settings" type="button" aria-haspopup="dialog">
@@ -1046,7 +1052,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=130" defer></script>
+<script src="assets/app.js?v=131" defer></script>
 <script type="module" src="assets/nav.js?v=13"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

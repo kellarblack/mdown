@@ -81,7 +81,7 @@ async function main() {
   doc.querySelector("#open-help-top").click();
   await sleep(400);
   const helpTip = [...doc.querySelectorAll("#modal button")].find((b) => /tip jar/i.test(b.textContent || ""));
-  record("the help dialog offers a tip jar", !!helpTip);
+  record("the help dialog always offers a tip jar", !!helpTip);
   if (helpTip) {
     helpTip.click();
     await sleep(420);

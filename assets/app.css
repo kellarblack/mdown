@@ -281,9 +281,9 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .donate-btn:hover { color: var(--text); }
 .donate-btn svg { width: 14px; height: 14px; }
 .icon-btn.help-btn {
-  font-family: var(--mono); font-size: 0.9rem; font-weight: 400;
-  color: var(--text-3); line-height: 1; border-color: var(--stroke);
+  color: var(--text-3); border-color: var(--stroke);
 }
+.icon-btn.help-btn svg { width: 16px; height: 16px; }
 .icon-btn.help-btn:hover { color: var(--text); }
 .icon-btn.labeled {
   width: auto; gap: 7px; padding: 0 10px; grid-auto-flow: column;
@@ -1417,7 +1417,8 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
   .composer-cta .ghost-btn { height: 48px; }
   #tune-mode { width: 40px; height: 40px; }
   .icon-btn.help-btn,
-  .icon-btn.donate-btn { width: 40px; height: 40px; font-size: 0.9rem; }
+  .icon-btn.donate-btn { width: 40px; height: 40px; }
+  .icon-btn.help-btn svg { width: 17px; height: 17px; }
   /* a phone runs out of top bar before it runs out of ideas: drop the word,
      then the heart, and the three things that must never collide stop
      colliding */

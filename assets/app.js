@@ -4129,16 +4129,19 @@
     const close = el("button", { type: "button", class: "primary-btn", text: "got it" });
     close.addEventListener("click", () => closeModal());
     const buttons = [close];
-    if (donateConfig()) {
-      const tip = el("button", { type: "button", class: "ghost-btn", text: "tip jar" });
-      tip.setAttribute("aria-controls", "tip-pop");
-      tip.addEventListener("click", (event) => {
-        event.stopPropagation();
-        closeModal();
-        openDonate(event);
-      });
-      buttons.unshift(tip);
-    }
+    /* Always there. If the donate module has not loaded yet (deferred, on a
+       slow phone) or the jar is closed, this goes to the page instead of doing
+       nothing — a button that sometimes silently fails is worse than one that
+       goes somewhere. */
+    const tip = el("button", { type: "button", class: "ghost-btn", text: "tip jar" });
+    tip.setAttribute("aria-controls", "tip-pop");
+    tip.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeModal();
+      if (donateConfig()) openDonate(event);
+      else window.location.href = "donate.html";
+    });
+    buttons.unshift(tip);
     openModal("How it works", body, buttons);
   }
 
