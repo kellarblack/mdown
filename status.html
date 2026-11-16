@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=217">
+<link rel="stylesheet" href="assets/app.css?v=224">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -312,8 +312,15 @@
     return "false";
   }
 
+  const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  function shortDate(iso) {
+    const parts = String(iso || "").split("-");
+    if (parts.length !== 3) return String(iso || "");
+    return Number(parts[2]) + " " + (MONTHS[Number(parts[1]) - 1] || "");
+  }
+
   function uptimeTitle(day) {
-    if (!day.total) return day.date + " · no checks";
+    if (!day.total) return shortDate(day.date) + " · not measured";
     const pct = Math.round((day.up / day.total) * 1000) / 10;
     return day.date + " · " + pct + "% of " + day.total + " checks";
   }
@@ -386,14 +393,21 @@
       drawUptimeBars(data.days);
       const pctEl = $("#uptime-pct");
       pctEl.textContent = data.uptime === null ? "—" : data.uptime.toFixed(1) + "% up";
-      /* the count is the server's, not this tab's: one sample a minute, so a
-         full day is 1,440 checks and the total is what the box actually ran */
-      const perDay = data.days.length ? Math.round(data.checks / data.days.length) : 0;
+      /* the count is the server's, not this tab's. Two things used to be
+         untrue here: the average divided by the full 30-day window even when
+         the log only covered a day, and "today" was the server's UTC date with
+         nothing saying so. */
+      const measured = data.days.filter((d) => d && d.total);
+      const windowDays = measured.length;
+      const perDay = windowDays ? Math.round(data.checks / windowDays) : 0;
+      const spanText = windowDays >= 30
+        ? "over 30 days"
+        : (windowDays ? "since " + shortDate(measured[0].date) : "");
       const today = data.days[data.days.length - 1];
       const todayChecks = today && today.total ? today.total.toLocaleString() : "0";
-      $("#uptime-meta").textContent = "· one check a minute · " + data.checks.toLocaleString() +
-        " checks over 30 days" + (perDay ? " (" + perDay.toLocaleString() + " a day)" : "") +
-        " · today " + todayChecks + ", sampled by the server";
+      $("#uptime-meta").textContent = "· a check a minute · " + data.checks.toLocaleString() +
+        " checks " + spanText + (perDay ? " (" + perDay.toLocaleString() + " a day)" : "") +
+        " · today " + todayChecks + " so far (UTC), sampled by the server";
       serverGraph = true;
       uptimeAsked = Date.now();
       stampLive();

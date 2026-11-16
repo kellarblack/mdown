@@ -1331,12 +1331,23 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+  /* 16px whatever the pointer says: a phone that reports hover:hover (some
+     Android browsers do) was still zooming the page on focus */
   #url-input { font-size: 16px; }
+  .text-input, .select, #instance-url { font-size: 16px; }
+  /* any field a thumb can land in is 16px: below that Safari zooms the page
+     on focus and never zooms back */
+  input[type="text"], input[type="url"], input[type="search"],
+  input:not([type]), textarea, select { font-size: 16px; }
   .mode { height: 34px; padding: 0 12px; font-size: 0.76rem; }
   .icon-btn { width: 36px; height: 36px; }
   .ghost-btn { height: 36px; padding: 0 12px; }
   .primary-btn { height: 40px; padding: 0 16px; }
-  .nav-link { padding: 8px 10px; }
+  /* everything you tap in the bar is at least 40px tall, including the two
+     that look like plain text */
+  .nav-link { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 10px; }
+  .brand { min-height: 40px; }
+  .brand-text { padding: 2px 0; }
   .q-actions .icon-btn, .rq-actions .icon-btn { width: 34px; height: 34px; }
   .footer { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
   @media (orientation: landscape) and (hover: none) {
@@ -1377,12 +1388,20 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
      fetch. On a phone the primary action should never share a line. */
   .composer-foot { flex-direction: column; align-items: stretch; gap: 8px; }
   .mode-group, .modes { width: 100%; }
-  .composer-cta { width: 100%; flex-wrap: wrap; row-gap: 8px; }
+  .composer-cta { width: 100%; flex-wrap: wrap; row-gap: 8px; justify-content: flex-end; }
   .composer-cta .format-note { margin-right: auto; }
   .composer-cta .hint { order: 4; width: 100%; max-width: none; text-align: left; font-size: 0.72rem; }
 
-  /* the one action, sized for a thumb */
-  #paste-btn { width: 118px; height: 42px; }
+  /* the one action, sized for a thumb: sitting at the field's right edge while
+     it is still "paste", then full width the moment it becomes the action */
+  /* the field owns its line, and the control sits at the right end of the row
+     under it — never floating in the middle of a wide empty box */
+  .composer-main { row-gap: 7px; }
+  #url-input { flex: 1 1 100%; }
+  .composer-tools { margin-left: auto; }
+  /* one width for both jobs: the control must not resize under the thumb that
+     is already on it */
+  #paste-btn { width: 118px; height: 44px; }
   #paste-btn .pb-label { font-size: 0.8rem; }
   /* the format switch sits beside fetch, not alone on its own line */
   .composer-cta #tune-mode { order: 5; flex: none; width: 40px; height: 40px; }
@@ -1856,6 +1875,14 @@ a.donate-value:hover { text-decoration: underline; }
   outline: 2px solid var(--ring); outline-offset: 2px;
 }
 .donate-value.is-revealed, .addr-value.is-revealed { letter-spacing: 0; color: var(--text); }
+/* on a phone the address is a control you press to reveal, so it gets a
+   thumb-sized row rather than a 19px line of code */
+@media (max-width: 720px) {
+  .addr-value[data-address], .donate-value[data-address] {
+    display: inline-flex; align-items: center; min-height: 34px; padding: 0 2px;
+  }
+  .addr-copy { min-height: 34px; padding: 0 10px; }
+}
 /* the card is the one option that needs no wallet, so it leads and looks
    like a control: icon, two lines, an arrow that leans on hover */
 .donate-card {
