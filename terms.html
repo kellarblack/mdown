@@ -40,15 +40,11 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=266">
+<link rel="stylesheet" href="assets/app.css?v=271">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 
-<div class="backdrop" aria-hidden="true">
-  <div class="glow glow-a"></div>
-  <div class="glow glow-b"></div>
-  <div class="grain"></div>
 </div>
 
 <header class="topbar">
@@ -65,20 +61,20 @@
   </nav>
 </header>
 
-<main class="wrap">
+<main class="wrap page-article">
   <h1 class="page-h1">Terms &amp; ethics</h1>
   <p class="page-lede">Plain language, no lawyer cosplay. Using mdown means accepting everything below.</p>
 
   <section class="terms">
-    <h2>1. What mdown is</h2>
+    <h2><span class="num">01</span>What mdown is</h2>
     <p id="source">mdown is a page and an API. The page is static: paste a link and it asks an API server to do the work, then hands you the file. You do not have to use this one — point Settings → Server at your own copy and the downloads run through your machine instead. Nothing here is a secret, and nothing is stored: mdown hosts no media, keeps no library, and redistributes nothing.</p>
 
     <p>Service names are used to describe technical compatibility only. There is no affiliation with, endorsement by, or partnership with any service listed, and none is implied.</p>
 
-    <h2>2. What you may do</h2>
+    <h2><span class="num">02</span>What you may do</h2>
     <p>Save content you own, content that is licensed for reuse, content in the public domain, or content a service's terms allow you to keep. That is the whole permitted use, and it is broader than it sounds.</p>
 
-    <h2>3. What you may not do</h2>
+    <h2><span class="num">03</span>What you may not do</h2>
     <ul>
       <li><b>Break encryption.</b> DRM-protected services are refused. Nothing here circumvents a technical protection measure.</li>
       <li><b>Bypass access controls.</b> Logins, paywalls and region locks are not worked around.</li>
@@ -86,21 +82,21 @@
       <li><b>Abuse the server.</b> Automated scraping, resale of access, or anything that gets the host terminated.</li>
     </ul>
 
-    <h2>4. The API</h2>
+    <h2><span class="num">04</span>The API</h2>
     <p>mdown.cc talks to one server, and that server is sized for this page. It checks where requests come from, rate-limits by address, and has a finite daily budget. Pointing another app, bot or reseller at it is not permitted and will be blocked without notice.</p>
     <p>the full policy, with the numbers, is at <a href="api.html">api.html</a> (also as a <a href="assets/api-policy.pdf" download>pdf</a>).</p>
     <p>The protocol is open and the server code is in the same MIT repository. If you need an API, run your own — that is the intended path, and it costs less than a coffee a month.</p>
 
-    <h2>5. No warranty</h2>
+    <h2><span class="num">05</span>No warranty</h2>
     <p>Provided as is. No guarantee of uptime, of a particular file, or of fitness for any purpose. You are responsible for what you save and for how you use it. If a download is unlawful where you live, don't do it — that is on you, not on the software.</p>
 
-    <h2 id="privacy">6. Privacy</h2>
+    <h2 id="privacy"><span class="num">06</span>Privacy</h2>
     <p>Settings and recent links live in your browser's local storage. No account, no cookies, no analytics, no third-party requests. Files processed by the local tools never leave your device. Files downloaded through an API are deleted shortly after transfer.</p>
 
-    <h2>7. Donations</h2>
+    <h2><span class="num">07</span>Donations</h2>
     <p>If a donate link is shown, it is a tip jar: voluntary, not payment for anything, and not a subscription. Nothing is unlocked by donating — no priority, no extra features, no removal of limits. No account is created, no receipt is issued, and no donor information is stored or seen by the site. Whatever a payment provider or wallet reveals to you is between you and them; crypto addresses are published precisely because they identify nobody.</p>
 
-    <h2>8. Changes</h2>
+    <h2><span class="num">08</span>Changes</h2>
     <p>These terms may change as the tool does. The date below is the version you are agreeing to.</p>
   </section>
 

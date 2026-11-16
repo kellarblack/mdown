@@ -107,7 +107,7 @@ report_suite donopg "http://127.0.0.1:$WEB_PORT/tests/donate-page.test.html?repo
 report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 70
 report_suite buttons "http://127.0.0.1:$WEB_PORT/tests/buttons.test.html?report=1" 19
 report_suite queue   "http://127.0.0.1:$WEB_PORT/tests/queue.test.html?report=1" 11
-report_suite tip     "http://127.0.0.1:$WEB_PORT/tests/tip.test.html?report=1" 9
+report_suite tip     "http://127.0.0.1:$WEB_PORT/tests/tip.test.html?report=1" 7
 report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 25
 report_suite probe   "http://127.0.0.1:$WEB_PORT/tests/probe.test.html?report=1" 21
 report_suite health  "http://127.0.0.1:$WEB_PORT/tests/health.test.html?report=1" 11

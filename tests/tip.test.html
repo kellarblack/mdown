@@ -68,26 +68,19 @@ async function main() {
   await sleep(320);
   const settingsBtn = doc.querySelector("#open-donate-settings");
   record("settings offers a tip jar", !!settingsBtn && !settingsBtn.hidden);
-  settingsBtn.click();
-  await sleep(420);
-  record("settings opens it, and it stays open", visible());
-  const box = pop.getBoundingClientRect();
-  record("it lands on screen, not behind a sheet or the bar",
-    box.top >= 0 && box.bottom <= win.innerHeight + 1 && box.left >= 0 && box.right <= win.innerWidth + 1,
-    [Math.round(box.left), Math.round(box.top), Math.round(box.width), Math.round(box.height)].join(","));
+  record("settings sends you to the tip page instead of opening a panel",
+    settingsBtn.tagName === "A" && /donate\.html$/.test(settingsBtn.getAttribute("href") || ""),
+    settingsBtn.tagName + " " + (settingsBtn.getAttribute("href") || ""));
   await close();
 
   // 3. the help dialog
   doc.querySelector("#open-help-top").click();
   await sleep(400);
-  const helpTip = [...doc.querySelectorAll("#modal button")].find((b) => /tip jar/i.test(b.textContent || ""));
+  const helpTip = [...doc.querySelectorAll("#modal button, #modal a")].find((b) => /tip jar/i.test(b.textContent || ""));
   record("the help dialog always offers a tip jar", !!helpTip);
-  if (helpTip) {
-    helpTip.click();
-    await sleep(420);
-    record("and that one opens it too", visible());
-    record("the help dialog is out of the way", doc.querySelector("#modal").hidden);
-  }
+  record("and it is a link to the page too",
+    !!helpTip && helpTip.tagName === "A" && /donate\.html$/.test(helpTip.getAttribute("href") || ""),
+    helpTip ? helpTip.tagName + " " + (helpTip.getAttribute("href") || "") : "missing");
 
   window.__results = { total: results.length, failures, results };
 }

@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=266">
+<link rel="stylesheet" href="assets/app.css?v=271">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -184,10 +184,6 @@
 
 <a class="skip-link" href="#url-input">skip to the link field</a>
 
-<div class="backdrop" aria-hidden="true">
-  <div class="glow glow-a"></div>
-  <div class="glow glow-b"></div>
-  <div class="grain"></div>
 </div>
 
 <header class="topbar">
@@ -279,12 +275,11 @@
 
     <button class="icon-btn help-btn" id="open-help-top" type="button"
             aria-haspopup="dialog" aria-label="how it works" title="how it works">
-      <!-- a glyph from the same set as its neighbours, not a bold letter -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+      <!-- a question mark, not a question mark in a circle -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="9.1"/>
-        <path d="M9.7 9.4a2.4 2.4 0 0 1 4.7.7c0 1.7-2.4 2-2.4 3.5"/>
-        <path d="M12 16.9v.01"/>
+        <path d="M8.4 8.7a3.6 3.6 0 1 1 5.2 3.8c-1 .5-1.6 1.3-1.6 2.4v.5"/>
+        <path d="M12 19.2h.01"/>
       </svg>
     </button>
 
@@ -410,11 +405,11 @@
   <nav class="tool-strip" aria-label="Tools that run in your browser">
     <a class="tool-card" href="#remux" data-view="remux">
       <span class="tool-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h11"/><path d="m7 6-3 3 3 3"/><path d="M20 15H9"/><path d="m17 12 3 3-3 3"/></svg></span>
-      <span class="tool-card-body"><b>remux</b><span>change container</span></span>
+      <span class="tool-card-body"><b>remux</b><span>fix broken files</span></span>
     </a>
     <a class="tool-card" href="#subs" data-view="subs">
       <span class="tool-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z"/><path d="M8 10h8M8 13.5h5"/></svg></span>
-      <span class="tool-card-body"><b>subtitles</b><span>export srt</span></span>
+      <span class="tool-card-body"><b>subtitles</b><span>export .srt</span></span>
     </a>
     <a class="tool-card" href="#clean" data-view="clean">
       <span class="tool-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg></span>
@@ -607,7 +602,7 @@
 
         <div class="field">
           <span class="field-label">Support</span>
-          <button type="button" class="ghost-btn" id="open-donate-settings" aria-controls="tip-pop" aria-haspopup="dialog" hidden>tip jar</button>
+          <a class="ghost-btn" id="open-donate-settings" href="donate.html" hidden>tip jar</a>
           <p class="field-help">no ads, ever. if mdown earned it, you can leave something.</p>
         </div>
       </section>
@@ -1052,7 +1047,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=133" defer></script>
+<script src="assets/app.js?v=134" defer></script>
 <script type="module" src="assets/nav.js?v=13"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

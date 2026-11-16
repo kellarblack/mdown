@@ -2687,24 +2687,10 @@
     /* the foot of the sheet: the thing you came here to do, then the full list,
        then the small print. It used to be note → gap → link, which read as a
        hole in the panel. */
-    wrap.appendChild(el("p", {
-      class: "sources-note",
-      text: "compatibility only — no affiliation or endorsement"
-    }));
-
-    const download = el("button", { type: "button", class: "sources-download" });
-    download.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.2v10.2"/><path d="m7.9 10.3 4.1 4.1 4.1-4.1"/><path d="M5 17.6V19a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 19v-1.4"/></svg><span>download</span>';
-    download.addEventListener("click", () => {
-      closeSources();
-      /* and put the cursor where the work starts */
-      setTimeout(() => {
-        if (dom.input) {
-          dom.input.focus({ preventScroll: true });
-          dom.input.scrollIntoView({ block: "center", behavior: "smooth" });
-        }
-      }, 180);
-    });
-    wrap.appendChild(download);
+    const note = el("p", { class: "sources-note" });
+    note.appendChild(el("b", { text: "download" }));
+    note.appendChild(document.createTextNode(" compatibility only — no affiliation or endorsement"));
+    wrap.appendChild(note);
 
     const more = el("a", {
       class: "sources-more",
@@ -3651,12 +3637,9 @@
     /* the dot is the connection: click for a miniature of the status page,
        the gear is still the way into the settings */
     const settingsDonate = $("#open-donate-settings");
-    if (settingsDonate) settingsDonate.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      closeSettings();
-      openDonate(event);
-    });
+    /* a plain link to the page: the jar in Settings should not open a second
+       panel inside a panel */
+
     const mbarSettings = $("#mbar-settings");
     if (mbarSettings) mbarSettings.addEventListener("click", () => openSettings());
     const mbarQueue = $("#mbar-queue");
@@ -3821,7 +3804,13 @@
     });
     clear.addEventListener("click", () => {
       recentLinks = [];
-      try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+      try {
+        localStorage.removeItem(HISTORY_KEY);
+        /* and every key this page ever wrote under an older name: a leftover
+           one gets migrated back in on the next visit, so clearing looked like
+           it worked on this machine only */
+        LEGACY_HISTORY_KEYS.forEach((key) => localStorage.removeItem(key));
+      } catch (e) {}
       renderHistory();
       toast("Recent links cleared", "ok");
     });
@@ -4144,18 +4133,8 @@
     const close = el("button", { type: "button", class: "primary-btn", text: "got it" });
     close.addEventListener("click", () => closeModal());
     const buttons = [close];
-    /* Always there. If the donate module has not loaded yet (deferred, on a
-       slow phone) or the jar is closed, this goes to the page instead of doing
-       nothing — a button that sometimes silently fails is worse than one that
-       goes somewhere. */
-    const tip = el("button", { type: "button", class: "ghost-btn", text: "tip jar" });
-    tip.setAttribute("aria-controls", "tip-pop");
-    tip.addEventListener("click", (event) => {
-      event.stopPropagation();
-      closeModal();
-      if (donateConfig()) openDonate(event);
-      else window.location.href = "donate.html";
-    });
+    /* the page, not a dropdown inside a dialog */
+    const tip = el("a", { class: "ghost-btn", href: "donate.html", text: "tip jar" });
     buttons.unshift(tip);
     openModal("How it works", body, buttons);
   }
