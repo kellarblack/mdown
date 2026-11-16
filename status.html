@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=265">
+<link rel="stylesheet" href="assets/app.css?v=266">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -393,9 +393,30 @@
         : (windowDays ? "since " + shortDate(measured[0].date) : "");
       const today = data.days[data.days.length - 1];
       const todayChecks = today && today.total ? today.total.toLocaleString() : "0";
-      $("#uptime-meta").textContent = "· a check a minute · " + data.checks.toLocaleString() +
+      const meta = $("#uptime-meta");
+      meta.textContent = "· a check a minute · " + data.checks.toLocaleString() +
         " checks " + spanText +
         " · today " + todayChecks + " so far (UTC), sampled by the server";
+
+      /* A graph that only counts its own samples cannot notice its own death:
+         if the box stops, the bars simply stop growing and yesterday still
+         reads 100%. The age of the newest sample is the one number that can
+         tell you that, so it is printed, and it changes the tone when it is
+         old. */
+      const lastAt = Number(data.lastSampleAt) ? Number(data.lastSampleAt) * 1000 : 0;
+      const age = lastAt ? Math.max(0, Math.round((Date.now() - lastAt) / 1000)) : 0;
+      meta.removeAttribute("data-tone");
+      if (lastAt) {
+        if (age > 600) {
+          meta.dataset.tone = "err";
+          meta.textContent = "· no check for " + Math.round(age / 60) + " minutes — the server is not reporting. the bars below stop at the last one it did.";
+        } else if (age > 180) {
+          meta.dataset.tone = "warn";
+          meta.textContent += " · last check " + Math.round(age / 60) + " min ago";
+        } else {
+          meta.textContent += " · last check " + (age < 60 ? age + "s" : Math.round(age / 60) + "m") + " ago";
+        }
+      }
       serverGraph = true;
       uptimeAsked = Date.now();
       stampLive();

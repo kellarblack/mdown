@@ -105,6 +105,13 @@ class UptimeLogTest(unittest.TestCase):
         again.record(True)
         self.assertEqual(again.summary(1)["checks"], 2)
 
+    def test_the_summary_says_when_it_last_sampled(self):
+        log = UptimeLog(self.path)
+        log.record(True)
+        summary = log.summary(1)
+        self.assertIsInstance(summary["lastSampleAt"], int)
+        self.assertLessEqual(summary["lastSampleAt"], int(time.time()) + 1)
+
     def test_the_stamp_is_not_a_day(self):
         log = UptimeLog(self.path)
         log.record(True)

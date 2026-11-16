@@ -129,4 +129,7 @@ class UptimeLog:
             "up": total_up,
             "uptime": pct,
             "since": out[0]["date"] if out else None,
+            # when the last sample was taken: without it a dead box looks like a
+            # graph that simply stopped growing, which reads as healthy
+            "lastSampleAt": int(self._last_at) if self._last_at else None,
         }
