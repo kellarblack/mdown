@@ -1462,6 +1462,7 @@
     const barQueue = $("#mbar-queue");
     if (barQueue) barQueue.setAttribute("aria-expanded", open ? "true" : "false");
     dom.queueDock.classList.toggle("is-open", open);
+    syncBarGlider();
   }
 
   function ensureTicker() {
@@ -3377,6 +3378,9 @@
 
   function openSettings(section) {
     if (healthOpen) closeHealthPop();
+    const barSettings = $("#mbar-settings");
+    if (barSettings) barSettings.setAttribute("aria-expanded", "true");
+    syncBarGlider();
     lastFocused = document.activeElement;
     dom.sheet.hidden = false;
     document.body.style.overflow = "hidden";
@@ -3394,6 +3398,9 @@
 
   function closeSettings() {
     dom.sheet.hidden = true;
+    const barSettings = $("#mbar-settings");
+    if (barSettings) barSettings.setAttribute("aria-expanded", "false");
+    syncBarGlider();
     document.body.style.overflow = "";
     if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
   }
@@ -3875,6 +3882,15 @@
     dom.clearFinished.addEventListener("click", clearFinished);
 
     if (dom.queueClose) dom.queueClose.addEventListener("click", () => setDock(false));
+
+    /* nav.js flips the active class on a hash change; this reads it a tick
+       later and moves the glider to wherever it landed */
+    window.addEventListener("hashchange", () => {
+      syncBarGlider();
+      setTimeout(() => syncBarGlider(), 60);
+    });
+    window.addEventListener("resize", () => syncBarGlider(true));
+    window.addEventListener("orientationchange", () => setTimeout(() => syncBarGlider(true), 120));
     if (dom.miniDock) dom.miniDock.addEventListener("click", (event) => {
       event.stopPropagation();
       /* when the row is ready, the dock IS the download button */
@@ -4249,6 +4265,47 @@
     });
   }
 
+  /* ----------------------------------------------------------
+     the phone bar's selection
+     ---------------------------------------------------------- */
+  /* One object moves between four boxes, the way the mode switch does: the
+     order of the bar never changes, so the eye follows the thing that does. */
+  let barGlidedOnce = false;
+
+  function barGliderTarget() {
+    const bar = document.querySelector(".mobile-bar");
+    if (!bar) return null;
+    const items = Array.from(bar.querySelectorAll(".mbar-item"));
+    return items.find((el) => el.getAttribute("aria-expanded") === "true")
+        || items.find((el) => el.classList.contains("is-active"))
+        || null;
+  }
+
+  function syncBarGlider(instant) {
+    const bar = document.querySelector(".mobile-bar");
+    const glider = document.getElementById("mbar-glider");
+    if (!bar || !glider) return;
+    const target = barGliderTarget();
+    if (!target) { glider.classList.remove("is-on"); return; }
+    const barBox = bar.getBoundingClientRect();
+    const box = target.getBoundingClientRect();
+    const left = barBox.left + bar.clientLeft;
+    const top = barBox.top + bar.clientTop;
+    glider.style.setProperty("--x", (box.left - left).toFixed(1) + "px");
+    glider.style.setProperty("--y", (box.top - top).toFixed(1) + "px");
+    glider.style.setProperty("--w", box.width.toFixed(1) + "px");
+    glider.style.setProperty("--h", box.height.toFixed(1) + "px");
+    if (!barGlidedOnce || instant) {
+      /* the first placement must not fly in from the left edge */
+      barGlidedOnce = true;
+      glider.classList.add("is-instant");
+      glider.classList.add("is-on");
+      requestAnimationFrame(() => glider.classList.remove("is-instant"));
+    } else {
+      glider.classList.add("is-on");
+    }
+  }
+
   function boot() {
     renderDonate();
     bindTip();
@@ -4267,6 +4324,10 @@
     bindComposer();
     renderHistory();
     renderQueue();
+    syncBarGlider(true);
+    /* nav.js is a module: it applies the active class a moment after boot */
+    setTimeout(() => syncBarGlider(true), 90);
+    window.addEventListener("load", () => syncBarGlider(true));
     updateComposerState();
     checkInstance({ silent: true });
     autosize();

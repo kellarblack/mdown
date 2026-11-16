@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=255">
+<link rel="stylesheet" href="assets/app.css?v=258">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -1021,6 +1021,7 @@
 </button>
 
 <nav class="mobile-bar" aria-label="Quick actions">
+  <span class="mbar-glider" id="mbar-glider" aria-hidden="true"></span>
   <button type="button" class="mbar-item" id="mbar-queue"
           aria-haspopup="dialog" aria-expanded="false" aria-controls="queue-panel">
     <span class="mbar-badge" id="mbar-badge" hidden>0</span>
@@ -1031,7 +1032,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h11"/><path d="m7 6-3 3 3 3"/><path d="M20 15H9"/><path d="m17 12 3 3-3 3"/></svg>
     <span>remux</span>
   </a>
-  <button type="button" class="mbar-item" id="mbar-settings">
+  <button type="button" class="mbar-item" id="mbar-settings" aria-haspopup="dialog" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.9 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9.4a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9.4a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
     <span>settings</span>
   </button>
@@ -1045,7 +1046,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=128" defer></script>
+<script src="assets/app.js?v=130" defer></script>
 <script type="module" src="assets/nav.js?v=13"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

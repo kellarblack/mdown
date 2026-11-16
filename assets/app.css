@@ -196,18 +196,13 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .instance-pill:hover { border-color: var(--stroke-2); background: var(--surface); }
 .instance-pill .dot {
   width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); flex: none;
-  transition: background 200ms ease-out, box-shadow 200ms ease-out;
+  transition: background 200ms ease-out;
 }
-.instance-pill[data-state="ok"] .dot {
-  background: var(--ok);
-  animation: dot-breathe 3.2s ease-in-out infinite;
-}
-@keyframes dot-breathe {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.38; }
-}
+/* a dot reports a state. It does not pulse, breathe or glow: those read as
+   decoration, and this is the one thing on the page that must read as a fact */
+.instance-pill[data-state="ok"] .dot { background: var(--ok); }
 .instance-pill[data-state="bad"] .dot { background: var(--err); }
-.instance-pill[data-state="checking"] .dot { background: var(--warn); animation: pulse 1.2s infinite; }
+.instance-pill[data-state="checking"] .dot { background: var(--warn); }
 
 
 .instance-pill-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -234,8 +229,8 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .hp-state .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); flex: none; }
 .health-pop[data-state="ok"] .hp-state .dot { background: var(--ok); }
 .health-pop[data-state="bad"] .hp-state .dot { background: var(--err); }
-.health-pop[data-state="checking"] .hp-state .dot { background: var(--warn); animation: pulse 1.2s infinite; }
-.health-pop[data-busy="true"] .hp-state .dot { animation: pulse 1.2s infinite; }
+.health-pop[data-state="checking"] .hp-state .dot { background: var(--warn); }
+
 .hp-uptime {
   flex: none; font-family: var(--mono); font-size: 0.64rem; color: var(--text-3);
   font-variant-numeric: tabular-nums;
@@ -250,7 +245,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   transform-origin: bottom;
   transition: background 300ms ease;
 }
-.hp-bar[data-live="true"] { animation: bar-live 3.4s ease-in-out infinite; }
+.hp-bar[data-live="true"] { background: var(--ok); }
 .hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 70%, transparent); }
 .hp-bar[data-ok="unknown"] { background: var(--text-3); opacity: 0.45; }
 .hp-bar[data-empty="true"] { height: 38%; background: var(--surface-3); }
@@ -1133,7 +1128,7 @@ a.ghost-btn { text-decoration: none; }
 .instance-card-head .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
 .instance-card[data-state="ok"] .instance-card-head .dot { background: var(--ok); }
 .instance-card[data-state="bad"] .instance-card-head .dot { background: var(--err); }
-.instance-card[data-state="checking"] .instance-card-head .dot { background: var(--warn); animation: pulse 1.2s infinite; }
+.instance-card[data-state="checking"] .instance-card-head .dot { background: var(--warn); }
 .instance-meta { display: grid; gap: 5px; margin-top: 9px; font-family: var(--mono); font-size: 0.68rem; }
 .instance-meta > div { display: flex; justify-content: space-between; gap: 12px; }
 .instance-meta dt { color: var(--text-3); }
@@ -1291,12 +1286,10 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
 #modal.is-closing .modal-inner { animation: modal-out 120ms var(--ease) both; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 @keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes toast-out { to { opacity: 0; transform: translateY(4px); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .instance-pill[data-state="ok"] .dot { animation: none; }
   *, *::before, *::after {
     animation-duration: 1ms !important;
     animation-delay: 0s !important;
@@ -1548,11 +1541,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .uptime-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 80%, transparent); }
 .uptime-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 80%, transparent); }
 .uptime-bar[data-ok="unknown"] { background: var(--surface-3); }
-.uptime-bar[data-live="true"] { animation: bar-live 3.4s ease-in-out infinite; }
-@keyframes bar-live {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.45; }
-}
+.uptime-bar[data-live="true"] { background: color-mix(in srgb, var(--ok) 100%, transparent); }
 .uptime-live {
   margin-left: auto; display: inline-flex; align-items: center; gap: 5px;
   font-family: var(--mono); font-size: 0.6rem; color: var(--text-3);
@@ -1560,15 +1549,9 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 .uptime-live-dot {
   width: 4px; height: 4px; border-radius: 999px; background: var(--ok);
-  animation: live-dot 2.4s ease-in-out infinite;
-}
-@keyframes live-dot {
-  0%, 100% { opacity: 0.35; transform: scale(0.8); }
-  50%      { opacity: 1; transform: scale(1); }
 }
 @media (prefers-reduced-motion: reduce) {
   .uptime-bar, .hp-bar { transition: none; }
-  .uptime-bar[data-live="true"], .hp-bar[data-live="true"], .uptime-live-dot { animation: none; }
 }
 .status-note { margin: 12px 0 0; color: var(--text-3); font-size: 0.76rem; line-height: 1.6; white-space: pre-wrap; }
 .status-cta { margin: 12px 0 0; }
@@ -2450,8 +2433,7 @@ a.donate-value:hover { text-decoration: underline; }
   /* the "you are here" dot costs 12px, which the 320px topbar does not have */
   .nav-link.is-active::before { display: none; }
 }
-/* while jobs are running the badge breathes, so a closed dock is not silence */
-.dock-badge:not(.is-dot) { animation: pulse 1.6s ease-in-out infinite; }
+
 
 .dock-badge.is-dot {
   width: 7px; height: 7px; min-width: 7px; padding: 0;
@@ -2864,22 +2846,37 @@ a.addr-value:hover { color: var(--text); }
   }
   /* four small boxes, each one a place: the current one is filled in, the rest
      sit on the surface, and the whole bar reads as a row of buttons */
+  /* one object travels between the four boxes, exactly like the mode switch:
+     the selection moves, the buttons stay where they are */
+  .mbar-glider {
+    position: absolute; z-index: 0; left: 0; top: 0;
+    width: var(--w, 0px); height: var(--h, 48px);
+    transform: translate3d(var(--x, 0px), var(--y, 6px), 0);
+    border-radius: 11px;
+    border: 1px solid var(--stroke-2);
+    background: var(--surface-3);
+    opacity: 0; pointer-events: none;
+    transition: transform 300ms var(--ease), width 300ms var(--ease),
+                height 200ms var(--ease), opacity 160ms ease-out;
+  }
+  .mbar-glider.is-on { opacity: 1; }
+  .mbar-glider.is-instant { transition: none; }
+
   .mbar-item {
+    position: relative; z-index: 1;
     display: grid; justify-items: center; align-content: center; gap: 4px;
     min-height: 48px; padding: 5px 0;
     border-radius: 11px; border: 1px solid var(--stroke);
     background: var(--surface);
     color: var(--text-3);
     font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.02em;
-    transition: color 120ms, background 120ms, border-color 120ms;
+    transition: color 160ms, background 160ms, border-color 160ms;
   }
   .mbar-item svg { width: 20px; height: 20px; }
   .mbar-item:active { background: var(--surface-2); color: var(--text); }
-  /* the page you are on, and the list while it is open */
+  /* the glider carries the fill now; the item only brightens */
   .mbar-item.is-active,
-  .mbar-item[aria-expanded="true"] {
-    background: var(--surface-2); border-color: var(--stroke-2); color: var(--text);
-  }
+  .mbar-item[aria-expanded="true"] { color: var(--text); background: transparent; border-color: transparent; }
   .mbar-item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   /* the bar replaces the two actions it duplicates */
   .topbar-actions #queue-toggle, .topbar-actions #open-settings { display: none; }
