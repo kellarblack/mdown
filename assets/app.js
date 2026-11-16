@@ -2565,6 +2565,11 @@
     if (!sourcesOpen) return;
     sourcesOpen = false;
     dom.openSources.classList.remove("is-open");
+    const veil = document.getElementById("sources-veil");
+    if (veil) {
+      veil.classList.remove("is-on");
+      setTimeout(() => { if (!sourcesOpen) veil.hidden = true; }, 220);
+    }
     const panel = dom.sourcesPanel;
     if (!panel || panel.hidden) {
       dom.openSources.setAttribute("aria-expanded", "false");
@@ -2601,6 +2606,16 @@
     dom.openSources.classList.add("is-open");
     dom.openSources.setAttribute("aria-expanded", "true");
     dom.sourcesPanel.hidden = false;
+    const veil = document.getElementById("sources-veil");
+    if (veil) {
+      if (veil.hidden) {
+        veil.hidden = false;
+        /* one forced style pass, then the fade: requestAnimationFrame is
+           throttled in some contexts and the veil never reached "on" */
+        void veil.offsetHeight;
+      }
+      veil.classList.add("is-on");
+    }
     fitSources();
     requestAnimationFrame(fitSources);
   }
@@ -2638,10 +2653,17 @@
 
     const wrap = el("div", { class: "sources" });
 
-    wrap.appendChild(el("p", {
-      class: "sources-note",
-      text: "compatibility only — no affiliation or endorsement"
-    }));
+    /* a sheet needs to say what it is and offer a way out that is not the
+       button you just pressed; on a desktop the same header anchors it */
+    wrap.appendChild(el("span", { class: "sources-handle", "aria-hidden": "true" }));
+    const head = el("div", { class: "sources-head" });
+    head.appendChild(el("span", { class: "sources-title", text: "sources" }));
+    head.appendChild(el("span", { class: "sources-count", text: all.length + " services" }));
+    const close = el("button", { type: "button", class: "sources-close", "aria-label": "close sources" });
+    close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+    close.addEventListener("click", () => closeSources());
+    head.appendChild(close);
+    wrap.appendChild(head);
     const row = el("div", { class: "source-chips" });
     shown.forEach(([id, note]) => {
       const home = SOURCE_HOME[id] || "";
@@ -2663,6 +2685,10 @@
     });
     wrap.appendChild(row);
 
+    wrap.appendChild(el("p", {
+      class: "sources-note",
+      text: "compatibility only — no affiliation or endorsement"
+    }));
     const more = el("a", {
       class: "sources-more",
       href: "sources.html",
@@ -3658,6 +3684,8 @@
         if (dom.sourcesWrap && dom.sourcesWrap.contains(event.target)) return;
         closeSources();
       });
+      const veil = document.getElementById("sources-veil");
+      if (veil) veil.addEventListener("click", () => closeSources());
     }
 
     if (dom.openHealth) {

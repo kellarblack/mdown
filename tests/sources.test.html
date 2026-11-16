@@ -56,16 +56,20 @@ async function main() {
       frame.contentWindow.innerWidth / 2) < 4,
     button ? button.textContent.trim() : "missing");
 
-  const plusBefore = win.getComputedStyle(doc.querySelector(".sources-chev")).transform;
+  record("the trigger is a grid, not a number",
+    !!doc.querySelector(".sources-glyph") && !doc.querySelector(".sources-count#sources-count"),
+    (doc.querySelector(".sources-toggle") || {}).textContent.trim());
+
   button.click();
   const opened = await waitFor(() => !doc.querySelector("#sources-panel").hidden, 5000);
   record("the panel opens", opened, "aria-expanded=" + button.getAttribute("aria-expanded"));
-  await sleep(260);   /* it drops in over 190ms; measure it where it lands */
+  await sleep(320);   /* it animates in over 180ms; measure it where it lands */
 
-  const plusAfter = win.getComputedStyle(doc.querySelector(".sources-chev")).transform;
-  record("the chevron turns over", plusBefore !== plusAfter && /matrix/.test(plusAfter),
-    plusBefore + " -> " + plusAfter);
   record("the trigger reports its state", button.getAttribute("aria-expanded") === "true", button.getAttribute("aria-expanded"));
+  const head = doc.querySelector("#sources-panel .sources-head");
+  const close = doc.querySelector("#sources-panel .sources-close");
+  record("the panel has a head and a way out of it", !!head && !!close,
+    head ? head.textContent.trim() : "no head");
 
   const rows = () => [...doc.querySelectorAll(".source-chip")];
   record("it lists the sources it can reach", rows().length >= 10, rows().length + " sources");
@@ -84,7 +88,7 @@ async function main() {
     "spotify/giphy absent");
   const panelRect = doc.querySelector("#sources-panel").getBoundingClientRect();
   const logoRect = doc.querySelector(".hero-logo").getBoundingClientRect();
-  record("the panel is compact", panelRect.height <= 340 && panelRect.width <= 480,
+  record("the panel is compact", panelRect.height <= 470 && panelRect.width <= 480,
     Math.round(panelRect.width) + "x" + Math.round(panelRect.height));
   const buttonRect = button.getBoundingClientRect();
   record("it opens downward from the trigger", panelRect.top >= buttonRect.bottom - 1,
@@ -119,10 +123,13 @@ async function main() {
   button.click();
   await sleep(350);
   const phone = doc.querySelector("#sources-panel").getBoundingClientRect();
-  const phoneTrigger = button.getBoundingClientRect();
-  record("on a phone the panel opens under the button, not at the other end of the screen",
-    phone.top >= phoneTrigger.bottom - 1 && phone.top - phoneTrigger.bottom < 60,
-    Math.round(phoneTrigger.bottom) + " → " + Math.round(phone.top));
+  const barTop = doc.querySelector(".mobile-bar").getBoundingClientRect().top;
+  const veil = doc.querySelector("#sources-veil");
+  record("on a phone it is a sheet, and it clears the bar",
+    phone.bottom <= barTop + 1 && phone.height > 200,
+    "sheet ends at " + Math.round(phone.bottom) + ", bar starts at " + Math.round(barTop));
+  record("with a veil to dismiss it", !!veil && !veil.hidden,
+    veil ? "veil " + (veil.classList.contains("is-on") ? "up" : "fading") : "none");
   record("and the whole list fits on that phone",
     phone.bottom <= frame.contentWindow.innerHeight + 1,
     Math.round(phone.bottom) + " of " + frame.contentWindow.innerHeight);
