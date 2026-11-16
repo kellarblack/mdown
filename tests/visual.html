@@ -26,7 +26,7 @@
   const theme = params.get("theme") || "dark";
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  localStorage.setItem("mget.settings", JSON.stringify({
+  localStorage.setItem("mdown.settings", JSON.stringify({
     instance: "http://127.0.0.1:4320",
     savingMethod: "ask",
     theme: theme,

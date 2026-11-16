@@ -1381,15 +1381,16 @@
         () => retryItem(item)
       ));
     }
+    /* the file is done: saving is the one thing left, so it is a labelled
+       button — and it sits last, where the eye finishes on the row */
+    let saveAction = null;
     if ((item.status === "ready" || item.status === "done") && item.blob) {
-      /* the file is done: saving is the one thing left, so it gets a labelled
-         button instead of another icon in a row of icons */
-      buttons.push(labelBtn(
+      saveAction = labelBtn(
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg>',
         "save",
         "Save " + (item.filename || "file"),
         () => saveBlob(item)
-      ));
+      );
       if (navigator.share) {
         buttons.push(iconBtn(
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="m8 8 4-4 4 4"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>',
@@ -1426,6 +1427,8 @@
         () => removeItem(item)
       ));
     }
+
+    if (saveAction) buttons.push(saveAction);
 
     container.innerHTML = "";
     buttons.forEach((b) => container.appendChild(b));
