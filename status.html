@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=241">
+<link rel="stylesheet" href="assets/app.css?v=243">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -91,17 +91,7 @@
 
     <div class="status-actions">
       <button type="button" class="ghost-btn small" id="status-refresh">check again</button>
-      <button type="button" class="ghost-btn small" id="status-report" aria-expanded="false" aria-controls="report-panel">report a problem</button>
-    </div>
-
-    <div class="report-panel" id="report-panel" hidden>
-      <p class="status-note">describe what went wrong. it goes to the server that runs this site — no third party, no account, no email.</p>
-      <textarea class="text-input report-note" id="report-note" rows="3" placeholder="what happened? (optional)" maxlength="2000"></textarea>
-      <div class="field-row">
-        <button type="button" class="ghost-btn small" id="report-send">send report</button>
-        <button type="button" class="ghost-btn small" id="report-copy">copy instead</button>
-      </div>
-      <pre class="report-text" id="report-text" hidden></pre>
+      <button type="button" class="ghost-btn small" id="status-copy">copy this status</button>
     </div>
 
     <details class="status-more">
@@ -127,10 +117,6 @@
   const titleEl = $("#status-title");
   const noteEl = $("#status-note");
   const stampEl = $("#status-stamp");
-
-  /* where a report should go once you have somewhere for it: any URL you
-     control. Empty means the button just copies the text to the clipboard. */
-  const REPORT_URL = "";
 
   const HISTORY_KEY = "mdown.uptime";
   const HISTORY_MAX = 480;
@@ -519,7 +505,7 @@
     renderServerUptime(base);
   }
 
-  function reportText() {
+  function statusText() {
     const lines = [
       "mdown status report",
       "time: " + new Date().toISOString(),
@@ -534,59 +520,44 @@
     return lines.join("\n");
   }
 
-  function openReport() {
-    const panel = $("#report-panel");
-    $("#report-text").textContent = reportText();
-    panel.hidden = false;
-    $("#status-report").setAttribute("aria-expanded", "true");
-    if (REPORT_URL) {
-      window.open(REPORT_URL, "_blank", "noopener");
-      return;
-    }
-    $("#report-note").focus();
-  }
-
-  async function sendReport() {
-    const base = apiBase();
-    if (!base) { toast("no server configured", "warn"); return; }
-    const note = ($("#report-note").value || "").trim();
-    const state = $("#status-card").dataset.state || "";
-    const button = $("#report-send");
-    button.disabled = true;
-    try {
-      const res = await fetch(base + "/report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ note: note, page: location.pathname, state: state })
-      });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      toast("report sent — thank you");
-      $("#report-panel").hidden = true;
-      $("#status-report").setAttribute("aria-expanded", "false");
-      $("#report-note").value = "";
-    } catch (e) {
-      $("#report-text").hidden = false;
-      toast("could not send — copy the text instead", "warn");
-    } finally {
-      button.disabled = false;
-    }
-  }
-
   async function copyText(text, message) {
     try {
-      await navigator.clipboard.writeText(text);
-      toast(message || "copied");
-      return true;
-    } catch (e) {
-      const range = document.createRange();
-      const node = $("#report-text");
-      range.selectNodeContents(node);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-      toast("select the text and copy it", "warn");
-      return false;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        toast(message || "copied");
+        return true;
+      }
+    } catch (e) { /* fall through: Safari says no when the page is not focused */ }
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.top = "0";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    let copied = false;
+    try { copied = document.execCommand("copy"); } catch (e) { copied = false; }
+    area.remove();
+    if (copied) { toast(message || "copied"); return true; }
+    /* last resort that still helps: show the text, already selected, so one
+       long-press or ⌘C finishes it. Nothing here can fail silently. */
+    let out = document.getElementById("status-copy-out");
+    if (!out) {
+      out = document.createElement("pre");
+      out.id = "status-copy-out";
+      out.className = "status-copy-out";
+      document.querySelector(".status-actions").after(out);
     }
+    out.textContent = text;
+    out.hidden = false;
+    const range = document.createRange();
+    range.selectNodeContents(out);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    toast("select and copy, or use the text below", "warn");
+    return false;
   }
 
   function toast(message, tone) {
@@ -604,9 +575,8 @@
   }
 
   $("#status-refresh").addEventListener("click", check);
-  $("#status-report").addEventListener("click", openReport);
-  $("#report-copy").addEventListener("click", () => copyText(reportText(), "report copied"));
-  $("#report-send").addEventListener("click", sendReport);
+  /* copying always works, offline or rate-limited; a POST does not */
+  $("#status-copy").addEventListener("click", () => copyText(statusText(), "status copied"));
   check();
 
   /* polling a hidden tab is wasted requests; resume the moment it is visible */

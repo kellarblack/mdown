@@ -1570,18 +1570,14 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .status-note { margin: 12px 0 0; color: var(--text-3); font-size: 0.76rem; line-height: 1.6; white-space: pre-wrap; }
 .status-cta { margin: 12px 0 0; }
 .status-card[data-state="no-instance"] .status-dot { background: var(--text-3); }
-.report-panel {
-  margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm);
-  border: 1px solid var(--stroke); background: var(--surface);
-}
-.report-note { width: 100%; min-height: 74px; resize: vertical; margin: 8px 0; font-size: 16px; }
-.report-text {
-  margin: 8px 0; padding: 10px; max-height: 200px; overflow: auto;
-  border-radius: 6px; background: var(--bg); border: 1px solid var(--stroke);
-  font-family: var(--mono); font-size: 0.68rem; line-height: 1.5; white-space: pre-wrap;
-  user-select: text;
-}
 .status-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+/* only appears when the browser refuses both clipboard paths */
+.status-copy-out {
+  margin: 10px 0 0; padding: 10px; max-height: 200px; overflow: auto;
+  border-radius: 8px; border: 1px solid var(--stroke); background: var(--bg);
+  font-family: var(--mono); font-size: 0.68rem; line-height: 1.5;
+  white-space: pre-wrap; user-select: text;
+}
 
 /* everything diagnostic hides in here until you ask for it */
 .status-more { margin-top: 12px; border-top: 1px solid var(--stroke); padding-top: 10px; }

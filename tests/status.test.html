@@ -94,8 +94,11 @@ async function main() {
   record("expanded view lists what it checked", rows >= 2, rows + " rows");
 
   // the report copies something useful
-  const report = doc().querySelector("#status-report");
-  record("report button exists", !!report && /report/i.test(report.textContent));
+  /* one control: copy the status, which works offline and when the API is
+     rate-limiting this address — a POST to /report can fail, a copy cannot */
+  const copy = doc().querySelector("#status-copy");
+  record("the status can be copied", !!copy && /copy/i.test(copy.textContent),
+    copy ? copy.textContent.trim() : "missing");
 
   // a visit must not draw anything: with the instance reporting no log at all,
   // the strip stays empty however many times the page is loaded
