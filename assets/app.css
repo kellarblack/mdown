@@ -795,6 +795,11 @@ a.ghost-btn { text-decoration: none; }
 .footer-meta a:hover, .footer-meta .footer-link:hover {
   color: var(--text); background: var(--surface-2); border-color: var(--stroke-2);
 }
+/* the build stamp the footer has always fetched and never had a place for */
+.footer-build {
+  margin: 7px 0 0; color: var(--text-3); opacity: 0.6;
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.06em;
+}
 .footer-meta .footer-link:focus-visible, .footer-meta a:focus-visible {
   outline: 2px solid var(--ring); outline-offset: 2px;
 }
@@ -3081,6 +3086,18 @@ a.addr-value:hover { color: var(--text); }
    background at bottom: 0 and moves its contents up by --mbar-lift, and every
    thing that stacks above it reads the same number. */
 :root { --mbar-lift: 0px; }
+
+/* a phone on its side has ~330px of height: the hero is the first thing that
+   has to go, and the column stops centring so the control lands above the bar
+   rather than under it */
+@media (orientation: landscape) and (max-height: 500px) {
+  .hero-logo { display: none; }
+  /* the three tools stay: they are the only way to subtitles and metadata on a
+     phone, so they move below the fold instead of being removed */
+  #download-view { justify-content: flex-start; padding-top: 8px; }
+  .composer-foot { gap: 6px; }
+  .composer-main { padding-top: 8px; padding-bottom: 8px; }
+}
 
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .mobile-bar {

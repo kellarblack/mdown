@@ -1,0 +1,89 @@
+<!doctype html><html><head><meta charset="utf-8"><title>smoke</title>
+<style>body{margin:0;background:#111;color:#ddd;font:12px monospace}iframe{border:0}</style></head>
+<body><pre id="out">running</pre>
+<script>
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const log = [];
+
+async function open(page, width, height) {
+  const f = document.createElement("iframe");
+  f.style.width = width + "px"; f.style.height = height + "px";
+  document.body.appendChild(f);
+  await new Promise((res) => { f.addEventListener("load", res, { once: true }); f.src = page + "?s=" + Date.now(); });
+  await wait(900);
+  return f;
+}
+
+function wire(win, tag) {
+  win.__errs = [];
+  win.addEventListener("error", (e) => win.__errs.push(tag + ": " + e.message));
+  const ce = win.console.error;
+  win.console.error = (...a) => { win.__errs.push(tag + ": console " + a.join(" ").slice(0, 80)); ce.apply(win.console, a); };
+}
+
+async function click(doc, sel, tag) {
+  const el = doc.querySelector(sel);
+  if (!el) { log.push(tag + " MISSING " + sel); return false; }
+  el.click();
+  await wait(320);
+  return true;
+}
+
+(async () => {
+  // ---- desktop
+  const d = await open("/index.html", 1280, 900);
+  wire(d.contentWindow, "desktop");
+  const dd = d.contentDocument;
+
+  await click(dd, "#sources-btn, .sources-toggle, [aria-controls=sources-panel]", "desktop sources open");
+  log.push("desktop sources chips: " + dd.querySelectorAll("#sources-panel .source-chip, .sources-panel .source-chip").length);
+  await click(dd, "#sources-panel .sources-close, .sources-panel [data-close-sources]", "desktop sources close");
+  log.push("desktop sources hidden: " + (dd.querySelector(".sources-panel") ? getComputedStyle(dd.querySelector(".sources-panel")).display : "none"));
+
+  await click(dd, "#open-help-top", "desktop help");
+  log.push("desktop help open: " + !dd.querySelector("#help, .modal")?.hidden);
+  await click(dd, "#modal-close, .modal [data-close]", "desktop help close");
+
+  await click(dd, "#coin-jar", "desktop tip jar");
+  log.push("desktop tip pop: " + (dd.querySelector("#tip-pop") ? !dd.querySelector("#tip-pop").hidden : "missing"));
+
+  await click(dd, "#open-settings", "desktop settings");
+  for (const section of ["appearance", "video", "audio", "output", "privacy", "advanced", "instance"]) {
+    await click(dd, '.sheet-nav-item[data-section="' + section + '"]', "pane " + section);
+    const pane = dd.querySelector('.pane[data-pane="' + section + '"]');
+    if (!pane || !pane.classList.contains("is-active")) log.push("PANE BROKEN " + section);
+    if (pane && pane.scrollWidth > pane.clientWidth + 1) log.push("PANE OVERFLOW " + section);
+  }
+  await click(dd, "[data-close-settings]", "desktop settings close");
+  log.push("desktop errors: " + JSON.stringify(d.contentWindow.__errs));
+
+  // ---- phone
+  const p = await open("/index.html", 390, 844);
+  wire(p.contentWindow, "phone");
+  const pd = p.contentDocument;
+  const win = p.contentWindow;
+
+  const bar = pd.querySelector("#mobile-bar, .mobile-bar");
+  log.push("phone bar: " + (bar ? getComputedStyle(bar).display : "missing"));
+
+  await click(pd, '[data-section="instance"]', "phone nav instance");
+  await click(pd, "#open-settings", "phone settings");
+  for (const section of ["video", "audio", "output", "privacy", "advanced"]) {
+    await click(pd, '.sheet-nav-item[data-section="' + section + '"]', "phone pane " + section);
+  }
+  await click(pd, "[data-close-settings]", "phone settings close");
+
+  await click(pd, "#open-help-top", "phone help");
+  const modal = pd.querySelector("#modal");
+  log.push("phone help open: " + (modal ? !modal.hidden : "missing"));
+  if (modal && !modal.hidden) {
+    const inner = modal.querySelector(".modal-inner");
+    log.push("phone help fits: " + (inner ? inner.getBoundingClientRect().width + "x" + Math.round(inner.getBoundingClientRect().height) : "none") +
+      " viewport " + win.innerWidth + "x" + win.innerHeight);
+  }
+  await click(pd, "#modal-close", "phone help close");
+
+  log.push("phone errors: " + JSON.stringify(win.__errs));
+  document.getElementById("out").textContent = log.join("\n");
+})();
+</script></body></html>
