@@ -2290,26 +2290,48 @@ a.donate-value:hover { text-decoration: underline; }
    this size reads as a toy. */
 .hero-mark svg {
   width: 100%; height: 100%;
-  /* the tray and the name arrive quickly; only the arrow takes its time, so
-     the lockup is never an empty box waiting for a fade */
-  animation: hero-fade 420ms var(--ease) both;
+  /* the mark itself lands with a little weight: it arrives small, overshoots
+     by a hair and settles. The arrow inside it keeps moving after that. */
+  animation: mark-in 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: 50% 62%;
 }
-/* the arrow travels down into the tray and settles: a download, not a fade.
-   Slow enough to be read, and only transform, so it costs one layer. */
+@keyframes mark-in {
+  0%   { opacity: 0; transform: scale(0.92); }
+  30%  { opacity: 1; }
+  70%  { transform: scale(1.035); }
+  100% { opacity: 1; transform: scale(1); }
+}
+/* The arrow travels down into the tray, lands a hair past it and settles back;
+   the tray gives a pixel under the weight. That is the bounce — it is a physical
+   detail, not a wobble, and it costs one transform per layer. */
 .mark-arrow {
-  animation: mark-download 950ms cubic-bezier(0.16, 0.84, 0.36, 1) both;
+  animation: mark-download 900ms cubic-bezier(0.2, 0.78, 0.16, 1) both;
   transform-origin: 50% 50%;
 }
 @keyframes mark-download {
-  from { transform: translate3d(0, -9px, 0); }
-  to   { transform: translate3d(0, 0, 0); }
+  0%   { transform: translate3d(0, -10px, 0); opacity: 0; }
+  28%  { opacity: 1; }
+  74%  { transform: translate3d(0, 2.2px, 0); }
+  100% { transform: translate3d(0, 0, 0); opacity: 1; }
 }
+/* it catches the arrow: one pixel, once */
+.mark-tray {
+  animation: mark-catch 900ms cubic-bezier(0.2, 0.78, 0.16, 1) both;
+}
+@keyframes mark-catch {
+  0%, 72% { transform: translate3d(0, 0, 0); }
+  80%     { transform: translate3d(0, 1.7px, 0); }
+  100%    { transform: translate3d(0, 0, 0); }
+}
+/* the name settles into place rather than just appearing */
 .hero-word {
-  animation: hero-fade 420ms var(--ease) both;
+  animation: hero-word-in 780ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  transform-origin: 50% 60%;
 }
-@keyframes hero-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+@keyframes hero-word-in {
+  0%   { opacity: 0; transform: scale(0.984); }
+  52%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
 }
 /* it is a wordmark, not a link: nothing to select, nothing to click */
 .hero-logo {
@@ -2329,18 +2351,21 @@ a.donate-value:hover { text-decoration: underline; }
    margin keeps the grey letters off the white m while they land. */
 .hero-word-down {
   display: inline-block; margin-left: 0.05em;
-  --drop: 0.12em;
+  --drop: 0.14em;
   /* transform only: the word itself is already fading, so the letters are not
-     composited twice for the same effect. It lands just after the arrow. */
-  animation: hero-land 620ms var(--ease) 80ms both;
+     composited twice for the same effect. It lands with the arrow, overshoots
+     by a hundredth of an em and settles — the same gesture, on the other half
+     of the lockup. */
+  animation: hero-land 800ms cubic-bezier(0.2, 0.78, 0.16, 1) 90ms both;
 }
 @keyframes hero-land {
-  from { transform: translate3d(0, calc(-1 * var(--drop, 10px)), 0); }
-  to   { transform: translate3d(0, 0, 0); }
+  0%   { transform: translate3d(0, calc(-1 * var(--drop, 10px)), 0); }
+  70%  { transform: translate3d(0, 0.018em, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }
 /* nobody asked for motion: show the lockup and be done */
 @media (prefers-reduced-motion: reduce) {
-  .hero-mark svg, .hero-word, .hero-word-down { animation: none; }
+  .hero-mark svg, .hero-word, .hero-word-down, .mark-arrow, .mark-tray { animation: none; }
 }
 .hero-word-dot { color: var(--accent); margin: 0 -0.14em; }
 .hero-word-sub {
