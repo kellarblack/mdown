@@ -1453,6 +1453,7 @@
     if (open) {
       dom.queuePanel.hidden = false;
       dom.queuePanel.classList.remove("is-closing");
+      bringToFront(dom.queuePanel);
     } else if (!dom.queuePanel.hidden) {
       dom.queuePanel.classList.add("is-closing");
       dockTimer = setTimeout(() => {
@@ -2661,48 +2662,8 @@
     const head = el("div", { class: "sources-head" });
     head.appendChild(el("span", { class: "sources-title", text: "sources" }));
     head.appendChild(el("span", { class: "sources-count", text: all.length + " services" }));
-    const close = el("button", { type: "button", class: "sources-close", "aria-label": "close sources" });
-    close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
-    close.addEventListener("click", () => closeSources());
-    head.appendChild(close);
     wrap.appendChild(head);
 
-    /* A list of 33 is something you scan, not something you read: type and it
-       narrows. Cobalt's picker does the same, and it is the difference between
-       a wall of names and a thing you use. */
-    const search = el("input", {
-      type: "search",
-      class: "sources-search",
-      id: "sources-search",
-      placeholder: "find a service",
-      autocomplete: "off",
-      spellcheck: "false",
-      "aria-label": "filter the list"
-    });
-    search.addEventListener("input", () => filterChips(search.value));
-    search.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && search.value) {
-        event.stopPropagation();
-        search.value = "";
-        filterChips("");
-      }
-    });
-    wrap.appendChild(search);
-    const empty = el("p", { class: "sources-empty", id: "sources-empty", hidden: true, text: "nothing here matches that" });
-    const countEl = head.querySelector(".sources-count");
-    const filterChips = (query) => {
-      const q = String(query || "").trim().toLowerCase();
-      let shownCount = 0;
-      row.querySelectorAll(".source-chip").forEach((chip) => {
-        const hit = !q || chip.textContent.toLowerCase().indexOf(q) >= 0;
-        chip.hidden = !hit;
-        if (hit) shownCount += 1;
-      });
-      empty.hidden = shownCount > 0;
-      if (countEl) {
-        countEl.textContent = q ? shownCount + " of " + all.length : all.length + " services";
-      }
-    };
     const row = el("div", { class: "source-chips" });
     shown.forEach(([id, note]) => {
       const home = SOURCE_HOME[id] || "";
@@ -2723,7 +2684,6 @@
       row.appendChild(chip);
     });
     wrap.appendChild(row);
-    wrap.appendChild(empty);
 
     /* the foot of the sheet: the thing you came here to do, then the full list,
        then the small print. It used to be note → gap → link, which read as a
@@ -3558,6 +3518,59 @@
     }
   }
 
+  /* The popover used to draw one bar per time you opened it, which is why a
+     private window showed "2 checks" and a well-used browser showed 300. The
+     graph is the server's own log now; local samples are only the fallback when
+     the server has nothing to say. */
+  async function renderServerMini(endpoint) {
+    const base = String(endpoint || "").replace(/\/+$/, "");
+    if (!base) return false;
+    try {
+      const res = await fetch(base + "/uptime", {
+        headers: { Accept: "application/json" },
+        cache: "no-store"
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data || !Array.isArray(data.days)) return false;
+      const measured = data.days.filter((d) => d && d.total);
+      if (!measured.length) return false;
+
+      const strip = dom.hpStrip;
+      if (strip) {
+        const sig = "server:" + measured.map((d) => d.date + d.up + d.total).join(",");
+        if (sig !== healthSig) {
+          healthSig = sig;
+          strip.innerHTML = "";
+          measured.forEach((day, i) => {
+            const ratio = day.up / day.total;
+            const bar = el("span", { class: "hp-bar" });
+            bar.dataset.ok = ratio >= 0.995 ? "true" : (ratio >= 0.97 ? "partial" : "false");
+            bar.dataset.live = i === measured.length - 1 ? "true" : "false";
+            bar.title = shortClock(day.date) + " · " +
+              Math.round(ratio * 1000) / 10 + "% of " + day.total.toLocaleString() + " checks";
+            strip.appendChild(bar);
+          });
+        }
+      }
+      if (dom.hpPct) {
+        const pct = data.uptime === null || data.uptime === undefined
+          ? "—"
+          : Number(data.uptime).toFixed(1) + "% up";
+        dom.hpPct.textContent = pct + " · " + Number(data.checks || 0).toLocaleString() +
+          " check" + (Number(data.checks) === 1 ? "" : "s");
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function shortClock(date) {
+    const parts = String(date || "").split("-");
+    return parts.length === 3 ? parts[2] + "." + parts[1] : String(date || "");
+  }
+
   function setHealthState(state, label, uptime) {
     if (!dom.healthPop) return;
     dom.healthPop.dataset.state = state;
@@ -3616,18 +3629,18 @@
 
     if (sample.limited) {
       // 429 means the server answered; that is proof of life, not downtime
-      renderHealthBars(readHealth());
+      if (!(await renderServerMini(endpoint))) renderHealthBars(readHealth());
       setHealthState("ok", "online", "");
       return;
     }
 
     if (!sample.responded) {
-      renderHealthBars(pushHealth(null));
+      if (!(await renderServerMini(endpoint))) renderHealthBars(pushHealth(null));
       setHealthState("bad", "unreachable", "");
       return;
     }
 
-    renderHealthBars(pushHealth(sample.ok));
+    if (!(await renderServerMini(endpoint))) renderHealthBars(pushHealth(sample.ok));
     const up = sample.body && Number(sample.body.uptimeSeconds)
       ? formatUptime(Date.now() - Number(sample.body.uptimeSeconds) * 1000)
       : "";
@@ -3642,9 +3655,25 @@
     }, 60000);
   }
 
+  /* Every floating panel shares one counter: the last one you opened — or
+     touched — is the last one painted. Two panels can stay open at once; they
+     just stop fighting over which is in front. */
+  let panelZ = 80;
+  function bringToFront(node) {
+    if (!node) return;
+    node.style.zIndex = String(++panelZ);
+  }
+  document.addEventListener("pointerdown", (event) => {
+    const panel = event.target && event.target.closest
+      ? event.target.closest(".health-pop, .dock-panel, .tip-pop, .sources-panel")
+      : null;
+    if (panel) bringToFront(panel);
+  }, true);
+
   function openHealthPop() {
     if (!dom.healthPop || healthOpen) return;
     healthOpen = true;
+    bringToFront(dom.healthPop);
     clearTimeout(healthCloseTimer);
     dom.healthPop.hidden = false;
     dom.healthPop.classList.remove("is-closing");

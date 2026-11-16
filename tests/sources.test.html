@@ -67,8 +67,7 @@ async function main() {
 
   record("the trigger reports its state", button.getAttribute("aria-expanded") === "true", button.getAttribute("aria-expanded"));
   const head = doc.querySelector("#sources-panel .sources-head");
-  const close = doc.querySelector("#sources-panel .sources-close");
-  record("the panel has a head and a way out of it", !!head && !!close,
+  record("the panel says what it is", !!head && /sources/i.test(head.textContent),
     head ? head.textContent.trim() : "no head");
 
   const rows = () => [...doc.querySelectorAll(".source-chip")];
@@ -95,30 +94,12 @@ async function main() {
     "panel top " + Math.round(panelRect.top) + " vs button bottom " + Math.round(buttonRect.bottom));
 
 
-  /* the list is 33 names: it has to narrow while you type */
-  const search = doc.querySelector("#sources-search");
-  record("there is a field to narrow the list", !!search);
-  if (search) {
-    const setter = Object.getOwnPropertyDescriptor(win.HTMLInputElement.prototype, "value").set;
-    setter.call(search, "tube");
-    search.dispatchEvent(new win.Event("input", { bubbles: true }));
-    await sleep(120);
-    const visible = [...doc.querySelectorAll("#sources-panel .source-chip")].filter((c) => !c.hidden);
-    record("typing narrows it to the matches",
-      visible.length > 0 && visible.length < 6 &&
-        visible.every((c) => /tube/.test(c.textContent.toLowerCase())),
-      visible.map((c) => c.textContent.trim()).join(","));
-    setter.call(search, "zzzz");
-    search.dispatchEvent(new win.Event("input", { bubbles: true }));
-    await sleep(120);
-    record("and it says so when nothing matches", !doc.querySelector("#sources-empty").hidden);
-    setter.call(search, "");
-    search.dispatchEvent(new win.Event("input", { bubbles: true }));
-    await sleep(120);
-    record("clearing brings the whole list back",
-      [...doc.querySelectorAll("#sources-panel .source-chip")].every((c) => !c.hidden) &&
-        doc.querySelector("#sources-empty").hidden);
-  }
+  /* one control, two states: the plus turns into a cross while the list is open */
+  const glyph = doc.querySelector(".sources-toggle .sources-glyph");
+  const openTransform = glyph ? win.getComputedStyle(glyph).transform : "";
+  record("the trigger turns its plus into a cross",
+    /matrix/.test(openTransform) && openTransform !== "none", openTransform);
+  record("there is no search field to maintain", !doc.querySelector("#sources-search"), "none");
 
   // each chip is a door to the site it names
   const links = rows().filter((r) => r.tagName === "A" && r.getAttribute("href"));

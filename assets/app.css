@@ -13,10 +13,10 @@
   --stroke: rgba(255, 255, 255, 0.09);
   --stroke-2: rgba(255, 255, 255, 0.2);
   --text: #ededee;
-  --text-2: #a1a1a6;
-  --text-3: #8b8b93;
+  --text-2: #b0b0b6;
+  --text-3: #9c9ca5;
   /* small helper text needs a higher contrast than the decorative greys */
-  --hint-ink: #a9a9b2;
+  --hint-ink: #b4b4bd;
   --accent: #ededee;
   --accent-soft: rgba(255, 255, 255, 0.07);
   --accent-line: rgba(255, 255, 255, 0.32);
@@ -94,6 +94,9 @@ html {
 html, body, body * { touch-action: manipulation; }
 body {
   margin: 0;
+  /* Cobalt's trick: the page fades up from black in under a fifth of a second.
+     Anything that settles in the first frames is invisible rather than jumpy. */
+  animation: page-in 180ms ease-out both;
   /* late content below the fold must not drag what is above it around */
   overflow-anchor: none;
   min-height: 100vh;
@@ -233,7 +236,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .health-pop[data-state="checking"] .hp-state .dot { background: var(--warn); }
 
 .hp-uptime {
-  flex: none; font-family: var(--mono); font-size: 0.64rem; color: var(--text-3);
+  flex: none; font-family: var(--mono); font-size: 0.68rem; color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
 .hp-strip {
@@ -248,11 +251,12 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 }
 .hp-bar[data-live="true"] { background: var(--ok); }
 .hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 70%, transparent); }
+.hp-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 80%, transparent); }
 .hp-bar[data-ok="unknown"] { background: var(--text-3); opacity: 0.45; }
 .hp-bar[data-empty="true"] { height: 38%; background: var(--surface-3); }
 .hp-foot {
   display: flex; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 0.62rem; color: var(--text-3);
+  font-family: var(--mono); font-size: 0.67rem; color: var(--text-3);
 }
 .hp-links { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
 .hp-link {
@@ -535,7 +539,7 @@ a.ghost-btn { text-decoration: none; }
 .queue { margin-top: clamp(24px, 4.4vw, 36px); }
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
 .section-actions { display: flex; align-items: center; gap: 10px; }
-.qstats { color: var(--text-3); font-family: var(--mono); font-size: 0.64rem; }
+.qstats { color: var(--text-3); font-family: var(--mono); font-size: 0.68rem; }
 .qstats:empty { display: none; }
 .section-head h2 {
   display: inline-flex; align-items: center; gap: 7px;
@@ -683,7 +687,7 @@ a.ghost-btn { text-decoration: none; }
   padding: 10px 2px 0;
   color: var(--text-3); font-size: 0.8rem;
 }
-.empty-tip { color: var(--text-3); font-family: var(--mono); font-size: 0.64rem; opacity: 0.85; }
+.empty-tip { color: var(--text-3); font-family: var(--mono); font-size: 0.68rem; }
 
 /* ---------- tools strip ---------- */
 .tool-strip {
@@ -728,7 +732,7 @@ a.ghost-btn { text-decoration: none; }
   color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
 }
 .recent-label {
-  font-size: 0.62rem; text-transform: uppercase; letter-spacing: var(--label-track);
+  font-size: 0.67rem; text-transform: uppercase; letter-spacing: var(--label-track);
   color: var(--text-3);
 }
 .recent-item {
@@ -825,7 +829,7 @@ a.ghost-btn { text-decoration: none; }
   counter-increment: step;
   content: "0" counter(step);
   padding-top: 1px;
-  color: var(--text-3); font-family: var(--mono); font-size: 0.62rem;
+  color: var(--text-3); font-family: var(--mono); font-size: 0.67rem;
 }
 .steps strong { display: block; margin-bottom: 2px; font-size: 0.82rem; font-weight: 600; }
 .steps span { display: block; color: var(--text-3); font-size: 0.78rem; line-height: 1.6; }
@@ -936,7 +940,7 @@ a.ghost-btn { text-decoration: none; }
 /* the small build line above the title, the way a tool should say what it is */
 .sheet-tag {
   margin: 0 0 2px; color: var(--text-3);
-  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em;
+  font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em;
   text-transform: uppercase; opacity: 0.75;
 }
 /* the sections read as a list of places, not as a row of tabs: a tile, a name,
@@ -1018,7 +1022,7 @@ a.ghost-btn { text-decoration: none; }
   margin-left: 6px; padding: 0 5px;
   border-radius: 4px; border: 1px solid var(--stroke);
   color: var(--text-3);
-  font-family: var(--mono); font-size: 0.6rem; font-weight: 400;
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 400;
   text-transform: uppercase; letter-spacing: 0.06em;
 }
 .field-help { color: var(--text-3); font-size: 0.74rem; line-height: 1.55; }
@@ -1112,7 +1116,7 @@ a.ghost-btn { text-decoration: none; }
   font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
   color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.fp-meta { font-family: var(--mono); font-size: 0.62rem; color: var(--text-3); }
+.fp-meta { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); }
 .fp-tag {
   padding: 2px 6px; border-radius: 4px; border: 1px solid var(--stroke);
   font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em;
@@ -1208,7 +1212,7 @@ a.ghost-btn { text-decoration: none; }
   position: absolute; left: 6px; bottom: 6px;
   padding: 1px 6px; border-radius: 4px;
   background: rgba(0, 0, 0, 0.65); color: #fff;
-  font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em;
+  font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em;
 }
 .picker-cell[data-selected="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-line); }
 .picker-cell[data-selected="true"]::after {
@@ -1259,6 +1263,17 @@ a.ghost-btn { text-decoration: none; }
 /* a tool panel arrives instead of appearing */
 /* transform only: a panel that fades in is a panel that can be invisible if
    the animation never gets to run (a background tab, a throttled phone) */
+@keyframes page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  #download-view { padding-top: 72px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body { animation: none; }
+}
+
 @keyframes view-in {
   from { transform: translateY(9px); opacity: 0.55; }
   60%  { opacity: 1; }
@@ -1323,7 +1338,7 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 210ms cubic-bezier
 @media (max-height: 700px) {
   .hero { padding-top: 2vh; padding-bottom: 2vh; }
   .hero-kicker { margin-bottom: 10px; }
-  .footer-meta { font-size: 0.6rem; }
+  .footer-meta { font-size: 0.65rem; }
 }
 
 @media (max-width: 360px) {
@@ -1460,7 +1475,7 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 210ms cubic-bezier
   .composer-foot { flex-wrap: wrap; gap: 8px; }
   .composer-cta { width: 100%; }
   .format-note { margin-right: auto; }
-  .hint { text-align: left; font-size: 0.64rem; max-width: none; }
+  .hint { text-align: left; font-size: 0.68rem; max-width: none; }
   .modes { align-self: flex-start; }
   .mode { padding: 5px 7px; gap: 4px; }
   .qitem { grid-template-columns: 24px 1fr; row-gap: 6px; padding: 10px; gap: 9px; }
@@ -1547,7 +1562,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .uptime { margin-top: 14px; }
 .uptime-head { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
 .uptime-pct { color: var(--text-2); font-family: var(--mono); font-size: 0.76rem; }
-.uptime-meta { color: var(--text-3); font-family: var(--mono); font-size: 0.64rem; }
+.uptime-meta { color: var(--text-3); font-family: var(--mono); font-size: 0.68rem; }
 .uptime-strip {
   display: flex; align-items: flex-end; justify-content: flex-start; gap: 3px;
   height: 24px; margin-top: 8px; flex-wrap: nowrap; overflow: hidden;
@@ -1567,7 +1582,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .uptime-bar[data-live="true"] { background: color-mix(in srgb, var(--ok) 100%, transparent); }
 .uptime-live {
   margin-left: auto; display: inline-flex; align-items: center; gap: 5px;
-  font-family: var(--mono); font-size: 0.6rem; color: var(--text-3);
+  font-family: var(--mono); font-size: 0.65rem; color: var(--text-3);
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .uptime-live-dot {
@@ -1650,15 +1665,20 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   transition: color 160ms ease-out, border-color 160ms ease-out, background 160ms ease-out;
 }
 .sources-glyph {
-  width: 14px; height: 14px; flex: none;
-  transition: transform 260ms var(--ease);
+  width: 15px; height: 15px; flex: none;
+  transition: transform 220ms var(--ease);
 }
+/* plus, turned once: the same control says "open" and "close" */
+.sources-toggle[aria-expanded="true"] .sources-glyph { transform: rotate(45deg); }
 .sources-toggle:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface); }
 .sources-toggle:hover .sources-glyph { transform: scale(1.08); }
 .sources-toggle[aria-expanded="true"] {
   color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
 }
-.sources-toggle[aria-expanded="true"] .sources-glyph { transform: scale(1.08); }
+.sources-toggle[aria-expanded="true"] .sources-glyph,
+.sources-toggle[aria-expanded="true"]:hover .sources-glyph {
+  transform: rotate(45deg) scale(1.06);
+}
 
 /* a sheet's backdrop; on a desktop the panel is a dropdown and needs none */
 .sources-veil {
@@ -1700,35 +1720,10 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   text-transform: uppercase; color: var(--text);
 }
 .sources-head .sources-count {
-  font-family: var(--mono); font-size: 0.6rem; color: var(--text-3);
+  font-family: var(--mono); font-size: 0.65rem; color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
-.sources-close {
-  margin-left: auto; display: grid; place-items: center;
-  width: 30px; height: 30px; border-radius: 9px;
-  border: 1px solid transparent;
-  color: var(--text-3); background: transparent;
-  transition: color 110ms, background 110ms, border-color 110ms, transform 110ms;
-}
-.sources-close:hover { color: var(--text); background: var(--surface-2); border-color: var(--stroke); }
-.sources-close:active { transform: scale(0.94); transition: none; }
-.sources-close svg { width: 14px; height: 14px; }
-.sources-close:hover { color: var(--text); background: var(--surface-2); }
 .sources-handle { display: none; }
-
-/* the field is the interaction: 16px on a phone so Safari does not zoom */
-.sources-search {
-  width: 100%; height: 34px; margin: 0 0 9px;
-  padding: 0 10px; border-radius: 9px;
-  border: 1px solid var(--stroke); background: var(--bg);
-  color: var(--text); font-family: var(--mono); font-size: 0.74rem;
-  -webkit-appearance: none; appearance: none;
-}
-.sources-search::placeholder { color: var(--text-3); }
-.sources-search:focus { outline: none; border-color: var(--stroke-2); }
-@media (max-width: 720px) {
-  .sources-search { height: 40px; font-size: 16px; }
-}
 
 /* the chips are a block, not a ragged wrap: same columns, same rhythm */
 .sources-panel .source-chips {
@@ -1770,11 +1765,9 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     border-radius: 2px; background: var(--stroke-2);
   }
   .sources-head { margin-bottom: 10px; }
-  .sources-close { width: 36px; height: 36px; }
-  .sources-close svg { width: 16px; height: 16px; }
   .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px; }
   .sources-panel .source-chip { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
-  .sources-panel .sources-note { font-size: 0.62rem; }
+  .sources-panel .sources-note { font-size: 0.67rem; }
 }
 @media (max-width: 430px) {
   /* icon only, and a thumb's worth of it: it sits beside 40px buttons */
@@ -1793,7 +1786,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .source-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .source-chip {
   padding: 2px 7px; border: 1px solid var(--stroke); border-radius: 4px;
-  font-family: var(--mono); font-size: 0.6rem; line-height: 1.45;
+  font-family: var(--mono); font-size: 0.65rem; line-height: 1.45;
   color: var(--text-2); text-align: left; text-decoration: none;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   cursor: pointer;
@@ -1812,10 +1805,10 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .source-chip:active { background: var(--surface-2); transform: scale(0.98); transition: none; }
 .source-chip[hidden] { display: none; }
 .source-chip.is-muted { color: var(--text-3); border-style: dashed; opacity: 0.8; }
-.sources-foot { margin: 0; color: var(--text-3); font-size: 0.6rem; line-height: 1.4; }
+.sources-foot { margin: 0; color: var(--text-3); font-size: 0.65rem; line-height: 1.4; }
 .sources-empty { margin: 0; color: var(--text-3); font-size: 0.70rem; text-align: center; }
 .sources-note {
-  margin: 10px 0 0; color: var(--text-3); font-size: 0.6rem; line-height: 1.45;
+  margin: 10px 0 0; color: var(--text-3); font-size: 0.65rem; line-height: 1.45;
   max-width: 62ch;
 }
 .sources-note b { color: var(--text-2); font-weight: 500; }
@@ -2011,7 +2004,7 @@ a.donate-value:hover { text-decoration: underline; }
   font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3);
 }
-.tip-state { font-family: var(--mono); font-size: 0.64rem; color: var(--ok); }
+.tip-state { font-family: var(--mono); font-size: 0.68rem; color: var(--ok); }
 .tip-state::before {
   content: ""; display: inline-block; width: 5px; height: 5px;
   margin-right: 6px; border-radius: 50%; background: currentColor; vertical-align: 1px;
@@ -2282,7 +2275,7 @@ a.donate-value:hover { text-decoration: underline; }
 .badge {
   padding: 2px 7px; border-radius: var(--r-full);
   border: 1px solid var(--stroke); color: var(--text-3);
-  font-family: var(--mono); font-size: 0.62rem; white-space: nowrap;
+  font-family: var(--mono); font-size: 0.67rem; white-space: nowrap;
 }
 .badge.is-warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
 
@@ -2332,7 +2325,7 @@ a.donate-value:hover { text-decoration: underline; }
   margin-left: auto; height: 22px; padding: 0 7px;
   border: 1px solid var(--stroke); border-radius: var(--r-sm);
   background: transparent; color: var(--text-3);
-  font-family: var(--mono); font-size: 0.62rem; cursor: pointer;
+  font-family: var(--mono); font-size: 0.67rem; cursor: pointer;
 }
 .quickpick-close:hover { color: var(--text-2); border-color: var(--stroke-2); }
 .quickpick-close .tap-only { display: none; }
@@ -2349,7 +2342,9 @@ a.donate-value:hover { text-decoration: underline; }
      the recent strip, a probe — changed the column height and slid the logo up
      or down. A fixed offset never moves, whatever arrives after it. */
   justify-content: flex-start;
-  padding-top: clamp(44px, 11vh, 120px);
+  /* px, not vh: a phone's viewport height changes as its toolbar collapses, and
+     11vh of a changing number is a box that moves under your thumb */
+  padding-top: 104px;
   flex: 1 1 auto; width: 100%;
 }
 .hero { width: 100%; }
@@ -2450,7 +2445,7 @@ a.donate-value:hover { text-decoration: underline; }
   border-bottom: 1px solid transparent; transition: color var(--speed), border-color var(--speed);
 }
 .meta-line a:hover, .meta-line a:focus-visible { color: var(--text-2); border-bottom-color: var(--stroke-2); }
-.meta-dot { color: var(--text-3); opacity: 0.6; }
+.meta-dot { color: var(--text-3); opacity: 0.85; }
 
 /* hover/focus tip on the shortcut, so "<link>" isn't a riddle */
 .tip { position: relative; cursor: help; }
@@ -2472,7 +2467,7 @@ a.donate-value:hover { text-decoration: underline; }
 .shortcut-tag {
   display: inline-block; margin-right: 7px; padding: 1px 7px;
   border: 1px solid var(--stroke); border-radius: 999px;
-  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.04em;
+  font-family: var(--mono); font-size: 0.67rem; letter-spacing: 0.04em;
   color: var(--text-3); vertical-align: 1px;
 }
 
@@ -2596,7 +2591,7 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .donate-kicker {
   margin: 0 0 10px;
-  font-family: var(--mono); font-size: 0.62rem; font-weight: 500;
+  font-family: var(--mono); font-size: 0.67rem; font-weight: 500;
   letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-3);
 }
 .donate-headline {
@@ -2649,7 +2644,7 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .support-state {
   display: inline-flex; align-items: center; gap: 5px;
-  font-family: var(--mono); font-size: 0.62rem; color: var(--text-3);
+  font-family: var(--mono); font-size: 0.67rem; color: var(--text-3);
 }
 .support-state::before {
   content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor;
@@ -2724,7 +2719,7 @@ a.donate-value:hover { text-decoration: underline; }
 .support-alt-lede {
   display: flex; align-items: center; gap: 12px;
   margin: 0 0 10px;
-  font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.02em;
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.02em;
   color: var(--text-3);
 }
 .support-alt-lede::after {
@@ -2786,7 +2781,7 @@ a.addr-value:hover { color: var(--text); }
 .fact + .fact { border-left: 1px solid var(--stroke); }
 .fact-k {
   display: block; margin-bottom: 6px;
-  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.14em;
+  font-family: var(--mono); font-size: 0.67rem; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--text);
 }
 .fact p { margin: 0; color: var(--text-3); font-size: 0.76rem; line-height: 1.55; }
@@ -2841,7 +2836,7 @@ a.addr-value:hover { color: var(--text); }
 /* a phone is 390-430 wide: four buttons means ~88px each, so the label gets
    smaller rather than truncated ("thre…" is not a brand) */
 @media (max-width: 480px) {
-  .share-chip { gap: 6px; padding: 0 6px; font-size: 0.64rem; }
+  .share-chip { gap: 6px; padding: 0 6px; font-size: 0.68rem; }
   .share-icon, .share-icon svg { width: 16px; height: 16px; }
 }
 /* under 360px even that is too tight: icons only */
@@ -3173,7 +3168,7 @@ a.addr-value:hover { color: var(--text); }
 }
 .recent-label {
   margin-right: 4px;
-  font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+  font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3);
 }
 .recent-item {
@@ -3197,7 +3192,7 @@ a.addr-value:hover { color: var(--text); }
 .recent-clear {
   margin-left: auto; padding: 4px 8px;
   border: 0; border-radius: 999px; background: none;
-  color: var(--text-3); font-family: var(--mono); font-size: 0.64rem;
+  color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
   cursor: pointer; letter-spacing: 0.04em;
   transition: color 140ms, background 140ms;
 }
