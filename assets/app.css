@@ -1242,10 +1242,11 @@ a.ghost-btn { text-decoration: none; }
 /* transform only: a panel that fades in is a panel that can be invisible if
    the animation never gets to run (a background tab, a throttled phone) */
 @keyframes view-in {
-  from { transform: translateY(5px); }
-  to   { transform: none; }
+  from { transform: translateY(9px); opacity: 0.55; }
+  60%  { opacity: 1; }
+  to   { transform: none; opacity: 1; }
 }
-main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) both; }
+main.wrap[data-view-panel]:not([hidden]) { animation: view-in 280ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
 /* a finished row lands: the tick pops once and settles */
 @keyframes done-pop {
   0%   { transform: scale(0.82); }
@@ -1352,7 +1353,6 @@ main.wrap[data-view-panel]:not([hidden]) { animation: view-in 220ms var(--ease) 
   .brand { min-height: 40px; }
   .brand-text { padding: 2px 0; }
   .q-actions .icon-btn, .rq-actions .icon-btn { width: 34px; height: 34px; }
-  .footer { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
   @media (orientation: landscape) and (hover: none) {
     .topbar {
       padding-left: max(16px, env(safe-area-inset-left));
@@ -1599,13 +1599,21 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 /* pinned to the top centre of the screen, not dragged around by the centred
    column the composer lives in */
 .sources-wrap {
-  position: fixed; z-index: 45;
-  top: max(9px, env(safe-area-inset-top, 0px));
-  left: 0; right: 0; height: 34px;
-  display: flex; justify-content: center; align-items: center;
+  /* a child of the action cluster, centred inside the bar on a wide screen and
+     sitting in the row on a phone: the floating centre position was the one
+     thing in the header that had no neighbour to line up with */
+  position: absolute; z-index: 45;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  height: 34px; display: flex; justify-content: center; align-items: center;
   pointer-events: none;
 }
 .sources-wrap > * { pointer-events: auto; }
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  .sources-wrap {
+    position: static; transform: none;
+    margin-right: 4px; height: 40px;
+  }
+}
 /* a grid, not a count: the glyph says "many things live here", which a number
    never did. The word stays on anything wider than a phone. */
 .sources-toggle {
@@ -2857,8 +2865,8 @@ a.addr-value:hover { color: var(--text); }
     border: 1px solid var(--stroke-2);
     background: var(--surface-3);
     opacity: 0; pointer-events: none;
-    transition: transform 300ms var(--ease), width 300ms var(--ease),
-                height 200ms var(--ease), opacity 160ms ease-out;
+    transition: transform 260ms var(--ease), width 260ms var(--ease),
+                height 180ms var(--ease), opacity 140ms ease-out;
   }
   .mbar-glider.is-on { opacity: 1; }
   .mbar-glider.is-instant { transition: none; }
@@ -2874,7 +2882,8 @@ a.addr-value:hover { color: var(--text); }
     transition: color 160ms, background 160ms, border-color 160ms;
   }
   .mbar-item svg { width: 20px; height: 20px; }
-  .mbar-item:active { background: var(--surface-2); color: var(--text); }
+  /* a press is answered in the same frame: no transition on the way down */
+  .mbar-item:active { background: var(--surface-3); color: var(--text); transition: none; }
   /* the glider carries the fill now; the item only brightens */
   .mbar-item.is-active,
   .mbar-item[aria-expanded="true"] { color: var(--text); background: transparent; border-color: transparent; }
@@ -2891,7 +2900,6 @@ a.addr-value:hover { color: var(--text); }
   }
   .dock-head { padding-bottom: 7px; }
   body { padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
-  .footer { padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* a row that has just been created rises; re-renders leave the rest alone */
@@ -3135,11 +3143,13 @@ a.addr-value:hover { color: var(--text); }
 
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
   /* the bar is 58px tall; anything floating above it clears that and the
-     home-indicator inset */
+     home-indicator inset. body already reserves the bar, so the footer only
+     needs its own breathing room — three separate rules were stacking up and
+     leaving terms/updates a thumb's width above the bar. */
+  .footer { padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
   body { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
   .mini-dock, .dock-panel { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
   .toasts { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
-  .footer { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 }
 
 /* the lens: transform only, and its own variables so it stops reading --h */
@@ -3252,8 +3262,6 @@ a.addr-value:hover { color: var(--text); }
 
 /* the sources pill is position: fixed and centred by a hardcoded row height:
    it sat 3px above the bar's centre line on a phone */
-.sources-wrap { top: 9px; height: var(--h); }
-@media (max-width: 720px), (hover: none) and (max-height: 520px) { .sources-wrap { height: 40px; top: 9px; } }
 .sources-toggle {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 28px; padding: 0 10px; line-height: 1;

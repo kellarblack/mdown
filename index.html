@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=260">
+<link rel="stylesheet" href="assets/app.css?v=262">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -205,6 +205,22 @@
   </nav>
 
   <div class="topbar-actions">
+    <div class="sources-wrap" id="sources-wrap">
+    <button type="button" class="sources-toggle" id="open-sources"
+            aria-expanded="false" aria-controls="sources-panel"
+            aria-label="sources" title="sources">
+      <!-- a grid, not a number: "33" said nothing about what opens -->
+      <svg class="sources-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3.6" y="3.6" width="7" height="7" rx="2.1"/>
+        <rect x="13.4" y="3.6" width="7" height="7" rx="2.1"/>
+        <rect x="3.6" y="13.4" width="7" height="7" rx="2.1"/>
+        <rect x="13.4" y="13.4" width="7" height="7" rx="2.1"/>
+      </svg>
+      <span class="sources-label">sources</span>
+    </button>
+      <div class="sources-veil" id="sources-veil" hidden></div>
+      <div class="sources-panel" id="sources-panel" hidden></div>
+    </div>
     <!-- one control for state and downloads: the dot is the API, the number is
          the queue. Splitting them into two buttons was two things to read. -->
     <div class="health" id="health">
@@ -282,22 +298,6 @@
   <div class="tip-veil" id="tip-veil" hidden></div>
   <div class="tip-pop" id="tip-pop" hidden role="dialog" aria-label="tip jar"></div>
 
-  <div class="sources-wrap" id="sources-wrap">
-  <button type="button" class="sources-toggle" id="open-sources"
-          aria-expanded="false" aria-controls="sources-panel"
-          aria-label="sources" title="sources">
-    <!-- a grid, not a number: "33" said nothing about what opens -->
-    <svg class="sources-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="3.6" y="3.6" width="7" height="7" rx="2.1"/>
-      <rect x="13.4" y="3.6" width="7" height="7" rx="2.1"/>
-      <rect x="3.6" y="13.4" width="7" height="7" rx="2.1"/>
-      <rect x="13.4" y="13.4" width="7" height="7" rx="2.1"/>
-    </svg>
-    <span class="sources-label">sources</span>
-  </button>
-    <div class="sources-veil" id="sources-veil" hidden></div>
-    <div class="sources-panel" id="sources-panel" hidden></div>
-  </div>
 
 <p class="file-note" id="file-note" hidden>
   This page needs to be served over http — the media engine can't start from a double-clicked file.
