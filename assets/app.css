@@ -2412,7 +2412,9 @@ a.donate-value:hover { text-decoration: underline; }
 
 /* ---------- downloads dock ---------- */
 .dock { position: relative; }
-.dock-btn { position: relative; }
+/* same box as the other icons: it was the one bare glyph in the row */
+.dock-btn { position: relative; border-color: var(--stroke); }
+.dock-btn:hover { border-color: var(--stroke-2); }
 .dock-badge {
   position: absolute; top: 1px; right: 1px;
   min-width: 15px; height: 15px; padding: 0 4px;
