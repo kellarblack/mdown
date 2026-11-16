@@ -69,8 +69,11 @@ window.MDOWN_COIN = {
   arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12.5 6 6 6-6 6"/></svg>'
 };
 
+/* First six and last six, the way a wallet shows an address: the middle is
+   what malware swaps, the ends are what a person checks. Asterisks read as a
+   password field, which is exactly what an address is not. */
 window.MDOWN_MASK = function (value) {
   var v = String(value == null ? "" : value);
-  if (v.length <= 10) return v;
-  return "******" + v.slice(-6);
+  if (v.length <= 14) return v;
+  return v.slice(0, 6) + "\u2026" + v.slice(-6);
 };

@@ -2719,6 +2719,13 @@
     dom.donateLink.removeAttribute("aria-disabled");
   }
 
+  /* An open can happen inside a click handler (settings, help). That same
+     click then bubbles to the document listener below, which used to close the
+     jar in the same tick — the button looked dead. The event that opened it is
+     remembered and ignored when it comes back around; a later click still
+     closes the jar as it should. */
+  let tipOpenedBy = null;
+
   function bindTip() {
     tipTriggers().forEach((node) => {
       node.addEventListener("click", (event) => {
@@ -2730,6 +2737,7 @@
     });
     document.addEventListener("click", (event) => {
       if (!tipOpen) return;
+      if (event === tipOpenedBy) return;
       if (dom.tipPop && dom.tipPop.contains(event.target)) return;
       if (event.target.closest && event.target.closest('[aria-controls="tip-pop"]')) return;
       closeTipPop();
@@ -2824,7 +2832,7 @@
     }
   }
 
-  function openTipPop() {
+  function openTipPop(openerEvent) {
     const cfg = donateConfig();
     const pop = dom.tipPop;
     if (!cfg || !pop) return;
@@ -2905,12 +2913,13 @@
     pop.hidden = false;
     pop.classList.remove("is-closing");
     setTipState(true);
+    tipOpenedBy = openerEvent || null;
     positionTipPop();
   }
 
   /* everything that used to open the donate dialog now opens the dropdown */
-  function openDonate() {
-    openTipPop();
+  function openDonate(event) {
+    openTipPop(event);
   }
 
   let modalSeq = 0;
@@ -3578,15 +3587,26 @@
     /* the dot is the connection: click for a miniature of the status page,
        the gear is still the way into the settings */
     const settingsDonate = $("#open-donate-settings");
-    if (settingsDonate) settingsDonate.addEventListener("click", () => {
+    if (settingsDonate) settingsDonate.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       closeSettings();
-      openDonate();
+      openDonate(event);
     });
     const mbarSettings = $("#mbar-settings");
     if (mbarSettings) mbarSettings.addEventListener("click", () => openSettings());
     const mbarQueue = $("#mbar-queue");
     if (mbarQueue) mbarQueue.addEventListener("click", (event) => {
       event.stopPropagation();   /* or the outside-click handler closes it again */
+      /* "downloads" is the way home: from a tool it returns to the page you
+         download from, and only on that page does it open the list */
+      const view = document.body.dataset.view || "download";
+      if (view !== "download") {
+        if (dockOpen) setDock(false);
+        location.hash = "";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
       setDock(!dockOpen);
     });
 
@@ -4053,7 +4073,12 @@
     const buttons = [close];
     if (donateConfig()) {
       const tip = el("button", { type: "button", class: "ghost-btn", text: "tip jar" });
-      tip.addEventListener("click", () => { closeModal(); openDonate(); });
+      tip.setAttribute("aria-controls", "tip-pop");
+      tip.addEventListener("click", (event) => {
+        event.stopPropagation();
+        closeModal();
+        openDonate(event);
+      });
       buttons.unshift(tip);
     }
     openModal("How it works", body, buttons);

@@ -89,8 +89,8 @@ async function main() {
   record("both methods render", rows.length === 2, rows.length + " rows");
 
   const code = body.querySelector("code.donate-value");
-  record("crypto is text, masked to its last six characters",
-    !!code && /^\*{3,}/.test(code.textContent) && /4Rge$/.test(code.textContent) &&
+  record("crypto is text, shown as first six … last six",
+    !!code && /^.{6}\u2026.{6}$/.test(code.textContent) && /4Rge$/.test(code.textContent) &&
       !body.querySelector("img"),
     code ? code.textContent : "(none)");
   code.click();
@@ -100,7 +100,7 @@ async function main() {
     code.textContent.length + " chars");
   code.click();
   await sleep(60);
-  record("and one click hides it again", /^\*{3,}/.test(code.textContent),
+  record("and one click hides it again", /^.{6}\u2026.{6}$/.test(code.textContent),
     code.textContent);
 
   const copyBtn = [...body.querySelectorAll("button")].find(b => /copy/i.test(b.textContent || ""));

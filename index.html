@@ -50,7 +50,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=233">
+<link rel="stylesheet" href="assets/app.css?v=240">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -295,7 +295,10 @@
     <h1 class="hero-logo">
       <span class="hero-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+          <!-- the arrow is its own group so it can travel into the tray: the
+               mark reads as something being downloaded, not as a shape fading -->
+          <g class="mark-arrow"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/></g>
+          <path d="M4 19h16"/>
         </svg>
       </span>
       <span class="hero-word"><span class="hero-type"><span class="hero-word-m">m</span><span class="hero-word-down">down</span><span class="hero-word-dot">.</span><span class="hero-word-sub">cc</span></span></span>
@@ -590,7 +593,7 @@
 
         <div class="field">
           <span class="field-label">Support</span>
-          <button type="button" class="ghost-btn" id="open-donate-settings" hidden>tip jar</button>
+          <button type="button" class="ghost-btn" id="open-donate-settings" aria-controls="tip-pop" aria-haspopup="dialog" hidden>tip jar</button>
           <p class="field-help">no ads, ever. if mdown earned it, you can leave something.</p>
         </div>
       </section>
@@ -1045,9 +1048,9 @@
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
-<script src="assets/donate.js?v=6" defer></script>
-<script src="assets/app.js?v=119" defer></script>
-<script type="module" src="assets/nav.js?v=11"></script>
+<script src="assets/donate.js?v=7" defer></script>
+<script src="assets/app.js?v=122" defer></script>
+<script type="module" src="assets/nav.js?v=12"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->
 </body>

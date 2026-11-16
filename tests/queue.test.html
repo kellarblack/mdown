@@ -39,8 +39,10 @@ async function waitFor(fn, ms = 15000) {
 
 async function main() {
   const frame = document.getElementById("app");
+  /* only the server: the saving method stays at its default, which is the
+     thing under test — a finished file must wait rather than land on you */
   frame.contentWindow.localStorage.setItem("mdown.settings",
-    JSON.stringify({ instance: "http://127.0.0.1:4320", savingMethod: "ask" }));
+    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
   frame.src = "../index.html?q=" + Date.now();
 
   const booted = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
@@ -70,6 +72,10 @@ async function main() {
     [...doc.querySelectorAll(".qitem")].some((el) => el.dataset.status === "ready"), 12000);
   record("a finished file waits in ready", ready,
     [...doc.querySelectorAll(".qitem")].map((el) => el.dataset.status).join(","));
+
+  const saved = doc.querySelector(".q-save");
+  record("and it is not saved until you say so", !doc.querySelector('.qitem[data-status="done"]') && !!saved,
+    saved ? "save button present" : "no save button");
 
   // the panel is reachable from the phone bar
   $("#mbar-queue").click();

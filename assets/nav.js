@@ -56,6 +56,10 @@ function apply() {
     else link.removeAttribute("aria-current");
   });
 
+  /* the bar's first item is the page itself, so it lights up on the page */
+  const barHome = document.querySelector("#mbar-queue");
+  if (barHome) barHome.classList.toggle("is-active", view === "download");
+
   const toolsToggle = document.querySelector("[data-tools-toggle]");
   if (toolsToggle) {
     const active = view !== "download";

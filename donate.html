@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=233">
+<link rel="stylesheet" href="assets/app.css?v=240">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -111,9 +111,10 @@
       <h2 id="support-title">the tip jar</h2>
       <span class="support-state" id="support-state">open</span>
     </div>
+    <p class="support-lede">pick whichever is easier — a card payment, or a coin straight to an address. both are one-time.</p>
 
     <div class="support-ways" id="funding">
-      <a class="support-row support-primary" id="stripe-card"
+      <a class="support-row support-primary support-card" id="stripe-card"
          href="https://donate.stripe.com/bJe00jcEDg27fReaG55Ne00"
          target="_blank" rel="noopener noreferrer">
         <span class="support-icon" aria-hidden="true">
@@ -157,35 +158,35 @@
           <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M8 16.2V9.4l4 4.6 4-4.6v6.8"/></svg></span>
           <span class="addr-left">
             <span class="addr-label">monero</span>
-            <code class="addr-value" data-address="45aNapD3TKJij5kxJXgc38CR2r6B5vm4BAFypBLxJgnebQEDBYDTNRoKpwtLguQEsHAeJfTxi21KvJecohNZ5MZMD3vUo1p" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">******3vUo1p</code>
+            <code class="addr-value" data-address="45aNapD3TKJij5kxJXgc38CR2r6B5vm4BAFypBLxJgnebQEDBYDTNRoKpwtLguQEsHAeJfTxi21KvJecohNZ5MZMD3vUo1p" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">45aNap…3vUo1p</code>
             <span class="addr-note">private by default</span>
           </span>
-          <button class="addr-copy" type="button" data-copy="45aNapD3TKJij5kxJXgc38CR2r6B5vm4BAFypBLxJgnebQEDBYDTNRoKpwtLguQEsHAeJfTxi21KvJecohNZ5MZMD3vUo1p" aria-label="copy monero address">copy</button>
+          <button class="addr-copy" type="button" data-copy="45aNapD3TKJij5kxJXgc38CR2r6B5vm4BAFypBLxJgnebQEDBYDTNRoKpwtLguQEsHAeJfTxi21KvJecohNZ5MZMD3vUo1p" aria-label="copy monero address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.4"/><path d="M15.5 8.5V6.4a1.9 1.9 0 0 0-1.9-1.9H6.4a1.9 1.9 0 0 0-1.9 1.9v7.2a1.9 1.9 0 0 0 1.9 1.9h2.1"/></svg><span>copy</span></button>
         </div>
         <div class="addr" data-coin="btc">
           <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M10.4 7.6h3.1a2.2 2.2 0 0 1 0 4.4h-3.1z"/><path d="M10.4 12h3.3a2.2 2.2 0 0 1 0 4.6h-3.3z"/><path d="M10.4 7.6v9M12 6.4v1.2M12 16.6v1.2"/></svg></span>
           <span class="addr-left">
             <span class="addr-label">bitcoin</span>
-            <code class="addr-value" data-address="bc1qxcfuxt84ksr2sxh6ee65c5qs8mpsuxvqw8u242" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">******w8u242</code>
+            <code class="addr-value" data-address="bc1qxcfuxt84ksr2sxh6ee65c5qs8mpsuxvqw8u242" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">bc1qxc…w8u242</code>
             <span class="addr-note">native segwit · lowest fees</span>
           </span>
-          <button class="addr-copy" type="button" data-copy="bc1qxcfuxt84ksr2sxh6ee65c5qs8mpsuxvqw8u242" aria-label="copy bitcoin address">copy</button>
+          <button class="addr-copy" type="button" data-copy="bc1qxcfuxt84ksr2sxh6ee65c5qs8mpsuxvqw8u242" aria-label="copy bitcoin address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.4"/><path d="M15.5 8.5V6.4a1.9 1.9 0 0 0-1.9-1.9H6.4a1.9 1.9 0 0 0-1.9 1.9v7.2a1.9 1.9 0 0 0 1.9 1.9h2.1"/></svg><span>copy</span></button>
         </div>
         <div class="addr" data-coin="eth">
           <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 6.5 16 12.3l-4 2.3-4-2.3z"/><path d="m8 13.5 4 4.1 4-4.1"/></svg></span>
           <span class="addr-left">
             <span class="addr-label">ethereum</span>
-            <code class="addr-value" data-address="0x5daE2C9048a8d4AF00A948bc2FAdBf7885689197" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">******689197</code>
+            <code class="addr-value" data-address="0x5daE2C9048a8d4AF00A948bc2FAdBf7885689197" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">0x5daE…689197</code>
             <span class="addr-note">eth and erc-20 tokens</span>
           </span>
-          <button class="addr-copy" type="button" data-copy="0x5daE2C9048a8d4AF00A948bc2FAdBf7885689197" aria-label="copy ethereum address">copy</button>
+          <button class="addr-copy" type="button" data-copy="0x5daE2C9048a8d4AF00A948bc2FAdBf7885689197" aria-label="copy ethereum address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.4"/><path d="M15.5 8.5V6.4a1.9 1.9 0 0 0-1.9-1.9H6.4a1.9 1.9 0 0 0-1.9 1.9v7.2a1.9 1.9 0 0 0 1.9 1.9h2.1"/></svg><span>copy</span></button>
         </div>
       </div>
       <p class="support-fine">bitcoin and ethereum are public ledgers; monero hides the amount and both sides. send only the asset named on the row.</p>
     </div>
 
     <div class="support-foot" id="support-foot">
-      <span>no account, no receipt, nothing to unlock. a tip is a thank you and nothing else.</span>
+      <span>a tip is a thank you and nothing else. nothing about the site changes either way.</span>
     </div>
   </section>
 
@@ -244,7 +245,7 @@
   <nav class="footer-meta" aria-label="Footer"><a href="terms.html">terms</a><a href="status.html">status</a><a href="donate.html">donate</a></nav>
 </footer>
 
-<script src="assets/donate.js?v=6"></script>
+<script src="assets/donate.js?v=7"></script>
 <script>
 (function () {
   var cfg = window.MDOWN_DONATE || {};
