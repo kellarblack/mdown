@@ -52,13 +52,6 @@ jobs:
       - name: Privacy check
         run: python3 tests/privacy_check.py _site
 
-      - name: Build stamp
-        run: |
-          mkdir -p _site/assets
-          printf '{"commit":"%s","date":"%s","ref":"%s"}\n' \
-            "${GITHUB_SHA::7}" "$(date -u +%Y-%m-%d)" "${GITHUB_REF_NAME}" \
-            > _site/assets/build.json
-
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

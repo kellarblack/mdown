@@ -797,11 +797,6 @@ a.ghost-btn { text-decoration: none; }
 .footer-meta a:hover, .footer-meta .footer-link:hover {
   color: var(--text); background: var(--surface-2); border-color: var(--stroke-2);
 }
-/* the build stamp the footer has always fetched and never had a place for */
-.footer-build {
-  margin: 7px 0 0; color: var(--text-3); opacity: 0.6;
-  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.06em;
-}
 .footer-meta .footer-link:focus-visible, .footer-meta a:focus-visible {
   outline: 2px solid var(--ring); outline-offset: 2px;
 }
