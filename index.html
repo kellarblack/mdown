@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=298">
+<link rel="stylesheet" href="assets/app.css?v=299">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -376,7 +376,10 @@
 
 
 
-  <p class="composer-note" id="composer-note">paste a link — or prefix it with <b>mdown.cc/&lt;link&gt;</b></p>
+  <button type="button" class="composer-note" id="composer-note"
+          title="copy the link to this site" aria-label="copy the link to mdown.cc">
+    paste a link — or prefix it with <b>mdown.cc/&lt;link&gt;</b>
+  </button>
 
   <!-- what the file will be, before anything is fetched. Collapses to zero
        height rather than appearing, so the composer never jumps. -->
@@ -1047,7 +1050,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=140" defer></script>
+<script src="assets/app.js?v=141" defer></script>
 <script type="module" src="assets/nav.js?v=14"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

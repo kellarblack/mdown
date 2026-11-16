@@ -3708,6 +3708,16 @@
     /* a plain link to the page: the jar in Settings should not open a second
        panel inside a panel */
 
+    /* the hint is a shortcut: press it, get the link to this site on the
+       clipboard, ready to paste into a message */
+    if (dom.composerNote) {
+      dom.composerNote.addEventListener("click", () => {
+        copyText("https://mdown.cc", "link copied");
+        dom.composerNote.classList.add("is-copied");
+        setTimeout(() => dom.composerNote.classList.remove("is-copied"), 1300);
+      });
+    }
+
     const mbarSettings = $("#mbar-settings");
     if (mbarSettings) mbarSettings.addEventListener("click", () => openSettings());
     const mbarQueue = $("#mbar-queue");

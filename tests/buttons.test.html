@@ -175,6 +175,16 @@ async function main() {
   const errorsAfter = errors.length;
   record("still no errors after the checks", errorsAfter === 0, errors.slice(0, 3).join(" | "));
 
+  /* the hint under the field is a shortcut, not decoration */
+  const note = doc.querySelector("#composer-note");
+  record("the hint is a real control", note && note.tagName === "BUTTON",
+    note ? note.tagName : "missing");
+  if (note) {
+    note.click();
+    await sleep(160);
+    record("and pressing it answers visibly", note.classList.contains("is-copied"));
+  }
+
   window.__results = { total: results.length, failures, results };
 }
 main().catch((e) => { record("harness crashed", false, String(e)); window.__results = { total: results.length, failures, results }; });

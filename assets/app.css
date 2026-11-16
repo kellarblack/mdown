@@ -473,6 +473,15 @@ a.ghost-btn { text-decoration: none; }
 .composer-note b { color: var(--text-2); font-weight: 500; }
 .composer-note .bracket { color: var(--text-3); }
 .composer-note[hidden] { display: none; }
+/* it is a button now: reset the chrome, keep the pill, and answer a press */
+.composer-note {
+  font: inherit; cursor: pointer;
+  transition: color 120ms, border-color 120ms, background 120ms;
+}
+.composer-note:hover { color: var(--text-2); border-color: var(--stroke-2); }
+.composer-note:active { background: var(--surface-2); transition: none; }
+.composer-note.is-copied { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
+.composer-note:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
 .probe-preview {
   display: grid; grid-template-rows: 0fr;
