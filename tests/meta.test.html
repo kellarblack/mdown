@@ -60,6 +60,11 @@ async function main() {
   record("the image has alt text", meta(doc, "property", "og:image:alt").length > 20,
     meta(doc, "property", "og:image:alt"));
 
+  // the line in the embed is the line on the site, minus the article
+  record("the card title is the logline",
+    meta(doc, "property", "og:title") === "mdown.cc — ad-free download tool",
+    meta(doc, "property", "og:title"));
+
   record("twitter uses the large card with the same image",
     meta(doc, "name", "twitter:card") === "summary_large_image" &&
     meta(doc, "name", "twitter:image") === image,
@@ -80,7 +85,7 @@ async function main() {
     loaded.w + "x" + loaded.h);
 
   // every published page carries a card, not just the home page
-  const pages = ["updates.html", "donate.html", "terms.html", "status.html"];
+  const pages = ["updates.html", "donate.html", "terms.html", "status.html", "sources.html", "api.html"];
   const docs = await Promise.all(pages.map((name) =>
     fetch("../" + name).then((r) => r.text()).then((html) =>
       new DOMParser().parseFromString(html, "text/html"))));
