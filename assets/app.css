@@ -1766,7 +1766,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .sources-foot { margin: 0; color: var(--text-3); font-size: 0.6rem; line-height: 1.4; }
 .sources-empty { margin: 0; color: var(--text-3); font-size: 0.70rem; text-align: center; }
 .sources-note {
-  margin: 1px 0 0; color: var(--text-3); font-size: 0.6rem; line-height: 1.45;
+  margin: 10px 0 0; color: var(--text-3); font-size: 0.6rem; line-height: 1.45;
   max-width: 62ch;
 }
 
@@ -3269,10 +3269,23 @@ a.addr-value:hover { color: var(--text); }
 @media (max-width: 430px) { .sources-toggle { padding: 0 8px; gap: 5px; } }
 
 /* ---------- the sources page + the panel's way to it ---------- */
+/* the action the sheet exists for, given the weight of a button */
+.sources-download {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: 44px; margin-top: 10px;
+  border-radius: 11px; border: 1px solid var(--stroke-2);
+  background: var(--surface-2); color: var(--text);
+  font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.02em;
+  cursor: pointer; transition: background 140ms, border-color 140ms;
+}
+.sources-download svg { width: 16px; height: 16px; }
+.sources-download:hover { background: var(--surface-3); border-color: var(--text-3); }
+.sources-download:active { background: var(--surface-3); }
+
 .sources-more {
   display: flex; align-items: center; justify-content: space-between;
-  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--stroke);
-  color: var(--text-2); font-family: var(--mono); font-size: 0.68rem;
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--stroke);
+  color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
   text-decoration: none;
 }
 .sources-more:hover { color: var(--text); }

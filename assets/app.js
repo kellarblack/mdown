@@ -2685,10 +2685,28 @@
     });
     wrap.appendChild(row);
 
+    /* the foot of the sheet: the thing you came here to do, then the full list,
+       then the small print. It used to be note → gap → link, which read as a
+       hole in the panel. */
     wrap.appendChild(el("p", {
       class: "sources-note",
       text: "compatibility only — no affiliation or endorsement"
     }));
+
+    const download = el("button", { type: "button", class: "sources-download" });
+    download.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.2v10.2"/><path d="m7.9 10.3 4.1 4.1 4.1-4.1"/><path d="M5 17.6V19a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 19v-1.4"/></svg><span>download</span>';
+    download.addEventListener("click", () => {
+      closeSources();
+      /* and put the cursor where the work starts */
+      setTimeout(() => {
+        if (dom.input) {
+          dom.input.focus({ preventScroll: true });
+          dom.input.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      }, 180);
+    });
+    wrap.appendChild(download);
+
     const more = el("a", {
       class: "sources-more",
       href: "sources.html",
