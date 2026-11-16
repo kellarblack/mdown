@@ -1980,59 +1980,6 @@ a.donate-value:hover { text-decoration: underline; }
   }
 }
 
-/* ---------- tip jar in the corner ---------- */
-.coin-jar {
-  position: fixed; z-index: 40; left: 18px; bottom: 18px;
-  width: 44px; height: 44px; display: grid; place-items: center;
-  border-radius: 999px; border: 1px solid var(--stroke-2);
-  background: var(--bg-elev); color: var(--text-2);
-  cursor: pointer; touch-action: manipulation;
-  transition: color 160ms, border-color 160ms, background 160ms,
-              transform 220ms var(--ease);
-}
-.coin-jar[hidden] { display: none; }
-.coin-jar:hover {
-  color: var(--text); border-color: var(--stroke-2);
-  background: var(--surface-2); transform: translateY(-2px);
-}
-.coin-jar:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-.coin-jar-glyph svg { width: 19px; height: 19px; display: block; }
-/* the jar is small on purpose; the word appears when you get near it */
-.coin-jar-label {
-  position: absolute; left: calc(100% + 8px); top: 50%;
-  transform: translateY(-50%) translateX(-4px);
-  padding: 3px 8px; border-radius: 6px;
-  border: 1px solid var(--stroke); background: var(--bg-elev);
-  color: var(--text-2); font-family: var(--mono); font-size: 0.66rem;
-  white-space: nowrap; opacity: 0; pointer-events: none;
-  transition: opacity 140ms ease-out, transform 160ms var(--ease);
-}
-.coin-jar:hover .coin-jar-label,
-.coin-jar:focus-visible .coin-jar-label {
-  opacity: 1; transform: translateY(-50%) translateX(0);
-}
-/* a coin falls in every few seconds: enough to catch the eye once, not a loop
-   that pulls at the corner of the screen */
-.coin-jar-drop {
-  position: absolute; left: 50%; top: 5px;
-  width: 5px; height: 5px; margin-left: -2.5px; border-radius: 999px;
-  border: 1px solid currentColor; opacity: 0;
-  animation: coin-drop 7200ms cubic-bezier(.3,.7,.4,1) infinite;
-}
-@keyframes coin-drop {
-  0%, 64% { opacity: 0; transform: translateY(-5px); }
-  68%     { opacity: 0.85; }
-  78%     { opacity: 0.85; transform: translateY(12px); }
-  82%,100%{ opacity: 0; transform: translateY(13px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .coin-jar-drop { animation: none; }
-  .coin-jar:hover { transform: none; }
-}
-/* on a phone the bar already carries donate; a second floating button would
-   sit in the thumb's way */
-@media (max-width: 720px), (hover: none) and (max-height: 520px) { .coin-jar { display: none; } }
-
 /* ---------- terms page ---------- */
 .terms { max-width: 64ch; margin: 22px auto 0; }
 .terms h2 {
@@ -3186,13 +3133,6 @@ a.addr-value:hover { color: var(--text); }
 
 /* floating chrome that had no shadow */
 [data-theme="light"] .toast,
-[data-theme="light"] .coin-jar,
-[data-theme="light"] .coin-jar-label,
-[data-theme="light"] .tip::after {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.14);
-  box-shadow: 0 10px 26px -14px rgba(12, 12, 16, 0.34), 0 1px 2px rgba(12, 12, 16, 0.06);
-}
 [data-theme="light"] .mini-dock {
   background: #fff;
   border-color: rgba(0, 0, 0, 0.16);

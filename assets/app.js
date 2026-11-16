@@ -2730,8 +2730,6 @@
     });
     const settingsDonate = $("#open-donate-settings");
     if (settingsDonate) settingsDonate.hidden = !cfg;
-    const jar = $("#coin-jar");
-    if (jar) jar.hidden = !cfg;
     const tip = $("#open-donate-top");
     if (tip) tip.hidden = !cfg;
     if (!dom.donateLink || !dom.donateWrap) return;
@@ -2816,7 +2814,7 @@
   let tipOpen = false;
 
   function tipTriggers() {
-    return $$('#open-donate-top, #coin-jar');
+    return $$("#open-donate-top");
   }
 
   function setTipState(on) {
