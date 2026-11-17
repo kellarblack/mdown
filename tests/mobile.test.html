@@ -447,6 +447,18 @@ async function main() {
         "jar=" + tip.hidden + " frame=" + doc.querySelector("#donate-frame").hidden);
     }
 
+    /* the hint chip sits between two blocks with equal air on each side */
+    const chip = doc.querySelector("#composer-note");
+    const strip = doc.querySelector(".tool-strip");
+    const composerBox = doc.querySelector(".composer").getBoundingClientRect();
+    const chipBox = chip.getBoundingClientRect();
+    const stripBox = strip.getBoundingClientRect();
+    const above = chipBox.top - composerBox.bottom;
+    const below = stripBox.top - chipBox.bottom;
+    record("the hint chip is spaced evenly above and below",
+      Math.abs(above - below) <= 1 && Math.abs(above - 16) <= 1,
+      Math.round(above) + " above / " + Math.round(below) + " below");
+
     /* the way back out of a tool, on both shapes of screen */
     win.location.hash = "#remux";
     await sleep(400);

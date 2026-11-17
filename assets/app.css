@@ -514,7 +514,9 @@ a.ghost-btn { text-decoration: none; }
 .composer-note {
   display: block; text-align: center;
   width: fit-content; max-width: calc(100vw - 32px);
-  margin: 10px auto 0; padding: 5px 12px;
+  /* the same gap above and below: the chip sits between two blocks with equal
+     air on each side */
+  margin: 16px auto 0; padding: 5px 12px;
   border: 1px solid var(--stroke); border-radius: 8px;
   background: var(--surface);
   text-align: center;
@@ -3318,7 +3320,7 @@ a.addr-value:hover { color: var(--text); }
 .composer-cta .hint { font-size: 0.82rem; line-height: 1.4; }
 
 .composer-note {
-  margin-top: 9px; padding: 6px 12px;
+  margin-top: 16px; padding: 6px 12px;
   border-radius: var(--r-md);
   border-color: color-mix(in srgb, var(--stroke) 70%, transparent);
   color: var(--text-3);
@@ -3334,7 +3336,7 @@ a.addr-value:hover { color: var(--text); }
 }
 
 /* ---------- tool cards, recent, empty ---------- */
-.tool-strip { gap: 8px; margin-top: clamp(16px, 2.4vw, 20px); }
+.tool-strip { gap: 8px; margin-top: 16px; }
 .tool-card {
   gap: 11px;
   padding: 10px 26px 10px 11px;
