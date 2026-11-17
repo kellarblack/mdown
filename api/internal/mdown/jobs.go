@@ -272,7 +272,7 @@ func (j *Jobs) toDisk(ctx context.Context, link, title string, o DownloadOptions
 	if facts.Duration > float64(j.cfg.MaxDuration+5) {
 		return nil, ErrTooLong(j.cfg.MaxDuration)
 	}
-	if o.Mode == "audio" && facts.HasVideo && !strings.HasSuffix(path, ".mp3") {
+	if o.Mode == "audio" && facts.HasVideo {
 		return nil, ErrUnavailable("audio mode returned a video")
 	}
 	ext := strings.TrimPrefix(filepath.Ext(path), ".")

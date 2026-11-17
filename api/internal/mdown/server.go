@@ -99,11 +99,7 @@ func (s *Server) Background(ctx context.Context) {
 	go func() {
 		t := time.NewTicker(time.Minute)
 		defer t.Stop()
-		sample := func() {
-			tools := s.readTools()
-			ok := tools["yt-dlp"] && tools["ffmpeg"] && tools["ffprobe"] && s.jobs.freeBytes() >= s.cfg.MinFreeBytes
-			s.uptime.Record(ok)
-		}
+		sample := func() { s.uptime.Record(s.selfCheck(ctx)) }
 		sample()
 		for {
 			select {
@@ -115,6 +111,39 @@ func (s *Server) Background(ctx context.Context) {
 		}
 	}()
 }
+
+// selfCheck is one uptime sample. It asks the public address, the way a
+// visitor's browser would, so a dead proxy, an expired certificate or broken
+// DNS counts as down, not only a missing ffmpeg. A local-only instance (plain
+// http API_URL) checks its tools and disk instead.
+func (s *Server) selfCheck(ctx context.Context) bool {
+	tools := s.readTools()
+	local := tools["yt-dlp"] && tools["ffmpeg"] && tools["ffprobe"] && s.jobs.freeBytes() >= s.cfg.MinFreeBytes
+	if !local || !strings.HasPrefix(s.cfg.APIURL, "https://") {
+		return local
+	}
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(s.cfg.APIURL, "/")+"/health", nil)
+	if err != nil {
+		return false
+	}
+	req.Header.Set("Accept", "application/json")
+	res, err := selfClient.Do(req)
+	if err != nil {
+		log.Printf("uptime: public check failed: %s", RedactLog(err.Error()))
+		return false
+	}
+	defer res.Body.Close()
+	_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, 64*1024))
+	if res.StatusCode != http.StatusOK {
+		log.Printf("uptime: public check answered %d", res.StatusCode)
+		return false
+	}
+	return true
+}
+
+var selfClient = &http.Client{Timeout: 10 * time.Second}
 
 // Shutdown flushes state.
 func (s *Server) Shutdown() {

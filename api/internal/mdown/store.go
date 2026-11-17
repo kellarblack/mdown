@@ -282,7 +282,9 @@ type Uptime struct {
 	now      func() time.Time
 }
 
-const uptimeGap = 150 * time.Second
+// a sample is taken every 60 s; more than 100 s between two means at least
+// one minute nobody measured, and that minute counts as down
+const uptimeGap = 100 * time.Second
 
 func NewUptime(path string) *Uptime {
 	u := &Uptime{path: path, keepDays: 35, data: map[string][2]int{}, now: time.Now}
@@ -399,7 +401,7 @@ func (u *Uptime) Summary(days int) map[string]any {
 	}
 	var pct any
 	if all > 0 {
-		pct = float64(int(float64(up)/float64(all)*10000+0.5)) / 100
+		pct = float64(int(float64(up)/float64(all)*10000)) / 100 // rounded down: never claims 100 it did not earn
 	}
 	var since any
 	if len(out) > 0 {

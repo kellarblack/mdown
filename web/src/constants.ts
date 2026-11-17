@@ -157,6 +157,8 @@ export const ERROR_TEXT: Record<string, string> = {
   "api.instance.timed_out": "The instance took too long and gave up. Try a shorter link.",
   "api.auth.origin": "This instance only answers its own site.",
   "api.content.too_large": "The file would be bigger than this instance allows.",
+  "api.content.login": "This service only gives files to logged-in accounts when the request comes from a server, and this one does not use an account. Retrying will not help.",
+  "api.service.unavailable": "This service is refusing this server right now. Try again later; blocks like this often clear within a day.",
 };
 
 /** a phone, or a landscape phone that reports no hover */

@@ -11,7 +11,7 @@ Type=oneshot
 # whatever was downloading every week, for nothing.
 ExecStart=/bin/sh -c '\
   before=$(/opt/mdown/venv/bin/yt-dlp --version 2>/dev/null || echo none); \
-  /opt/mdown/venv/bin/pip install --quiet --upgrade yt-dlp || exit 1; \
+  /opt/mdown/venv/bin/pip install --quiet --upgrade "yt-dlp[default,curl-cffi]" || exit 1; \
   after=$(/opt/mdown/venv/bin/yt-dlp --version 2>/dev/null || echo none); \
   echo "yt-dlp $before -> $after"; \
   if [ "$before" != "$after" ]; then \

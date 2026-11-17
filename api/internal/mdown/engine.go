@@ -121,6 +121,9 @@ type errorPattern struct {
 
 var errorPatterns = []errorPattern{
 	{regexp.MustCompile(`(?i)Unsupported URL|no suitable InfoExtractor`), "api.url.unsupported", "unsupported url"},
+	// the source wants an account from this server; retrying cannot help
+	{regexp.MustCompile(`(?i)only works when logged-in|authentication is required|login required|log in to|use --cookies|cookies-from-browser for the authentication`), "api.content.login", "the source requires a login"},
+	{regexp.MustCompile(`(?i)attempting impersonation, but no impersonate target|client challenge|challenge webpage`), "api.service.unavailable", "the source is refusing this server"},
 	{regexp.MustCompile(`(?i)This (video|content) is (private|only available)`), "api.content.video.private", "private"},
 	{regexp.MustCompile(`(?i)Private (video|content)`), "api.content.video.private", "private"},
 	{regexp.MustCompile(`(?i)Sign in to confirm your age|age[- ]restricted|inappropriate for some users`), "api.content.video.age", "age restricted"},
@@ -130,11 +133,18 @@ var errorPatterns = []errorPattern{
 	{regexp.MustCompile(`(?i)Requested format is not available`), "api.content.video.unavailable", "format not available"},
 	{regexp.MustCompile(`(?i)larger than max-filesize|File is larger`), "api.content.too_large", "output exceeds the size cap"},
 	{regexp.MustCompile(`(?i)HTTP Error 429|Too Many Requests`), "api.content.video.unavailable", "source rate limited"},
-	{regexp.MustCompile(`(?i)Video unavailable|video is unavailable|has been removed|does not exist|404`), "api.content.video.unavailable", "unavailable"},
+	{regexp.MustCompile(`(?i)Video unavailable|video is unavailable|has been removed|does not exist|404|\] [^\n:]+: not found`), "api.content.video.unavailable", "unavailable"},
 }
 
 // Classify maps toolchain stderr to a cobalt error code, or nil.
+// botWallRE is YouTube's intermittent "prove you are human" page. It names
+// cookies too, but one retry usually gets through, so it is never final.
+var botWallRE = regexp.MustCompile(`(?i)confirm you.?re not a bot`)
+
 func Classify(stderr string) *APIError {
+	if botWallRE.MatchString(stderr) {
+		return nil
+	}
 	for _, p := range errorPatterns {
 		if p.re.MatchString(stderr) {
 			return newErr(p.code, 422, p.detail)
@@ -702,7 +712,11 @@ func (e *Engine) DownloadToDisk(ctx context.Context, link, dest string, o Downlo
 			}
 			return singleFile(dest, nil)
 		}
-		argv := append(base, "-f", "bestaudio/best", "-x", "--audio-format", f, "-o", template)
+		ytFormat := f
+		if f == "ogg" {
+			ytFormat = "vorbis" // yt-dlp's name for ogg vorbis; the file is still .ogg
+		}
+		argv := append(base, "-f", "bestaudio/best", "-x", "--audio-format", ytFormat, "-o", template)
 		if f != "wav" {
 			argv = append(argv, "--audio-quality", fmt.Sprintf("%dK", o.AudioBitrate))
 		}
@@ -839,9 +853,12 @@ func (e *Engine) ProbeFile(ctx context.Context, path string) (MediaFacts, error)
 	}
 	var doc struct {
 		Streams []struct {
-			CodecType string `json:"codec_type"`
-			Height    int    `json:"height"`
-			Width     int    `json:"width"`
+			CodecType   string `json:"codec_type"`
+			Height      int    `json:"height"`
+			Width       int    `json:"width"`
+			Disposition struct {
+				AttachedPic int `json:"attached_pic"`
+			} `json:"disposition"`
 		} `json:"streams"`
 		Format struct {
 			Duration string `json:"duration"`
@@ -855,6 +872,10 @@ func (e *Engine) ProbeFile(ctx context.Context, path string) (MediaFacts, error)
 	for _, st := range doc.Streams {
 		switch st.CodecType {
 		case "video":
+			// cover art in an audio file is a picture, not a video
+			if st.Disposition.AttachedPic == 1 {
+				continue
+			}
 			if !m.HasVideo {
 				m.HasVideo, m.Height, m.Width = true, st.Height, st.Width
 			}

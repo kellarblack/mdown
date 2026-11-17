@@ -137,7 +137,7 @@ const Row = memo(function Row({ item }: { item: QueueItem; v: number }) {
           <Btn label="Details" onClick={() => modalStore.set({ kind: item.status === "local" ? "local" : "picker", itemId: item.id })}><IconDots /></Btn>
         )}
         {item.sourceUrl && finished && (
-          <Btn label="Copy link" onClick={() => void copyText(item.sourceUrl).then((ok) => ok && toast("Link copied", "ok"))}><IconCopy /></Btn>
+          <Btn label="Copy link" onClick={() => void copyText(item.sourceUrl).then((ok) => ok && toast("Link copied", "info"))}><IconCopy /></Btn>
         )}
         {(item.status === "done" || item.status === "error" || item.status === "cancelled") && (
           <Btn label="Remove" onClick={() => removeItem(item)}><IconClose /></Btn>

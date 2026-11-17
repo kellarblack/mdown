@@ -151,7 +151,7 @@ function Local({ itemId }: { itemId: string }) {
   const { tunnels, type, command } = item.local;
   return (
     <Dialog title="Merge locally" onClose={close} foot={<>
-      <button type="button" className="ghost-btn" onClick={() => void copyText(tunnels.join("\n")).then((ok) => ok && toast("Links copied", "ok"))}>Copy all links</button>
+      <button type="button" className="ghost-btn" onClick={() => void copyText(tunnels.join("\n")).then((ok) => ok && toast("Links copied", "info"))}>Copy all links</button>
       <button type="button" className="primary-btn" data-autofocus onClick={close}>Got it</button>
     </>}>
       <div>

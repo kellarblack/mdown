@@ -574,7 +574,7 @@ async function afterReady(item: QueueItem, blob: Blob | null): Promise<void> {
   if (method === "share" && blob) {
     if (!(await shareItem(item, true))) saveBlob(item);
   } else if (method === "copy" && item.sourceUrl) {
-    if (await copyText(item.sourceUrl)) toast("Link copied", "ok");
+    if (await copyText(item.sourceUrl)) toast("Link copied", "info");
   }
 }
 
@@ -606,7 +606,7 @@ function handOffToBrowser(item: QueueItem, note: string): void {
   const method = settingsStore.get().savingMethod;
   if (method === "ask") return setStatus(item, "ready", note + ", open to save");
   if (method === "copy") {
-    void copyText(item.sourceUrl).then((ok) => ok && toast("Link copied", "ok"));
+    void copyText(item.sourceUrl).then((ok) => ok && toast("Link copied", "info"));
     return setStatus(item, "done", "link copied");
   }
   if (!item.sourceUrl) return setStatus(item, "ready", note + ", no direct link");

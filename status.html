@@ -232,7 +232,7 @@
     const ok = history.filter((x) => x.ok).length;
     const pct = Math.round((ok / history.length) * 1000) / 10;
     const pctEl = $("#uptime-pct");
-    tween(pctEl, shownPct === null ? pct : shownPct, pct, (v) => v.toFixed(1) + "% up");
+    tween(pctEl, shownPct === null ? pct : shownPct, pct, (v) => (Math.floor(v * 10) / 10).toFixed(1) + "% up");
     shownPct = pct;
 
     $("#uptime-meta").textContent =
@@ -306,7 +306,7 @@
   function uptimeState(day) {
     if (!day.total) return "unknown";
     const pct = day.up / day.total;
-    if (pct >= 0.995) return "true";
+    if (day.up >= day.total) return "true";
     if (pct >= 0.97) return "partial";
     return "false";
   }
@@ -391,7 +391,7 @@
       wrap.hidden = false;
       drawUptimeBars(data.days);
       const pctEl = $("#uptime-pct");
-      pctEl.textContent = data.uptime === null ? "n/a" : data.uptime.toFixed(1) + "% up";
+      pctEl.textContent = data.uptime === null ? "n/a" : (Math.floor(data.uptime * 10) / 10).toFixed(1) + "% up";
       /* the count is the server's, not this tab's. Two things used to be
          untrue here: the average divided by the full 30-day window even when
          the log only covered a day, and "today" was the server's UTC date with

@@ -195,6 +195,23 @@ func TestClassify(t *testing.T) {
 	if e := Classify("ERROR: Private video. Sign in"); e == nil || e.Code != "api.content.video.private" {
 		t.Fatalf("got %+v", e)
 	}
+	for text, want := range map[string]string{
+		"ERROR: [vimeo] 1: The web client only works when logged-in. Use --cookies":                 "api.content.login",
+		"ERROR: [Reddit] x: Account authentication is required. Use --cookies-from-browser":         "api.content.login",
+		"ERROR: [dailymotion] x8j1x2o: Not found.\n":                                                "api.content.video.unavailable",
+		"ERROR: [Bandcamp] a: The extractor is attempting impersonation, but no impersonate target": "api.service.unavailable",
+		"ERROR: [Bandcamp] a: Got client challenge webpage response with chrome-152":                "api.service.unavailable",
+	} {
+		if e := Classify(text); e == nil || e.Code != want {
+			t.Errorf("Classify(%q) = %+v, want %s", text, e, want)
+		}
+	}
+	if Classify("ERROR: [youtube] x: Sign in to confirm you're not a bot. Use --cookies-from-browser") != nil {
+		t.Fatal("the bot wall must stay retryable")
+	}
+	if Classify("ERROR: ffmpeg not found. Please install") != nil {
+		t.Fatal("a missing tool is not a missing video")
+	}
 	if Classify("something else entirely") != nil {
 		t.Fatal("unknown text must not classify")
 	}
@@ -216,5 +233,15 @@ func TestConfigFromEnv(t *testing.T) {
 	env["MDOWN_PORT"] = "80"
 	if _, err := ConfigFromEnv(func(k string) string { return env[k] }); err == nil {
 		t.Fatal("port below 1024 must fail")
+	}
+}
+
+func TestUptimeNeverRoundsUpTo100(t *testing.T) {
+	u := NewUptime(filepath.Join(t.TempDir(), "uptime.json"))
+	now := time.Date(2026, 1, 2, 12, 0, 0, 0, time.UTC)
+	u.now = func() time.Time { return now }
+	u.data["2026-01-02"] = [2]int{19999, 20000}
+	if got := u.Summary(1)["uptime"].(float64); got >= 100 {
+		t.Fatalf("19999/20000 reported as %v", got)
 	}
 }

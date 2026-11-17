@@ -23,7 +23,7 @@ function useCopy(message: string): [boolean, (text: string) => void] {
   return [done, (text) => {
     void copyText(text).then((ok) => {
       if (!ok) return toast("Couldn't copy. Select it and copy by hand.", "warn");
-      toast(message, "ok");
+      toast(message, "info");
       setDone(true);
       setTimeout(() => setDone(false), 1400);
     });

@@ -103,7 +103,7 @@ if [ ! -x "$APP_ROOT/venv/bin/python" ]; then
   python3 -m venv "$APP_ROOT/venv"
 fi
 "$APP_ROOT/venv/bin/pip" install --quiet --upgrade pip
-"$APP_ROOT/venv/bin/pip" install --quiet --upgrade yt-dlp
+"$APP_ROOT/venv/bin/pip" install --quiet --upgrade "yt-dlp[default,curl-cffi]"
 
 echo "==> environment file"
 if [ ! -f "$CONF_DIR/api.env" ]; then

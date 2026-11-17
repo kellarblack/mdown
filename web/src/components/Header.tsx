@@ -214,11 +214,12 @@ function Health() {
           const ratio = (d.up || 0) / d.total;
           return {
             key: d.date, live: i === days.length - 1,
-            ok: ratio >= 0.995 ? "true" : ratio >= 0.97 ? "partial" : "false",
-            title: shortDay(d.date) + " · " + Math.round(ratio * 1000) / 10 + "% of " + d.total.toLocaleString() + " checks",
+            ok: (d.up || 0) >= d.total ? "true" : ratio >= 0.97 ? "partial" : "false",
+            title: shortDay(d.date) + " · " + (Math.floor(ratio * 1000) / 10).toFixed(1) + "% of " + d.total.toLocaleString() + " checks",
           };
         });
-        pct = data.uptime == null ? "—" : Number(data.uptime).toFixed(1) + "%";
+        // rounded down: 99.96% is not "100.0%"
+        pct = data.uptime == null ? "—" : (Math.floor(Number(data.uptime) * 10) / 10).toFixed(1) + "%";
         checks = compact(Number(data.checks) || 0) + " check" + (Number(data.checks) === 1 ? "" : "s");
       }
     } catch {
@@ -231,7 +232,7 @@ function Health() {
       const seen = readHealth();
       const okCount = seen.filter((x) => x.ok).length;
       if (seen.length) {
-        pct = Math.round((okCount / seen.length) * 1000) / 10 + "%";
+        pct = (Math.floor((okCount / seen.length) * 1000) / 10).toFixed(1) + "%";
         checks = compact(seen.length) + " check" + (seen.length === 1 ? "" : "s");
       }
       const local = seen.slice(-7);
@@ -240,7 +241,7 @@ function Health() {
         ...local.map((x, i) => ({ key: String(x.t), ok: (x.ok ? "true" : "false") as Bar["ok"], live: i === local.length - 1, title: new Date(x.t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })),
       ];
     }
-    const up = body?.uptimeSeconds ? "up " + formatUptime(Date.now() - Number(body.uptimeSeconds) * 1000) : "";
+    const up = body?.uptimeSeconds ? "running " + formatUptime(Date.now() - Number(body.uptimeSeconds) * 1000) : "";
     setState({
       s: !responded ? "bad" : ok ? "ok" : "bad",
       label: !responded ? "unreachable" : ok ? "online" : "down",

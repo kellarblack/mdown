@@ -24,12 +24,15 @@ api.mdown.cc {
 	# includeSubDomains is safe here: there are no other subdomains in use.
 	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
-	# say nothing about the software behind the name
-	header -Server
+	# say nothing about the software behind the name. `defer` runs this after
+	# the proxy, which is where Via and Server are added
+	header {
+		-Server
+		-Via
+		defer
+	}
 
 	reverse_proxy 127.0.0.1:9000 {
-		header_down -Via
-		header_down -Server
 		# stream bytes as they are read from disk instead of buffering them
 		flush_interval -1
 		# a job may legitimately run for several minutes before the tunnel

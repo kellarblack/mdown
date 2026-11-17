@@ -110,7 +110,7 @@ a.tj-addr-value { text-decoration: none; }
 }
 .tj-copy svg, .tj-chip svg { width: 14px; height: 14px; flex: none; }
 .tj-copy:hover, .tj-chip:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
-.tj-copy.is-copied, .tj-chip.is-copied { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.tj-copy.is-copied, .tj-chip.is-copied { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
 .tj-chip-icon, .tj-chip-icon svg { width: 14px; height: 14px; display: block; }
 
 .tj-share { display: flex; flex-wrap: wrap; gap: 8px; }
