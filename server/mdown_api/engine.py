@@ -184,7 +184,6 @@ def probe(url: str, timeout: int, cache_dir: Optional[str] = None) -> Dict[str, 
         "--no-warnings",
         "--socket-timeout", "20",
         "--retries", "2",
-        "--no-call-home",
         url,
     ]
     if cache_dir:
@@ -413,11 +412,15 @@ def _common(
         YTDLP,
         "--no-playlist",
         "--no-warnings",
-        "--no-call-home",
         "--no-mtime",
-        "--socket-timeout", "20",
-        "--retries", "3",
-        "--fragment-retries", "3",
+        # a CDN that stalls mid-chunk is the most common failure there is, and
+        # yt-dlp's default of 3 retries gives up inside a minute. ten tries
+        # with a pause between them rides out a slow mirror instead of
+        # reporting a timeout the visitor cannot do anything about.
+        "--socket-timeout", "30",
+        "--retries", "10",
+        "--fragment-retries", "10",
+        "--retry-sleep", "2",
         "--concurrent-fragments", str(fragments),
         "--max-filesize", "%dM" % max(1, max_bytes // (1024 * 1024)),
     ]
