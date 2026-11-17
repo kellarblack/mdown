@@ -2777,7 +2777,11 @@
             "aria-label": id + (host ? ", open " + host : "")
           })
         : el("span", { class: "source-chip", title: id + (note ? ", " + note : "") });
-      chip.textContent = id;
+      /* the mark makes the list scannable; the name stays the label */
+      const mark = el("span", { class: "source-mark", "aria-hidden": "true" });
+      mark.innerHTML = markForService(id);
+      chip.appendChild(mark);
+      chip.appendChild(el("span", { class: "source-name", text: id }));
       row.appendChild(chip);
     });
     wrap.appendChild(row);
