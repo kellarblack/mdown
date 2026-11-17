@@ -12,6 +12,29 @@ from mdown_api.errors import ApiError
 PUBLIC = ["93.184.216.34"]
 
 
+class RedactLogTest(unittest.TestCase):
+    """A log line says that a request happened, never what it was for."""
+
+    def test_a_tunnel_token_never_reaches_the_log(self):
+        out = security.redact_log('"GET /tunnel/abcDEF123456 HTTP/1.1" 200 -')
+        self.assertNotIn("abcDEF123456", out)
+        self.assertIn("/tunnel/[redacted]", out)
+
+    def test_a_link_in_an_error_never_reaches_the_log(self):
+        out = security.redact_log(
+            "ERROR: [youtube] https://youtu.be/dQw4w9WgXcQ?t=3: unavailable")
+        self.assertNotIn("youtu.be", out)
+        self.assertIn("[url]", out)
+
+    def test_a_query_string_is_dropped(self):
+        out = security.redact_log('"GET /tunnel?id=secretvalue HTTP/1.1" 404 -')
+        self.assertNotIn("secretvalue", out)
+
+    def test_a_plain_route_survives(self):
+        line = '"GET /health HTTP/1.1" 200 -'
+        self.assertEqual(security.redact_log(line), line)
+
+
 class ValidateUrlTest(unittest.TestCase):
     def setUp(self):
         self._original = security.resolve

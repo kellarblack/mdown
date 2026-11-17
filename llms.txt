@@ -13,6 +13,7 @@
   - **Metadata cleaner**: strips container tags such as title, artist, comment and creation time, leaving the streams untouched.
 - Accepts a media link after the domain (`https://mdown.cc/<link>`) so a download can be started from a bookmark or a message.
 - Keeps settings and recent links in the browser's local storage only.
+- Keeps no record of a download on the server: no link, no file name, no address, no history. The API log redacts tunnel paths, query strings and links; the access log drops the visitor's address, user agent, referer, cookies and URI. The temporary file is deleted after it is served.
 
 ## What it does not do
 

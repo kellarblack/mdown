@@ -35,7 +35,7 @@ from . import engine
 from .config import Config
 from .errors import ApiError
 from .jobs import JobManager, PickerNeeded, RateLimiter
-from .security import header_safe, validate_url
+from .security import header_safe, redact_log, validate_url
 from .uptime import UptimeLog
 
 log = logging.getLogger("mdown.api")
@@ -142,10 +142,10 @@ class Handler(BaseHTTPRequestHandler):
         return self.server_version
 
     def log_message(self, fmt: str, *args: Any) -> None:  # keep noise down
-        # No address in the log: the service promises nothing is stored about a
-        # visitor, and an IP in a log file is still a record of one. Methods,
-        # paths and statuses are enough to run the box.
-        log.info("%s", fmt % args)
+        # No address, no query string, no tunnel token: a log line should say
+        # that a request happened, not what it was for. redact_log also removes
+        # any URL that a toolchain slipped into the message.
+        log.info("%s", redact_log(fmt % args))
 
     def _client_ip(self) -> str:
         # A proxy *appends* the address it saw to any header the client sent.
@@ -210,7 +210,7 @@ class Handler(BaseHTTPRequestHandler):
         if error.code == "api.rate_limit":
             headers["Retry-After"] = str(error.context.get("retry") or 30)
         if error.detail and not error.expose:
-            log.warning("%s %s: %s", error.status, error.code, error.detail)
+            log.warning("%s %s: %s", error.status, error.code, redact_log(error.detail))
         self._json(error.status, error.payload(), headers)
 
     # -- auth --------------------------------------------------------------
@@ -294,7 +294,7 @@ class Handler(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             pass
         except Exception:
-            log.error("unhandled GET error\n%s", traceback.format_exc())
+            log.error("unhandled GET error\n%s", redact_log(traceback.format_exc()))
             self._error(ApiError.internal())
 
     def do_POST(self) -> None:  # noqa: N802
@@ -305,7 +305,7 @@ class Handler(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             pass
         except Exception:
-            log.error("unhandled POST error\n%s", traceback.format_exc())
+            log.error("unhandled POST error\n%s", redact_log(traceback.format_exc()))
             self._error(ApiError.internal())
 
     def _limit_get(self) -> None:
@@ -588,7 +588,7 @@ class Handler(BaseHTTPRequestHandler):
             }, headers)
             return
         except engine.EngineError as failure:
-            log.warning("engine failure: %s", failure)
+            log.warning("engine failure: %s", redact_log(str(failure)))
             if "timed out" in str(failure):
                 self._json(504, {
                     "status": "error",

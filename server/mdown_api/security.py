@@ -218,6 +218,20 @@ def header_safe(value: str) -> str:
     return _CONTROL.sub("", str(value)).replace("\r", "").replace("\n", "")
 
 
+#: a tunnel path is a working download for fifteen minutes; a log line is not
+#: the place to leave one, and a query string can carry the link itself
+_TUNNEL_IN_LOG = re.compile(r"/tunnel/[A-Za-z0-9_\-]{4,}")
+_URL_IN_LOG = re.compile(r"https?://[^\s\"'<>]+")
+_QUERY_IN_LOG = re.compile(r"\?[^ \"]+")
+
+
+def redact_log(value: str) -> str:
+    """Remove what a log must not keep: tokens, query strings and links."""
+    text = _QUERY_IN_LOG.sub("", str(value))
+    text = _TUNNEL_IN_LOG.sub("/tunnel/[redacted]", text)
+    return _URL_IN_LOG.sub("[url]", text)
+
+
 def split_target(url: str) -> Tuple[str, int]:
     parts = urlsplit(url)
     return parts.hostname or "", parts.port or (443 if parts.scheme == "https" else 80)
