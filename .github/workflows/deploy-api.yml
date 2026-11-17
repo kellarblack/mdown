@@ -1,10 +1,8 @@
 # Builds the Go API (api/) and installs it on the VPS. Manual for now.
 #
-# This is what lets a collaborator help: they open a PR, you merge it, the box
-# updates itself. Nobody has to hand out a server password.
+# Needs three repo secrets (below). Then: Actions → deploy api → Run workflow.
 #
 # One-time setup:
-#   1. On the box:  sudo git clone https://github.com/<you>/mdown.git /opt/mdown-src
 #   2. Locally:     ssh-keygen -t ed25519 -f ~/.ssh/mdown_deploy -N ""
 #                   ssh-copy-id -i ~/.ssh/mdown_deploy.pub root@<ip>
 #   3. Repo → Settings → Secrets → Actions:
@@ -21,7 +19,7 @@ on:
   # push would show a red X. Turn this back to `push:` once the secrets are set.
   workflow_dispatch:
 
-jobs:jobs:
+jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
