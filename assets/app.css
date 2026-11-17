@@ -2653,9 +2653,11 @@ a.donate-value:hover { text-decoration: underline; }
 }
 .dock.is-open .dock-btn { color: var(--text); background: var(--surface-2); border-color: var(--stroke); }
 .dock-panel {
-  transform-origin: top right;
+  transform-origin: top center;
   animation: drop-in 160ms var(--ease) both;
-  position: absolute; top: calc(100% + 8px); right: 0; z-index: 70;
+  /* fixed, so the panel can be centred on the button in viewport pixels and
+     clamped at the edge; absolute-inside-a-40px-button could do neither */
+  position: fixed; top: 58px; left: auto; right: auto; z-index: 70;
   /* 100% here resolves against .dock (the 40px button), which would shrink the
      panel to a 20px sliver — this is one of the few places vw is correct */
   width: min(430px, calc(100vw - 20px));
@@ -2667,15 +2669,6 @@ a.donate-value:hover { text-decoration: underline; }
 .dock-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .dock-panel .queue-list { gap: 6px; }
 .dock-panel .empty { padding: 8px 2px 4px; }
-
-/* on a wide screen the panel lines up with the right edge of the content
-   column instead of hanging off the button over the logo */
-@media (min-width: 1100px) {
-  .dock-panel {
-    position: fixed; top: 58px;
-    right: max(20px, calc(50vw - 452px));
-  }
-}
 
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .dock-panel {

@@ -104,6 +104,21 @@ async function main() {
   // nothing left to clear, so the control goes away rather than doing nothing
   record("clear finished hides once there is nothing to clear", $("#clear-finished").hidden);
 
+  /* a wide screen gets the dropdown, centred on the button that opened it */
+  frame.style.width = "900px";
+  await sleep(450);
+  if ($("#queue-panel").hidden) {
+    $("#queue-toggle").click();
+    await sleep(450);
+  }
+  const panelRect = $("#queue-panel").getBoundingClientRect();
+  const toggleRect = $("#queue-toggle").getBoundingClientRect();
+  record("on a wide screen the list drops from the middle of the button",
+    Math.abs((panelRect.left + panelRect.width / 2) - (toggleRect.left + toggleRect.width / 2)) <= 2 &&
+      panelRect.left >= 0 && panelRect.right <= win.innerWidth + 0.5,
+    "panel centre " + Math.round(panelRect.left + panelRect.width / 2) +
+      " vs button " + Math.round(toggleRect.left + toggleRect.width / 2));
+
   window.__results = { total: results.length, failures, results };
 }
 

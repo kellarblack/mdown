@@ -1469,6 +1469,7 @@
       dom.queuePanel.hidden = false;
       dom.queuePanel.classList.remove("is-closing");
       bringToFront(dom.queuePanel);
+      positionDockPanel();
     } else if (!dom.queuePanel.hidden) {
       dom.queuePanel.classList.add("is-closing");
       dockTimer = setTimeout(() => {
@@ -2811,7 +2812,10 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && tipOpen) closeTipPop();
     });
-    window.addEventListener("resize", positionTipPop);
+    window.addEventListener("resize", () => {
+      positionTipPop();
+      positionDockPanel();
+    });
   }
 
   function coinGlyph(id) {
@@ -2870,20 +2874,46 @@
     if (pop) pop.setAttribute("aria-hidden", on ? "false" : "true");
   }
 
+  /* a dropdown drops from the middle of the button that opened it, and stops
+     eight pixels short of the screen. centring alone walks off the edge on a
+     narrow window, which is what this clamp is for. */
+  function placeUnder(pop, anchor) {
+    if (!pop || !anchor) return;
+    const rect = anchor.getBoundingClientRect();
+    const width = pop.getBoundingClientRect().width;
+    const centre = rect.left + rect.width / 2;
+    const left = Math.min(
+      Math.max(8, centre - width / 2),
+      Math.max(8, window.innerWidth - width - 8)
+    );
+    pop.style.top = Math.round(rect.bottom + 8) + "px";
+    pop.style.left = Math.round(left) + "px";
+    pop.style.right = "auto";
+  }
+
   function positionTipPop() {
     const pop = dom.tipPop;
     if (!pop || pop.hidden) return;
-    if (window.innerWidth <= 720) {
+    if (PHONE()) {
       pop.style.left = "";
       pop.style.right = "";
       pop.style.top = "";
       return;
     }
-    const anchor = $("#open-donate-top");
-    const rect = anchor ? anchor.getBoundingClientRect() : { right: window.innerWidth - 16, bottom: 48 };
-    pop.style.top = Math.round(rect.bottom + 8) + "px";
-    pop.style.right = Math.max(12, Math.round(window.innerWidth - rect.right)) + "px";
-    pop.style.left = "auto";
+    placeUnder(pop, $("#open-donate-top"));
+  }
+
+  function positionDockPanel() {
+    const panel = dom.queuePanel;
+    if (!panel || panel.hidden) return;
+    if (PHONE()) {
+      /* the phone's sheet is pinned to the bottom edge, not to the button */
+      panel.style.left = "";
+      panel.style.right = "";
+      panel.style.top = "";
+      return;
+    }
+    placeUnder(panel, dom.queueToggle);
   }
 
   function closeTipPop(instant) {

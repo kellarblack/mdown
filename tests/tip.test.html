@@ -96,6 +96,19 @@ async function main() {
   await sleep(220);
   record("and it is gone once the exit finishes", pop.hidden);
 
+  // 5. a wide screen gets the dropdown, and it hangs from the middle of the button
+  frame.style.width = "900px";
+  await sleep(450);
+  doc.querySelector("#open-donate-top").click();
+  await sleep(500);
+  const tipRect = pop.getBoundingClientRect();
+  const tipBtnRect = doc.querySelector("#open-donate-top").getBoundingClientRect();
+  record("on a wide screen it drops from the middle of the button",
+    Math.abs((tipRect.left + tipRect.width / 2) - (tipBtnRect.left + tipBtnRect.width / 2)) <= 2 &&
+      tipRect.left >= 0 && tipRect.right <= win.innerWidth + 0.5,
+    "jar centre " + Math.round(tipRect.left + tipRect.width / 2) +
+      " vs button " + Math.round(tipBtnRect.left + tipBtnRect.width / 2));
+
   window.__results = { total: results.length, failures, results };
 }
 
