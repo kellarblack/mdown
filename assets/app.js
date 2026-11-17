@@ -4301,6 +4301,10 @@
     const glider = document.getElementById("mbar-glider");
     if (!bar || !glider) return;
     const target = barGliderTarget();
+    for (const item of bar.querySelectorAll(".mbar-item")) {
+      if (item === target) item.setAttribute("data-front", "true");
+      else item.removeAttribute("data-front");
+    }
     if (!target) { glider.classList.remove("is-on"); return; }
     const barBox = bar.getBoundingClientRect();
     const box = target.getBoundingClientRect();

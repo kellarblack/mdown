@@ -2909,7 +2909,7 @@ a.addr-value:hover { color: var(--text); }
   /* four words in 358px: the padding and gap give way before the labels do,
      because "threa…" is not a brand */
   .share-chip { gap: 4px; padding: 0 5px; font-size: 0.65rem; }
-  .share-icon, .share-icon svg { width: 18px; height: 18px; }
+  .share-icon, .share-icon svg { width: 16px; height: 16px; }
 }
 /* under 360px even that is too tight: icons only */
 @media (max-width: 359px) {
@@ -3054,7 +3054,6 @@ a.addr-value:hover { color: var(--text); }
     width: var(--w, 0px); height: var(--h, 48px);
     transform: translate3d(var(--x, 0px), var(--y, 6px), 0);
     border-radius: 11px;
-    border: 1px solid var(--stroke-2);
     background: var(--surface-3);
     opacity: 0; pointer-events: none;
     transition: transform 260ms var(--ease), width 260ms var(--ease),
@@ -3079,9 +3078,10 @@ a.addr-value:hover { color: var(--text); }
   /* a press is answered in the same frame: no transition on the way down */
   .mbar-item:active { background: var(--surface-3); color: var(--text); transition: none; }
   /* the glider carries the fill now; the item only brightens */
-  .mbar-item.is-active,
-  .mbar-item[aria-expanded="true"],
-  .mbar-item[data-tab-active="true"] { color: var(--text); background: transparent; border-color: transparent; }
+  /* exactly one item is current, and its own border stays: the travelling
+     glider is a fill behind it, not a second outline that leaves a hole while
+     it moves from one box to the next */
+  .mbar-item[data-front="true"] { color: var(--text); border-color: var(--stroke-2); }
   .mbar-item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   /* the bar replaces the two actions it duplicates */
   .topbar-actions #queue-toggle, .topbar-actions #open-settings { display: none; }
