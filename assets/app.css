@@ -2034,7 +2034,10 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     top: calc(58px + env(safe-area-inset-top, 0px));
     bottom: auto;
     width: auto;
-    max-height: calc(100dvh - 58px - env(safe-area-inset-top, 0px) - 86px);
+    /* it used to be every pixel left under the bar, which read as a new page.
+       two thirds of the glass is enough for sixty chips and keeps the page
+       visible behind it. */
+    max-height: min(62dvh, 440px);
     transform: none; transform-origin: top center;
     border-radius: 16px;
     padding: 12px 14px 14px;
@@ -2057,14 +2060,15 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   .sources-panel .sources-note { font-size: 0.67rem; }
 }
 @media (max-width: 430px) {
-  /* icon only, and a thumb's worth of it: it sits beside 40px buttons */
-  .sources-wrap { height: 40px; }
+  /* icon only, and no longer the biggest thing in the bar: it was a 40px slab
+     with a 16px plus next to 30px controls */
+  .sources-wrap { height: 34px; }
   .sources-toggle {
-    width: 40px; height: 40px; padding: 0;
-    justify-content: center; border-radius: 12px;
+    width: 34px; height: 34px; padding: 0;
+    justify-content: center; border-radius: 10px;
   }
   .sources-toggle .sources-label { display: none; }
-  .sources-glyph { width: 16px; height: 16px; }
+  .sources-glyph { width: 14px; height: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sources-panel, .sources-panel.is-closing { animation: none; }
@@ -3106,9 +3110,12 @@ a.addr-value:hover { color: var(--text); }
 /* the x glyph fills its whole box while the others sit inside padding, so at
    the same 20px it read twice as heavy. each mark gets the size its shape
    needs, not the size of the square it was drawn in. */
-.share-chip[data-share="x"] .share-icon svg { width: 16px; height: 16px; }
-.share-chip[data-share="reddit"] .share-icon svg { width: 19px; height: 19px; }
+/* the x glyph fills its box edge to edge, so it reads heavier than the round
+   marks at the same number. everything else is 18 and the x is 14. */
+.share-chip[data-share="x"] .share-icon svg { width: 14px; height: 14px; }
+.share-chip[data-share="reddit"] .share-icon svg { width: 18px; height: 18px; }
 .share-chip[data-share="threads"] .share-icon svg { width: 18px; height: 18px; }
+.share-chip[data-share="bsky"] .share-icon svg { width: 18px; height: 18px; }
 /* the icon leans into the hover a hair before the row does */
 .share-chip .share-icon { transition: transform 200ms var(--ease), color 140ms; }
 .share-chip:hover .share-icon { transform: translateY(-1px) scale(1.06); }
