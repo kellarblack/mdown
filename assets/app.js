@@ -3113,6 +3113,14 @@
     const more = el("a", { class: "tip-more", href: "donate.html" });
     more.appendChild(el("span", { text: "all the ways to give" }));
     more.appendChild(el("span", { class: "tip-more-go", "aria-hidden": "true" }));
+    /* a phone opens the tab here, and this is the one link inside the jar:
+       answering it directly beats hoping a delegated handler sees it first */
+    more.addEventListener("click", (event) => {
+      if (!PHONE()) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openDonateTab();
+    });
     pop.appendChild(more);
 
     pop.hidden = false;

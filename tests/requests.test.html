@@ -135,6 +135,13 @@ async function main() {
   field.dispatchEvent(new win.Event("input", { bubbles: true }));
   await sleep(400);
   doc.querySelector("#paste-btn").click();
+  /* the report button appears once a service has failed twice, not once */
+  await waitFor(() => doc.querySelectorAll(".qitem").length >= 1, 15000);
+  await sleep(400);
+  field.value = "https://youtube.com/watch?v=error2";
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+  await sleep(300);
+  doc.querySelector("#paste-btn").click();
   const selector = '.qitem[data-status="error"] [aria-label="Report this service"]';
   const offered = await waitFor(() => doc.querySelector(selector), 15000);
   record("a failed link offers a report", !!offered, offered ? "button there" : "no button");
@@ -148,6 +155,8 @@ async function main() {
       !!note && /youtube/.test(modalText) && !/watch\?v=error/.test(modalText),
       /youtube/.test(modalText) ? "named" : "unnamed");
 
+    const reason = [...doc.querySelectorAll(".report-reasons button")].find((b) => /service down/i.test(b.textContent));
+    if (reason) reason.click();
     note.value = "nothing plays";
     note.dispatchEvent(new win.Event("input", { bubbles: true }));
     [...doc.querySelectorAll("#modal-foot button")].find((b) => /send/i.test(b.textContent)).click();
