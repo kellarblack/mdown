@@ -3746,6 +3746,7 @@ a.addr-value:hover { color: var(--text); }
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
   transition: opacity 140ms, transform 160ms var(--ease);
 }
+.src-kind { width: 11px; height: 11px; display: inline-block; vertical-align: -2px; opacity: 0.75; }
 .source-row b { font-family: var(--mono); font-size: 0.78rem; font-weight: 500; color: var(--text); }
 .source-row span { font-family: var(--mono); font-size: 0.66rem; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .source-row:hover { border-color: var(--stroke-2); background: var(--surface); color: var(--text); }
