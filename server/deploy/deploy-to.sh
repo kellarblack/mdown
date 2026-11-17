@@ -53,6 +53,11 @@ sudo systemctl enable --now caddy
 sudo systemctl reload caddy || sudo systemctl restart caddy
 REMOTE
 
+echo "==> extractor version"
+# install.sh just enabled the daily updater; run it now so a deploy starts on
+# a current yt-dlp instead of waiting for tomorrow. it restarts only on change.
+"${SSH[@]}" 'sudo systemctl start mdown-ytdlp-update.service || true; /opt/mdown/venv/bin/yt-dlp --version || true'
+
 echo "==> service state"
 "${SSH[@]}" 'systemctl --no-pager --lines=0 is-active mdown-api; curl -s http://127.0.0.1:9000/health || true'
 

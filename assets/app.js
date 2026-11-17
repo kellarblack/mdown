@@ -1839,7 +1839,7 @@
       const audioWanted = item.mode === "audio" ||
         (item.service && MUSIC_FIRST.has(item.service));
       text = audioWanted
-        ? "This track isn't available. It may be private, region-locked, or Go+ only."
+        ? "This track isn't available to the API. It may be private, region-locked, Go+ only, or the uploader turned off app playback."
         : "This video isn't available. It may be private, region-locked or age-gated.";
     }
     if (code === "api.instance.not_ready" && context && context.reason === "disk") {

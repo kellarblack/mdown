@@ -449,9 +449,21 @@ button, a, .mode, .mbar-item, .source-chip, .sheet-nav-item, .tool-card {
 /* paste becomes download in place. the control keeps its width so the field
    never jumps; only the icon and the word cross-fade */
 /* one fixed width for both words, so nothing shifts when it changes job */
-#paste-btn { width: 100px; padding: 0 8px; justify-content: center; }
+/* the one primary action on the page. slightly taller than a ghost button,
+   a 9px radius, and a hairline shadow so it sits on the card instead of
+   being a white rectangle printed on it. */
+#paste-btn {
+  width: 106px; height: 34px; padding: 0 12px;
+  justify-content: center; gap: 8px;
+  border-radius: 9px;
+  font-weight: 500; letter-spacing: 0.01em;
+  transition: color 160ms var(--ease), background 160ms var(--ease),
+              border-color 160ms var(--ease), box-shadow 160ms var(--ease),
+              transform 120ms var(--ease);
+}
+#paste-btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 #paste-btn .pb-label { white-space: nowrap; }
-.pb-icons { position: relative; width: 13px; height: 13px; flex: none; }
+.pb-icons { position: relative; width: 14px; height: 14px; flex: none; }
 .pb-icons svg {
   position: absolute; inset: 0; width: 100%; height: 100%;
   transition: opacity 220ms var(--ease), transform 320ms var(--ease);
@@ -463,14 +475,31 @@ button, a, .mode, .mbar-item, .source-chip, .sheet-nav-item, .tool-card {
 .pb-label.is-out { opacity: 0; transform: translateY(3px); }
 #paste-btn[data-state="get"] {
   color: var(--accent-ink); background: var(--btn); border-color: var(--btn-line);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.10);
   animation: arrow-in 220ms var(--ease);
 }
-#paste-btn[data-state="get"]:hover { background: var(--btn-hover); color: var(--accent-ink); }
+#paste-btn[data-state="get"]:hover {
+  background: var(--btn-hover); color: var(--accent-ink);
+  box-shadow: 0 3px 10px -2px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+}
+#paste-btn[data-state="get"]:active {
+  transform: translateY(0.5px);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+}
+[data-theme="light"] #paste-btn[data-state="get"] {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] #paste-btn[data-state="get"]:hover {
+  box-shadow: 0 3px 10px -2px rgba(0, 0, 0, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+@media (prefers-reduced-motion: reduce) {
+  #paste-btn[data-state="get"]:active { transform: none; }
+}
 /* while a link is being submitted the arrow does not tumble: a plain ring
    turns in its place, which is what a wait looks like */
 #paste-btn[data-busy="true"] .pb-icons { display: none; }
 #paste-btn[data-busy="true"] .pb-spin {
-  display: block; width: 13px; height: 13px; border-radius: 50%;
+  display: block; width: 14px; height: 14px; border-radius: 50%;
   border: 1.6px solid currentColor; border-top-color: transparent;
   animation: spin 760ms linear infinite;
 }
