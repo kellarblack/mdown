@@ -215,14 +215,17 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 
 /* the dot opens a miniature of the status page: one line, one bar graph, two
    links. Nothing else fits in a popover this size. */
-.health { position: relative; }
+.health { position: relative; --hp-w: 288px; }
 .health-pop {
-  position: absolute; top: calc(100% + 8px); right: 0; z-index: 80;
-  width: min(288px, calc(100vw - 20px));
+  position: absolute; top: calc(100% + 8px); right: auto; z-index: 80;
+  /* centred on the dot, the way the sources menu is centred on its button.
+     right: 0 hung the card off the pill's left edge instead. */
+  left: 50%; margin-left: calc(var(--hp-w) / -2);
+  width: min(var(--hp-w), calc(100vw - 20px));
   padding: 10px 11px 9px;
   border: 1px solid var(--stroke-2); border-radius: var(--r-md);
   background: var(--bg-elev); box-shadow: var(--shadow-2);
-  transform-origin: top right;
+  transform-origin: top center;
   animation: drop-in 150ms var(--ease) both;
 }
 .health-pop.is-closing { animation: drop-out 120ms var(--ease) both; }
@@ -273,6 +276,8 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 /* the count never gets cut with an ellipsis: it keeps its words, and if a card
    is ever too narrow for them the links drop to a second line instead */
 .hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); white-space: nowrap; }
+/* before the first answer there is no count, so there is no dot for one either */
+.hp-checks:empty { display: none; }
 .hp-checks::before { content: "·"; margin-right: 6px; color: var(--text-3); opacity: 0.6; }
 
 /* the signal is the wifi mark: three arcs that rise once when the card opens,
@@ -1418,7 +1423,7 @@ a.ghost-btn { text-decoration: none; }
      screen instead of to the pill: 296px hanging off a 390px phone fell off
      the left edge */
   .health-pop {
-    position: fixed; right: 8px; left: auto;
+    position: fixed; right: 8px; left: auto; margin-left: 0;
     top: calc(58px + env(safe-area-inset-top, 0px));
     width: min(280px, calc(100vw - 16px));
   }

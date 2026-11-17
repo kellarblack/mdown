@@ -74,6 +74,13 @@ async function main() {
   const bars = doc.querySelectorAll("#hp-strip .hp-bar");
   record("it draws a week of bars", bars.length === 7, bars.length + " bars");
 
+  const popRect = pop.getBoundingClientRect();
+  const dotRect = dot.getBoundingClientRect();
+  record("it drops from the middle of the dot",
+    Math.abs((popRect.left + popRect.width / 2) - (dotRect.left + dotRect.width / 2)) <= 2,
+    "card centre " + Math.round(popRect.left + popRect.width / 2) +
+      " vs dot centre " + Math.round(dotRect.left + dotRect.width / 2));
+
   const online = await waitFor(() => pop.dataset.state === "ok", 10000);
   record("it checks the server on open", online, "state=" + pop.dataset.state);
   record("and says something about uptime",
