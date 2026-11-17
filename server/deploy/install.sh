@@ -168,6 +168,7 @@ install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.timer" /etc/systemd/system/m
 install -m 0644 "$SRC_DIR/deploy/mdown-canary.service" /etc/systemd/system/mdown-canary.service
 install -m 0644 "$SRC_DIR/deploy/mdown-canary.timer" /etc/systemd/system/mdown-canary.timer
 install -m 0755 "$SRC_DIR/deploy/mdown-canary.sh" /usr/local/sbin/mdown-canary
+install -m 0755 "$SRC_DIR/deploy/mdown-errors.sh" /usr/local/sbin/mdown-errors
 install -m 0644 "$SRC_DIR/deploy/mdown-health.service" /etc/systemd/system/mdown-health.service
 install -m 0644 "$SRC_DIR/deploy/mdown-health.timer" /etc/systemd/system/mdown-health.timer
 # systemd restarts a crashed process, not a wedged one: this restarts on a
