@@ -3129,6 +3129,10 @@
 
     pop.hidden = false;
     pop.classList.remove("is-closing");
+    /* the jar joins the same stack as every other panel: whichever you opened
+       last is the one in front, whether that is the jar, the health card, the
+       downloads list or the sources sheet */
+    bringToFront(pop);
     setTipState(true);
     tipOpenedBy = openerEvent || null;
     const veil = document.getElementById("tip-veil");
@@ -4298,7 +4302,10 @@
   /* Every floating panel shares one counter: the last one you opened — or
      touched — is the last one painted. Two panels can stay open at once; they
      just stop fighting over which is in front. */
-  let panelZ = 80;
+  /* above the tip veil (94) and the sheets (90), below a modal (100): the
+     first panel to open clears every backdrop, and each one after it clears
+     the last */
+  let panelZ = 94;
   let frontPanel = null;
   function bringToFront(node) {
     if (!node) return;

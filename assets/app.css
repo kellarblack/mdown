@@ -2310,7 +2310,10 @@ a.donate-value:hover { text-decoration: underline; }
 
 /* ---------- the tip jar, as a dropdown ---------- */
 .tip-pop {
-  position: fixed; z-index: 95;
+  /* below the veil's 94? no: the jar sits above its own veil, but the number
+     is only a floor — openTipPop() raises it in the shared panel stack, so the
+     last thing you opened is the thing on top */
+  position: fixed; z-index: 85;
   width: 322px; max-width: calc(100vw - 24px);
   max-height: calc(100dvh - 90px); overflow-y: auto;
   padding: 12px;
