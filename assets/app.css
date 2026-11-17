@@ -3047,6 +3047,12 @@ a.addr-value:hover { color: var(--text); }
 .share-icon { display: inline-flex; flex: none; color: var(--text-3); transition: color 140ms; }
 .share-icon { width: 20px; height: 20px; }
 .share-icon svg { width: 20px; height: 20px; display: block; }
+/* the x glyph fills its whole box while the others sit inside padding, so at
+   the same 20px it read twice as heavy. each mark gets the size its shape
+   needs, not the size of the square it was drawn in. */
+.share-chip[data-share="x"] .share-icon svg { width: 16px; height: 16px; }
+.share-chip[data-share="reddit"] .share-icon svg { width: 19px; height: 19px; }
+.share-chip[data-share="threads"] .share-icon svg { width: 18px; height: 18px; }
 /* the icon leans into the hover a hair before the row does */
 .share-chip .share-icon { transition: transform 200ms var(--ease), color 140ms; }
 .share-chip:hover .share-icon { transform: translateY(-1px) scale(1.06); }

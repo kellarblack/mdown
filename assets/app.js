@@ -3401,14 +3401,19 @@
   }
 
   function boardVisible() {
-    if (!dom.board) return;
+    if (!dom.board || !dom.board.isConnected) return;
     /* an instance that does not advertise the board has no routes for it: a
        box that cannot send is worse than no box */
     dom.board.hidden = !(apiEndpoint() && instanceInfo && instanceInfo.board === true);
   }
 
+  /* The public ask board is off. The routes, the moderation queue and this
+     whole block stay in place: open it again with ?board=1 on the URL. */
+  const BOARD_ENABLED = /[?&]board(=|&|$)/.test(location.search);
+
   function bindBoard() {
     if (!dom.board || !dom.boardForm) return;
+    if (!BOARD_ENABLED) { dom.board.remove(); return; }
     boardVisible();
     dom.boardText.addEventListener("input", boardSync);
     dom.boardForm.addEventListener("submit", boardSend);
