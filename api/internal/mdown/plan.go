@@ -376,7 +376,7 @@ func audioPlan(info *Info, o DownloadOptions) *Plan {
 	if o.AudioCovers && format == "mp3" && strings.HasPrefix(strings.ToLower(thumb), "http") {
 		p.Inputs = append(p.Inputs, Input{URL: thumb, Protocol: "https", Direct: true})
 		p.Args = append([]string{"-map", "0:a:0", "-map", "1:v:0", "-sn",
-			"-c:v", "mjpeg", "-vf", "scale='min(800,iw)':-2", "-frames:v", "1",
+			"-c:v", "mjpeg", "-vf", "scale='min(800,iw)':-2",
 			"-disposition:v:0", "attached_pic", "-metadata:s:v", "title=Album cover",
 			"-metadata:s:v", "comment=Cover (front)"}, codec...)
 		p.Optional = 1

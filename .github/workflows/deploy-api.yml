@@ -1,4 +1,4 @@
-# Redeploys the API to the VPS when anything under server/ changes on main.
+# Builds the Go API (api/) and installs it on the VPS. Manual for now.
 #
 # This is what lets a collaborator help: they open a PR, you merge it, the box
 # updates itself. Nobody has to hand out a server password.
@@ -21,24 +21,41 @@ on:
   # push would show a red X. Turn this back to `push:` once the secrets are set.
   workflow_dispatch:
 
-jobs:
+jobs:jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Update the box
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: api/go.mod
+      - name: Test and build
+        working-directory: api
+        run: |
+          go test -count=1 ./...
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/mdown-api ./cmd/mdown-api
+      - name: Copy
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "api/dist/mdown-api,api/deploy/mdown-api.service"
+          target: /tmp/mdown-go
+          strip_components: 1
+      - name: Install and restart
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script_stop: true
-          command_timeout: 10m
           script: |
             set -e
-            cd /opt/mdown-src
-            git fetch --quiet origin main
-            git reset --hard --quiet origin/main
-            sudo bash server/deploy/install.sh
+            install -d -m 0755 /opt/mdown/bin
+            install -m 0755 /tmp/mdown-go/dist/mdown-api /opt/mdown/bin/mdown-api
+            install -m 0644 /tmp/mdown-go/deploy/mdown-api.service /etc/systemd/system/mdown-api.service
+            systemctl daemon-reload
+            systemctl restart mdown-api
             sleep 2
-            systemctl is-active mdown-api
             curl -fsS http://127.0.0.1:9000/health || (journalctl -u mdown-api -n 30 --no-pager; exit 1)

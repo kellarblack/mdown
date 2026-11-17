@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<style>html{background:#0a0a0b}html[data-theme="light"]{background:#f6f6f7}[hidden]{display:none!important}</style>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>mdown.cc · ad-free download tool</title>
+<meta name="description" content="No ads, no account, no tracking. Paste a link and keep the video or audio, plus remux, subtitle and metadata tools that run in your browser.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="keywords" content="media downloader, video downloader, audio downloader, mp4, mp3, remux, subtitle extractor, metadata cleaner, no ads, no account">
+<link rel="alternate" type="text/plain" href="https://mdown.cc/llms.txt" title="llms.txt">
+<link rel="canonical" href="https://mdown.cc/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="mdown.cc">
+<meta property="og:url" content="https://mdown.cc/">
+<meta property="og:title" content="mdown.cc · ad-free download tool">
+<meta property="og:description" content="No ads, no account, no tracking. Paste a link and keep the video or audio.">
+<meta property="og:image" content="https://mdown.cc/assets/og-card.png?v=5">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mdown.cc/assets/og-card.png?v=5">
+<meta name="twitter:image:alt" content="mdown.cc · ad-free download tool, in monospace on a near-black card.">
+<meta name="twitter:title" content="mdown.cc · ad-free download tool">
+<meta name="twitter:description" content="No ads, no account, no tracking. Paste a link and keep the video or audio.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a0a0b">
+<!-- iOS ignores manifest icons and screenshots the page instead -->
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="mdown">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://api.mdown.cc" crossorigin>
+<script>
+  try {
+    var saved = JSON.parse(localStorage.getItem("mdown.settings") || localStorage.getItem("mget.settings") || localStorage.getItem("mediadownload.settings") || "{}");
+    var pick = saved.theme;
+    if (pick !== "light" && pick !== "dark") {
+      pick = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    document.documentElement.dataset.theme = pick;
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
+    } catch (e) {}
+</script>
+<!--CSS-->
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://mdown.cc/#website",
+      "url": "https://mdown.cc/",
+      "name": "mdown.cc",
+      "alternateName": "mdown",
+      "description": "A media downloader with no ads and no account, plus remux, subtitle and metadata tools that run in the browser.",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://mdown.cc/#app",
+      "name": "mdown.cc",
+      "url": "https://mdown.cc/",
+      "applicationCategory": "MultimediaApplication",
+      "applicationSubCategory": "Media downloader",
+      "operatingSystem": "Any (runs in a web browser)",
+      "browserRequirements": "Requires JavaScript and a modern browser",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": [
+        "Download video and audio from a pasted link",
+        "Audio-only and muted modes",
+        "Resolution capped at 4320p",
+        "Duration capped at 30 minutes",
+        "Remux containers without re-encoding",
+        "Extract embedded subtitles as SRT",
+        "Remove container metadata",
+        "No account required",
+        "Local tools: files are never uploaded"
+      ],
+      "description": "No ads, no account, no tracking. Paste a link and keep the video or audio, with a remuxer, a subtitle extractor and a metadata cleaner that all run in the browser."
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://mdown.cc/#tools",
+      "name": "Tools that run in the browser",
+      "itemListElement": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "Remux",
+          "url": "https://mdown.cc/#remux",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Any (runs in a web browser)",
+          "description": "Repackage MP4, MKV or WebM into a different container without re-encoding, so quality is unchanged.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Subtitle extractor",
+          "url": "https://mdown.cc/#subs",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Any (runs in a web browser)",
+          "description": "Export embedded text subtitle tracks from a video as SRT, and say plainly when a track is image-based.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Metadata cleaner",
+          "url": "https://mdown.cc/#clean",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Any (runs in a web browser)",
+          "description": "Remove container tags such as title, artist and location while leaving the streams untouched.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://mdown.cc/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does it need a server?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A browser cannot fetch video from most sites on its own, so mdown uses a server that can. The default server comes with the site; Settings → Server is only for using your own." }
+        },
+        {
+          "@type": "Question",
+          "name": "Where do my files go?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Into your browser's normal downloads. The queue disappears when you close the tab; on the server a finished file exists only long enough to hand it over." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which formats can I get?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Video as mp4, or webm or mkv when the source codec needs it. The server picks. Audio as mp3, wav, ogg or opus." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it work on my phone?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The same page and queue work on mobile, and a media link can be placed after the domain so the download starts immediately." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does it end in .cc?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Closed captions. It is the country code for the Cocos Islands, but here it refers to the subtitle extractor that pulls captions out of a file." }
+        },
+        {
+          "@type": "Question",
+          "name": "What does it keep?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Settings and a short list of recent links, stored in this browser only. No account, no cookies, no analytics." }
+        },
+        {
+          "@type": "Question",
+          "name": "What does it work with?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The list is whatever the connected API supports, shown in Settings under Server. The reference API covers about thirty services, including YouTube, Vimeo, TikTok, Instagram, Reddit, Twitch, SoundCloud, Bandcamp, Mixcloud, Bilibili and Dailymotion." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it download from Spotify?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Spotify, Deezer, Tidal and Apple Music encrypt their audio, so the downloader refuses them and says so rather than failing vaguely. The same track is usually available on YouTube or SoundCloud." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why did a link fail?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Usually the post is private, region-locked or age-gated; the API does not support that service; or it is rate limiting. The row shows which, and retry re-sends it." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<script>
+  /* Cloudflare sends frame-ancestors 'none'. This is the belt for a host or
+     path that bypasses that header: another origin's frame hides the page,
+     while a same-origin frame, like the test harnesses, is left alone. */
+  try {
+    if (window.top !== window.self && window.top.location.host !== location.host) {
+      document.documentElement.style.display = "none";
+    }
+  } catch (e) {
+    document.documentElement.style.display = "none";
+  }
+</script>
+<!--PRELOAD-->
+</head>
+<body>
+<div id="root"></div>
+<noscript>
+  <div class="wrap" style="padding-bottom:32px">
+    <h2>mdown.cc · ad-free download tool</h2>
+    <p>mdown.cc is a media downloader for video and audio: no ads, no account, no tracking. It saves MP4, WebM, MKV, MP3, OGG, OPUS and WAV from about thirty services, and includes three tools that run in the browser: a remuxer, a subtitle extractor and a metadata cleaner.</p>
+    <p>Downloading needs JavaScript. The <a href="updates.html">changelog</a>, <a href="terms.html">terms</a> and pages do not.</p>
+  </div>
+</noscript>
+<!--JS-->
+</body>
+</html>

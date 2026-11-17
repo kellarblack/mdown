@@ -7,6 +7,14 @@
 # Nothing is installed locally.
 set -euo pipefail
 
+# The live API is the Go one in api/ now (api/deploy/deploy.sh). This script
+# installs the old Python API and replaces it. Say so on purpose.
+if [ "${MDOWN_PYTHON:-}" != "1" ]; then
+  echo "this reinstalls the Python API over the Go one. use api/deploy/deploy.sh," >&2
+  echo "or run again with MDOWN_PYTHON=1 if you really mean it." >&2
+  exit 1
+fi
+
 IP="${1:?usage: deploy-to.sh <public-ip> [ssh-user] [ssh-key]}"
 USER_NAME="${2:-root}"
 # pick a key that exists, newest name first, so a renamed key never breaks a deploy

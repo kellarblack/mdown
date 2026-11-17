@@ -1,4 +1,4 @@
-# Publishes the static site to GitHub Pages on every push to main.
+# Builds web/ and publishes it to GitHub Pages on every push to main.
 #
 # One-time setup in the repo:
 #   Settings → Pages → Source: GitHub Actions
@@ -32,22 +32,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Assemble the site
-        run: |
-          mkdir -p _site
-          # everything the browser needs, and nothing else
-          cp index.html 404.html terms.html status.html updates.html donate.html api.html sources.html _site/
-          cp robots.txt sitemap.xml llms.txt manifest.webmanifest favicon.ico _headers _site/
-          cp -r assets _site/
-          # the API, tests and dev shots are not part of the published site
-          rm -rf _site/assets/vendor/ffmpeg/.DS_Store
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
 
-      # the published set must never carry a name, an email or a tracker;
-      # the same script the local suite runs, so red here means red locally
-      # the tip page is a landing page: it ships its CSS inside the HTML
-      # instead of paying a blocking round trip for it
-      - name: Inline the tip page stylesheet
-        run: python3 tools/inline_css.py _site donate.html
+      - name: Build the site (React + TypeScript, bundled by Bun)
+        run: |
+          cd web
+          bun install --frozen-lockfile
+          bun run typecheck
+          bun run build
+          mv dist ../_site
 
       - name: Privacy check
         run: python3 tests/privacy_check.py _site

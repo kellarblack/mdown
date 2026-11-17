@@ -1,0 +1,51 @@
+/* ============================================================
+   Fixes on top of app.css for the React build.
+   ============================================================ */
+
+/* 1. The sources "+" on a phone sits IN the action row, the same 40px box as
+   the pill and the buttons beside it. app.css placed it absolutely at 50% of
+   the bar with no upward shift, so it hung below the header. In flow, there
+   is nothing to line up by hand. */
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  .topbar-actions .sources-wrap {
+    position: static;
+    inset: auto;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 0;
+    height: auto;
+    display: flex;
+    align-items: center;
+    pointer-events: auto;
+    order: -1;
+  }
+  .topbar-actions { align-items: center; }
+}
+@media (max-width: 430px) {
+  .topbar-actions .sources-wrap { top: auto; height: 40px; }
+}
+@media (max-width: 360px) {
+  .topbar-actions .sources-wrap { height: 36px; }
+}
+
+/* 2. The tip jar is a page now, everywhere: the heart is a link. */
+a.icon-btn { text-decoration: none; }
+a.icon-btn.donate-btn[aria-current="page"] { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
+
+/* 3. The donate view lives under the app's own header. */
+.donate-page[hidden] { display: none !important; }
+body[data-view="donate"] .footer { margin-top: 8px; }
+
+/* 4. Touch: no double-tap zoom delay on controls, no text selection on taps. */
+button, .mbar-item, .icon-btn, .mode, .seg button, .source-chip, .tool-card {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 5. The phone bar and its sheets respect the home indicator. */
+.mobile-bar { padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+
+/* 6. A long file name never pushes the row's buttons off a narrow screen. */
+.qitem .q-title { overflow-wrap: anywhere; }
+.qitem .q-actions { flex-wrap: wrap; justify-content: flex-end; }

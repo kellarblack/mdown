@@ -9,6 +9,32 @@ hosted on GitHub Pages; the API is one process on one VPS, because a browser can
 from most sites by itself. There is nothing to buy and nothing to sign up for; the running costs
 are covered by optional tips.
 
+## the go-rewrite branch
+
+This branch replaces both halves:
+
+- `api/` is the API in **Go** (standard library plus `golang.org/x/net`). Same routes, same
+  `MDOWN_*` environment, same cobalt v11 shapes as the Python API in `server/`. The tunnel
+  now **streams**: a single source is relayed with parallel ranged requests (exact length,
+  resumable), and split video and audio are muxed by ffmpeg into the response as they arrive.
+  A download starts in about two seconds instead of waiting for the whole file on the server.
+  Jobs that cannot stream (DASH fragment lists, cover art in ogg) still go through yt-dlp and
+  the disk, as before.
+- `web/` is the page in **React + TypeScript**, bundled by **Bun**. It ships with Preact's
+  React-compatible runtime (about 41 KB of gzipped JavaScript on first load);
+  `MDOWN_REACT=1 bun run build` ships real React instead. The local tools, the settings sheet,
+  the donate page and the service logos load only when they are used.
+
+```sh
+cd api && go test ./...                 # API tests
+cd web && bun install && bun run build  # site -> web/dist
+api/deploy/deploy.sh <vps-ip> stage     # run beside the live API on :9100
+api/deploy/deploy.sh <vps-ip> smoke     # real downloads against it
+api/deploy/deploy.sh <vps-ip> switch    # make it live (rollback: ... rollback)
+```
+
+The rest of this file describes the original Python and plain-JavaScript version.
+
 ## run it
 
 ```sh
