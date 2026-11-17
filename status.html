@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=350">
+<link rel="stylesheet" href="assets/app.css?v=351">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script>
   /* Cloudflare sends frame-ancestors 'none'. This is the belt for a host or
@@ -530,6 +530,24 @@
     }
     if (body && body.cobalt && body.cobalt.version) {
       setRow("version", body.cobalt.version);
+    }
+
+    /* the process being up and the sites still parsing are different things.
+       the canary is the second one, and it is the one that predicts whether a
+       pasted link will work. */
+    if (body && typeof body.ytdlp === "string" && body.ytdlp) {
+      setRow("extractor", "yt-dlp " + body.ytdlp);
+    }
+    const canary = body && body.extraction;
+    if (canary && canary.of > 0 && canary.at > 0) {
+      const hours = Math.max(0, Math.round((Date.now() / 1000 - canary.at) / 3600));
+      const okay = canary.of - canary.failed;
+      const ago = hours < 1 ? "just now" : hours + "h ago";
+      if (canary.failed >= 2) {
+        setRow("sites", okay + " of " + canary.of + " · " + (canary.services || "some") + " failing", "err");
+      } else {
+        setRow("sites", okay + " of " + canary.of + " parse · " + ago);
+      }
     }
 
     pruneRows();

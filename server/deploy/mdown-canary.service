@@ -1,0 +1,8 @@
+[Unit]
+Description=Daily extraction canary for mdown
+After=mdown-api.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mdown-canary
+TimeoutStartSec=600

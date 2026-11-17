@@ -165,6 +165,9 @@ echo "==> systemd"
 install -m 0644 "$SRC_DIR/deploy/mdown-api.service" /etc/systemd/system/mdown-api.service
 install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.service" /etc/systemd/system/mdown-ytdlp-update.service
 install -m 0644 "$SRC_DIR/deploy/mdown-ytdlp-update.timer" /etc/systemd/system/mdown-ytdlp-update.timer
+install -m 0644 "$SRC_DIR/deploy/mdown-canary.service" /etc/systemd/system/mdown-canary.service
+install -m 0644 "$SRC_DIR/deploy/mdown-canary.timer" /etc/systemd/system/mdown-canary.timer
+install -m 0755 "$SRC_DIR/deploy/mdown-canary.sh" /usr/local/sbin/mdown-canary
 install -m 0644 "$SRC_DIR/deploy/mdown-health.service" /etc/systemd/system/mdown-health.service
 install -m 0644 "$SRC_DIR/deploy/mdown-health.timer" /etc/systemd/system/mdown-health.timer
 # systemd restarts a crashed process, not a wedged one: this restarts on a
@@ -180,6 +183,7 @@ systemctl restart mdown-api.service
 # keep yt-dlp current: a site change is the most common way this breaks
 systemctl enable --now mdown-ytdlp-update.timer
 systemctl enable --now mdown-health.timer
+systemctl enable --now mdown-canary.timer
 sleep 1
 systemctl --no-pager --lines=5 status mdown-api.service || true
 systemctl --no-pager list-timers mdown-ytdlp-update.timer --all || true

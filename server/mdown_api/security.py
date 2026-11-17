@@ -21,6 +21,7 @@ import ipaddress
 import re
 import socket
 import unicodedata
+import urllib.request
 from typing import List, Optional, Tuple
 from urllib.parse import urlsplit, urlunsplit
 
@@ -116,6 +117,41 @@ def _normalise_host(raw: str) -> str:
     except UnicodeError:
         raise ApiError.url_invalid("invalid hostname")
     return host
+
+
+#: share sheets hand out short links. SoundCloud's app does it for every track,
+#: private ones included, and a shortener is not something yt-dlp can parse.
+SHORTENERS = {
+    "on.soundcloud.com", "soundcloud.app.goo.gl", "bit.ly", "t.co",
+    "tinyurl.com", "goo.gl", "snd.sc", "fb.me",
+}
+
+
+def resolve_shortener(url: str, timeout: float = 8.0) -> str:
+    """Follow a share link to where it points. Returns the input unchanged when
+    it is not a known shortener, or when the hop fails.
+
+    Only the *link* is resolved, never a credential: a private SoundCloud track
+    is playable by anyone holding its secret URL, which is exactly what a
+    friend sharing one has. Go+ and region locks are a different matter and are
+    not touched here."""
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return url
+    if (parts.hostname or "").lower() not in SHORTENERS:
+        return url
+
+    request = urllib.request.Request(url, method="HEAD", headers={
+        "User-Agent": "mdown/1.0 (+https://mdown.cc)",
+        "Accept": "*/*",
+    })
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            final = response.geturl()
+    except Exception:
+        return url
+    return final if final and final != url else url
 
 
 def validate_url(raw: str, *, check_dns: bool = True) -> str:

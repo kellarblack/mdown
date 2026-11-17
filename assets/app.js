@@ -3182,6 +3182,8 @@
     }
   }
 
+  const BOARD_TAG = "public · no name · no account";
+
   function boardReviewCount() {
     if (!dom.boardReview) return;
     const waiting = dom.boardReviewList ? dom.boardReviewList.children.length : 0;
@@ -3189,6 +3191,10 @@
     if (dom.boardReviewCount) {
       dom.boardReviewCount.textContent = waiting ? waiting + " waiting" : "";
     }
+    /* the closed line is the notification: an owner with three asks to read
+       should not have to open the board to find out */
+    const tag = dom.board && dom.board.querySelector(".board-tag");
+    if (tag) tag.textContent = waiting ? waiting + " to review" : BOARD_TAG;
   }
 
   function boardReviewRow(entry) {
@@ -3433,6 +3439,10 @@
     dom.boardText.addEventListener("input", boardSync);
     dom.boardForm.addEventListener("submit", boardSend);
     boardSync();
+    /* the owner's browser can tell, without opening anything, whether there is
+       something waiting: the queue is key-gated, so this costs other visitors
+       nothing */
+    if (settings.apiKey) boardLoadPending();
     /* shut until asked, and nothing is fetched until it opens: the page does
        not talk to the board just because somebody scrolled past the headline */
     const disclosure = document.getElementById("board-disclosure");

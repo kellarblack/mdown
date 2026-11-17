@@ -1,12 +1,21 @@
 [Unit]
-Description=Update yt-dlp and restart the mdown API
+Description=Update yt-dlp, and restart the mdown API only if it actually changed
 Documentation=https://mdown.cc
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-# yt-dlp is the extractor layer: when a site changes, only a new release fixes it.
-# This is the single most important maintenance job on the box.
-ExecStart=/bin/sh -c '/opt/mdown/venv/bin/pip install --quiet --upgrade yt-dlp && /usr/bin/systemctl restart mdown-api'
+# yt-dlp is the extractor layer: when a site changes, only a new release fixes
+# it. The restart is conditional on purpose — an unconditional one killed
+# whatever was downloading every week, for nothing.
+ExecStart=/bin/sh -c '\
+  before=$(/opt/mdown/venv/bin/yt-dlp --version 2>/dev/null || echo none); \
+  /opt/mdown/venv/bin/pip install --quiet --upgrade yt-dlp || exit 1; \
+  after=$(/opt/mdown/venv/bin/yt-dlp --version 2>/dev/null || echo none); \
+  echo "yt-dlp $before -> $after"; \
+  if [ "$before" != "$after" ]; then \
+    /usr/bin/systemctl restart mdown-api; \
+    date +%s > /var/lib/mdown/ytdlp-updated; \
+  fi'
 TimeoutStartSec=600

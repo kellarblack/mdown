@@ -12,6 +12,50 @@ from mdown_api.errors import ApiError
 PUBLIC = ["93.184.216.34"]
 
 
+class ShortenerTest(unittest.TestCase):
+    def test_an_ordinary_url_is_left_alone(self):
+        url = "https://soundcloud.com/forss/flickermood"
+        self.assertEqual(security.resolve_shortener(url), url)
+
+    def test_a_share_link_is_followed(self):
+        seen = {}
+
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def geturl(self):
+                return "https://soundcloud.com/forss/flickermood?si=abc"
+
+        def fake(request, timeout=0):
+            seen["url"] = request.full_url
+            seen["method"] = request.get_method()
+            return Response()
+
+        original = security.urllib.request.urlopen
+        security.urllib.request.urlopen = fake
+        try:
+            resolved = security.resolve_shortener("https://on.soundcloud.com/AbCdEf")
+        finally:
+            security.urllib.request.urlopen = original
+
+        self.assertEqual(resolved, "https://soundcloud.com/forss/flickermood?si=abc")
+        self.assertEqual(seen["method"], "HEAD")
+        self.assertIn("on.soundcloud.com", seen["url"])
+
+    def test_a_broken_hop_returns_the_input(self):
+        original = security.urllib.request.urlopen
+        security.urllib.request.urlopen = lambda *a, **k: (_ for _ in ()).throw(OSError("nope"))
+        try:
+            url = "https://bit.ly/abc"
+            self.assertEqual(security.resolve_shortener(url), url)
+        finally:
+            security.urllib.request.urlopen = original
+
+
 class RedactLogTest(unittest.TestCase):
     """A log line says that a request happened, never what it was for."""
 

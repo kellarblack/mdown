@@ -36,7 +36,7 @@ from .board import RequestBoard
 from .config import Config
 from .errors import ApiError
 from .jobs import JobManager, PickerNeeded, RateLimiter
-from .security import header_safe, redact_log, validate_url
+from .security import header_safe, redact_log, resolve_shortener, validate_url
 from .uptime import UptimeLog
 
 log = logging.getLogger("mdown.api")
@@ -102,6 +102,23 @@ CONTENT_TYPES = {
     "wav": "audio/wav",
     "flac": "audio/flac",
 }
+
+
+_YTDLP_CACHE = {"at": 0.0, "value": ""}
+
+
+def _ytdlp_version() -> str:
+    """Cached for an hour: fork+exec per /health request is wasteful."""
+    now = time.time()
+    if _YTDLP_CACHE["value"] and now - _YTDLP_CACHE["at"] < 3600:
+        return _YTDLP_CACHE["value"]
+    try:
+        code, out, _ = engine.run([engine.YTDLP, "--version"], 10)
+        value = out.strip().splitlines()[0][:24] if code == 0 and out.strip() else ""
+    except Exception:
+        value = ""
+    _YTDLP_CACHE.update({"at": now, "value": value})
+    return value
 
 
 class ToolState:
@@ -534,8 +551,29 @@ class Handler(BaseHTTPRequestHandler):
             },
             "jobs": {"active": stats["active"], "queued": stats["queued"]},
             "uptimeSeconds": stats["uptime_s"],
+            # what the daily canary last saw, and which extractor produced it:
+            # "the process is up" and "the sites still parse" are different
+            # questions, and only the second one predicts a visitor's result
+            "extraction": self._canary(),
+            "ytdlp": _ytdlp_version(),
         }
         self._json(200 if healthy else 503, payload)
+
+    def _canary(self) -> Dict[str, Any]:
+        path = os.path.join(self.config.work_dir, "canary.json")
+        try:
+            with open(path, encoding="utf-8") as handle:
+                data = json.load(handle)
+            if isinstance(data, dict):
+                return {
+                    "at": int(data.get("at") or 0),
+                    "failed": int(data.get("failed") or 0),
+                    "of": int(data.get("of") or 0),
+                    "services": str(data.get("services") or "").strip(),
+                }
+        except (OSError, ValueError):
+            pass
+        return {"at": 0, "failed": 0, "of": 0, "services": ""}
 
     def _serve_tunnel(self, token: str) -> None:
         if not token:
@@ -705,6 +743,11 @@ class Handler(BaseHTTPRequestHandler):
             raise ApiError.url_missing()
 
         safe_url = validate_url(url)
+        # a share link is not a media page: hop to the real one, then check the
+        # destination with the same rules as the input
+        resolved = resolve_shortener(safe_url)
+        if resolved != safe_url:
+            safe_url = validate_url(resolved)
 
         mode = str(body.get("downloadMode") or "auto").strip().lower()
         if mode not in ("auto", "audio", "mute"):
@@ -831,6 +874,9 @@ class Handler(BaseHTTPRequestHandler):
         if not isinstance(url, str) or not url.strip():
             raise ApiError.url_missing()
         safe_url = validate_url(url)
+        resolved = resolve_shortener(safe_url)
+        if resolved != safe_url:
+            safe_url = validate_url(resolved)
 
         mode = str(body.get("downloadMode") or "auto").strip().lower()
         if mode not in ("auto", "audio", "mute"):
