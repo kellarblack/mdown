@@ -296,12 +296,13 @@
         merged.schema = 2;
       }
 
-      /* v5: a finished file saves itself. anyone still on the old "ask"
-         default is moved with it; settings written before schemas existed
-         (test harnesses) keep exactly what they set. */
-      if (hadSchema && merged.schema < 5) {
+      /* v5/v6: a finished file saves itself, whatever it is. anyone still on
+         the old "ask" default is moved with it once more here, because the v5
+         step only reached browsers that reloaded after it shipped. settings
+         written before schemas existed (test harnesses) keep what they set. */
+      if (hadSchema && merged.schema < 6) {
         if (merged.savingMethod === "ask") merged.savingMethod = "download";
-        merged.schema = 5;
+        merged.schema = 6;
       }
 
       /* v4: the mode row is auto/audio/video; silent is a switch on video */
