@@ -2215,6 +2215,12 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   transition: color 140ms;
 }
 .coin-icon svg { width: 18px; height: 18px; display: block; }
+/* the glyphs are the coins', not drawings of them. each is sized by its own
+   shape: the monero M is wide, the bitcoin B is tall and narrow, the ethereum
+   diamond sits between. */
+.addr[data-coin="xmr"] .coin-icon svg, .donate-row[data-coin="xmr"] .coin-icon svg { width: 15px; height: 15px; }
+.addr[data-coin="btc"] .coin-icon svg, .donate-row[data-coin="btc"] .coin-icon svg { width: 19px; height: 19px; }
+.addr[data-coin="eth"] .coin-icon svg, .donate-row[data-coin="eth"] .coin-icon svg { width: 16px; height: 16px; }
 .donate-row:hover .coin-icon { color: var(--text); }
 .donate-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .donate-label {
