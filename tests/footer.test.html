@@ -38,7 +38,7 @@ async function waitFor(fn, ms = 15000) {
 }
 
 const NAMES = [
-  "the footer holds five links: terms, status, updates, source, donate",
+  "the footer holds five links: terms, status, updates, GitHub, donate",
   "every one of them points at a real local page or the repository",
   "on a 390px frame donate is hidden and the other four are visible",
   "on a 1280px frame all five are visible",
@@ -107,7 +107,7 @@ async function main() {
   const words = links().map((a) => a.textContent.trim().toLowerCase());
   record(NAMES[0],
     !!footer && !!meta && words.length === 5 &&
-      ["terms", "status", "updates", "source", "donate"].every((w) => words.indexOf(w) >= 0),
+      ["terms", "status", "updates", "github", "donate"].every((w) => words.indexOf(w) >= 0),
     words.join(" · ") || "no footer links");
 
   /* ---- 2. every word is a door ---------------------------------------- */
@@ -136,7 +136,7 @@ async function main() {
   const donateShown = !!donateLink && visible(donateLink);
   record(NAMES[2],
     !donateShown && phoneVisible.length === 4 &&
-      ["terms", "status", "updates", "source"].every((w) => phoneVisible.indexOf(w) >= 0),
+      ["terms", "status", "updates", "GitHub"].every((w) => phoneVisible.indexOf(w) >= 0),
     "visible: " + (phoneVisible.join(",") || "none") + "; donate " + (donateShown ? "shown" : "hidden"));
 
   /* ---- 5. never sideways ---------------------------------------------- */

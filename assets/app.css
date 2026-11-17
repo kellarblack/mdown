@@ -2862,6 +2862,11 @@ a.addr-value:hover { color: var(--text); }
 /* four equal buttons, one per place: the icon carries the recognition, the
    word carries the meaning, and nothing is underlined or shouting */
 .share-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.share-src {
+  margin: 8px 0 0; color: var(--text-3); font-family: var(--mono); font-size: 0.68rem;
+}
+.share-src a { color: var(--text-2); text-underline-offset: 2px; }
+.share-src a:hover { color: var(--text); }
 .share-chip {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   height: 44px; padding: 0 10px; min-width: 0;
@@ -2890,8 +2895,10 @@ a.addr-value:hover { color: var(--text); }
 /* a phone is 390-430 wide: four buttons means ~88px each, so the label gets
    smaller rather than truncated ("thre…" is not a brand) */
 @media (max-width: 480px) {
-  .share-chip { gap: 6px; padding: 0 6px; font-size: 0.68rem; }
-  .share-icon, .share-icon svg { width: 16px; height: 16px; }
+  /* four words in 358px: the padding and gap give way before the labels do,
+     because "threa…" is not a brand */
+  .share-chip { gap: 4px; padding: 0 5px; font-size: 0.65rem; }
+  .share-icon, .share-icon svg { width: 18px; height: 18px; }
 }
 /* under 360px even that is too tight: icons only */
 @media (max-width: 359px) {
