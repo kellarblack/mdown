@@ -62,7 +62,7 @@ window.MDOWN_DONATE = {
 window.MDOWN_COIN = {
   /* mark only: no disc, no background, every one at the same size and
      upright, so the row reads as three coins and not three stickers */
-  xmr: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 22V9l10-7 10 7v13h-3.6V12L12 17.6 5.6 12v10z"/></svg>',
+  xmr: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21.5V5.5h20v16h-4V10l-6 9-6-9v11.5z"/></svg>',
   btc: '<svg viewBox="0 0 320 512" fill="currentColor" aria-hidden="true"><path d="M48 32C48 14.3 62.3 0 80 0s32 14.3 32 32V64h32V32c0-17.7 14.3-32 32-32s32 14.3 32 32V64c0 1.5-.1 3.1-.3 4.5C254.1 82.2 288 125.1 288 176c0 24.2-7.7 46.6-20.7 64.9c31.7 19.8 52.7 55 52.7 95.1c0 61.9-50.1 112-112 112v32c0 17.7-14.3 32-32 32s-32-14.3-32-32V448H112v32c0 17.7-14.3 32-32 32s-32-14.3-32-32V448H41.7C18.7 448 0 429.3 0 406.3V288 265.7 224 101.6C0 80.8 16.8 64 37.6 64H48V32zM64 224H176c26.5 0 48-21.5 48-48s-21.5-48-48-48H64v96zm112 64H64v96H208c26.5 0 48-21.5 48-48s-21.5-48-48-48H176z"/></svg>',
   eth: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z"/></svg>',
   card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="2.6" y="5.4" width="18.8" height="13.2" rx="2.6"/><path d="M2.6 10h18.8"/><path d="M6.4 15h3.2"/></svg>',
