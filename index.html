@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=343">
+<link rel="stylesheet" href="assets/app.css?v=346">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -198,7 +198,7 @@
 
 
 <header class="topbar">
-  <a class="brand" href="./" title="mdown.cc: media downloader, cc for closed captions">
+  <a class="brand" href="./" draggable="false" title="mdown.cc: media downloader, cc for closed captions">
     <span class="brand-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
@@ -455,6 +455,13 @@
         <span class="board-toggle" aria-hidden="true"></span>
       </summary>
       <div class="board-body">
+        <div class="board-inbox" id="board-inbox" hidden>
+          <div class="board-review-head">
+            <span class="board-tag">broken-service reports</span>
+            <span class="board-count" id="board-inbox-count"></span>
+          </div>
+          <ul class="board-list" id="board-inbox-list" aria-label="broken service reports"></ul>
+        </div>
         <div class="board-review" id="board-review" hidden>
           <div class="board-review-head">
             <span class="board-tag">waiting for a yes</span>
@@ -1115,7 +1122,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=8" defer></script>
-<script src="assets/app.js?v=163" defer></script>
+<script src="assets/app.js?v=165" defer></script>
 <script type="module" src="assets/nav.js?v=16"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

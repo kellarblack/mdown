@@ -129,6 +129,36 @@ async function main() {
       "rows=" + rows() + " img=" + !!list.querySelector("img"));
   }
 
+  /* a failed link offers a private report, and the owner reads it in the board */
+  const field = doc.querySelector("#url-input");
+  field.value = "https://youtube.com/watch?v=error";
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+  await sleep(400);
+  doc.querySelector("#paste-btn").click();
+  const selector = '.qitem[data-status="error"] [aria-label="Report this service"]';
+  const offered = await waitFor(() => doc.querySelector(selector), 15000);
+  record("a failed link offers a report", !!offered, offered ? "button there" : "no button");
+
+  if (offered) {
+    doc.querySelector(selector).click();
+    await sleep(350);
+    const note = doc.querySelector(".report-note");
+    const modalText = doc.querySelector("#modal-body").textContent;
+    record("the report names the service and not the link",
+      !!note && /youtube/.test(modalText) && !/watch\?v=error/.test(modalText),
+      /youtube/.test(modalText) ? "named" : "unnamed");
+
+    note.value = "nothing plays";
+    note.dispatchEvent(new win.Event("input", { bubbles: true }));
+    [...doc.querySelectorAll("#modal-foot button")].find((b) => /send/i.test(b.textContent)).click();
+    const inbox = await waitFor(() =>
+      doc.querySelectorAll("#board-inbox-list .board-item").length === 1, 12000);
+    record("and it waits privately in the owner's inbox",
+      inbox && !doc.querySelector("#board-inbox").hidden &&
+        /youtube/.test(doc.querySelector("#board-inbox-list").textContent),
+      inbox ? doc.querySelector("#board-inbox-list").textContent.trim().slice(0, 60) : "no inbox");
+  }
+
   frame.style.width = "320px";
   await sleep(300);
   frame.contentWindow.scrollTo(0, doc.body.scrollHeight);

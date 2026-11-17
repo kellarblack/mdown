@@ -122,13 +122,13 @@ report_suite donate "http://127.0.0.1:$WEB_PORT/tests/donate.test.html?report=1"
 report_suite donopg "http://127.0.0.1:$WEB_PORT/tests/donate-page.test.html?report=1" 14
 report_suite mobile "http://127.0.0.1:$WEB_PORT/tests/mobile.test.html?report=1" 92
 report_suite buttons "http://127.0.0.1:$WEB_PORT/tests/buttons.test.html?report=1" 22
-report_suite queue   "http://127.0.0.1:$WEB_PORT/tests/queue.test.html?report=1" 12
+report_suite queue   "http://127.0.0.1:$WEB_PORT/tests/queue.test.html?report=1" 13
 report_suite tip     "http://127.0.0.1:$WEB_PORT/tests/tip.test.html?report=1" 11
 report_suite footer  "http://127.0.0.1:$WEB_PORT/tests/footer.test.html?report=1" 11
 report_suite sources "http://127.0.0.1:$WEB_PORT/tests/sources.test.html?report=1" 28
 report_suite probe   "http://127.0.0.1:$WEB_PORT/tests/probe.test.html?report=1" 21
 report_suite health  "http://127.0.0.1:$WEB_PORT/tests/health.test.html?report=1" 15
-report_suite board   "http://127.0.0.1:$WEB_PORT/tests/requests.test.html?report=1" 13
+report_suite board   "http://127.0.0.1:$WEB_PORT/tests/requests.test.html?report=1" 16
 report_suite spam    "http://127.0.0.1:$WEB_PORT/tests/spam.test.html?report=1" 9
 dom_suite    meta    "http://127.0.0.1:$WEB_PORT/tests/meta.test.html" 11
 report_suite a11y    "http://127.0.0.1:$WEB_PORT/tests/a11y.test.html?report=1" 8

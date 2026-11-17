@@ -58,7 +58,7 @@
     convertGif: true,
     allowH265: false,
     tiktokFullAudio: false,
-    savingMethod: "ask",
+    savingMethod: "download",
     concurrency: 3,
     theme: "auto"
   };
@@ -116,6 +116,9 @@
   /* services that are almost always wanted as audio */
   /* services that carry no video worth downloading — these queue as audio */
   const AUDIO_FIRST = new Set(["soundcloud", "bandcamp", "mixcloud", "audiomack", "hearthis"]);
+  /* services where a link is almost always a song. youtube is on this list but
+     not on AUDIO_FIRST: it carries video too, so "audio only" would be a lie */
+  const MUSIC_FIRST = new Set(["youtube", ...AUDIO_FIRST]);
 
   /* DRM-protected services. Nothing here can download from them, and pretending
      otherwise would be a lie, so they get a straight answer instead. */
@@ -280,6 +283,9 @@
         return fresh;
       }
       const parsed = JSON.parse(raw);
+      /* a settings blob written by this app carries a schema; one without it
+         is a test harness or a pre-v2 visitor and keeps exactly what it set */
+      const hadSchema = !!(parsed && typeof parsed === "object" && parsed.schema);
       const merged = Object.assign({}, DEFAULT_SETTINGS, parsed && typeof parsed === "object" ? parsed : {});
       if (!merged.instance && DEFAULT_INSTANCE) merged.instance = DEFAULT_INSTANCE;
 
@@ -287,6 +293,14 @@
       if (!merged.schema || merged.schema < 2) {
         if (!merged.subtitleLang || merged.subtitleLang === "none") merged.subtitleLang = "en";
         merged.schema = 2;
+      }
+
+      /* v5: a finished file saves itself. anyone still on the old "ask"
+         default is moved with it; settings written before schemas existed
+         (test harnesses) keep exactly what they set. */
+      if (hadSchema && merged.schema < 5) {
+        if (merged.savingMethod === "ask") merged.savingMethod = "download";
+        merged.schema = 5;
       }
 
       /* v4: the mode row is auto/audio/video; silent is a switch on video */
@@ -404,6 +418,9 @@
     boardReview: $("#board-review"),
     boardReviewList: $("#board-review-list"),
     boardReviewCount: $("#board-review-count"),
+    boardInbox: $("#board-inbox"),
+    boardInboxList: $("#board-inbox-list"),
+    boardInboxCount: $("#board-inbox-count"),
     tipPop: $("#tip-pop"),
     openHealth: $("#open-health"),
     openSources: $("#open-sources"),
@@ -585,6 +602,9 @@
     }, 110);
   }
 
+  let modePicked = false;   /* they chose a mode themselves: stop guessing */
+  let autoAudio = false;    /* the current mode came from a music link */
+
   function updateComposerState() {
     const text = dom.input.value;
     scheduleProbe();
@@ -595,6 +615,22 @@
     const first = urls[0] || "";
     const detected = first ? detectService(first) : null;
     const service = detected && detected.id ? detected.id : null;
+    /* the mode row shows what will actually happen: paste a song and audio is
+       lit, paste a video and it goes back to auto. a press of their own wins
+       for the rest of the session. */
+    if (!modePicked) {
+      if (service && MUSIC_FIRST.has(service) && settings.downloadMode === "auto") {
+        settings.downloadMode = "audio";
+        autoAudio = true;
+        saveSettings();
+        renderModes();
+      } else if (autoAudio && (!service || !MUSIC_FIRST.has(service))) {
+        settings.downloadMode = "auto";
+        autoAudio = false;
+        saveSettings();
+        renderModes();
+      }
+    }
     updateFormatNote();
 
     /* one control: paste while the field is empty, download once it holds a
@@ -1029,7 +1065,7 @@
     if (wanted === "audio") return "audio";
     if (wanted === "mute") return "mute";
     const detected = detectService(url);
-    const music = detected && AUDIO_FIRST.has(detected.id);
+    const music = detected && MUSIC_FIRST.has(detected.id);
     if (wanted === "auto" && music) return "audio";
     return settings.muteVideo ? "mute" : "auto";
   }
@@ -1394,6 +1430,15 @@
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.6 6"/><path d="M20 5v6h-6"/></svg>',
         "Retry",
         () => retryItem(item)
+      ));
+    }
+    /* a failure is the one moment a person knows the service is broken, so the
+       way to say so belongs here and not in a menu somewhere */
+    if (item.status === "error" && instanceInfo && instanceInfo.inbox === true) {
+      buttons.push(iconBtn(
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 5h10l-1.2 3L15 11H5"/></svg>',
+        "Report this service",
+        () => openBrokenReport(item)
       ));
     }
     /* the file is done: saving is the one thing left, so it is a labelled
@@ -1949,9 +1994,15 @@
   }
 
   async function afterReady(item, blob) {
-    if (settings.savingMethod === "download" && blob) {
-      saveBlob(item);
-    } else if (settings.savingMethod === "share" && blob) {
+    if (settings.savingMethod === "download") {
+      /* instant by default: a blob is saved straight away, and a direct link
+         (a server that redirects instead of tunnelling) is handed to the
+         browser rather than left on the row for a second press */
+      if (blob) saveBlob(item);
+      else if (item.sourceUrl) handOffToBrowser(item, "direct link");
+      return;
+    }
+    if (settings.savingMethod === "share" && blob) {
       const shared = await shareItem(item, true);
       if (!shared) saveBlob(item);
     } else if (settings.savingMethod === "copy" && item.sourceUrl) {
@@ -3166,6 +3217,126 @@
     }
   }
 
+  function inboxCount() {
+    if (!dom.boardInbox) return;
+    const waiting = dom.boardInboxList ? dom.boardInboxList.children.length : 0;
+    dom.boardInbox.hidden = waiting === 0;
+    if (dom.boardInboxCount) dom.boardInboxCount.textContent = waiting ? waiting + " waiting" : "";
+  }
+
+  function inboxRow(entry) {
+    const item = el("li", { class: "board-item is-review" });
+    item.appendChild(el("p", { class: "board-line", text: String((entry && entry.text) || "") }));
+    item.appendChild(el("span", { class: "board-meta", text: boardAgo(entry && entry.t) }));
+    const done = el("button", { type: "button", class: "ghost-btn small", text: "handled" });
+    const drop = el("button", { type: "button", class: "ghost-btn small", text: "delete" });
+    done.addEventListener("click", () => inboxModerate("handled", entry, item));
+    drop.addEventListener("click", () => inboxModerate("delete", entry, item));
+    item.appendChild(done);
+    item.appendChild(drop);
+    return item;
+  }
+
+  async function inboxModerate(action, entry, row) {
+    const base = apiEndpoint();
+    if (!base) return;
+    row.classList.add("is-busy");
+    try {
+      const response = await fetch(base + "reports/" + action, {
+        method: "POST",
+        headers: Object.assign({
+          "Content-Type": "application/json", Accept: "application/json"
+        }, authHeaders()),
+        body: JSON.stringify({ id: entry.id })
+      });
+      if (!response.ok) throw new Error("status " + response.status);
+      row.remove();
+      inboxCount();
+    } catch (error) {
+      row.classList.remove("is-busy");
+    }
+  }
+
+  async function boardLoadInbox() {
+    if (!settings.apiKey || !dom.boardInboxList) return;
+    const base = apiEndpoint();
+    if (!base) return;
+    try {
+      const response = await fetch(base + "reports", {
+        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
+        cache: "no-store"
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const items = Array.isArray(data.items) ? data.items : [];
+      dom.boardInboxList.innerHTML = "";
+      items.forEach((entry) => dom.boardInboxList.appendChild(inboxRow(entry)));
+      inboxCount();
+    } catch (error) { /* the inbox is the owner's, and it can wait */ }
+  }
+
+  /* "this service is broken": a private note, not a board post. The link they
+     pasted is deliberately left out of it. */
+  function openBrokenReport(item) {
+    const base = apiEndpoint();
+    if (!base) return;
+    const body = el("div", { class: "report-form" });
+    const who = el("p", { class: "report-who" });
+    who.appendChild(el("span", { text: "service: " }));
+    who.appendChild(el("b", { text: item.service || "unknown" }));
+    body.appendChild(who);
+    if (item.error) body.appendChild(el("p", { class: "report-why", text: item.error }));
+    body.appendChild(el("p", {
+      class: "report-privacy",
+      text: "this goes to the owner only. no name, no address, and the link you pasted is not sent."
+    }));
+    const note = el("textarea", {
+      class: "report-note", rows: "3", maxlength: "300",
+      placeholder: "what happened? (optional)", "aria-label": "what happened"
+    });
+    body.appendChild(note);
+    const state = el("p", { class: "report-state", role: "status", "aria-live": "polite" });
+    body.appendChild(state);
+
+    const cancel = el("button", { type: "button", class: "ghost-btn", text: "cancel" });
+    cancel.addEventListener("click", () => closeModal());
+    const send = el("button", { type: "button", class: "primary-btn", text: "send" });
+    send.addEventListener("click", async () => {
+      if (send.disabled) return;
+      send.disabled = true;
+      try {
+        const response = await fetch(base + "reports", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            service: item.service || "unknown",
+            note: String(note.value || "").trim().slice(0, 300)
+          })
+        });
+        if (response.status === 429) {
+          state.textContent = "a few reports an hour is the limit. try again later.";
+          return;
+        }
+        if (!response.ok) throw new Error("status " + response.status);
+        state.textContent = "sent. thank you.";
+        note.value = "";
+        /* if this browser is also the owner's, the note it just sent should
+           show up in the inbox without a reload */
+        boardLoadInbox();
+        clearTimeout(send._close);
+        send._close = setTimeout(() => {
+          if (dom.modal && !dom.modal.hidden) closeModal();
+        }, 900);
+      } catch (error) {
+        state.textContent = "it did not send. try again in a minute.";
+      } finally {
+        send.disabled = false;
+      }
+    });
+    openModal("Report a broken service", body, [cancel, send]);
+    setTimeout(() => { try { note.focus(); } catch (e) {} }, 80);
+  }
+
   async function boardLoadPending() {
     if (!settings.apiKey || !dom.boardReviewList) return;
     const base = apiEndpoint();
@@ -3181,6 +3352,7 @@
       dom.boardReviewList.innerHTML = "";
       items.forEach((entry) => dom.boardReviewList.appendChild(boardReviewRow(entry)));
       boardReviewCount();
+      boardLoadInbox();
     } catch (error) { /* the queue is the owner's problem, not the page's */ }
   }
 
@@ -3435,6 +3607,7 @@
         // size estimate and a thumbnail, everything else looks exactly as before
         probe: cobalt.probe === true,
         board: cobalt.board === true,
+        inbox: cobalt.inbox === true,
         limits: cobalt.limits && typeof cobalt.limits === "object" ? cobalt.limits : null,
         turnstileSiteKey: typeof (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) === "string" ? (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) : ""
       };
@@ -4412,6 +4585,8 @@
 
     dom.modes.forEach((btn) => {
       btn.addEventListener("click", () => {
+        modePicked = true;
+        autoAudio = false;
         settings.downloadMode = btn.dataset.mode;
         saveSettings();
         renderModes();

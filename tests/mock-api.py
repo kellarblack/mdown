@@ -22,6 +22,9 @@ START = int(time.time() * 1000)
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 4320
 PAYLOAD = b"mget mock payload\n" * 4096
 
+#: private "this service is broken" notes, owner-only
+INBOX = []
+
 #: the request board, in memory for the length of the run
 BOARD = [
     {"id": "seed-1", "t": int(time.time()) - 3 * 86400, "text": "a tool that strips chapters", "ok": True},
@@ -120,6 +123,14 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"status": "ok", "uptimeSeconds": 3600})
                 return
 
+        if self.path.startswith("/reports"):
+            if not _owner(self.headers):
+                self._json({"status": "error", "error": {"code": "api.request.locked"}}, 403)
+                return
+            waiting = [entry for entry in INBOX if not entry.get("ok")]
+            self._json({"items": waiting, "handled": []})
+            return
+
         # an instance that advertises the board and then fails it, so the
         # "not answering" line can be seen without unplugging anything
         if "/boardbroken" in self.path and self.path.endswith("/requests"):
@@ -181,6 +192,7 @@ class Handler(BaseHTTPRequestHandler):
                 # opt-in capability: without it the client shows no preview
                 "probe": True,
                 "board": True,
+                "inbox": True,
                 "turnstileSitekey": None,
             },
             "limits": {"maxHeight": 4320, "maxDuration": 1800,
@@ -205,6 +217,32 @@ class Handler(BaseHTTPRequestHandler):
         url = body.get("url", "")
         host = "http://127.0.0.1:%d" % PORT
         self._host = host
+
+        if self.path.startswith("/reports/handled") or self.path.startswith("/reports/delete"):
+            if not _owner(self.headers):
+                self._json({"status": "error", "error": {"code": "api.request.locked"}}, 403)
+                return
+            handled = self.path.startswith("/reports/handled")
+            for index, entry in enumerate(INBOX):
+                if entry["id"] == body.get("id"):
+                    if handled:
+                        entry["ok"] = True
+                    else:
+                        INBOX.pop(index)
+                    self._json({"status": "ok"})
+                    return
+            self._json({"status": "error", "error": {"code": "api.request.missing"}}, 404)
+            return
+
+        if self.path.startswith("/reports"):
+            service = str(body.get("service") or "unknown").strip().lower()[:24]
+            note = str(body.get("note") or "").strip()[:600]
+            item = {"id": "p%d" % (len(INBOX) + 1), "t": int(time.time()),
+                    "text": service + ((" \u00b7 " + note) if note else " \u00b7 reported broken"),
+                    "ok": False}
+            INBOX.append(item)
+            self._json({"status": "queued", "item": dict(item, text="")}, 202)
+            return
 
         if self.path.startswith("/requests/approve"):
             if not _owner(self.headers):

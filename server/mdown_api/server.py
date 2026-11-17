@@ -340,6 +340,8 @@ class Handler(BaseHTTPRequestHandler):
             self._board_list()
         elif path == "/requests/pending":
             self._board_pending()
+        elif path == "/reports":
+            self._inbox_list()
         elif path == "/tunnel" or path.startswith("/tunnel/"):
             token = path[len("/tunnel/"):] if path.startswith("/tunnel/") else ""
             if not token:
@@ -377,6 +379,8 @@ class Handler(BaseHTTPRequestHandler):
                 # no instance key, asks would pile up with no way to say yes,
                 # so the page is not offered a box that leads nowhere
                 "board": bool(self.config.api_key),
+                # the private inbox rides with the board: both need a key
+                "inbox": bool(self.config.api_key),
             },
             "git": {"branch": "", "commit": ""},
             "limits": {
@@ -405,6 +409,67 @@ class Handler(BaseHTTPRequestHandler):
         self._check_auth()
         self._json(200, {"items": self.board.pending()},
                    {"Cache-Control": "no-store"})
+
+    # -- the private inbox: "this service is broken" -----------------------
+    def _inbox_list(self) -> None:
+        if not self.config.api_key:
+            raise ApiError.request_locked()
+        self._check_auth()
+        waiting = self.board_reports.pending(200)
+        handled = [entry for entry in self.board_reports.list(200)]
+        self._json(200, {"items": waiting, "handled": handled},
+                   {"Cache-Control": "no-store"})
+
+    def _inbox_post(self) -> None:
+        """A visitor's note about a service, private to the owner. The link
+        they pasted is never sent: it is not needed to fix a service and it is
+        theirs."""
+        self._check_origin()
+        verdict = self.inbox_limiter.check(self._client_ip())
+        headers = {
+            "RateLimit-Limit": str(self.config.inbox_rate_max),
+            "RateLimit-Remaining": str(verdict["remaining"]),
+            "RateLimit-Reset": str(verdict["retry"]),
+        }
+        if not verdict["allowed"]:
+            error = ApiError.rate_limit(0)
+            error.context["retry"] = verdict["retry"]
+            error.context["reason"] = "inbox_slow_down"
+            headers["Retry-After"] = str(verdict["retry"])
+            self._json(429, error.payload(), headers)
+            return
+
+        body = self._read_json()
+        service = str(body.get("service") or "unknown").strip().lower()
+        service = re.sub(r"[^a-z0-9._-]", "", service)[:24] or "unknown"
+        note = str(body.get("note") or "").strip()
+        text = service + ((" · " + note) if note else " · reported broken")
+        try:
+            item = self.board_reports.add(text)
+        except ValueError as bad:
+            raise ApiError.request_invalid(str(bad))
+        log.info("inbox: %s", service)     # the service name, never the note
+        self._json(202, {"status": "queued", "item": dict(item, text="")}, headers)
+
+    def _inbox_handled(self) -> None:
+        if not self.config.api_key:
+            raise ApiError.request_locked()
+        self._check_auth()
+        self._check_origin()
+        ident = str(self._read_json().get("id") or "").strip()
+        if not ident or not self.board_reports.approve(ident):
+            raise ApiError.request_missing()
+        self._json(200, {"status": "ok"})
+
+    def _inbox_delete(self) -> None:
+        if not self.config.api_key:
+            raise ApiError.request_locked()
+        self._check_auth()
+        self._check_origin()
+        ident = str(self._read_json().get("id") or "").strip()
+        if not ident or not self.board_reports.delete(ident):
+            raise ApiError.request_missing()
+        self._json(200, {"status": "ok"})
 
     def _board_approve(self) -> None:
         if not self.config.api_key:
@@ -568,7 +633,8 @@ class Handler(BaseHTTPRequestHandler):
 
         path, _ = self._split()
         if path not in ("/", "", "/probe", "/report", "/requests",
-                        "/requests/delete", "/requests/approve"):
+                        "/requests/delete", "/requests/approve",
+                        "/reports", "/reports/handled", "/reports/delete"):
             raise ApiError.no_route()
 
         # the board is public on purpose: an anonymous ask cannot carry a key
@@ -580,6 +646,15 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/requests/approve":
             self._board_approve()
+            return
+        if path == "/reports":
+            self._inbox_post()
+            return
+        if path == "/reports/handled":
+            self._inbox_handled()
+            return
+        if path == "/reports/delete":
+            self._inbox_delete()
             return
 
         self._check_auth()
@@ -848,7 +923,13 @@ class ApiServer(ThreadingHTTPServer):
             "read_limiter": RateLimiter(config.read_rate_max, config.read_rate_window),
             "report_limiter": RateLimiter(config.report_rate_max, config.report_rate_window),
             "board_limiter": RateLimiter(config.board_rate_max, config.board_rate_window),
+            "inbox_limiter": RateLimiter(config.inbox_rate_max, config.inbox_rate_window),
             "board": RequestBoard(os.path.join(config.work_dir, "board.jsonl")),
+            # six hundred characters: a report is a sentence about a service,
+            # and a wall of text is either spam or a bug report that belongs
+            # in an issue tracker
+            "board_reports": RequestBoard(os.path.join(config.work_dir, "reports.jsonl"),
+                                          keep=300, max_text=600),
             "uptime": UptimeLog(os.path.join(config.work_dir, "uptime.json")),
             "tools": ToolState(),
             "started_at": time.time(),
@@ -879,9 +960,10 @@ class ApiServer(ThreadingHTTPServer):
         reads = self.RequestHandlerClass.read_limiter
         reports = self.RequestHandlerClass.report_limiter
         boards = self.RequestHandlerClass.board_limiter
+        inboxes = self.RequestHandlerClass.inbox_limiter
         while True:
             time.sleep(120)
-            for item in (limiter, jobs, probes, reads, reports, boards):
+            for item in (limiter, jobs, probes, reads, reports, boards, inboxes):
                 item.prune()
 
     def process_request(self, request, client_address) -> None:  # noqa: D401

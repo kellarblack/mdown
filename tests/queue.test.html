@@ -39,10 +39,10 @@ async function waitFor(fn, ms = 15000) {
 
 async function main() {
   const frame = document.getElementById("app");
-  /* only the server: the saving method stays at its default, which is the
-     thing under test — a finished file must wait rather than land on you */
+  /* the ask path, chosen on purpose: a finished file must wait rather than
+     land on you. the default is now instant and is checked at the end. */
   frame.contentWindow.localStorage.setItem("mdown.settings",
-    JSON.stringify({ instance: "http://127.0.0.1:4320" }));
+    JSON.stringify({ instance: "http://127.0.0.1:4320", savingMethod: "ask" }));
   frame.src = "../index.html?q=" + Date.now();
 
   const booted = await waitFor(() => frame.contentDocument && frame.contentWindow.md, 20000);
@@ -118,6 +118,17 @@ async function main() {
       panelRect.left >= 0 && panelRect.right <= win.innerWidth + 0.5,
     "panel centre " + Math.round(panelRect.left + panelRect.width / 2) +
       " vs button " + Math.round(toggleRect.left + toggleRect.width / 2));
+
+  /* a fresh visitor gets instant saving: that is the default now */
+  frame.contentWindow.localStorage.clear();
+  frame.src = "../index.html?fresh=" + Date.now();
+  await waitFor(() => frame.contentDocument && frame.contentDocument.querySelector("#url-input"), 20000);
+  await sleep(900);
+  const chosen = [...frame.contentDocument.querySelectorAll('[data-setting="savingMethod"] button')]
+    .find((b) => b.getAttribute("aria-checked") === "true");
+  record("a fresh visitor saves instantly",
+    !!chosen && chosen.dataset.value === "download",
+    chosen ? chosen.dataset.value : "nothing selected");
 
   window.__results = { total: results.length, failures, results };
 }

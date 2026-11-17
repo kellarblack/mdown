@@ -32,9 +32,11 @@ TITLE = 40          # characters of a single line, for the log and the tests
 
 
 class RequestBoard:
-    def __init__(self, path: str, keep: int = KEEP) -> None:
+    def __init__(self, path: str, keep: int = KEEP,
+                 max_text: int = MAX_TEXT) -> None:
         self.path = path
         self.keep = keep
+        self.max_text = max_text
         self._lock = threading.Lock()
         self._items: List[Dict[str, Any]] = []
         self._loaded = False
@@ -77,16 +79,15 @@ class RequestBoard:
         os.replace(temporary, self.path)
 
     # -- words -------------------------------------------------------------
-    @staticmethod
-    def normalize(raw: Any) -> str:
+    def normalize(self, raw: Any) -> str:
         """One line, no control characters, no runs of space."""
         # a control character is a break between words, not a deletion
         text = "".join(ch if (ch.isprintable() or ch == " ") else " " for ch in str(raw or ""))
         text = re.sub(r"\s+", " ", text).strip()
         if len(text) < MIN_TEXT:
             raise ValueError("a few words, please")
-        if len(text) > MAX_TEXT:
-            text = text[:MAX_TEXT].rstrip()
+        if len(text) > self.max_text:
+            text = text[:self.max_text].rstrip()
         return text
 
     # -- api ---------------------------------------------------------------

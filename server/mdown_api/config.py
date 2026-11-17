@@ -104,6 +104,11 @@ class Config:
     board_rate_max: int = 6
     board_rate_window: int = 3600
 
+    # "this service is broken" notes are private and rare: a handful an hour is
+    # plenty for a person who just hit two broken links in a row
+    inbox_rate_max: int = 6
+    inbox_rate_window: int = 3600
+
     # ---- source-side workarounds ----------------------------------------
     # a Netscape cookies.txt for age-gated / login-walled sources; empty = none
     ytdlp_cookies: str = ""
@@ -157,6 +162,8 @@ class Config:
             report_rate_window=_int("MDOWN_REPORT_RATE_WINDOW", 3600, 60, 86400),
             board_rate_max=_int("MDOWN_BOARD_RATE_MAX", 6, 1, 200),
             board_rate_window=_int("MDOWN_BOARD_RATE_WINDOW", 3600, 60, 86400),
+            inbox_rate_max=_int("MDOWN_INBOX_RATE_MAX", 6, 1, 200),
+            inbox_rate_window=_int("MDOWN_INBOX_RATE_WINDOW", 3600, 60, 86400),
             ytdlp_cookies=os.environ.get("MDOWN_YTDLP_COOKIES", "").strip(),
             ytdlp_extra_args=os.environ.get("MDOWN_YTDLP_EXTRA_ARGS", "").strip(),
         )

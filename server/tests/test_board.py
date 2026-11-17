@@ -258,6 +258,70 @@ class BoardHttpTest(unittest.TestCase):
         finally:
             self.handler.config = self.config
 
+    # -- the private inbox ------------------------------------------------
+    def note(self, service, text="", headers=None):
+        return self.call("POST", "/reports", {"service": service, "note": text}, headers)
+
+    def test_a_broken_service_note_is_private(self):
+        status, headers, data = self.note("youtube", "nothing plays")
+        self.assertEqual(status, 202)
+        self.assertIn("RateLimit-Remaining", headers)
+        self.assertEqual(data["status"], "queued")
+
+        status, _, data = self.call("GET", "/reports")
+        self.assertEqual(status, 403)   # no key, no inbox
+
+        self.rekey("instance-key")
+        try:
+            status, _, data = self.call("GET", "/reports",
+                                       headers={"Authorization": "Api-Key instance-key"})
+            self.assertEqual(status, 200)
+            self.assertEqual(len(data["items"]), 1)
+            self.assertEqual(data["items"][0]["text"], "youtube · nothing plays")
+        finally:
+            self.rekey("")
+
+    def test_the_note_is_one_line_and_capped(self):
+        self.note(" SoundCloud!! ", "it\n\nstops half way " + "x" * 900)
+        self.rekey("instance-key")
+        try:
+            _, _, data = self.call("GET", "/reports",
+                                   headers={"Authorization": "Api-Key instance-key"})
+            text = data["items"][0]["text"]
+            self.assertTrue(text.startswith("soundcloud · it stops half way"))
+            self.assertLessEqual(len(text), 620)
+            self.assertNotIn("\n", text)
+        finally:
+            self.rekey("")
+
+    def test_handled_and_deleted_notes_leave_the_queue(self):
+        self.note("reddit", "private post")
+        self.note("tiktok", "no sound")
+        self.rekey("instance-key")
+        try:
+            auth = {"Authorization": "Api-Key instance-key"}
+            _, _, data = self.call("GET", "/reports", headers=auth)
+            first, second = data["items"][0]["id"], data["items"][1]["id"]
+            status, _, _ = self.call("POST", "/reports/handled", {"id": first}, auth)
+            self.assertEqual(status, 200)
+            _, _, data = self.call("GET", "/reports", headers=auth)
+            self.assertEqual([entry["id"] for entry in data["items"]], [second])
+            status, _, _ = self.call("POST", "/reports/delete", {"id": second}, auth)
+            self.assertEqual(status, 200)
+            _, _, data = self.call("GET", "/reports", headers=auth)
+            self.assertEqual(data["items"], [])
+        finally:
+            self.rekey("")
+
+    def test_the_inbox_is_rate_limited(self):
+        self.handler.inbox_limiter = server_module.RateLimiter(2, 3600)
+        self.assertEqual(self.note("youtube", "one")[0], 202)
+        self.assertEqual(self.note("youtube", "two")[0], 202)
+        status, headers, data = self.note("youtube", "three")
+        self.assertEqual(status, 429)
+        self.assertEqual(data["error"]["context"]["reason"], "inbox_slow_down")
+        self.assertIn("Retry-After", headers)
+
     def test_a_deleted_entry_is_gone_from_the_file(self):
         self.post("gone in a moment")
         path = os.path.join(self.tmp, "board.jsonl")
