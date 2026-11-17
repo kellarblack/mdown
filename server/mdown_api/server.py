@@ -32,6 +32,7 @@ from typing import Any, Dict, Optional, Tuple
 from urllib.parse import parse_qs, unquote, urlsplit
 
 from . import engine
+from .board import RequestBoard
 from .config import Config
 from .errors import ApiError
 from .jobs import JobManager, PickerNeeded, RateLimiter
@@ -334,6 +335,11 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/uptime":
             self._limit_get()
             self._uptime()
+        elif path == "/requests":
+            self._limit_get()
+            self._board_list()
+        elif path == "/requests/pending":
+            self._board_pending()
         elif path == "/tunnel" or path.startswith("/tunnel/"):
             token = path[len("/tunnel/"):] if path.startswith("/tunnel/") else ""
             if not token:
@@ -367,6 +373,10 @@ class Handler(BaseHTTPRequestHandler):
                 # a capability, not a promise: the front-end only shows a size
                 # estimate and a thumbnail when the instance can produce them
                 "probe": True,
+                # the board exists only where somebody can moderate it: with
+                # no instance key, asks would pile up with no way to say yes,
+                # so the page is not offered a box that leads nowhere
+                "board": bool(self.config.api_key),
             },
             "git": {"branch": "", "commit": ""},
             "limits": {
@@ -381,6 +391,68 @@ class Handler(BaseHTTPRequestHandler):
 
     def _uptime(self) -> None:
         self._json(200, self.uptime.summary(30), {"Cache-Control": "no-store"})
+
+    # -- the request board -------------------------------------------------
+    def _board_list(self) -> None:
+        items = self.board.list(30)
+        self._json(200, {"items": items, "count": self.board.count()},
+                   {"Cache-Control": "no-store"})
+
+    def _board_pending(self) -> None:
+        """The queue, for the owner only. No key, no queue."""
+        if not self.config.api_key:
+            raise ApiError.request_locked()
+        self._check_auth()
+        self._json(200, {"items": self.board.pending()},
+                   {"Cache-Control": "no-store"})
+
+    def _board_approve(self) -> None:
+        if not self.config.api_key:
+            raise ApiError.request_locked()
+        self._check_auth()
+        self._check_origin()
+        body = self._read_json()
+        ident = str(body.get("id") or "").strip()
+        if not ident or not self.board.approve(ident):
+            raise ApiError.request_missing()
+        self._json(200, {"status": "ok"})
+
+    def _board_post(self) -> None:
+        """An ask joins the queue. It shows on the board when the owner says so."""
+        self._check_origin()
+        verdict = self.board_limiter.check(self._client_ip())
+        headers = {
+            "RateLimit-Limit": str(self.config.board_rate_max),
+            "RateLimit-Remaining": str(verdict["remaining"]),
+            "RateLimit-Reset": str(verdict["retry"]),
+        }
+        if not verdict["allowed"]:
+            error = ApiError.rate_limit(0)
+            error.context["retry"] = verdict["retry"]
+            error.context["reason"] = "board_slow_down"
+            headers["Retry-After"] = str(verdict["retry"])
+            self._json(429, error.payload(), headers)
+            return
+
+        body = self._read_json()
+        try:
+            item = self.board.add(body.get("text"))
+        except ValueError as bad:
+            raise ApiError.request_invalid(str(bad))
+        self._json(202, {"status": "pending", "item": item}, headers)
+
+    def _board_delete(self) -> None:
+        """The owner's broom. Needs the instance key; a public board with an
+        open delete is a board that empties itself on the first bored visitor."""
+        if not self.config.api_key:
+            raise ApiError.request_locked()
+        self._check_auth()
+        self._check_origin()
+        body = self._read_json()
+        ident = str(body.get("id") or "").strip()
+        if not ident or not self.board.delete(ident):
+            raise ApiError.request_missing()
+        self._json(200, {"status": "ok"})
 
     def _health(self) -> None:
         tools = self.tools.read()
@@ -495,8 +567,20 @@ class Handler(BaseHTTPRequestHandler):
             self._body_consumed = True
 
         path, _ = self._split()
-        if path not in ("/", "", "/probe", "/report"):
+        if path not in ("/", "", "/probe", "/report", "/requests",
+                        "/requests/delete", "/requests/approve"):
             raise ApiError.no_route()
+
+        # the board is public on purpose: an anonymous ask cannot carry a key
+        if path == "/requests":
+            self._board_post()
+            return
+        if path == "/requests/delete":
+            self._board_delete()
+            return
+        if path == "/requests/approve":
+            self._board_approve()
+            return
 
         self._check_auth()
         self._check_origin()
@@ -763,6 +847,8 @@ class ApiServer(ThreadingHTTPServer):
             "probe_limiter": RateLimiter(config.probe_rate_max, config.probe_rate_window),
             "read_limiter": RateLimiter(config.read_rate_max, config.read_rate_window),
             "report_limiter": RateLimiter(config.report_rate_max, config.report_rate_window),
+            "board_limiter": RateLimiter(config.board_rate_max, config.board_rate_window),
+            "board": RequestBoard(os.path.join(config.work_dir, "board.jsonl")),
             "uptime": UptimeLog(os.path.join(config.work_dir, "uptime.json")),
             "tools": ToolState(),
             "started_at": time.time(),
@@ -792,9 +878,10 @@ class ApiServer(ThreadingHTTPServer):
         probes = self.RequestHandlerClass.probe_limiter
         reads = self.RequestHandlerClass.read_limiter
         reports = self.RequestHandlerClass.report_limiter
+        boards = self.RequestHandlerClass.board_limiter
         while True:
             time.sleep(120)
-            for item in (limiter, jobs, probes, reads, reports):
+            for item in (limiter, jobs, probes, reads, reports, boards):
                 item.prune()
 
     def process_request(self, request, client_address) -> None:  # noqa: D401

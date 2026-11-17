@@ -861,6 +861,84 @@ a.ghost-btn { text-decoration: none; }
   color: var(--text-3); font-size: 0.76rem; line-height: 1.65;
 }
 .help-note b { color: var(--text-2); font-weight: 600; }
+
+/* ---------- the request board ---------- */
+/* the quietest section on the page: a hairline, a box, and the last few asks */
+.board {
+  margin: 34px auto 0; padding-top: 22px; max-width: 62ch;
+  border-top: 1px solid var(--stroke);
+}
+.board-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px 12px; flex-wrap: wrap;
+}
+.board-tag {
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.board-copy {
+  margin: 7px 0 12px; max-width: 56ch;
+  color: var(--text-3); font-size: 0.78rem; line-height: 1.6;
+}
+.board-form { display: grid; gap: 8px; }
+.board-text {
+  width: 100%; min-height: 58px; max-height: 150px;
+  padding: 10px 12px;
+  border: 1px solid var(--stroke); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text);
+  font-family: var(--mono); font-size: 0.8rem; line-height: 1.55;
+  resize: vertical; outline: none;
+  transition: border-color var(--speed);
+}
+.board-text::placeholder { color: var(--text-3); }
+.board-text:focus-visible { border-color: var(--stroke-2); }
+.board-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.board-count { font-family: var(--mono); font-size: 0.64rem; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.board-state { margin: 10px 0 0; font-size: 0.72rem; color: var(--text-3); line-height: 1.5; }
+.board-list { list-style: none; margin: 14px 0 0; padding: 0; }
+.board-item {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 9px 0; border-top: 1px solid var(--stroke);
+}
+.board-item:first-child { border-top: 0; }
+.board-line {
+  margin: 0; flex: 1 1 auto; min-width: 0;
+  color: var(--text-2); font-size: 0.78rem; line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.board-meta {
+  flex: none; font-family: var(--mono); font-size: 0.62rem;
+  color: var(--text-3); white-space: nowrap;
+}
+/* the owner's queue: the same rows, with yes and no at the end */
+.board-review {
+  margin: 0 0 14px; padding: 10px 11px;
+  border: 1px dashed var(--stroke-2); border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+.board-review-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+}
+.board-review .board-list { margin-top: 8px; }
+.board-item.is-review { gap: 8px; }
+.board-item.is-review .board-line { font-size: 0.76rem; }
+.board-item.is-review .ghost-btn.small { height: 26px; padding: 0 9px; font-size: 0.64rem; }
+.board-item.is-review.is-busy { opacity: 0.5; }
+/* the disclosure: one line until somebody wants it */
+.board-disclosure > summary {
+  display: flex; align-items: baseline; gap: 10px;
+  cursor: pointer; list-style: none;
+}
+.board-disclosure > summary::-webkit-details-marker { display: none; }
+.board-summary:hover .section-label { color: var(--text); }
+.board-toggle {
+  margin-left: auto; font-family: var(--mono); font-size: 0.6rem;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3);
+}
+.board-toggle::after { content: "show"; }
+.board-disclosure[open] .board-toggle::after { content: "hide"; }
+.board-summary:hover .board-toggle { color: var(--text-2); }
+.board-body { padding-top: 12px; }
 .footer a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .footer a:hover { color: var(--text-2); }
 .footer-meta {
@@ -1437,7 +1515,7 @@ a.ghost-btn { text-decoration: none; }
   /* 16px whatever the pointer says: a phone that reports hover:hover (some
      Android browsers do) was still zooming the page on focus */
   #url-input { font-size: 16px; }
-  .text-input, .select, #instance-url { font-size: 16px; }
+  .text-input, .select, #instance-url, .board-text { font-size: 16px; }
   /* any field a thumb can land in is 16px: below that Safari zooms the page
      on focus and never zooms back */
   input[type="text"], input[type="url"], input[type="search"],

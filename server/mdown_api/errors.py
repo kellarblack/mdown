@@ -91,6 +91,20 @@ class ApiError(Exception):
     def not_found(cls) -> "ApiError":
         return cls("api.content.video.unavailable", 404, detail="job not found or expired")
 
+    # -- the board ---------------------------------------------------------
+    @classmethod
+    def request_invalid(cls, reason: str = "") -> "ApiError":
+        return cls("api.request.invalid", 400, {"reason": reason or "empty"}, detail=reason)
+
+    @classmethod
+    def request_missing(cls) -> "ApiError":
+        return cls("api.request.missing", 404, detail="no such request")
+
+    @classmethod
+    def request_locked(cls) -> "ApiError":
+        return cls("api.request.locked", 403,
+                   detail="set an api key to moderate the board")
+
     @classmethod
     def no_route(cls) -> "ApiError":
         return cls("api.content.video.unavailable", 404, detail="no such endpoint")

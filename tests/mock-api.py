@@ -22,6 +22,18 @@ START = int(time.time() * 1000)
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 4320
 PAYLOAD = b"mget mock payload\n" * 4096
 
+#: the request board, in memory for the length of the run
+BOARD = [
+    {"id": "seed-1", "t": int(time.time()) - 3 * 86400, "text": "a tool that strips chapters", "ok": True},
+    {"id": "seed-2", "t": int(time.time()) - 2 * 3600, "text": "bandcamp album downloads", "ok": True},
+]
+
+
+def _owner(headers):
+    """The moderator is whoever holds the instance key; the mock only checks
+    that a key-shaped header is there."""
+    return str(headers.get("Authorization") or "").startswith("Api-Key ")
+
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
@@ -108,6 +120,24 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"status": "ok", "uptimeSeconds": 3600})
                 return
 
+        # an instance that advertises the board and then fails it, so the
+        # "not answering" line can be seen without unplugging anything
+        if "/boardbroken" in self.path and self.path.endswith("/requests"):
+            self._json({"status": "error", "error": {"code": "api.internal"}}, 500)
+            return
+
+        if self.path.startswith("/requests/pending"):
+            if not _owner(self.headers):
+                self._json({"status": "error", "error": {"code": "api.request.locked"}}, 403)
+                return
+            waiting = [entry for entry in BOARD if not entry.get("ok")]
+            self._json({"items": waiting})
+            return
+        if self.path.startswith("/requests"):
+            shown = [entry for entry in BOARD if entry.get("ok")]
+            self._json({"items": list(reversed(shown[-30:])), "count": len(shown)})
+            return
+
         if self.path.startswith("/health"):
             # deliberately bare: no checks, no uptime. The status suite asserts
             # that a server reporting nothing is still read as up.
@@ -150,6 +180,7 @@ class Handler(BaseHTTPRequestHandler):
                              "soundcloud", "bilibili", "vimeo", "twitch", "bandcamp"],
                 # opt-in capability: without it the client shows no preview
                 "probe": True,
+                "board": True,
                 "turnstileSitekey": None,
             },
             "limits": {"maxHeight": 4320, "maxDuration": 1800,
@@ -174,6 +205,43 @@ class Handler(BaseHTTPRequestHandler):
         url = body.get("url", "")
         host = "http://127.0.0.1:%d" % PORT
         self._host = host
+
+        if self.path.startswith("/requests/approve"):
+            if not _owner(self.headers):
+                self._json({"status": "error", "error": {"code": "api.request.locked"}}, 403)
+                return
+            for entry in BOARD:
+                if entry["id"] == body.get("id"):
+                    entry["ok"] = True
+                    self._json({"status": "ok"})
+                    return
+            self._json({"status": "error", "error": {"code": "api.request.missing"}}, 404)
+            return
+
+        if self.path.startswith("/requests/delete"):
+            if not _owner(self.headers):
+                self._json({"status": "error", "error": {"code": "api.request.locked"}}, 403)
+                return
+            for index, entry in enumerate(BOARD):
+                if entry["id"] == body.get("id"):
+                    BOARD.pop(index)
+                    self._json({"status": "ok"})
+                    return
+            self._json({"status": "error", "error": {"code": "api.request.missing"}}, 404)
+            return
+
+        if self.path.startswith("/requests"):
+            text = str(body.get("text") or "").strip()
+            if len(text) < 3:
+                self._json({"status": "error",
+                            "error": {"code": "api.request.invalid",
+                                      "context": {"reason": "a few words, please"}}}, 400)
+                return
+            item = {"id": "r%d" % (len(BOARD) + 1), "t": int(time.time()),
+                    "text": text, "ok": False}
+            BOARD.append(item)
+            self._json({"status": "pending", "item": item}, 202)
+            return
 
         if self.path.startswith("/probe"):
             # a probe slow enough to double-click inside

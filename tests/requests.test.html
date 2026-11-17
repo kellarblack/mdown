@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>request board test</title>
+<style>
+  html, body { margin: 0; background: #08090c; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  iframe { display: block; width: 900px; height: 760px; border: 0; }
+  pre { padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!--
+  The request board is the only place on the site where a stranger's text is
+  shown back, so it is closed until asked for, it queues instead of publishing,
+  and only the holder of the instance key can say yes. It has to survive a
+  320px screen, and it has to disappear when there is no instance.
+
+    python3 tests/mock-api.py 4320 &
+    python3 -m http.server 4331 &
+    chrome --headless --disable-gpu "http://127.0.0.1:4331/tests/requests.test.html?report=1"
+-->
+<iframe id="app" src="../index.html"></iframe>
+<pre id="log">starting…</pre>
+<script>
+const log = document.getElementById("log");
+const results = [];
+let failures = 0;
+function record(name, ok, detail) {
+  if (!ok) failures++;
+  results.push({ name, ok, detail: detail || "" });
+  log.innerHTML += `\n${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, ms = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) { try { if (fn()) return true; } catch (e) {} await sleep(100); }
+  return false;
+}
+
+async function main() {
+  const frame = document.getElementById("app");
+  /* the key is what makes this browser the owner: it is the thing the review
+     queue asks for, and nothing else on the page sees it */
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320", apiKey: "test-key" }));
+  frame.src = "../index.html?board=" + Date.now();
+
+  const booted = await waitFor(() => frame.contentDocument &&
+    frame.contentDocument.querySelector("#board") &&
+    !frame.contentDocument.querySelector("#board").hidden, 20000);
+  record("the app boots, and the instance advertises a board", booted);
+  if (!booted) { window.__results = { total: results.length, failures, results }; return; }
+
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  const $ = (sel) => doc.querySelector(sel);
+  const board = $("#board");
+  const list = $("#board-list");
+  const text = $("#board-text");
+  const send = $("#board-send");
+  const count = $("#board-count");
+  const state = $("#board-state");
+  const review = $("#board-review");
+  const reviewList = $("#board-review-list");
+  const rows = () => list.querySelectorAll(".board-item").length;
+
+  record("the board is one closed line until you ask for it",
+    !board.hidden && $("#board-disclosure").open === false && !!$("#board-summary"),
+    "hidden=" + board.hidden + " open=" + $("#board-disclosure").open);
+
+  $("#board-summary").click();
+  await sleep(250);
+  record("opening it shows the box",
+    $("#board-disclosure").open && text.getBoundingClientRect().height > 10);
+
+  const listed = await waitFor(() => rows() >= 2, 12000);
+  record("it lists what people already asked", listed && rows() === 2, rows() + " items");
+  record("and says how long ago",
+    /ago|just now/.test(list.querySelector(".board-meta").textContent),
+    list.querySelector(".board-meta").textContent);
+
+  text.value = "a tool that renames files";
+  text.dispatchEvent(new win.Event("input", { bubbles: true }));
+  await sleep(60);
+  record("typing arms the send button and counts the line",
+    !send.disabled && count.textContent.trim() === "25 / 240",
+    count.textContent.trim() + " disabled=" + send.disabled);
+
+  send.click();
+  const queued = await waitFor(() => /once it has been looked at/.test(state.textContent), 12000);
+  record("sending queues it instead of publishing it",
+    queued && rows() === 2, "rows=" + rows() + " state=" + state.textContent);
+
+  const inQueue = await waitFor(() => reviewList.querySelectorAll(".board-item").length === 1, 12000);
+  record("the owner sees it waiting, with a yes and a no",
+    inQueue && !review.hidden && reviewList.querySelectorAll(".ghost-btn").length === 2,
+    inQueue ? "queue=" + reviewList.querySelectorAll(".board-item").length : "empty queue");
+
+  if (inQueue) {
+    reviewList.querySelector(".ghost-btn").click();
+    const shown = await waitFor(() => rows() === 3 &&
+      list.querySelector(".board-line").textContent === "a tool that renames files", 12000);
+    record("showing it puts it on the board", shown,
+      "rows=" + rows() + " queue=" + reviewList.querySelectorAll(".board-item").length);
+  }
+
+  /* a stranger's sentence is text: angle brackets must never become elements */
+  const payload = '<img src=x onerror="window.__pwned=1">';
+  text.value = payload;
+  text.dispatchEvent(new win.Event("input", { bubbles: true }));
+  send.click();
+  await waitFor(() => /once it has been looked at/.test(state.textContent), 12000);
+  const queuedTags = await waitFor(() => reviewList.querySelectorAll(".board-item").length === 1, 12000);
+  await sleep(200);
+  record("an ask with tags in it waits as text",
+    queuedTags && !reviewList.querySelector("img") && !win.__pwned &&
+      reviewList.querySelector(".board-line").textContent === payload,
+    "img=" + !!reviewList.querySelector("img") + " pwned=" + !!win.__pwned);
+
+  if (queuedTags) {
+    reviewList.querySelector(".ghost-btn").click();
+    const approvedTags = await waitFor(() =>
+      list.querySelector(".board-line").textContent === payload, 12000);
+    await sleep(200);
+    record("and it is still text once it is on the board",
+      approvedTags && !list.querySelector("img") && !win.__pwned &&
+        rows() === 4,
+      "rows=" + rows() + " img=" + !!list.querySelector("img"));
+  }
+
+  frame.style.width = "320px";
+  await sleep(300);
+  frame.contentWindow.scrollTo(0, doc.body.scrollHeight);
+  await sleep(300);
+  const boardRect = board.getBoundingClientRect();
+  const scroll = doc.scrollingElement;
+  record("a 320px screen holds it without scrolling sideways",
+    scroll.scrollWidth <= scroll.clientWidth + 1 && boardRect.width <= 320,
+    scroll.scrollWidth + "x" + scroll.clientWidth + " board " + Math.round(boardRect.width));
+
+  /* a server that is not there: the board says so and keeps the box */
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320/boardbroken" }));
+  const before = frame.contentDocument;
+  frame.src = "../index.html?board=" + Date.now();
+  await waitFor(() => frame.contentDocument && frame.contentDocument !== before, 20000);
+  const d2 = frame.contentDocument;
+  await waitFor(() => d2.readyState === "complete" && d2.querySelector("#board"), 20000);
+  d2.querySelector("#board-summary").click();
+  const said = await waitFor(() => /not answering/.test(d2.querySelector("#board-state").textContent), 12000);
+  record("when the server is gone it says so, and keeps the box",
+    said && !d2.querySelector("#board").hidden && !!d2.querySelector("#board-text"),
+    d2.querySelector("#board-state").textContent);
+
+  window.__results = { total: results.length, failures, results };
+}
+
+main().catch((e) => {
+  record("harness crashed", false, String(e));
+  window.__results = { total: results.length, failures, results };
+});
+</script>
+<script>
+if (location.search.indexOf("report") >= 0) {
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.__results) {
+      clearInterval(timer);
+      fetch("http://127.0.0.1:4320/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ page: location.pathname, ms: Date.now() - started }, window.__results))
+      }).catch(() => {});
+    } else if (Date.now() - started > 90000) clearInterval(timer);
+  }, 400);
+}
+</script>
+</body>
+</html>

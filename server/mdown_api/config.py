@@ -99,6 +99,11 @@ class Config:
     report_rate_max: int = 12
     report_rate_window: int = 3600
 
+    # the request board is public, so it gets the smallest window of all:
+    # a person can leave a handful of asks an hour, a script cannot flood it
+    board_rate_max: int = 6
+    board_rate_window: int = 3600
+
     # ---- source-side workarounds ----------------------------------------
     # a Netscape cookies.txt for age-gated / login-walled sources; empty = none
     ytdlp_cookies: str = ""
@@ -150,6 +155,8 @@ class Config:
             probe_rate_window=_int("MDOWN_PROBE_RATE_WINDOW", 300, 10, 86400),
             report_rate_max=_int("MDOWN_REPORT_RATE_MAX", 12, 1, 1000),
             report_rate_window=_int("MDOWN_REPORT_RATE_WINDOW", 3600, 60, 86400),
+            board_rate_max=_int("MDOWN_BOARD_RATE_MAX", 6, 1, 200),
+            board_rate_window=_int("MDOWN_BOARD_RATE_WINDOW", 3600, 60, 86400),
             ytdlp_cookies=os.environ.get("MDOWN_YTDLP_COOKIES", "").strip(),
             ytdlp_extra_args=os.environ.get("MDOWN_YTDLP_EXTRA_ARGS", "").strip(),
         )

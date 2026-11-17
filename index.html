@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=339">
+<link rel="stylesheet" href="assets/app.css?v=341">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -447,6 +447,36 @@
 
 
 
+  <section class="board" id="board" hidden>
+    <details class="board-disclosure" id="board-disclosure" aria-labelledby="board-title">
+      <summary class="board-summary" id="board-summary">
+        <span class="section-label" id="board-title">ask for a tool</span>
+        <span class="board-tag">public · no name · no account</span>
+        <span class="board-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="board-body">
+        <div class="board-review" id="board-review" hidden>
+          <div class="board-review-head">
+            <span class="board-tag">waiting for a yes</span>
+            <span class="board-count" id="board-review-count"></span>
+          </div>
+          <ul class="board-list" id="board-review-list" aria-label="waiting requests"></ul>
+        </div>
+        <p class="board-copy">a service that should work here, or something this should do. one line, and it goes on the board below. nothing about you goes with it.</p>
+        <form class="board-form" id="board-form" novalidate>
+          <label class="sr-only" for="board-text">your request</label>
+          <textarea id="board-text" class="board-text" rows="2" maxlength="240"
+                    placeholder="what should this do?" spellcheck="true"></textarea>
+          <div class="board-foot">
+            <span class="board-count" id="board-count">0 / 240</span>
+            <button class="ghost-btn" id="board-send" type="submit" disabled>send</button>
+          </div>
+        </form>
+        <p class="board-state" id="board-state" role="status" aria-live="polite" hidden></p>
+        <ol class="board-list" id="board-list" aria-label="recent requests"></ol>
+      </div>
+    </details>
+  </section>
 </main>
 
 <main class="wrap" data-view-panel="remux" id="remux-view" hidden>
@@ -505,6 +535,7 @@
       </div>
     </details>
   </section>
+
 </main>
 
 <main class="wrap" data-view-panel="subs" hidden>
@@ -1084,7 +1115,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=8" defer></script>
-<script src="assets/app.js?v=160" defer></script>
+<script src="assets/app.js?v=162" defer></script>
 <script type="module" src="assets/nav.js?v=16"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

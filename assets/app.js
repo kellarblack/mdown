@@ -332,6 +332,9 @@
 
   function saveSettings() {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
+    /* the board has nowhere to go without an instance, and it appears the
+       moment one is set */
+    boardVisible();
   }
 
   function loadHistory() {
@@ -391,6 +394,16 @@
     setupTail: $("#setup-tail"),
     setupButton: $("#setup-open-settings"),
     donateLink: $("#donate-link"),
+    board: $("#board"),
+    boardForm: $("#board-form"),
+    boardText: $("#board-text"),
+    boardSend: $("#board-send"),
+    boardCount: $("#board-count"),
+    boardState: $("#board-state"),
+    boardList: $("#board-list"),
+    boardReview: $("#board-review"),
+    boardReviewList: $("#board-review-list"),
+    boardReviewCount: $("#board-review-count"),
     tipPop: $("#tip-pop"),
     openHealth: $("#open-health"),
     openSources: $("#open-sources"),
@@ -3018,6 +3031,198 @@
     positionTipPop();
   }
 
+  /* ----------------------------------------------------------
+     the request board: one public line, nothing attached
+     ---------------------------------------------------------- */
+  let boardLoaded = false;
+  let boardSending = false;
+
+  function boardAgo(stamp) {
+    const seconds = Math.max(0, Math.floor(Date.now() / 1000 - Number(stamp || 0)));
+    if (seconds < 45) return "just now";
+    if (seconds < 5400) return Math.max(1, Math.round(seconds / 60)) + "m ago";
+    if (seconds < 172800) return Math.round(seconds / 3600) + "h ago";
+    return Math.round(seconds / 86400) + "d ago";
+  }
+
+  function boardRow(entry) {
+    const item = el("li", { class: "board-item" });
+    /* textContent, never innerHTML: this is a stranger's sentence */
+    item.appendChild(el("p", { class: "board-line", text: String((entry && entry.text) || "") }));
+    item.appendChild(el("span", { class: "board-meta", text: boardAgo(entry && entry.t) }));
+    return item;
+  }
+
+  function boardSay(text) {
+    if (!dom.boardState) return;
+    dom.boardState.textContent = text || "";
+    dom.boardState.hidden = !text;
+  }
+
+  function boardPaint(items) {
+    if (!dom.boardList) return;
+    dom.boardList.innerHTML = "";
+    items.slice(0, 12).forEach((entry) => dom.boardList.appendChild(boardRow(entry)));
+    if (!items.length) boardSay("nothing yet. yours can be the first.");
+    else boardSay("");
+  }
+
+  async function boardLoad() {
+    if (boardLoaded) return;
+    const base = apiEndpoint();
+    if (!base) return;
+    boardLoaded = true;
+    try {
+      const response = await fetch(base + "requests", {
+        headers: { Accept: "application/json" }, cache: "no-store"
+      });
+      if (!response.ok) throw new Error("status " + response.status);
+      const data = await response.json();
+      boardPaint(Array.isArray(data.items) ? data.items : []);
+      /* only the owner's browser has a key, and only the owner sees the queue */
+      boardLoadPending();
+    } catch (error) {
+      boardLoaded = false;
+      boardSay("the board is not answering right now.");
+    }
+  }
+
+  function boardReviewCount() {
+    if (!dom.boardReview) return;
+    const waiting = dom.boardReviewList ? dom.boardReviewList.children.length : 0;
+    dom.boardReview.hidden = waiting === 0;
+    if (dom.boardReviewCount) {
+      dom.boardReviewCount.textContent = waiting ? waiting + " waiting" : "";
+    }
+  }
+
+  function boardReviewRow(entry) {
+    const item = el("li", { class: "board-item is-review" });
+    item.appendChild(el("p", { class: "board-line", text: String((entry && entry.text) || "") }));
+    item.appendChild(el("span", { class: "board-meta", text: boardAgo(entry && entry.t) }));
+    const show = el("button", { type: "button", class: "ghost-btn small", text: "show" });
+    const hide = el("button", { type: "button", class: "ghost-btn small", text: "hide" });
+    show.addEventListener("click", () => boardModerate("approve", entry, item));
+    hide.addEventListener("click", () => boardModerate("delete", entry, item));
+    item.appendChild(show);
+    item.appendChild(hide);
+    return item;
+  }
+
+  async function boardModerate(action, entry, row) {
+    const base = apiEndpoint();
+    if (!base) return;
+    row.classList.add("is-busy");
+    try {
+      const response = await fetch(base + "requests/" + action, {
+        method: "POST",
+        headers: Object.assign({
+          "Content-Type": "application/json", Accept: "application/json"
+        }, authHeaders()),
+        body: JSON.stringify({ id: entry.id })
+      });
+      if (!response.ok) throw new Error("status " + response.status);
+      row.remove();
+      if (action === "approve") {
+        const first = dom.boardList.querySelector(".board-item");
+        const approved = Object.assign({}, entry, { ok: true });
+        if (first) dom.boardList.insertBefore(boardRow(approved), first);
+        else dom.boardList.appendChild(boardRow(approved));
+      }
+      boardReviewCount();
+    } catch (error) {
+      row.classList.remove("is-busy");
+      boardSay("that did not go through.");
+    }
+  }
+
+  async function boardLoadPending() {
+    if (!settings.apiKey || !dom.boardReviewList) return;
+    const base = apiEndpoint();
+    if (!base) return;
+    try {
+      const response = await fetch(base + "requests/pending", {
+        headers: Object.assign({ Accept: "application/json" }, authHeaders()),
+        cache: "no-store"
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const items = Array.isArray(data.items) ? data.items : [];
+      dom.boardReviewList.innerHTML = "";
+      items.forEach((entry) => dom.boardReviewList.appendChild(boardReviewRow(entry)));
+      boardReviewCount();
+    } catch (error) { /* the queue is the owner's problem, not the page's */ }
+  }
+
+  function boardSync() {
+    const text = String((dom.boardText && dom.boardText.value) || "").trim();
+    if (dom.boardCount) dom.boardCount.textContent = text.length + " / 240";
+    if (dom.boardSend) dom.boardSend.disabled = boardSending || text.length < 3;
+  }
+
+  async function boardSend(event) {
+    if (event) event.preventDefault();
+    if (boardSending) return;
+    const text = String((dom.boardText && dom.boardText.value) || "").trim();
+    if (text.length < 3) return;
+    const base = apiEndpoint();
+    if (!base) {
+      boardSay("no instance is set, so there is nowhere to send it.");
+      return;
+    }
+    boardSending = true;
+    if (dom.boardSend) dom.boardSend.textContent = "sending";
+    boardSync();
+    try {
+      const response = await fetch(base + "requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ text })
+      });
+      if (response.status === 429) {
+        boardSay("a few an hour is the whole limit. try again later.");
+        return;
+      }
+      if (!response.ok) throw new Error("status " + response.status);
+      /* queued, not published: a stranger cannot put words on the front page
+         by typing them, so nothing is added to the list here */
+      if (dom.boardText) dom.boardText.value = "";
+      boardSay("sent. it shows on the board once it has been looked at.");
+      boardLoadPending();
+    } catch (error) {
+      boardSay("it did not send. try again in a minute.");
+    } finally {
+      boardSending = false;
+      if (dom.boardSend) dom.boardSend.textContent = "send";
+      boardSync();
+    }
+  }
+
+  function boardVisible() {
+    if (!dom.board) return;
+    /* an instance that does not advertise the board has no routes for it: a
+       box that cannot send is worse than no box */
+    dom.board.hidden = !(apiEndpoint() && instanceInfo && instanceInfo.board === true);
+  }
+
+  function bindBoard() {
+    if (!dom.board || !dom.boardForm) return;
+    boardVisible();
+    dom.boardText.addEventListener("input", boardSync);
+    dom.boardForm.addEventListener("submit", boardSend);
+    boardSync();
+    /* shut until asked, and nothing is fetched until it opens: the page does
+       not talk to the board just because somebody scrolled past the headline */
+    const disclosure = document.getElementById("board-disclosure");
+    if (disclosure) {
+      disclosure.addEventListener("toggle", () => {
+        if (disclosure.open) boardLoad();
+      });
+    } else {
+      boardLoad();
+    }
+  }
+
   /* everything that used to open the donate dialog now opens the dropdown */
   function openDonate(event) {
     openTipPop(event);
@@ -3199,11 +3404,13 @@
         // honest capability flag: only an instance that answers /probe gets a
         // size estimate and a thumbnail, everything else looks exactly as before
         probe: cobalt.probe === true,
+        board: cobalt.board === true,
         limits: cobalt.limits && typeof cobalt.limits === "object" ? cobalt.limits : null,
         turnstileSiteKey: typeof (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) === "string" ? (cobalt.turnstileSitekey || cobalt.turnstileSiteKey) : ""
       };
       instanceFails = 0;
       instanceEverOk = true;
+      boardVisible();
       // keep the trigger and an open panel agreeing about the count
       if (sourcesOpen) renderSources();
       const host = hostOf(base) || base;
@@ -3234,6 +3441,7 @@
         ? "The API didn't answer within nine seconds."
         : friendlyError(err);
       instanceInfo = null;
+      boardVisible();
       setInstancePill("bad", "unreachable", message);
       setInstanceDetail("bad", "Can't reach this instance", [], message);
       /* A person who just pressed "check" wants the answer now. A visitor on
@@ -4465,6 +4673,7 @@
       if (!location.hash && window.scrollY > 0) window.scrollTo(0, 0);
     } catch (e) {}
     renderDonate();
+    bindBoard();
     bindTip();
     /* build the sources list while the page is idle, so the first tap on a
        phone opens instantly instead of assembling twenty links */
