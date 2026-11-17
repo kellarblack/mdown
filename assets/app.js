@@ -1840,8 +1840,10 @@
        merely wrong: this is an audio job, and the reason is usually the rights
        or the region, not a missing video */
     if (code === "api.content.video.unavailable") {
-      const audioWanted = item.mode === "audio" ||
-        (item.service && MUSIC_FIRST.has(item.service));
+      /* only an audio job gets the track wording. youtube is in MUSIC_FIRST
+         for the mode default, so a youtube *video* was being told it might be
+         Go+ only, which is nonsense. */
+      const audioWanted = item.mode === "audio";
       text = audioWanted
         ? "This track isn't available to the API. It may be private, region-locked, Go+ only, or the uploader turned off app playback."
         : "This video isn't available. It may be private, region-locked or age-gated.";
