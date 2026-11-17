@@ -3568,7 +3568,8 @@ a.addr-value:hover { color: var(--text); }
   .footer { padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
   body { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
   .mini-dock, .dock-panel { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
-  .toasts { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  /* the toasts sit under the top bar on a phone; a bottom offset here stacked
+     on top of the `top` rule and stretched the stack across the screen */
 }
 
 /* the lens: transform only, and its own variables so it stops reading --h */
