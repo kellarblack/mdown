@@ -1045,6 +1045,16 @@ a.ghost-btn { text-decoration: none; }
 }
 .report-note:focus-visible { border-color: var(--stroke-2); }
 .report-state { margin: 0; min-height: 1.1em; color: var(--text-3); font-size: 0.72rem; }
+.report-reasons { display: flex; flex-wrap: wrap; gap: 6px; }
+.report-reasons .ghost-btn[aria-pressed="true"] {
+  color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
+}
+/* the owner's card with the public board off: only the reports */
+.board-owner .board-copy,
+.board-owner .board-form,
+.board-owner .board-list,
+.board-owner .board-review { display: none; }
+.board-owner .board-body { padding-top: 10px; }
 .footer a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .footer a:hover { color: var(--text-2); }
 .footer-meta {

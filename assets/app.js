@@ -1439,7 +1439,10 @@
     }
     /* a failure is the one moment a person knows the service is broken, so the
        way to say so belongs here and not in a menu somewhere */
-    if (item.status === "error" && instanceInfo && instanceInfo.inbox === true) {
+    const repeats = item.service
+      ? queue.filter((n) => n.service === item.service && n.status === "error").length
+      : 0;
+    if (item.status === "error" && repeats >= 2 && instanceInfo && instanceInfo.inbox === true) {
       buttons.push(iconBtn(
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 5h10l-1.2 3L15 11H5"/></svg>',
         "Report this service",
@@ -3311,9 +3314,21 @@
       class: "report-privacy",
       text: "this goes to the owner only. no name, no address, and the link you pasted is not sent."
     }));
-    const note = el("textarea", {
-      class: "report-note", rows: "3", maxlength: "300",
-      placeholder: "what happened? (optional)", "aria-label": "what happened"
+    const reasons = el("div", { class: "report-reasons", role: "group", "aria-label": "what went wrong" });
+    const picked = { value: "" };
+    ["service down", "download failed", "wrong file", "too slow"].forEach((label) => {
+      const b = el("button", { type: "button", class: "ghost-btn small", text: label });
+      b.addEventListener("click", () => {
+        picked.value = label;
+        reasons.querySelectorAll(".ghost-btn").forEach((n) => n.removeAttribute("aria-pressed"));
+        b.setAttribute("aria-pressed", "true");
+      });
+      reasons.appendChild(b);
+    });
+    body.appendChild(reasons);
+    const note = el("input", {
+      class: "report-note", type: "text", maxlength: "120",
+      placeholder: "anything else? (optional)", "aria-label": "anything else"
     });
     body.appendChild(note);
     const state = el("p", { class: "report-state", role: "status", "aria-live": "polite" });
@@ -3324,6 +3339,10 @@
     const send = el("button", { type: "button", class: "primary-btn", text: "send" });
     send.addEventListener("click", async () => {
       if (send.disabled) return;
+      if (!picked.value) {
+        state.textContent = "pick what went wrong first.";
+        return;
+      }
       send.disabled = true;
       try {
         const response = await fetch(base + "reports", {
@@ -3331,7 +3350,7 @@
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
             service: item.service || "unknown",
-            note: String(note.value || "").trim().slice(0, 300)
+            note: (picked.value + (note.value.trim() ? " · " + note.value.trim() : "")).slice(0, 200)
           })
         });
         if (response.status === 429) {
@@ -3428,14 +3447,23 @@
     dom.board.hidden = !(apiEndpoint() && instanceInfo && instanceInfo.board === true);
   }
 
-  /* The ask board is on. It still only appears on an instance that advertises
-     one, and nothing is published until the owner approves it. Add ?board=0 to
-     a URL to hide it for that visit. */
-  const BOARD_ENABLED = !/[?&]board=0(&|$)/.test(location.search);
+  /* The public ask board is off. ?board=1 still opens it. An owner (a key in
+     settings) keeps the private reports strip either way. */
+  const BOARD_ENABLED = /[?&]board=(?!0)/.test(location.search);
 
   function bindBoard() {
     if (!dom.board || !dom.boardForm) return;
-    if (!BOARD_ENABLED) { dom.board.remove(); return; }
+    if (!BOARD_ENABLED) {
+      /* no ask board. with a key, the card stays for one thing only: the
+         reports waiting for a yes. */
+      if (!settings.apiKey) { dom.board.remove(); return; }
+      dom.board.classList.add("board-owner");
+      dom.board.hidden = false;
+      const disc = document.getElementById("board-disclosure");
+      if (disc) disc.open = true;
+      boardLoadInbox();
+      return;
+    }
     boardVisible();
     dom.boardText.addEventListener("input", boardSync);
     dom.boardForm.addEventListener("submit", boardSend);

@@ -395,9 +395,9 @@ class Handler(BaseHTTPRequestHandler):
                 # the board exists only where somebody can moderate it: with
                 # no instance key, asks would pile up with no way to say yes,
                 # so the page is not offered a box that leads nowhere
-                "board": bool(self.config.api_key),
+                "board": bool(self.config.moderate_key or self.config.api_key),
                 # the private inbox rides with the board: both need a key
-                "inbox": bool(self.config.api_key),
+                "inbox": bool(self.config.moderate_key or self.config.api_key),
             },
             "git": {"branch": "", "commit": ""},
             "limits": {
@@ -414,6 +414,21 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, self.uptime.summary(30), {"Cache-Control": "no-store"})
 
     # -- the request board -------------------------------------------------
+    def _mod_key(self) -> str:
+        return self.config.moderate_key or self.config.api_key
+
+    def _check_moderator(self) -> None:
+        key = self._mod_key()
+        if not key:
+            raise ApiError.request_locked()
+        header = self.headers.get("Authorization", "")
+        scheme, _, token = header.partition(" ")
+        token = (token or (header if not scheme.strip() else "")).strip()
+        if not token:
+            raise ApiError.auth_missing()
+        if not hmac.compare_digest(token, key):
+            raise ApiError.auth_invalid()
+
     def _board_list(self) -> None:
         items = self.board.list(30)
         self._json(200, {"items": items, "count": self.board.count()},
@@ -429,9 +444,7 @@ class Handler(BaseHTTPRequestHandler):
 
     # -- the private inbox: "this service is broken" -----------------------
     def _inbox_list(self) -> None:
-        if not self.config.api_key:
-            raise ApiError.request_locked()
-        self._check_auth()
+        self._check_moderator()
         waiting = self.board_reports.pending(200)
         handled = [entry for entry in self.board_reports.list(200)]
         self._json(200, {"items": waiting, "handled": handled},
@@ -469,9 +482,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json(202, {"status": "queued", "item": dict(item, text="")}, headers)
 
     def _inbox_handled(self) -> None:
-        if not self.config.api_key:
-            raise ApiError.request_locked()
-        self._check_auth()
+        self._check_moderator()
         self._check_origin()
         ident = str(self._read_json().get("id") or "").strip()
         if not ident or not self.board_reports.approve(ident):
@@ -479,9 +490,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"status": "ok"})
 
     def _inbox_delete(self) -> None:
-        if not self.config.api_key:
-            raise ApiError.request_locked()
-        self._check_auth()
+        self._check_moderator()
         self._check_origin()
         ident = str(self._read_json().get("id") or "").strip()
         if not ident or not self.board_reports.delete(ident):
@@ -489,9 +498,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"status": "ok"})
 
     def _board_approve(self) -> None:
-        if not self.config.api_key:
-            raise ApiError.request_locked()
-        self._check_auth()
+        self._check_moderator()
         self._check_origin()
         body = self._read_json()
         ident = str(body.get("id") or "").strip()
