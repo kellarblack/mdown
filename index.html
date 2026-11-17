@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=348">
+<link rel="stylesheet" href="assets/app.css?v=350">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -351,6 +351,7 @@
           </button>
           <button type="button" class="ghost-btn" id="paste-btn" data-state="paste"
                   aria-label="paste from clipboard" title="paste">
+            <span class="pb-spin" aria-hidden="true"></span>
             <span class="pb-icons" aria-hidden="true">
               <svg class="pb-paste" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="12" height="16" rx="2.5"/><path d="M16 4V3.2A1.2 1.2 0 0 0 14.8 2H9.2A1.2 1.2 0 0 0 8 3.2V4"/><path d="M4 8v11.5A1.5 1.5 0 0 0 5.5 21H13"/></svg>
               <svg class="pb-get" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.8 10.2 4.2 4.2 4.2-4.2"/><path d="M5 19h14"/></svg>
@@ -1122,7 +1123,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=9" defer></script>
-<script src="assets/app.js?v=167" defer></script>
+<script src="assets/app.js?v=170" defer></script>
 <script type="module" src="assets/nav.js?v=16"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

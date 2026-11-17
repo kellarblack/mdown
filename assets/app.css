@@ -428,11 +428,13 @@ button, a, .mode, .mbar-item, .source-chip, .sheet-nav-item, .tool-card {
 .service-badge svg { width: 14px; height: 14px; flex: none; }
 .service-mark { display: inline-flex; align-items: center; justify-content: center; }
 .service-badge[data-empty="true"] { padding: 0; }
+/* the badge is the mark alone: the note under the field already names the
+   service, and a 30px square fits a phone where a word did not */
 .service-name {
-  font-family: var(--mono); font-size: 0.7rem; letter-spacing: -0.01em;
-  color: var(--text-2); white-space: nowrap;
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
 }
-.service-badge[data-empty="false"] { color: var(--accent); border-color: var(--accent-line); }
+.service-badge[data-empty="false"] { color: var(--accent); border-color: var(--accent-line); padding: 0; }
 
 #url-input {
   flex: 1 1 auto; min-width: 0;
@@ -464,7 +466,15 @@ button, a, .mode, .mbar-item, .source-chip, .sheet-nav-item, .tool-card {
   animation: arrow-in 220ms var(--ease);
 }
 #paste-btn[data-state="get"]:hover { background: var(--btn-hover); color: var(--accent-ink); }
-#paste-btn[data-busy="true"] .pb-get { animation: spin 900ms linear infinite; }
+/* while a link is being submitted the arrow does not tumble: a plain ring
+   turns in its place, which is what a wait looks like */
+#paste-btn[data-busy="true"] .pb-icons { display: none; }
+#paste-btn[data-busy="true"] .pb-spin {
+  display: block; width: 13px; height: 13px; border-radius: 50%;
+  border: 1.6px solid currentColor; border-top-color: transparent;
+  animation: spin 760ms linear infinite;
+}
+.pb-spin { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .pb-icons svg, .pb-label { transition: none; }
 }
@@ -627,7 +637,7 @@ a.ghost-btn { text-decoration: none; }
 .primary-btn:hover svg { transform: translateX(2px); }
 .primary-btn:active { filter: brightness(0.96); transform: translateY(1px); }
 .primary-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.primary-btn[data-busy="true"] svg { animation: spin 900ms linear infinite; }
+.primary-btn[data-busy="true"] svg { opacity: 0.45; }
 
 /* On a desktop the fetch button is an arrow, not a word: 34px, no label, and
    quiet until the field holds a link. It arms rather than appearing, so the
@@ -1676,7 +1686,7 @@ a.ghost-btn { text-decoration: none; }
   /* keep the mark on phones: it is the fastest way to see what got detected */
   .service-badge svg { width: 12px; height: 12px; }
   .service-badge[data-empty="true"] { display: none; }
-  .service-badge[data-empty="false"] { padding: 0 7px; }
+  .service-badge[data-empty="false"] { padding: 0; }
   .service-name { font-size: 0.66rem; }
   #url-input { font-size: 16px; }
   .composer-foot { flex-wrap: wrap; gap: 8px; }
