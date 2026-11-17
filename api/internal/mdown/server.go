@@ -1,6 +1,8 @@
 package mdown
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"context"
 	"crypto/subtle"
 	"encoding/json"
@@ -266,7 +268,24 @@ func (s *Server) sendJSON(w http.ResponseWriter, r *http.Request, status int, pa
 	}
 }
 
+// newRef is the short id a failure is logged under: eight hex characters,
+// enough to be unique per box and short enough to read out loud.
+func newRef() string {
+	var b [4]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return fmt.Sprintf("%08x", time.Now().UnixNano()&0xffffffff)
+	}
+	return hex.EncodeToString(b[:])
+}
+
 func (s *Server) sendError(w http.ResponseWriter, r *http.Request, e *APIError) {
+	// one line per failure, always. the ref is the thread between the sentence
+	// a visitor sees and the detail only this log keeps.
+	e.Ref = newRef()
+	log.Printf("error ref=%s at=%s status=%d code=%s method=%s path=%s ip=%s detail=%q",
+		e.Ref, time.Now().UTC().Format(time.RFC3339), e.Status, e.Code,
+		r.Method, r.URL.Path, s.clientIP(r), RedactLog(e.Detail))
+
 	extra := map[string]string{}
 	if e.Code == "api.rate_limit" {
 		retry := 30
@@ -274,9 +293,6 @@ func (s *Server) sendError(w http.ResponseWriter, r *http.Request, e *APIError) 
 			retry = v
 		}
 		extra["Retry-After"] = strconv.Itoa(retry)
-	}
-	if e.Detail != "" && !e.Expose {
-		log.Printf("%d %s: %s", e.Status, e.Code, RedactLog(e.Detail))
 	}
 	s.sendJSON(w, r, e.Status, e.Payload(), extra)
 }
@@ -298,7 +314,7 @@ func (s *Server) limit(w http.ResponseWriter, r *http.Request, l *RateLimiter, r
 	}
 	h["Retry-After"] = strconv.Itoa(v.Retry)
 	h["RateLimit-Policy"] = fmt.Sprintf("%d;w=%d", l.Max, int(l.Window.Seconds()))
-	s.sendJSON(w, r, 429, ErrRateLimit(v.Retry, reason).Payload(), h)
+	s.sendError(w, r, ErrRateLimit(v.Retry, reason))
 	return nil, false
 }
 

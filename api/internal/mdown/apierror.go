@@ -11,6 +11,9 @@ type APIError struct {
 	Detail  string
 	// Expose false keeps Detail in the log only: a 500 can carry a temp path.
 	Expose bool
+	// Ref is the short id this failure was logged under. It travels to the
+	// client so a person can paste one string and have the whole line found.
+	Ref string
 }
 
 func (e *APIError) Error() string {
@@ -23,6 +26,9 @@ func (e *APIError) Error() string {
 // Payload is the JSON body for this error.
 func (e *APIError) Payload() map[string]any {
 	inner := map[string]any{"code": e.Code}
+	if e.Ref != "" {
+		inner["ref"] = e.Ref
+	}
 	if len(e.Context) > 0 {
 		inner["context"] = e.Context
 	}
