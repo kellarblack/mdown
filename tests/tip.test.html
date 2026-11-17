@@ -68,9 +68,9 @@ async function main() {
   await sleep(320);
   const settingsBtn = doc.querySelector("#open-donate-settings");
   record("settings offers a tip jar", !!settingsBtn && !settingsBtn.hidden);
-  record("settings sends you to the tip page instead of opening a panel",
-    settingsBtn.tagName === "A" && /donate\.html$/.test(settingsBtn.getAttribute("href") || ""),
-    settingsBtn.tagName + " " + (settingsBtn.getAttribute("href") || ""));
+  settingsBtn.click();
+  await sleep(380);
+  record("settings opens the same jar", visible());
   await close();
 
   // 3. the help dialog
@@ -81,6 +81,20 @@ async function main() {
   record("and it is a link to the page too",
     !!helpTip && helpTip.tagName === "A" && /donate\.html$/.test(helpTip.getAttribute("href") || ""),
     helpTip ? helpTip.tagName + " " + (helpTip.getAttribute("href") || "") : "missing");
+
+  helpTip.click();
+  await sleep(80);
+  record("the help dialog hands the screen to the jar at once",
+    visible() && doc.querySelector("#modal").hidden,
+    "jar=" + visible() + " modal=" + !doc.querySelector("#modal").hidden);
+
+  // 4. on a phone the jar leaves on a sheet's exit, not on the dropdown's:
+  //    hiding it at 140ms cut the slide in half
+  doc.body.click();
+  await sleep(150);
+  record("the sheet is still leaving halfway through its exit", !pop.hidden);
+  await sleep(220);
+  record("and it is gone once the exit finishes", pop.hidden);
 
   window.__results = { total: results.length, failures, results };
 }

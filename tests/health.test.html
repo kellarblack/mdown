@@ -59,8 +59,15 @@ async function main() {
     "hidden=" + pop.hidden);
 
   dot.click();
+  /* the row fills in this same tick: seven holding slots, not a graph made of
+     this browser's samples that the server's week would then replace */
+  const immediate = doc.querySelectorAll("#hp-strip .hp-bar");
+  record("it holds the row at once, with none of this browser's samples",
+    immediate.length === 7 && Array.prototype.every.call(immediate, (b) => b.dataset.empty === "true"),
+    immediate.length + " bars, " + Array.prototype.filter.call(immediate, (b) => !b.dataset.empty).length + " filled");
   const opened = await waitFor(() => !pop.hidden, 5000);
   record("clicking it opens the health panel", opened);
+  const heightBefore = Math.round(pop.getBoundingClientRect().height);
   record("and reports its state", dot.getAttribute("aria-expanded") === "true",
     dot.getAttribute("aria-expanded"));
 
@@ -72,6 +79,9 @@ async function main() {
   record("and says something about uptime",
     /^\d+(\.\d+)?%$/.test($("#hp-pct").textContent.trim()) ||
       /checks/.test($("#hp-checks").textContent), $("#hp-pct").textContent + " / " + $("#hp-checks").textContent);
+  record("the card keeps its height when the answer lands",
+    Math.abs(Math.round(pop.getBoundingClientRect().height) - heightBefore) < 1,
+    heightBefore + " → " + Math.round(pop.getBoundingClientRect().height));
 
   // outside click closes it
   doc.body.click();

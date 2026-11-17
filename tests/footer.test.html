@@ -38,10 +38,10 @@ async function waitFor(fn, ms = 15000) {
 }
 
 const NAMES = [
-  "the footer holds five links: terms, status, updates, GitHub, donate",
+  "the footer holds four links: terms, updates, donate, GitHub",
   "every one of them points at a real local page or the repository",
-  "on a 390px frame donate is hidden and the other four are visible",
-  "on a 1280px frame all five are visible",
+  "on a 390px frame donate is hidden and the other three are visible",
+  "on a 1280px frame all four are visible",
   "nothing in the footer overflows horizontally at 320, 390 or 1280",
   "the links are words, not pills: no background, no border, in both themes",
   "the dot separators exist between the links",
@@ -106,8 +106,8 @@ async function main() {
   /* ---- 1. four words --------------------------------------------------- */
   const words = links().map((a) => a.textContent.trim().toLowerCase());
   record(NAMES[0],
-    !!footer && !!meta && words.length === 5 &&
-      ["terms", "status", "updates", "github", "donate"].every((w) => words.indexOf(w) >= 0),
+    !!footer && !!meta && words.length === 4 &&
+      ["terms", "updates", "donate", "github"].every((w) => words.indexOf(w) >= 0),
     words.join(" · ") || "no footer links");
 
   /* ---- 2. every word is a door ---------------------------------------- */
@@ -115,19 +115,19 @@ async function main() {
   const repo = hrefs.find((h) => /^https:\/\/github\.com\/kelllar\/mdown\/?$/.test(h));
   const locals = hrefs.filter((h) => /\.html$/.test(h));
   const pages = await Promise.all(
-    ["terms.html", "status.html", "updates.html", "donate.html"].map((p) =>
+    ["terms.html", "updates.html", "donate.html"].map((p) =>
       fetch("../" + p, { cache: "no-store" }).then((r) => ({ page: p, ok: r.ok })).catch(() => ({ page: p, ok: false }))
     )
   );
   const missing = pages.filter((p) => !p.ok).map((p) => p.page);
-  const wantLocal = ["terms.html", "status.html", "updates.html", "donate.html"].every((p) => locals.indexOf(p) >= 0);
-  record(NAMES[1], !!repo && wantLocal && missing.length === 0 && locals.length === 4,
+  const wantLocal = ["terms.html", "updates.html", "donate.html"].every((p) => locals.indexOf(p) >= 0);
+  record(NAMES[1], !!repo && wantLocal && missing.length === 0 && locals.length === 3,
     missing.length ? "missing: " + missing.join(", ") : hrefs.join(" ") || "no hrefs");
 
   /* ---- 4. wide: all four ----------------------------------------------- */
   await setWidth(1280, 800);
   const wideShown = links().filter(visible).map((a) => a.textContent.trim());
-  record(NAMES[3], wideShown.length === 5, wideShown.join(",") || "none visible");
+  record(NAMES[3], wideShown.length === 4, wideShown.join(",") || "none visible");
 
   /* ---- 3. phone: donate steps out ------------------------------------- */
   await setWidth(390, 780);
@@ -135,8 +135,8 @@ async function main() {
   const donateLink = doc.querySelector("#donate-link");
   const donateShown = !!donateLink && visible(donateLink);
   record(NAMES[2],
-    !donateShown && phoneVisible.length === 4 &&
-      ["terms", "status", "updates", "GitHub"].every((w) => phoneVisible.indexOf(w) >= 0),
+    !donateShown && phoneVisible.length === 3 &&
+      ["terms", "updates", "GitHub"].every((w) => phoneVisible.indexOf(w) >= 0),
     "visible: " + (phoneVisible.join(",") || "none") + "; donate " + (donateShown ? "shown" : "hidden"));
 
   /* ---- 5. never sideways ---------------------------------------------- */
@@ -176,7 +176,7 @@ async function main() {
   }
   doc.documentElement.setAttribute("data-theme", "dark");
   await sleep(120);
-  record(NAMES[5], !!footer && links().length === 5 && pills.length === 0,
+  record(NAMES[5], !!footer && links().length === 4 && pills.length === 0,
     pills.slice(0, 3).join("; ") || "transparent, borderless");
 
   /* ---- 7. the dots ---------------------------------------------------- */

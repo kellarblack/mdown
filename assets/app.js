@@ -2262,6 +2262,7 @@
   let modalReturnFocus = null;
 
   function openModal(title, bodyNode, footButtons) {
+    if (tipOpen) closeTipPop(true);
     const panel = dom.modal.querySelector(".modal-inner");
     if (panel) panel.classList.remove("is-sources");
     dom.modalTitle.textContent = title;
@@ -2607,6 +2608,7 @@
       closeSources();
       return;
     }
+    if (tipOpen) closeTipPop(true);
     sourcesSeq += 1;
     sourcesOpen = true;
     dom.sourcesPanel.classList.remove("is-closing");
@@ -2744,7 +2746,18 @@
       link.hidden = !cfg;
     });
     const settingsDonate = $("#open-donate-settings");
-    if (settingsDonate) settingsDonate.hidden = !cfg;
+    if (settingsDonate) {
+      settingsDonate.hidden = !cfg;
+      if (!settingsDonate.dataset.tipBound) {
+        settingsDonate.dataset.tipBound = "1";
+        settingsDonate.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          closeSettings();
+          openTipPop(event);
+        });
+      }
+    }
     const tip = $("#open-donate-top");
     if (tip) tip.hidden = !cfg;
     if (!dom.donateLink) return;
@@ -2829,6 +2842,7 @@
 
   /* the tip jar is a dropdown, like the sources list: one tap, no page load */
   let tipOpen = false;
+  let tipHideTimer = null;
 
   function tipTriggers() {
     return $$("#open-donate-top");
@@ -2857,23 +2871,31 @@
     pop.style.left = "auto";
   }
 
-  function closeTipPop() {
+  function closeTipPop(instant) {
     if (!tipOpen) return;
     const pop = dom.tipPop;
     const veil = document.getElementById("tip-veil");
+    setTipState(false);
+    clearTimeout(tipHideTimer);
+    if (!pop) return;
+    if (instant) {
+      pop.hidden = true;
+      pop.classList.remove("is-closing");
+      if (veil) { veil.classList.remove("is-on"); veil.hidden = true; }
+      return;
+    }
     if (veil) {
       veil.classList.remove("is-on");
       setTimeout(() => { if (!tipOpen) veil.hidden = true; }, 220);
     }
-    setTipState(false);
-    if (pop) {
-      pop.classList.add("is-closing");
-      setTimeout(() => {
-        if (tipOpen) return;
-        pop.hidden = true;
-        pop.classList.remove("is-closing");
-      }, 140);
-    }
+    pop.classList.add("is-closing");
+    /* the phone's exit is 220ms: hiding at 140 cut the sheet off halfway down
+       the screen, which is the snap that made the jar feel broken */
+    tipHideTimer = setTimeout(() => {
+      if (tipOpen) return;
+      pop.hidden = true;
+      pop.classList.remove("is-closing");
+    }, PHONE() ? 260 : 150);
   }
 
   function openTipPop(openerEvent) {
@@ -2881,6 +2903,16 @@
     const pop = dom.tipPop;
     if (!cfg || !pop) return;
 
+    /* whatever you pressed to get here leaves at once. two panels animating
+       through each other, or a dialog fading out above the jar, is what made
+       the jar feel broken when it was opened from settings or help */
+    if (healthOpen) closeHealthPop();
+    if (dockOpen) setDock(false);
+    if (sourcesOpen) closeSources();
+    if (!dom.sheet.hidden) closeSettings();
+    if (dom.modal && !dom.modal.hidden) closeModal(true);
+
+    clearTimeout(tipHideTimer);
     pop.innerHTML = "";
     const head = el("div", { class: "tip-head" });
     head.appendChild(el("b", { text: "tip jar" }));
@@ -2990,8 +3022,18 @@
   }
 
   let modalSeq = 0;
-  function closeModal() {
-    if (dom.modal.hidden || dom.modal.dataset.closing === "1") return;
+  function closeModal(instant) {
+    if (dom.modal.hidden) return;
+    if (instant) {
+      modalSeq += 1;
+      dom.modal.hidden = true;
+      dom.modal.classList.remove("is-closing");
+      delete dom.modal.dataset.closing;
+      if (dom.sheet.hidden) document.body.style.overflow = "";
+      modalReturnFocus = null;
+      return;
+    }
+    if (dom.modal.dataset.closing === "1") return;
     dom.modal.dataset.closing = "1";
     dom.modal.classList.add("is-closing");
     const stamp = ++modalSeq;
@@ -3437,6 +3479,7 @@
   let lastFocused = null;
 
   function openSettings(section) {
+    if (tipOpen) closeTipPop(true);
     if (healthOpen) closeHealthPop();
     if (donateTab) setDonateTab(false);
     const barSettings = $("#mbar-settings");
@@ -3506,6 +3549,12 @@
     const buttons = [close];
     /* the page, not a dropdown inside a dialog */
     const tip = el("a", { class: "ghost-btn", href: "donate.html", text: "tip jar" });
+    tip.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      closeModal();
+      openTipPop(event);
+    });
     buttons.unshift(tip);
     openModal("How it works", body, buttons);
   }
@@ -3689,6 +3738,13 @@
     }
   }
 
+  /* a server with no log keeps no graph: say that plainly instead of leaving
+     the last numbers up or borrowing this browser's samples */
+  function sayNoGraph() {
+    if (dom.hpPct) dom.hpPct.textContent = "n/a";
+    if (dom.hpChecks) dom.hpChecks.textContent = "no checks logged";
+  }
+
   async function checkHealth() {
     const endpoint = apiEndpoint();
     if (!endpoint) {
@@ -3719,18 +3775,20 @@
 
     if (sample.limited) {
       // 429 means the server answered; that is proof of life, not downtime
-      if (!(await renderServerMini(endpoint))) renderHealthBars(readHealth());
+      if (!(await renderServerMini(endpoint))) sayNoGraph();
       setHealthState("ok", "online", "");
       return;
     }
 
     if (!sample.responded) {
-      if (!(await renderServerMini(endpoint))) renderHealthBars(pushHealth(null));
+      /* the server answered nothing: keep the week it gave us before, or the
+         holding slots. this browser's samples are not a second opinion */
+      if (!(await renderServerMini(endpoint))) sayNoGraph();
       setHealthState("bad", "unreachable", "");
       return;
     }
 
-    if (!(await renderServerMini(endpoint))) renderHealthBars(pushHealth(sample.ok));
+    if (!(await renderServerMini(endpoint))) sayNoGraph();
     const up = sample.body && Number(sample.body.uptimeSeconds)
       ? "up " + formatUptime(Date.now() - Number(sample.body.uptimeSeconds) * 1000)
       : "";
@@ -3771,6 +3829,7 @@
 
   function openHealthPop() {
     if (!dom.healthPop || healthOpen) return;
+    if (tipOpen) closeTipPop(true);
     healthOpen = true;
     bringToFront(dom.healthPop);
     clearTimeout(healthCloseTimer);
@@ -3780,7 +3839,17 @@
       dom.hpStrip.title = "one check a minute while this is open; the server keeps the 30-day graph";
     }
     dom.instancePill.setAttribute("aria-expanded", "true");
-    renderHealthBars(readHealth());
+    /* one graph, drawn once. this browser's samples used to paint first and
+       then get replaced by the server's week a beat later, which read as extra
+       bars arriving and then vanishing. seven holding slots take the space
+       until the real week lands. */
+    if (dom.hpStrip && !String(healthSig).startsWith("server:")) {
+      healthSig = "holding";
+      dom.hpStrip.innerHTML = "";
+      for (let i = 0; i < 7; i += 1) {
+        dom.hpStrip.appendChild(el("span", { class: "hp-bar", "data-empty": "true" }));
+      }
+    }
     checkHealth();
     startHealthTimer();
   }
@@ -3855,6 +3924,7 @@
     if (barNode) barNode.addEventListener("click", (event) => {
       const item = event.target.closest(".mbar-item");
       if (!item) return;
+      if (tipOpen) closeTipPop(true);
       if (item.id !== "mbar-settings" && !dom.sheet.hidden) closeSettings();
       if (item.id !== "mbar-donate" && donateTab) setDonateTab(false);
     }, true);

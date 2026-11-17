@@ -268,7 +268,9 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   font-family: var(--mono); font-size: 0.78rem; font-weight: 400;
   color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); white-space: nowrap; }
+/* one line, always: the count is the only thing that can get long, and when it
+   wrapped the card grew four pixels after the server answered */
+.hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .hp-checks::before { content: "·"; margin-right: 6px; color: var(--text-3); opacity: 0.6; }
 
 /* the signal is the wifi mark: three arcs that rise once when the card opens,
@@ -290,7 +292,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .health-pop[data-state="checking"] .hp-signal,
 .health-pop[data-state="checking"] .hp-state b { color: var(--warn); }
 .hp-foot {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;
+  display: flex; align-items: center; flex-wrap: nowrap; gap: 4px 8px;
   font-family: var(--mono); font-size: 0.67rem; color: var(--text-3);
 }
 .hp-links { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
@@ -1823,7 +1825,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     bottom: auto;
     width: auto;
     max-height: calc(100dvh - 58px - env(safe-area-inset-top, 0px) - 86px);
-    transform: none; transform-origin: top right;
+    transform: none; transform-origin: top center;
     border-radius: 16px;
     padding: 12px 14px 14px;
     box-shadow: 0 24px 50px -28px rgba(0, 0, 0, 0.9);
