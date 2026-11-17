@@ -125,6 +125,14 @@ def main():
                     continue
                 findings.append((rel, "third-party load: %s" % snippet[:70]))
 
+    # the phone's donation tab is this site framing donate.html, so the framing
+    # policy must allow 'self'. 'none' looks stricter and blanks the tab.
+    headers_file = os.path.join(ROOT, "_headers")
+    if os.path.exists(headers_file):
+        policy = open(headers_file, encoding="utf-8").read()
+        if "frame-ancestors 'none'" in policy or re.search(r"X-Frame-Options:\s*DENY", policy):
+            findings.append(("_headers", "frame policy refuses the site's own donation tab"))
+
     if findings:
         print("privacy check: %d finding(s)" % len(findings))
         for rel, message in findings:

@@ -412,6 +412,21 @@ async function main() {
         doc.querySelector("#mbar-donate").getAttribute("data-tab-active") === "true",
       Math.round(frameNode.getBoundingClientRect().bottom) + " vs " + Math.round(barTop));
 
+    /* an empty frame is a dead tab: the page in it has to have actually rendered,
+       and a framing policy that says 'none' is exactly how it goes blank */
+    let innerDoc = null;
+    for (let i = 0; i < 40; i++) {
+      innerDoc = ifr.contentDocument;
+      if (innerDoc && innerDoc.readyState === "complete" && innerDoc.querySelector("#addr-grid")) break;
+      await sleep(100);
+    }
+    const innerReady = !!(innerDoc && innerDoc.querySelector("#addr-grid") &&
+      innerDoc.scrollingElement.scrollWidth <= innerDoc.scrollingElement.clientWidth + 1);
+    record("the tip page really loads inside it",
+      innerReady,
+      innerDoc ? (innerDoc.title || "(no title)") + " " +
+        innerDoc.scrollingElement.scrollWidth + "x" + innerDoc.scrollingElement.clientWidth : "no document");
+
     doc.querySelector("#mbar-queue").click();
     await sleep(420);
     record("and another tab closes it",

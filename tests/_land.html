@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;background:#222}iframe{border:0;display:block}pre{color:#fff;font:11px monospace;white-space:pre-wrap}</style></head>
+<body>
+<iframe id="a" src="/index.html?land=1" style="width:740px;height:360px"></iframe>
+<pre id="o">waiting</pre>
+<script>
+const f = document.getElementById("a");
+const R = (n) => { const r = n.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)]; };
+f.addEventListener("load", () => setTimeout(async () => {
+  const d = f.contentDocument, w = f.contentWindow, q = (s) => d.querySelector(s);
+  const out = { view: [w.innerWidth, w.innerHeight], hover: w.matchMedia("(hover: none)").matches,
+    phoneCss: w.matchMedia("(max-width: 720px), (hover: none) and (max-height: 520px)").matches,
+    bar: q(".mobile-bar") ? Math.round(q(".mobile-bar").getBoundingClientRect().height) : 0,
+    scroll: [d.scrollingElement.scrollWidth, d.scrollingElement.clientWidth] };
+  if (q("#instance-pill")) {
+    q("#instance-pill").click();
+    await new Promise(r => setTimeout(r, 600));
+    const p = q("#health-pop"), pr = p.getBoundingClientRect();
+    out.card = { rect: R(p), fits: pr.top >= 0 && pr.bottom <= w.innerHeight + 1 };
+    d.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await new Promise(r => setTimeout(r, 250));
+  }
+  if (q("#mbar-settings")) {
+    q("#mbar-settings").click();
+    await new Promise(r => setTimeout(r, 400));
+    const sb = q("#open-donate-settings");
+    if (sb && !sb.hidden) {
+      sb.click();
+      await new Promise(r => setTimeout(r, 600));
+      const j = q("#tip-pop"), jr = j.getBoundingClientRect();
+      out.jar = { rect: R(j), fits: jr.top >= 0 && jr.bottom <= w.innerHeight + 1 && jr.height > 40 };
+    }
+  }
+  document.getElementById("o").textContent = JSON.stringify(out);
+}, 1200));
+</script></body></html>

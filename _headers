@@ -6,9 +6,10 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
   # a header is stronger than the meta tag: it also covers frame-ancestors,
-  # which a <meta> CSP cannot set at all
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
-  X-Frame-Options: DENY
+  # which a <meta> CSP cannot set at all. 'self', not 'none': the phone's
+  # donation tab is this site framing its own donate.html, and 'none' blanks it
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'
+  X-Frame-Options: SAMEORIGIN
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Cache-Control: public, max-age=0, must-revalidate
 
