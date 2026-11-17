@@ -360,3 +360,33 @@ func TestPickerForPlaylists(t *testing.T) {
 		t.Fatalf("picker %d %v", res.StatusCode, out)
 	}
 }
+
+// Every failure carries a short ref, and no two share one. A visitor pastes
+// that string and the whole log line is found; if a later rewrite drops it,
+// this test is what fails.
+func TestEveryFailureCarriesARef(t *testing.T) {
+	h := newHarness(t, nil)
+	ref := func(out map[string]any) string {
+		e, _ := out["error"].(map[string]any)
+		s, _ := e["ref"].(string)
+		return s
+	}
+	_, first := h.post(t, "/", map[string]any{"url": ""}, "https://mdown.cc")
+	_, second := h.post(t, "/", map[string]any{"url": ""}, "https://mdown.cc")
+
+	a, b := ref(first), ref(second)
+	if len(a) != 8 || len(b) != 8 {
+		t.Fatalf("refs should be 8 characters, got %q and %q", a, b)
+	}
+	for _, ch := range a {
+		if !strings.ContainsRune("0123456789abcdef", ch) {
+			t.Fatalf("ref is not hex: %q", a)
+		}
+	}
+	if a == b {
+		t.Fatalf("two failures shared a ref: %q", a)
+	}
+	if first["status"] != "error" {
+		t.Fatalf("not an error payload: %v", first)
+	}
+}
