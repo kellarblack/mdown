@@ -3644,7 +3644,7 @@
     if (dom.hpChecks) {
       dom.hpChecks.textContent = total
         ? compactCount(total) + " check" + (total === 1 ? "" : "s")
-        : "no checks yet";
+        : "no log yet";
     }
   }
 
@@ -3752,7 +3752,7 @@
      the last numbers up or borrowing this browser's samples */
   function sayNoGraph() {
     if (dom.hpPct) dom.hpPct.textContent = "n/a";
-    if (dom.hpChecks) dom.hpChecks.textContent = "no checks logged";
+    if (dom.hpChecks) dom.hpChecks.textContent = "no log yet";
   }
 
   async function checkHealth() {

@@ -78,7 +78,8 @@ async function main() {
   record("it checks the server on open", online, "state=" + pop.dataset.state);
   record("and says something about uptime",
     /^\d+(\.\d+)?%$/.test($("#hp-pct").textContent.trim()) ||
-      /checks/.test($("#hp-checks").textContent), $("#hp-pct").textContent + " / " + $("#hp-checks").textContent);
+      /checks|no log/.test($("#hp-checks").textContent),
+    $("#hp-pct").textContent + " / " + $("#hp-checks").textContent);
   record("the card keeps its height when the answer lands",
     Math.abs(Math.round(pop.getBoundingClientRect().height) - heightBefore) < 1,
     heightBefore + " → " + Math.round(pop.getBoundingClientRect().height));
@@ -115,6 +116,20 @@ async function main() {
   const r = pop.getBoundingClientRect();
   record("it fits a phone screen", r.left >= 0 && r.right <= 391,
     Math.round(r.left) + " → " + Math.round(r.right));
+
+  /* a month of checks is a number you read at a glance, not a comma number */
+  frame.contentWindow.localStorage.setItem("mdown.settings",
+    JSON.stringify({ instance: "http://127.0.0.1:4320/uptime-on" }));
+  frame.src = "../index.html?health2=" + Date.now();
+  await waitFor(() => frame.contentDocument && frame.contentDocument.querySelector("#hp-strip"), 20000);
+  await sleep(500);
+  const doc2 = frame.contentDocument;
+  doc2.querySelector("#instance-pill").click();
+  await waitFor(() => doc2.querySelector("#hp-pct").textContent.trim() !== "n/a", 15000);
+  await sleep(200);
+  record("a full month reads 1.4k checks, not 1,440",
+    doc2.querySelector("#hp-checks").textContent.trim() === "1.4k checks",
+    doc2.querySelector("#hp-checks").textContent.trim());
 
   window.__results = { total: results.length, failures, results };
 }
