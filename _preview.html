@@ -14,12 +14,12 @@
   Renders the site in a fixed-width iframe so a desktop browser window can see
   and screenshot what a phone gets.
 -->
-<iframe id="stage" src="../index.html" width="390" height="844"></iframe>
+<iframe id="stage" src="index.html" width="390" height="844"></iframe>
 <script>
   const params = new URLSearchParams(location.search);
   const w = Number(params.get("w") || 390);
   const h = Number(params.get("h") || 844);
-  const target = params.get("url") || "../index.html";
+  const target = params.get("url") || "index.html";
   const frame = document.getElementById("stage");
   frame.width = w;
   frame.height = h;
