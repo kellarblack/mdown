@@ -1497,16 +1497,20 @@ a.ghost-btn { text-decoration: none; }
 .step-list .ghost-btn { flex: none; padding: 4px 8px; font-size: 0.68rem; }
 
 /* ---------- toasts ---------- */
+/* a toast is a corner note, not a banner across the bottom: centred, it sat
+   on top of the footer line at the end of every page */
 .toasts {
-  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
-  z-index: 120; display: flex; flex-direction: column; gap: 6px; align-items: center;
-  pointer-events: none; width: max-content; max-width: calc(100% - 32px);
+  position: fixed; right: clamp(16px, 4vw, 26px); bottom: 22px; left: auto;
+  transform: none;
+  z-index: 120; display: flex; flex-direction: column; gap: 6px; align-items: flex-end;
+  pointer-events: none; width: max-content; max-width: min(420px, calc(100% - 32px));
 }
 .toast {
   display: flex; align-items: center; gap: 8px;
-  padding: 7px 12px; border-radius: var(--r-sm);
+  padding: 9px 13px; border-radius: 10px;
   background: var(--bg-elev); border: 1px solid var(--stroke-2);
   color: var(--text-2); font-family: var(--mono); font-size: 0.7rem;
+  box-shadow: 0 14px 34px -22px rgba(0, 0, 0, 0.9);
   animation: toast-in 200ms var(--ease) both;
 }
 .toast .dot { width: 5px; height: 5px; border-radius: 1px; background: var(--text-3); flex: none; }
@@ -1735,7 +1739,14 @@ a.ghost-btn { text-decoration: none; }
     width: 100%; max-height: 92dvh;
     border-radius: var(--r-lg) var(--r-lg) 0 0; margin: auto auto 0;
   }
-  .toasts { bottom: 12px; }
+  /* on a phone the bottom belongs to the bar, the mini player and the footer:
+     notes drop from under the top bar instead, where nothing is stacked */
+  .toasts {
+    left: 12px; right: 12px; bottom: auto;
+    top: calc(58px + env(safe-area-inset-top, 0px) + 8px);
+    align-items: stretch; max-width: none;
+  }
+  .toast { justify-content: flex-start; }
 }
 
 /* ---------- about / shortcuts ---------- */
