@@ -427,7 +427,9 @@ function handleApiError(item: QueueItem, code: string, context?: Record<string, 
     } else text += " Limit: " + String(context.limit) + ".";
   }
   if (code === "api.content.video.unavailable") {
-    const audioWanted = item.mode === "audio" || MUSIC_FIRST.has(item.service);
+    /* the job decides the wording, not the service: youtube is audio-first by
+       default, so a youtube *video* failure was being told it might be Go+ */
+    const audioWanted = item.mode === "audio";
     text = audioWanted
       ? "This track isn't available to the API. It may be private, region-locked, Go+ only, or the uploader turned off app playback."
       : "This video isn't available. It may be private, region-locked or age-gated.";
