@@ -62,28 +62,63 @@ async function build(): Promise<void> {
       .replace("<!--CSS-->", `<link rel="stylesheet" href="assets/${css}">`)
       .replace("<!--PRELOAD-->", `<link rel="modulepreload" href="assets/${js}">${extraHead}`)
       .replace("<!--JS-->", `<script type="module" src="assets/${js}"></script>`);
-  writeFileSync(join(DIST, "index.html"), shell());
+  writeFileSync(join(DIST, "index.html"), tidyHtml(shell()));
   // the tip page is the same app, opened on the donate view; a <base> keeps
   // relative asset paths right if a host serves it as /donate/
   writeFileSync(
     join(DIST, "donate.html"),
-    shell()
+    tidyHtml(shell())
       .replace(/<title>[^<]*<\/title>/, "<title>Support mdown.cc · tip jar</title>")
       .replace(/<link rel="canonical" href="[^"]*">/, '<link rel="canonical" href="https://mdown.cc/donate.html">'),
   );
 
   // static pages and the files they use
-  for (const page of ["404.html", "terms.html", "status.html", "updates.html", "api.html", "sources.html",
-    "robots.txt", "sitemap.xml", "llms.txt", "manifest.webmanifest", "favicon.ico", "_headers"]) {
-    if (existsSync(join(ROOT, page))) cpSync(join(ROOT, page), join(DIST, page));
+  for (const page of ["404.html", "terms.html", "status.html", "updates.html", "api.html", "sources.html"]) {
+    if (existsSync(join(ROOT, page))) writeFileSync(join(DIST, page), tidyHtml(readFileSync(join(ROOT, page), "utf8")));
   }
-  for (const asset of ["app.css", "nav.js", "favicon.svg", "apple-touch-icon.png", "icon-180.png", "icon-192.png",
+  for (const file of ["robots.txt", "sitemap.xml", "llms.txt", "manifest.webmanifest", "favicon.ico", "_headers"]) {
+    if (existsSync(join(ROOT, file))) cpSync(join(ROOT, file), join(DIST, file));
+  }
+  // the static pages' stylesheet and script, minified like the app
+  const extra = await Bun.build({
+    entrypoints: [join(ROOT, "assets/app.css"), join(ROOT, "assets/nav.js")],
+    outdir: join(DIST, "assets"),
+    minify: true,
+    naming: "[name].[ext]",
+  });
+  if (!extra.success) throw new Error("static asset build failed");
+  for (const asset of ["favicon.svg", "apple-touch-icon.png", "icon-180.png", "icon-192.png",
     "icon-512.png", "og-card.png", "api-policy.pdf", "stripe-icon.png", "stripe-icon-m.png", "stripe-icon-alt.png", "vendor"]) {
     const from = join(ROOT, "assets", asset);
     if (existsSync(from)) cpSync(from, join(DIST, "assets", asset), { recursive: true });
   }
   const size = (f: string) => (statSync(join(DIST, "assets", f)).size / 1024).toFixed(1) + " KB";
   console.log(`built in ${Math.round(performance.now() - started)} ms: ${js} ${size(js)}, ${css} ${size(css)}, ${files.length} files`);
+}
+
+/** no comments, no indentation, inline scripts minified: the page is for browsers */
+function tidyHtml(html: string): string {
+  const js = new Bun.Transpiler({ loader: "js", minifyWhitespace: true });
+  return html
+    .replace(/<!--(?!CSS|JS|PRELOAD)[\s\S]*?-->/g, "")
+    .replace(/(<script(?![^>]*\bsrc=)(?![^>]*application\/ld\+json)[^>]*>)([\s\S]*?)(<\/script>)/g, (_m, open, body, close) => {
+      try {
+        return open + js.transformSync(body).trim() + close;
+      } catch {
+        return open + body + close;
+      }
+    })
+    .replace(/(<script[^>]*application\/ld\+json[^>]*>)([\s\S]*?)(<\/script>)/g, (_m, open, body, close) => {
+      try {
+        return open + JSON.stringify(JSON.parse(body)) + close;
+      } catch {
+        return open + body + close;
+      }
+    })
+    .replace(/(<style[^>]*>)([\s\S]*?)(<\/style>)/g, (_m, open, body, close) =>
+      open + body.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").trim() + close)
+    .replace(/^\s+/gm, "")
+    .replace(/\n{2,}/g, "\n");
 }
 
 await build();

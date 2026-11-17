@@ -57,7 +57,10 @@ export function navigate(view: View): void {
   const base = appBase();
   const target = view === "donate" ? base + "donate.html" : base + (view === "download" ? "" : "#" + view);
   const current = location.pathname + location.hash;
-  if (current !== target) history.pushState(null, "", target || "/");
+  // leaving from an open sheet replaces the sheet's own history entry, so one
+  // back press returns to where the sheet was opened
+  if (history.state && history.state.mdLayer) history.replaceState(null, "", target || "/");
+  else if (current !== target) history.pushState(null, "", target || "/");
   uiStore.set((s) => ({ ...s, view, panel: "none", settingsOpen: false, helpOpen: false }));
   applyMeta(view);
   window.scrollTo({ top: 0 });

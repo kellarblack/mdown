@@ -766,7 +766,10 @@ func downloadError(stderr string) error {
 	if len(stderr) > 400 {
 		stderr = stderr[len(stderr)-400:]
 	}
-	return ErrUnavailable(RedactLog(stderr))
+	// the toolchain's own words stay in the log: they can name paths and hosts
+	e := ErrUnavailable(RedactLog(stderr))
+	e.Expose = false
+	return e
 }
 
 // singleFile picks the media file, never a subtitle sidecar or a partial.

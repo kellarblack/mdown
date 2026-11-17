@@ -3,6 +3,7 @@ import { App } from "./App";
 import { startRouting } from "./routing";
 import "./app.css";
 import "./mobile.css";
+import "./donate.css";
 
 try {
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";

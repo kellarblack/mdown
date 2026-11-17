@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { apiEndpoint, checkInstance } from "./api";
-import { submitUrls } from "./queue";
+import { modalStore, submitUrls } from "./queue";
 import { composerStore, setPanel, settingsStore, toastStore, uiStore, useStore } from "./store";
 import { navigate, onNav } from "./routing";
 import { detectService, parseUrls, targetFromLocation } from "./util";
@@ -81,9 +81,36 @@ function takeDeepLink() {
   void submitUrls(urls[0]!);
 }
 
+/* Android's back button (and a back swipe) closes the sheet or dialog on top
+   instead of leaving the site. Opening a layer adds one history entry with the
+   same address; closing it by hand takes that entry back off. */
+function useBackClosesLayers() {
+  const layer = useStore(uiStore, (s) => s.settingsOpen || s.helpOpen || s.panel !== "none");
+  const modal = useStore(modalStore);
+  const open = layer || modal !== null;
+  useEffect(() => {
+    const onPop = () => {
+      const m = modalStore.get();
+      if (m?.kind === "confirm") m.resolve(false);
+      if (m) modalStore.set(null);
+      uiStore.set((s) => (s.settingsOpen || s.helpOpen || s.panel !== "none" ? { ...s, settingsOpen: false, helpOpen: false, panel: "none" } : s));
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  useEffect(() => {
+    if (open) {
+      if (!(history.state && history.state.mdLayer)) history.pushState({ mdLayer: true }, "");
+    } else if (history.state && history.state.mdLayer) {
+      history.back();
+    }
+  }, [open]);
+}
+
 export function App() {
   const ui = useStore(uiStore);
   useTheme();
+  useBackClosesLayers();
 
   useEffect(() => {
     void checkInstance({ silent: true });

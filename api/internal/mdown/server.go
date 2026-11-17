@@ -223,6 +223,10 @@ func (s *Server) sendJSON(w http.ResponseWriter, r *http.Request, status int, pa
 	h.Set("X-Content-Type-Options", "nosniff")
 	h.Set("Referrer-Policy", "no-referrer")
 	h.Set("X-Robots-Tag", "noindex")
+	// JSON is never a page: nothing may frame it, run in it or load from it
+	h.Set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+	h.Set("X-Frame-Options", "DENY")
+	h.Set("Cross-Origin-Resource-Policy", "same-site")
 	for k, v := range extra {
 		h.Set(k, HeaderSafe(v))
 	}
@@ -616,7 +620,6 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 		"uptimeSeconds": stats["uptime_s"],
 		"extraction":    canary,
 		"ytdlp":         s.ytdlpVersion(),
-		"engine":        "go",
 	}, nil)
 }
 
@@ -897,6 +900,8 @@ func (s *Server) fileHeaders(w http.ResponseWriter, r *http.Request, t *Tunnel, 
 	h.Set("Cache-Control", "no-store")
 	h.Set("X-Content-Type-Options", "nosniff")
 	h.Set("Referrer-Policy", "no-referrer")
+	h.Set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; sandbox")
+	h.Set("X-Frame-Options", "DENY")
 	s.cors(w, r)
 }
 
