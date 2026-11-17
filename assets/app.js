@@ -429,6 +429,7 @@
     hpUptime: $("#hp-uptime"),
     hpStrip: $("#hp-strip"),
     hpPct: $("#hp-pct"),
+    hpChecks: $("#hp-checks"),
     hpSettings: $("#hp-settings"),
     sheet: $("#settings"),
     sheetBody: $("#sheet-body"),
@@ -2707,7 +2708,7 @@
       href: "sources.html",
       text: "all " + all.length + " sources"
     });
-    const go = el("span", { class: "sources-more-go", "aria-hidden": "true", text: "→" });
+    const go = el("span", { class: "sources-more-go", "aria-hidden": "true" });
     more.appendChild(go);
     wrap.appendChild(more);
 
@@ -3425,6 +3426,7 @@
 
   function openSettings(section) {
     if (healthOpen) closeHealthPop();
+    if (donateTab) setDonateTab(false);
     const barSettings = $("#mbar-settings");
     if (barSettings) barSettings.setAttribute("aria-expanded", "true");
     syncBarGlider();
@@ -3444,6 +3446,7 @@
   }
 
   function closeSettings() {
+    if (dom.sheet.hidden) return;
     dom.sheet.hidden = true;
     const barSettings = $("#mbar-settings");
     if (barSettings) barSettings.setAttribute("aria-expanded", "false");
@@ -3574,8 +3577,11 @@
     const total = counted.length;
     const up = counted.filter((x) => x.ok === true).length;
     if (dom.hpPct) {
-      dom.hpPct.textContent = total
-        ? Math.round((up / total) * 1000) / 10 + "% · " + total + " check" + (total === 1 ? "" : "s")
+      dom.hpPct.textContent = total ? Math.round((up / total) * 1000) / 10 + "%" : "n/a";
+    }
+    if (dom.hpChecks) {
+      dom.hpChecks.textContent = total
+        ? total.toLocaleString() + " check" + (total === 1 ? "" : "s")
         : "no checks yet";
     }
   }
@@ -3601,35 +3607,32 @@
 
       const strip = dom.hpStrip;
       if (strip) {
-        const sig = "server:" + days.map((d) => (d ? d.date + d.up + d.total : "-")).join(",");
+        const sig = "server:" + measured.map((d) => d.date + d.up + d.total).join(",");
         if (sig !== healthSig) {
           healthSig = sig;
           strip.innerHTML = "";
-          /* every day gets a tick, including the ones with no traffic: a
-             two-day-old server should not draw two fat slabs */
-          days.forEach((day, i) => {
+          /* only the days that have data: the chart caps each bar at 14px, so
+             four real days are a small chart on the axis, not four slabs */
+          measured.forEach((day, i) => {
+            const ratio = day.up / day.total;
             const bar = el("span", { class: "hp-bar" });
-            const live = i === days.length - 1 ? "true" : "false";
-            bar.dataset.live = live;
-            if (!day || !day.total) {
-              bar.dataset.ok = "unknown";
-              bar.title = (day && day.date ? shortClock(day.date) + " · " : "") + "no checks";
-            } else {
-              const ratio = day.up / day.total;
-              bar.dataset.ok = ratio >= 0.995 ? "true" : (ratio >= 0.97 ? "partial" : "false");
-              bar.title = shortClock(day.date) + " · " +
-                Math.round(ratio * 1000) / 10 + "% of " + day.total.toLocaleString() + " checks";
-            }
+            bar.dataset.ok = ratio >= 0.995 ? "true" : (ratio >= 0.97 ? "partial" : "false");
+            bar.dataset.live = i === measured.length - 1 ? "true" : "false";
+            bar.title = shortClock(day.date) + " · " +
+              Math.round(ratio * 1000) / 10 + "% of " + day.total.toLocaleString() + " checks";
             strip.appendChild(bar);
           });
         }
       }
+      const span = measured.length + (measured.length === 1 ? " day" : " days");
       if (dom.hpPct) {
-        const pct = data.uptime === null || data.uptime === undefined
+        dom.hpPct.textContent = data.uptime === null || data.uptime === undefined
           ? "n/a"
           : Number(data.uptime).toFixed(1) + "%";
-        dom.hpPct.textContent = pct + " · " + Number(data.checks || 0).toLocaleString() +
-          " check" + (Number(data.checks) === 1 ? "" : "s");
+      }
+      if (dom.hpChecks) {
+        dom.hpChecks.textContent = Number(data.checks || 0).toLocaleString() +
+          " check" + (Number(data.checks) === 1 ? "" : "s") + " · " + span;
       }
       return true;
     } catch (e) {
@@ -3713,7 +3716,7 @@
 
     if (!(await renderServerMini(endpoint))) renderHealthBars(pushHealth(sample.ok));
     const up = sample.body && Number(sample.body.uptimeSeconds)
-      ? formatUptime(Date.now() - Number(sample.body.uptimeSeconds) * 1000)
+      ? "up " + formatUptime(Date.now() - Number(sample.body.uptimeSeconds) * 1000)
       : "";
     setHealthState(sample.ok ? "ok" : "bad", sample.ok ? "online" : "down", up);
   }
@@ -3807,7 +3810,38 @@
     }
 
     const mbarSettings = $("#mbar-settings");
-    if (mbarSettings) mbarSettings.addEventListener("click", () => openSettings());
+    if (mbarSettings) mbarSettings.addEventListener("click", () => {
+      if (donateTab) setDonateTab(false);
+      if (!dom.sheet.hidden) closeSettings();
+      else openSettings();
+    });
+    /* anything in the app that says "donate" opens the tab on a phone: the
+       settings row and the help dialog used to launch a second document */
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest ? event.target.closest('a[href="donate.html"]') : null;
+      if (!link || link.id === "mbar-donate" || !PHONE()) return;
+      event.preventDefault();
+      if (dom.modal && !dom.modal.hidden) closeModal();
+      if (!dom.sheet.hidden) closeSettings();
+      openDonateTab();
+    });
+
+    const mbarDonate = $("#mbar-donate");
+    if (mbarDonate) mbarDonate.addEventListener("click", (event) => {
+      if (!PHONE()) return;              /* a desktop keeps the real page */
+      event.preventDefault();
+      if (donateTab) setDonateTab(false);
+      else openDonateTab();
+    });
+    /* whichever tab you press, the transient one you were in gets out of the
+       way first: one tap, one destination, no stacked surfaces */
+    const barNode = document.querySelector(".mobile-bar");
+    if (barNode) barNode.addEventListener("click", (event) => {
+      const item = event.target.closest(".mbar-item");
+      if (!item) return;
+      if (item.id !== "mbar-settings" && !dom.sheet.hidden) closeSettings();
+      if (item.id !== "mbar-donate" && donateTab) setDonateTab(false);
+    }, true);
     const mbarQueue = $("#mbar-queue");
     if (mbarQueue) mbarQueue.addEventListener("click", (event) => {
       event.stopPropagation();   /* or the outside-click handler closes it again */
@@ -4061,8 +4095,14 @@
       syncBarGlider();
       setTimeout(() => syncBarGlider(), 60);
     });
-    window.addEventListener("resize", () => syncBarGlider(true));
-    window.addEventListener("orientationchange", () => setTimeout(() => syncBarGlider(true), 120));
+    window.addEventListener("resize", () => {
+      syncBarGlider(true);
+      if (donateTab) placeDonateFrame();
+    });
+    window.addEventListener("orientationchange", () => setTimeout(() => {
+      syncBarGlider(true);
+      if (donateTab) placeDonateFrame();
+    }, 120));
     if (dom.miniDock) dom.miniDock.addEventListener("click", (event) => {
       event.stopPropagation();
       /* when the row is ready, the dock IS the download button */
@@ -4237,7 +4277,8 @@
     const bar = document.querySelector(".mobile-bar");
     if (!bar) return null;
     const items = Array.from(bar.querySelectorAll(".mbar-item"));
-    return items.find((el) => el.getAttribute("aria-expanded") === "true")
+    return items.find((el) => el.getAttribute("data-tab-active") === "true")
+        || items.find((el) => el.getAttribute("aria-expanded") === "true")
         || items.find((el) => el.classList.contains("is-active"))
         || null;
   }
@@ -4265,6 +4306,54 @@
     } else {
       glider.classList.add("is-on");
     }
+  }
+
+  /* ----------------------------------------------------------
+     the phone bar is four tabs: the page, the tool, settings and the tip jar.
+     settings stops above the bar, and the tip page opens inside the app, so
+     the bar never disappears and the lit tab always says where you are.
+     ---------------------------------------------------------- */
+  const PHONE = () => window.matchMedia("(max-width: 720px), (hover: none) and (max-height: 520px)").matches;
+  let donateTab = false;
+
+  function placeDonateFrame() {
+    const frame = $("#donate-frame");
+    const topbar = document.querySelector(".topbar");
+    if (frame && topbar) {
+      frame.style.setProperty("--tab-top", Math.round(topbar.getBoundingClientRect().bottom) + "px");
+    }
+  }
+
+  function setDonateTab(on) {
+    const frame = $("#donate-frame");
+    const item = $("#mbar-donate");
+    if (!frame || !item || on === donateTab) return;
+    donateTab = on;
+    if (on) {
+      if (!frame.dataset.loaded) {
+        const iframe = frame.querySelector("iframe");
+        if (iframe) iframe.src = "donate.html?embed=1";
+        frame.dataset.loaded = "1";
+      }
+      placeDonateFrame();
+      frame.hidden = false;
+      document.body.classList.add("tab-frame-open");
+      item.setAttribute("data-tab-active", "true");
+      item.setAttribute("aria-current", "page");
+    } else {
+      frame.hidden = true;
+      document.body.classList.remove("tab-frame-open");
+      item.removeAttribute("data-tab-active");
+      item.removeAttribute("aria-current");
+    }
+    syncBarGlider();
+  }
+
+  function openDonateTab() {
+    if (healthOpen) closeHealthPop();
+    if (!dom.sheet.hidden) closeSettings();
+    if (dockOpen) setDock(false);
+    setDonateTab(true);
   }
 
   function boot() {

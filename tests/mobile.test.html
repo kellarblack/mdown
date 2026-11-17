@@ -376,11 +376,47 @@ async function main() {
       !doc.querySelector("#mbar-lens") && !doc.querySelector(".mbar-lens"),
       doc.querySelector(".mbar-lens") ? "lens still there" : "clean");
 
-    items[2].click();   /* settings: the donate item is a page link now */
-    await sleep(320);
+    items[2].click();   /* settings: it is a tab now, not a sheet over the bar */
+    await sleep(420);
     const sheet = doc.querySelector("#settings");
     record("and tapping an item opens it", !!sheet && !sheet.hidden,
       sheet ? "hidden=" + sheet.hidden : "no sheet");
+
+    /* the four places stay reachable: the sheet stops above the bar, and the
+       glider sits on the tab you are in */
+    const barTop = bar.getBoundingClientRect().top;
+    record("the sheet stops above the bar, so its tabs stay in reach",
+      sheet.getBoundingClientRect().bottom <= barTop + 1,
+      Math.round(sheet.getBoundingClientRect().bottom) + " vs " + Math.round(barTop));
+    const gx = parseFloat(win.getComputedStyle(doc.querySelector("#mbar-glider")).getPropertyValue("--x"));
+    const barLeft = bar.getBoundingClientRect().left + bar.clientLeft;
+    const lit = items.find((el) => Math.abs((el.getBoundingClientRect().left - barLeft) - gx) < 1.5);
+    record("and the settings tab is the lit one",
+      !!lit && lit.id === "mbar-settings", lit ? lit.id : "none");
+
+    doc.querySelector('.mobile-bar a[data-view="remux"]').click();
+    await sleep(520);
+    record("another tab closes the sheet and switches view",
+      sheet.hidden && doc.body.dataset.view === "remux",
+      "sheet=" + sheet.hidden + " view=" + doc.body.dataset.view);
+
+    doc.querySelector("#mbar-donate").click();
+    await sleep(700);
+    const frameNode = doc.querySelector("#donate-frame");
+    const ifr = doc.querySelector("#donate-iframe");
+    record("the tip tab opens inside the app",
+      !frameNode.hidden && /embed=1/.test(ifr.getAttribute("src") || ""),
+      ifr.getAttribute("src"));
+    record("the bar stays under it, and the tab is lit",
+      frameNode.getBoundingClientRect().bottom <= barTop + 1 &&
+        doc.querySelector("#mbar-donate").getAttribute("data-tab-active") === "true",
+      Math.round(frameNode.getBoundingClientRect().bottom) + " vs " + Math.round(barTop));
+
+    doc.querySelector("#mbar-queue").click();
+    await sleep(420);
+    record("and another tab closes it",
+      frameNode.hidden && doc.body.dataset.view === "download",
+      "frame=" + frameNode.hidden + " view=" + doc.body.dataset.view);
   }
 
   window.__results = { total: results.length, failures, results };

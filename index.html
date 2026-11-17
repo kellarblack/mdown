@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <style>html{background:#0a0a0b}html[data-theme="light"]{background:#f6f6f7}[hidden]{display:none!important}</style>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http: https:; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>mdown.cc · ad-free download tool</title>
@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=317">
+<link rel="stylesheet" href="assets/app.css?v=322">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -236,9 +236,12 @@
           </span>
           <span class="hp-uptime" id="hp-uptime"></span>
         </div>
+        <div class="hp-figure">
+          <b class="hp-pct" id="hp-pct">—</b>
+          <span class="hp-checks" id="hp-checks"></span>
+        </div>
         <div class="hp-strip" id="hp-strip" aria-hidden="true"></div>
         <div class="hp-foot">
-          <span id="hp-pct"></span>
           <span class="hp-links">
             <a href="status.html" class="hp-link">status</a>
             <button type="button" class="hp-link" id="hp-settings">settings</button>
@@ -385,11 +388,7 @@
 
   <button type="button" class="composer-note" id="composer-note"
           title="copy the link to this site">
-    <span class="cn-text">paste a link, or prefix it: <b>mdown.cc/&lt;link&gt;</b><span class="sr-only">. pressing this copies the site link</span></span>
-    <span class="cn-done" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
-      link copied
-    </span>
+    <span class="cn-text">paste a link, or prefix it: <span class="cn-swap"><b class="cn-link">mdown.cc/&lt;link&gt;</b><span class="cn-done" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg> link copied</span></span><span class="sr-only">. pressing this copies the site link</span></span>
   </button>
   <span class="sr-only" id="composer-copy-status" role="status" aria-live="polite"></span>
 
@@ -549,9 +548,10 @@
 <footer class="footer">
   <nav class="footer-meta" aria-label="Footer">
     <a href="terms.html">terms</a>
+    <a href="status.html">status</a>
     <a href="updates.html">updates</a>
-    <a id="repo-link" href="https://github.com/kelllar/mdown" rel="noopener" hidden>source</a>
     <a href="donate.html" id="donate-link" hidden>donate</a>
+    <a id="repo-link" class="footer-source" href="https://github.com/kelllar/mdown" rel="noopener" hidden>source</a>
   </nav>
 
 </footer>
@@ -1043,6 +1043,10 @@
   </span>
 </button>
 
+<div class="tab-frame" id="donate-frame" hidden>
+  <iframe id="donate-iframe" title="tip jar"></iframe>
+</div>
+
 <nav class="mobile-bar" aria-label="Quick actions">
   <span class="mbar-glider" id="mbar-glider" aria-hidden="true"></span>
   <button type="button" class="mbar-item" id="mbar-queue"
@@ -1069,8 +1073,8 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=148" defer></script>
-<script type="module" src="assets/nav.js?v=14"></script>
+<script src="assets/app.js?v=153" defer></script>
+<script type="module" src="assets/nav.js?v=15"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->
 </body>

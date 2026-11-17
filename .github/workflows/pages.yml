@@ -37,7 +37,7 @@ jobs:
           mkdir -p _site
           # everything the browser needs, and nothing else
           cp index.html 404.html terms.html status.html updates.html donate.html api.html sources.html _site/
-          cp robots.txt sitemap.xml llms.txt manifest.webmanifest _headers _site/
+          cp robots.txt sitemap.xml llms.txt manifest.webmanifest favicon.ico _headers _site/
           cp -r assets _site/
           # the API, tests and dev shots are not part of the published site
           rm -rf _site/assets/vendor/ffmpeg/.DS_Store

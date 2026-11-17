@@ -40,7 +40,14 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=317">
+<script>
+  /* opened inside the app's donate tab: the shell already has a header, a
+     footer and a bottom bar, so this page drops its own */
+  if (/(?:^|[?&])embed=1(?:&|$)/.test(location.search)) {
+    document.documentElement.setAttribute("data-embed", "1");
+  }
+</script>
+<link rel="stylesheet" href="assets/app.css?v=322">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -57,7 +64,7 @@
   </a>
   <nav class="nav" aria-label="Sections">
     <a class="nav-link" href="./">download</a>
-    <a class="nav-link" href="updates.html">updates</a>
+    <a class="nav-link" href="sources.html">sources</a>
   </nav>
 </header>
 
@@ -67,21 +74,40 @@
   <section class="donate-hero">
     <div class="donate-hero-copy">
       <p class="donate-kicker">support</p>
-      <h1 class="donate-headline">free is the<br>whole idea.</h1>
-      <p class="donate-sub">no ads, no accounts, no tracking, and nothing planned that changes any of that. if it earned an evening, leave a tip. if it didn't, keep using it.</p>
+      <h1 class="donate-headline">free is the <br>whole idea.</h1>
+      <p class="donate-sub">no ads, no accounts, no tracking, and no plan to change that. if it earned an evening, leave a tip. if it didn't, keep using it.</p>
     </div>
     <div class="donate-hero-art" aria-hidden="true">
-      <!-- a dollar sign and the change under it: money, said in type, not in a
-           drawing of a jar -->
-      <span class="tip-glyph">$</span>
-      <svg class="tip-change" viewBox="0 0 96 40" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <ellipse cx="34" cy="31" rx="15" ry="4.6" fill="currentColor" fill-opacity="0.05"/>
-        <ellipse cx="34" cy="23" rx="15" ry="4.6" fill="currentColor" fill-opacity="0.05"/>
-        <ellipse cx="34" cy="15" rx="15" ry="4.6" fill="currentColor" fill-opacity="0.05"/>
-        <circle cx="70" cy="24" r="8"/>
-        <circle cx="70" cy="24" r="3" opacity=".7"/>
-        <circle cx="82" cy="12" r="5.5"/>
+      <!-- four coins, drawn: the dollar in front, the three assets the page
+           accepts behind it. the marks are paths, not characters, so they stay
+           crisp at any size and never borrow a font they were not designed for -->
+      <svg class="tip-coins" viewBox="0 0 200 132" fill="none" stroke="currentColor"
+           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <g transform="rotate(-8 154 88)">
+          <circle cx="154" cy="88" r="21" fill="currentColor" fill-opacity="0.045"/>
+          <circle cx="154" cy="88" r="21"/>
+          <path d="M144.5 96V81.5l9.5 10.5 9.5-10.5V96"/>
+        </g>
+        <g transform="rotate(7 128 36)">
+          <circle cx="128" cy="36" r="20" fill="currentColor" fill-opacity="0.045"/>
+          <circle cx="128" cy="36" r="20"/>
+          <path d="m128 25 8.5 11.5-8.5 5-8.5-5z"/>
+          <path d="m119.5 39 8.5 9.5 8.5-9.5"/>
+        </g>
+        <g transform="rotate(-9 62 30)">
+          <circle cx="62" cy="30" r="19" fill="currentColor" fill-opacity="0.045"/>
+          <circle cx="62" cy="30" r="19"/>
+          <path d="M58 21h5.6a4 4 0 0 1 0 8H58z"/>
+          <path d="M58 29h6.2a4 4 0 0 1 0 8H58z"/>
+          <path d="M58 21v16M61.5 18.5v2.5M61.5 37v2.5"/>
+        </g>
+        <g>
+          <circle cx="92" cy="82" r="34" fill="currentColor" fill-opacity="0.05"/>
+          <circle cx="92" cy="82" r="34" stroke-width="2.4"/>
+          <path d="M92 60v44" stroke-width="2.2"/>
+          <path d="M104 68.5c-2.6-4.4-7-6.5-12-6.5-7 0-12 3.4-12 8.8 0 5.6 4.8 7.7 12 9.5 7.2 1.8 12 4 12 9.5 0 5.4-5 8.8-12 8.8-5 0-9.4-2.1-12-6.5" stroke-width="2.4"/>
+          <path d="M69 65a27 27 0 0 1 15-9.5" opacity="0.35"/>
+        </g>
       </svg>
     </div>
   </section>
@@ -92,7 +118,7 @@
       <h2 id="support-title">the tip jar</h2>
       <span class="support-state" id="support-state">open</span>
     </div>
-    <p class="support-lede">pick whichever is easier: a card payment, or a coin straight to an address. the card is one-time; a coin is a coin.</p>
+    <p class="support-lede">the site is free and stays free. a tip is a thank you, not a price. card if that is easiest, a coin if you would rather.</p>
 
     <div class="support-ways" id="funding">
       <a class="support-row support-primary support-card" id="stripe-card"
@@ -136,7 +162,7 @@
       <p class="support-alt-lede">or send crypto</p>
       <div class="addr-grid" id="addr-grid">
         <div class="addr" data-coin="xmr">
-          <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M8 16.2V9.4l4 4.6 4-4.6v6.8"/></svg></span>
+          <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5V7l8 8.6L20 7v9.5"/></svg></span>
           <span class="addr-left">
             <span class="addr-label">monero</span>
             <code class="addr-value" data-address="45aNapD3TKJij5kxJXgc38CR2r6B5vm4BAFypBLxJgnebQEDBYDTNRoKpwtLguQEsHAeJfTxi21KvJecohNZ5MZMD3vUo1p" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">45aNap…3vUo1p</code>
@@ -145,7 +171,7 @@
           <button class="addr-copy" type="button" data-copy="45aNapD3TKJij5kxJXgc38CR2r6B5vm4BAFypBLxJgnebQEDBYDTNRoKpwtLguQEsHAeJfTxi21KvJecohNZ5MZMD3vUo1p" aria-label="copy monero address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.4"/><path d="M15.5 8.5V6.4a1.9 1.9 0 0 0-1.9-1.9H6.4a1.9 1.9 0 0 0-1.9 1.9v7.2a1.9 1.9 0 0 0 1.9 1.9h2.1"/></svg><span>copy</span></button>
         </div>
         <div class="addr" data-coin="btc">
-          <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M10.4 7.6h3.1a2.2 2.2 0 0 1 0 4.4h-3.1z"/><path d="M10.4 12h3.3a2.2 2.2 0 0 1 0 4.6h-3.3z"/><path d="M10.4 7.6v9M12 6.4v1.2M12 16.6v1.2"/></svg></span>
+          <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 5.4h5.1a2.9 2.9 0 0 1 0 5.8H8.6z"/><path d="M8.6 11.2h5.5a2.9 2.9 0 0 1 0 5.8H8.6z"/><path d="M8.6 5.4v11.6M11.1 3.8v1.6M13.6 3.8v1.6M11.1 17v1.6M13.6 17v1.6"/></svg></span>
           <span class="addr-left">
             <span class="addr-label">bitcoin</span>
             <code class="addr-value" data-address="bc1qxcfuxt84ksr2sxh6ee65c5qs8mpsuxvqw8u242" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">bc1qxc…w8u242</code>
@@ -154,7 +180,7 @@
           <button class="addr-copy" type="button" data-copy="bc1qxcfuxt84ksr2sxh6ee65c5qs8mpsuxvqw8u242" aria-label="copy bitcoin address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.4"/><path d="M15.5 8.5V6.4a1.9 1.9 0 0 0-1.9-1.9H6.4a1.9 1.9 0 0 0-1.9 1.9v7.2a1.9 1.9 0 0 0 1.9 1.9h2.1"/></svg><span>copy</span></button>
         </div>
         <div class="addr" data-coin="eth">
-          <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 6.5 16 12.3l-4 2.3-4-2.3z"/><path d="m8 13.5 4 4.1 4-4.1"/></svg></span>
+          <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 18 12l-6 3.6L6 12z"/><path d="m6 13.2 6 7.4 6-7.4"/></svg></span>
           <span class="addr-left">
             <span class="addr-label">ethereum</span>
             <code class="addr-value" data-address="0x5daE2C9048a8d4AF00A948bc2FAdBf7885689197" tabindex="0" role="button" aria-pressed="false" title="click to show the whole address">0x5daE…689197</code>
@@ -223,7 +249,13 @@
 </main>
 
 <footer class="footer">
-  <nav class="footer-meta" aria-label="Footer"><a href="terms.html">terms</a><a href="status.html">status</a><a href="donate.html">donate</a></nav>
+  <nav class="footer-meta" aria-label="Footer">
+    <a href="terms.html">terms</a>
+    <a href="status.html">status</a>
+    <a href="updates.html">updates</a>
+    <a href="donate.html">donate</a>
+    <a class="footer-source" href="https://github.com/kelllar/mdown" rel="noopener">source</a>
+  </nav>
 </footer>
 
 <script src="assets/donate.js?v=7"></script>

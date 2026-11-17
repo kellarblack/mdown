@@ -241,22 +241,31 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   flex: none; font-family: var(--mono); font-size: 0.68rem; color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
-/* a month at a glance: thin ticks, not blocks. one green line reads faster
-   than thirty tall bars, and it leaves the numbers as the thing you read. */
+/* the number first, then a small chart on an axis. bars grow to fill a full
+   month, and stop at 14px when the log is only a few days old, so a young
+   server is a neat little chart instead of four slabs or a field of grey. */
+.hp-figure { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 7px; }
+.hp-pct {
+  font-family: var(--mono); font-size: 1.08rem; font-weight: 600;
+  color: var(--text); letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); }
 .hp-strip {
-  display: flex; align-items: stretch; gap: 1px;
-  height: 7px; margin: 10px 0 9px;
+  display: flex; align-items: flex-end; justify-content: center; gap: 3px;
+  height: 18px; margin: 0 0 9px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--stroke);
 }
 .hp-bar {
-  flex: 1 1 0; height: 100%; border-radius: 1px;
-  background: color-mix(in srgb, var(--ok) 42%, transparent);
+  flex: 1 1 0; max-width: 14px; height: 100%; border-radius: 2px;
+  background: color-mix(in srgb, var(--ok) 45%, transparent);
   transform-origin: bottom;
   transition: background 300ms ease;
 }
 .hp-bar[data-live="true"] { background: var(--ok); }
-.hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 75%, transparent); }
-.hp-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 75%, transparent); }
-.hp-bar[data-ok="unknown"], .hp-bar[data-empty="true"] { background: var(--surface-3); }
+.hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 78%, transparent); }
+.hp-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 78%, transparent); }
+.hp-bar[data-ok="unknown"] { background: var(--surface-3); }
+.hp-bar[data-empty="true"] { background: transparent; }
 
 /* the signal is the wifi mark: three arcs that rise once when the card opens,
    green while the server answers, amber while it is checking, red when it is
@@ -280,7 +289,6 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   display: flex; align-items: center; gap: 8px;
   font-family: var(--mono); font-size: 0.67rem; color: var(--text-3);
 }
-.hp-foot #hp-pct { white-space: nowrap; color: var(--text-2); }
 .hp-links { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
 .hp-link {
   padding: 0; border: 0; background: none;
@@ -491,7 +499,7 @@ a.ghost-btn { text-decoration: none; }
 /* 0fr → 1fr is a height transition that costs no layout thrash: the row is
    the only thing that changes, and the composer above it never moves. */
 .composer-note {
-  display: grid; place-items: center;
+  display: block; text-align: center;
   width: fit-content; max-width: calc(100vw - 32px);
   margin: 10px auto 0; padding: 5px 12px;
   border: 1px solid var(--stroke); border-radius: 8px;
@@ -501,17 +509,17 @@ a.ghost-btn { text-decoration: none; }
 }
 /* the confirmation lives in the same cell as the hint, so swapping one for the
    other cannot resize the control */
-.composer-note .cn-text,
-.composer-note .cn-done { grid-area: 1 / 1; }
+/* only the link token changes its words: the sentence around it stays put, so
+   the confirmation lands exactly where the press did */
+.composer-note .cn-swap { position: relative; display: inline-block; }
 .composer-note .cn-done {
+  position: absolute; inset: 0;
   display: inline-flex; align-items: center; gap: 5px;
-  /* one cell, two labels: hiding one never resizes the pill, so pressing it
-     cannot move the page */
-  visibility: hidden;
+  visibility: hidden; white-space: nowrap;
   color: var(--text);
 }
-.composer-note .cn-done svg { width: 11px; height: 11px; }
-.composer-note.is-copied .cn-text { visibility: hidden; }
+.composer-note .cn-done svg { width: 11px; height: 11px; flex: none; }
+.composer-note.is-copied .cn-link { visibility: hidden; }
 .composer-note.is-copied .cn-done { visibility: visible; }
 .composer-note b { color: var(--text-2); font-weight: 500; }
 .composer-note .bracket { color: var(--text-3); }
@@ -829,7 +837,7 @@ a.ghost-btn { text-decoration: none; }
 
 .footer {
   position: relative; z-index: 1;
-  max-width: 900px; margin: auto auto 0; padding: 18px clamp(16px, 4vw, 26px) 26px;
+  width: 100%; max-width: 900px; margin: auto auto 0; padding: 18px clamp(16px, 4vw, 26px) 26px;
   color: var(--text-3); font-size: 0.66rem;
   /* was opacity: 0.55, which crushed the footer to 2:1 — too faint to read */
 }
@@ -843,10 +851,18 @@ a.ghost-btn { text-decoration: none; }
 .footer a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .footer a:hover { color: var(--text-2); }
 .footer-meta {
+  width: 100%;
   display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center;
   gap: 0; margin: 0;
   font-family: var(--mono); font-size: 0.7rem; color: var(--text-3);
 }
+/* the repository sits at the far right of the row on its own, so the three
+   words about the site stay together in the middle */
+.footer-meta .footer-source {
+  position: absolute; right: 0; top: 50%;
+  transform: translateY(-50%);
+}
+.footer-meta .footer-source::before { display: none; }
 /* Four words, one rule: a dot between them and a line that grows under the one
    you are pointing at. No boxes, no pills, no border — a footer should not be
    the loudest row on the page. */
@@ -1753,7 +1769,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 @keyframes sources-out {
   from { opacity: 1; transform: translate(-50%, 0) scale(1); }
-  to   { opacity: 0; transform: translate(-50%, -4px) scale(0.995); }
+  to   { opacity: 0; transform: translate(-50%, -10px) scale(0.9); }
 }
 
 /* the head is what makes it a surface rather than a list of links */
@@ -1805,7 +1821,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   }
   @keyframes sources-lift {
     from { opacity: 1; transform: none; }
-    to   { opacity: 0; transform: translateY(-8px) scale(0.985); }
+    to   { opacity: 0; transform: translateY(-18px) scale(0.88); }
   }
   .sources-handle { display: none; }
   .sources-head { margin-bottom: 10px; }
@@ -1963,9 +1979,10 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
    thing on the page */
 .coin-icon {
   display: grid; place-items: center; flex: none;
-  width: 26px; height: 26px; border-radius: 999px;
-  border: 1px solid var(--stroke); color: var(--text-2);
-  transition: color 140ms, border-color 140ms;
+  width: 26px; height: 26px; border-radius: 8px;
+  border: 1px solid var(--stroke); background: var(--surface);
+  color: var(--text-2);
+  transition: color 140ms, border-color 140ms, background 140ms;
 }
 .coin-icon svg { width: 16px; height: 16px; display: block; }
 .donate-row:hover .coin-icon { color: var(--text); border-color: var(--stroke-2); }
@@ -2352,13 +2369,16 @@ a.donate-value:hover { text-decoration: underline; }
   border: 1px solid var(--accent-line); border-radius: var(--r-md);
   background: var(--bg-elev); box-shadow: var(--shadow-1);
 }
-.quickpick-q { margin: 0; color: var(--text-3); font-size: 0.74rem; }
-.quickpick-q b { color: var(--text-2); font-weight: 500; }
+.quickpick-q {
+  margin: 0; color: var(--text-3);
+  font-family: var(--font); font-size: 0.9rem; letter-spacing: -0.01em;
+}
+.quickpick-q b { color: var(--text); font-weight: 600; }
 .quickpick-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .quickpick-btn {
   height: 26px; padding: 0 10px; border-radius: var(--r-sm);
   border: 1px solid var(--stroke-2); background: var(--surface-2);
-  color: var(--text-2); font-family: var(--mono); font-size: 0.68rem;
+  color: var(--text-2); font-family: var(--font); font-size: 0.8rem;
   cursor: pointer; transition: color var(--speed), border-color var(--speed), background var(--speed);
 }
 .quickpick-btn:hover, .quickpick-btn:focus-visible {
@@ -2369,7 +2389,7 @@ a.donate-value:hover { text-decoration: underline; }
   margin-left: auto; height: 22px; padding: 0 7px;
   border: 1px solid var(--stroke); border-radius: var(--r-sm);
   background: transparent; color: var(--text-3);
-  font-family: var(--mono); font-size: 0.67rem; cursor: pointer;
+  font-family: var(--font); font-size: 0.72rem; cursor: pointer;
 }
 .quickpick-close:hover { color: var(--text-2); border-color: var(--stroke-2); }
 .quickpick-close .tap-only { display: none; }
@@ -2643,14 +2663,9 @@ a.donate-value:hover { text-decoration: underline; }
   display: grid; justify-items: center;
   color: var(--text-2);
 }
-.tip-glyph {
-  font-family: var(--mono); font-weight: 400;
-  font-size: clamp(4.2rem, 9vw, 6.2rem); line-height: 0.9;
-  letter-spacing: -0.05em; color: var(--text-2);
-}
-.tip-change {
-  display: block; width: min(126px, 100%); height: auto;
-  margin-top: -10px; opacity: 0.9;
+.tip-coins {
+  display: block; width: min(200px, 100%); height: auto;
+  color: var(--text-2);
 }
 /* this used to spin. rotating a clipped, dash-patterned SVG group re-rasterises
    the whole disc every frame, and on a throttled phone that cost a full second
@@ -2889,7 +2904,7 @@ a.addr-value:hover { color: var(--text); }
   .donate-page { padding-bottom: 40px; }
   .donate-hero { grid-template-columns: 1fr; gap: 10px; padding-bottom: 26px; }
   .donate-hero-art { width: auto; order: 1; margin: 16px 0 0; justify-items: start; }
-  .tip-glyph { font-size: 4.6rem; }
+  .tip-coins { width: min(190px, 70vw); }
   .donate-headline { font-size: clamp(1.85rem, 8.6vw, 2.4rem); }
   .donate-sub { font-size: 0.86rem; }
   .donate-facts { grid-template-columns: 1fr; }
@@ -2971,7 +2986,27 @@ a.addr-value:hover { color: var(--text); }
 /* ---------- mobile bar ---------- */
 /* one thumb-reachable row for the four things a phone actually needs */
 .mobile-bar { display: none; }
+.tab-frame { display: none; }
+.tab-frame[hidden] { display: none; }
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  /* the tip page runs inside the app, not as a new document: same header above,
+     same bar below, and every tab still one tap away */
+  .tab-frame {
+    display: block; position: fixed; left: 0; right: 0;
+    top: var(--tab-top, 54px);
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    z-index: 30; background: var(--bg);
+  }
+  .tab-frame iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--bg); }
+  body.tab-frame-open { overflow: hidden; }
+  /* the sheet stops above the bar, so the four tabs stay visible and the one
+     you are in stays lit while you are in it */
+  .sheet { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+  .quickpick { padding: 10px 12px; }
+  .quickpick-q { font-size: 0.94rem; }
+  .quickpick-btn { height: 36px; padding: 0 12px; font-size: 0.84rem; }
+  .quickpick-close { height: 36px; padding: 0 10px; }
+
   /* A plain bar: four equal places to go, no lens, no drag, no lift. Every
      pixel here has to hold on hardware nobody in this repo owns, so there is
      nothing to land a hair off. */
@@ -3020,10 +3055,14 @@ a.addr-value:hover { color: var(--text); }
   .mbar-item:active { background: var(--surface-3); color: var(--text); transition: none; }
   /* the glider carries the fill now; the item only brightens */
   .mbar-item.is-active,
-  .mbar-item[aria-expanded="true"] { color: var(--text); background: transparent; border-color: transparent; }
+  .mbar-item[aria-expanded="true"],
+  .mbar-item[data-tab-active="true"] { color: var(--text); background: transparent; border-color: transparent; }
   .mbar-item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   /* the bar replaces the two actions it duplicates */
   .topbar-actions #queue-toggle, .topbar-actions #open-settings { display: none; }
+  /* the bar's downloads tab is the way home down here; a second word in the
+     header only crowded the sources button off centre */
+  body[data-view] .nav-link.nav-download { display: none; }
   /* the queue is a sheet above the bar, because its old anchor is gone */
   .dock-panel {
     position: fixed; left: 8px; right: 8px; top: auto; width: auto;
@@ -3045,10 +3084,16 @@ a.addr-value:hover { color: var(--text); }
    there), and never when reduced motion is asked for. */
 .tool-card { position: relative; }
 .tool-card::after {
-  content: "→";
+  /* drawn, not typed: a 17px arrow keeps its shape in every font and reads at
+     a glance, where a 12px glyph disappeared into the card */
+  content: "";
   position: absolute; right: 12px; top: 50%;
-  font-family: var(--mono); font-size: 0.78rem; line-height: 1;
-  color: var(--text-3); opacity: 0;
+  width: 17px; height: 17px;
+  background: currentColor;
+  color: var(--text-2);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 17px 17px no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 17px 17px no-repeat;
+  opacity: 0;
   transform: translate(-5px, -50%);
   transition: opacity 160ms ease-out, transform 220ms var(--ease);
   pointer-events: none;
@@ -3192,7 +3237,7 @@ a.addr-value:hover { color: var(--text); }
 .tool-card:hover .tool-card-body b { color: var(--text); }
 /* sentence case: three micro-caps under three cards read like a spec sheet */
 .tool-card-body span { font-size: 0.675rem; letter-spacing: 0.005em; }
-.tool-card::after { right: 11px; }
+.tool-card::after { right: 13px; }
 
 .recent-line {
   justify-content: flex-start; gap: 6px;
@@ -3409,8 +3454,14 @@ a.addr-value:hover { color: var(--text); }
   text-decoration: none;
 }
 .sources-more:hover { color: var(--text); }
-.sources-more-go { font-size: 0.95rem; line-height: 1; transition: transform 160ms var(--ease); }
-.sources-more:hover .sources-more-go { transform: translateX(2px); }
+.sources-more-go {
+  width: 16px; height: 16px; flex: none;
+  background: currentColor; color: var(--text-3);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+  transition: transform 160ms var(--ease), color 140ms;
+}
+.sources-more:hover .sources-more-go { transform: translateX(3px); color: var(--text); }
 
 .page-lede {
   max-width: 62ch; margin: 0 auto 18px; text-align: center;
@@ -3430,8 +3481,11 @@ a.addr-value:hover { color: var(--text); }
   transition: border-color 140ms, background 140ms, color 140ms;
 }
 .source-row::after {
-  content: "→"; justify-self: end;
+  content: ""; justify-self: end; align-self: center;
+  width: 14px; height: 14px; background: currentColor;
   color: var(--text-3); opacity: 0.55;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
   transition: opacity 140ms, transform 160ms var(--ease);
 }
 .source-row b { font-family: var(--mono); font-size: 0.78rem; font-weight: 500; color: var(--text); }
@@ -3458,3 +3512,12 @@ a.addr-value:hover { color: var(--text); }
   .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 4px; }
   .sources-panel .source-chip { min-height: 36px; }
 }
+
+/* ============================================================
+   the tip page, opened as a tab inside the app
+   ============================================================ */
+html[data-embed="1"] .topbar,
+html[data-embed="1"] .footer { display: none; }
+html[data-embed="1"] body { padding-bottom: 0; }
+html[data-embed="1"] .donate-page { padding-top: 22px; padding-bottom: 28px; }
+html[data-embed="1"] .donate-hero { padding-top: 2px; }

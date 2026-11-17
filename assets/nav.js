@@ -12,19 +12,19 @@ const PANELS = {
 
 const META = {
   download: {
-    title: "mdown.cc — ad-free download tool",
+    title: "mdown.cc · ad-free download tool",
     desc: "No ads, no account. Paste a link and keep the video or audio. Remux, subtitles and metadata tools run in your browser."
   },
   remux: {
-    title: "Remux without re-encoding — mdown.cc",
+    title: "Remux without re-encoding · mdown.cc",
     desc: "Repackage a video or audio file into a different container without re-encoding. Fix broken seeking and container problems in your browser, with no upload."
   },
   subs: {
-    title: "Subtitle extractor — mdown.cc",
+    title: "Subtitle extractor · mdown.cc",
     desc: "Extract embedded text subtitle tracks from a video as SRT files, in your browser. Image-based subtitles are detected and flagged, not faked."
   },
   clean: {
-    title: "Metadata cleaner — mdown.cc",
+    title: "Metadata cleaner · mdown.cc",
     desc: "Remove title, artist, comment, date and location tags from a media file while leaving the streams untouched. Runs locally in your browser."
   }
 };
