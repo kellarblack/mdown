@@ -40,12 +40,12 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=330">
+<link rel="stylesheet" href="assets/app.css?v=331">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script>
-  /* GitHub Pages cannot send frame-ancestors. If another origin frames this
-     page, hide it rather than let it become a click target. A same-origin
-     frame, like the test harnesses, is left alone. */
+  /* Cloudflare sends frame-ancestors 'none'. This is the belt for a host or
+     path that bypasses that header: another origin's frame hides the page,
+     while a same-origin frame, like the test harnesses, is left alone. */
   try {
     if (window.top !== window.self && window.top.location.host !== location.host) {
       document.documentElement.style.display = "none";
@@ -99,6 +99,7 @@
           <li>The server no longer writes a link or a tunnel address to its log. The privacy page says exactly what is kept, which is nothing about the download.</li>
           <li>On a phone the four places at the bottom behave as tabs: settings stops above them, the tip jar opens inside the app, and the lit one follows you.</li>
           <li>The tip page draws its coins, every crypto row carries its own mark, and every page footer now lists the same five links.</li>
+          <li>The site is served through Cloudflare now and refuses to be framed by another origin. The www address points at the current GitHub account.</li>
           <li>When the API does not answer, the page says so once, retries on its own, and clears the line when it comes back.</li>
           <li>The uptime card reads the server's log in every browser, not the number of times you happened to open it.</li>
           <li>Downloads and the uptime card come to the front when you touch them, and both stay open.</li>

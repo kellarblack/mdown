@@ -141,7 +141,7 @@ request carries it. The engine is about 31 MB, so it is imported only when a too
 ./tests/run-all.sh backend  # python only
 ```
 
-**123 backend tests** (`server/tests`: config, jobs, security, server, uptime) and **471 browser
+**123 backend tests** (`server/tests`: config, jobs, security, server, uptime) and **474 browser
 assertions** across 23 suites (the picker suite runs twice, once at phone width), plus the
 privacy check that fails the build if the published site carries a name, an email or a tracker.
 The runner starts its own mock API on port 4320 and a static server on 4331, then drives headless

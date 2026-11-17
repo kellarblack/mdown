@@ -1984,6 +1984,8 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 .donate-lede { color: var(--text-2); font-size: 0.86rem; line-height: 1.6; margin: 0 0 12px; }
 .donate-note { color: var(--text-3); font-size: 0.76rem; margin: 0 0 14px; }
 .donate-list { display: flex; flex-direction: column; gap: 8px; margin: 0 0 14px; }
+.donate-row .ghost-btn { min-width: 78px; justify-content: center; }
+.addr-copy.is-copied svg, .donate-row .ghost-btn.is-copied svg { color: var(--text); }
 .donate-row {
   display: grid; grid-template-columns: 26px minmax(0, 1fr) auto;
   align-items: center; gap: 10px;
@@ -2000,7 +2002,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
   color: var(--text-2);
   transition: color 140ms;
 }
-.coin-icon svg { width: 19px; height: 19px; display: block; }
+.coin-icon svg { width: 18px; height: 18px; display: block; }
 .donate-row:hover .coin-icon { color: var(--text); }
 .donate-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .donate-label {
@@ -2028,7 +2030,7 @@ a.donate-value:hover { text-decoration: underline; }
   .addr-value[data-address], .donate-value[data-address] {
     display: inline-flex; align-items: center; min-height: 34px; padding: 0 2px;
   }
-  .addr-copy { min-height: 34px; padding: 0 10px; }
+  .addr-copy { min-width: 44px; min-height: 34px; padding: 0 10px; }
 }
 /* the card is the one option that needs no wallet, so it leads and looks
    like a control: icon, two lines, an arrow that leans on hover */
@@ -2823,7 +2825,7 @@ a.addr-value:hover { color: var(--text); }
 .addr-note { font-size: 0.68rem; color: var(--text-3); }
 .addr-copy {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  flex: none; height: 32px; padding: 0 11px;
+  flex: none; min-width: 84px; height: 32px; padding: 0 11px;
   border-radius: 9px; border: 1px solid var(--stroke);
   background: var(--surface); color: var(--text-2);
   font-family: var(--mono); font-size: 0.68rem;
@@ -2831,7 +2833,7 @@ a.addr-value:hover { color: var(--text); }
 }
 .addr-copy svg { width: 13px; height: 13px; }
 .addr-copy:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface); }
-.addr-copy.is-copied { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.addr-copy.is-copied { color: var(--text); border-color: var(--stroke-2); }
 .support-fine { margin: 10px 0 0; color: var(--text-3); font-size: 0.7rem; line-height: 1.55; }
 .support-foot {
   padding: 11px 16px;
@@ -2872,7 +2874,7 @@ a.addr-value:hover { color: var(--text); }
 }
 .share-copy-btn svg { width: 13px; height: 13px; }
 .share-copy-btn:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
-.share-copy-btn.is-copied { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.share-copy-btn.is-copied { color: var(--text); border-color: var(--stroke-2); }
 /* four equal buttons, one per place: the icon carries the recognition, the
    word carries the meaning, and nothing is underlined or shouting */
 .share-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }

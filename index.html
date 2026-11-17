@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=330">
+<link rel="stylesheet" href="assets/app.css?v=331">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -180,9 +180,9 @@
 </script>
 
 <script>
-  /* GitHub Pages cannot send frame-ancestors. If another origin frames this
-     page, hide it rather than let it become a click target. A same-origin
-     frame, like the test harnesses, is left alone. */
+  /* Cloudflare sends frame-ancestors 'none'. This is the belt for a host or
+     path that bypasses that header: another origin's frame hides the page,
+     while a same-origin frame, like the test harnesses, is left alone. */
   try {
     if (window.top !== window.self && window.top.location.host !== location.host) {
       document.documentElement.style.display = "none";
@@ -1082,8 +1082,8 @@
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
-<script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=154" defer></script>
+<script src="assets/donate.js?v=8" defer></script>
+<script src="assets/app.js?v=155" defer></script>
 <script type="module" src="assets/nav.js?v=15"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

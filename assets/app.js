@@ -2790,6 +2790,7 @@
     const set = window.MDOWN_COIN || {};
     if (!set[id]) return null;
     const box = el("span", { class: "coin-icon", "aria-hidden": "true" });
+    box.dataset.coin = id;
     box.innerHTML = set[id];
     return box;
   }
@@ -2915,6 +2916,7 @@
       const list = el("div", { class: "donate-list" });
       cfg.methods.forEach((method) => {
         const row = el("div", { class: "donate-row" });
+        row.dataset.coin = method.id;
         const badge = coinGlyph(method.id);
         if (badge) row.appendChild(badge);
         const left = el("div", { class: "donate-id" });
@@ -2939,7 +2941,17 @@
             text: "copy",
             "aria-label": "copy " + String(method.label || "address")
           });
-          copy.addEventListener("click", () => copyText(String(method.value), "Address copied"));
+          copy.addEventListener("click", async () => {
+            const ok = await copyText(String(method.value), "Address copied", true);
+            if (!ok) return;
+            copy.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span>copied</span>';
+            copy.classList.add("is-copied");
+            clearTimeout(copy._reset);
+            copy._reset = setTimeout(() => {
+              copy.textContent = "copy";
+              copy.classList.remove("is-copied");
+            }, 900);
+          });
           row.appendChild(copy);
         }
         list.appendChild(row);
