@@ -246,8 +246,8 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
    server is a neat little chart instead of four slabs or a field of grey. */
 .hp-figure { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 7px; }
 .hp-pct {
-  font-family: var(--mono); font-size: 1.08rem; font-weight: 600;
-  color: var(--text); letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+  font-family: var(--mono); font-size: 1.16rem; font-weight: 500;
+  color: var(--text); letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
 }
 .hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); }
 .hp-strip {
@@ -1710,9 +1710,14 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 .sources-wrap > * { pointer-events: auto; }
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  /* the plus is a place of its own on a phone, so it sits in the middle of the
+     bar instead of queueing with the actions. no transform here: the panel is
+     position:fixed and a transformed ancestor would trap it */
   .sources-wrap {
-    position: static; transform: none;
-    margin-right: 4px; height: 40px;
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    transform: none; margin: 0; height: auto;
+    pointer-events: none;
   }
 }
 /* a grid, not a count: the glyph says "many things live here", which a number
