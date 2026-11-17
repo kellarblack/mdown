@@ -271,7 +271,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   height: 3px; background: var(--stroke-2);
 }
 .hp-pct {
-  font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
   color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); white-space: nowrap; }

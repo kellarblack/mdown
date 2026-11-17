@@ -47,8 +47,20 @@
     document.documentElement.setAttribute("data-embed", "1");
   }
 </script>
-<link rel="stylesheet" href="assets/app.css?v=329">
+<link rel="stylesheet" href="assets/app.css?v=330">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script>
+  /* GitHub Pages cannot send frame-ancestors. If another origin frames this
+     page, hide it rather than let it become a click target. A same-origin
+     frame, like the test harnesses, is left alone. */
+  try {
+    if (window.top !== window.self && window.top.location.host !== location.host) {
+      document.documentElement.style.display = "none";
+    }
+  } catch (e) {
+    document.documentElement.style.display = "none";
+  }
+</script>
 </head>
 <body>
 

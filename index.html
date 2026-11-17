@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=329">
+<link rel="stylesheet" href="assets/app.css?v=330">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -179,6 +179,18 @@
 }
 </script>
 
+<script>
+  /* GitHub Pages cannot send frame-ancestors. If another origin frames this
+     page, hide it rather than let it become a click target. A same-origin
+     frame, like the test harnesses, is left alone. */
+  try {
+    if (window.top !== window.self && window.top.location.host !== location.host) {
+      document.documentElement.style.display = "none";
+    }
+  } catch (e) {
+    document.documentElement.style.display = "none";
+  }
+</script>
 </head>
 <body>
 
@@ -274,7 +286,7 @@
 
 
     <button class="icon-btn labeled donate-btn" id="open-donate-top" type="button"
-            aria-haspopup="dialog" aria-expanded="false" aria-controls="tip-pop" hidden title="leave a tip">
+            aria-haspopup="dialog" aria-expanded="false" aria-controls="tip-pop" title="leave a tip">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5 4.6 13a4.7 4.7 0 0 1 6.6-6.7l.8.8.8-.8A4.7 4.7 0 0 1 19.4 13z"/></svg>
       <span>tip</span>
     </button>

@@ -14,6 +14,18 @@
     font: 13px ui-monospace, "SF Mono", Menlo, monospace;
   }
 </style>
+<script>
+  /* GitHub Pages cannot send frame-ancestors. If another origin frames this
+     page, hide it rather than let it become a click target. A same-origin
+     frame, like the test harnesses, is left alone. */
+  try {
+    if (window.top !== window.self && window.top.location.host !== location.host) {
+      document.documentElement.style.display = "none";
+    }
+  } catch (e) {
+    document.documentElement.style.display = "none";
+  }
+</script>
 </head>
 <body>
 <div style="text-align:center">
