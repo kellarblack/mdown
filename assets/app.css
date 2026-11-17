@@ -1714,7 +1714,12 @@ a.ghost-btn { text-decoration: none; }
   /* no hover on a touch screen, and the absolutely-positioned tooltip was
      adding 20px of scrollable width at 320px */
   .tip::after { display: none; }
-  .sheet-panel { padding-bottom: env(safe-area-inset-bottom); }
+  .sheet-panel {
+    padding-bottom: env(safe-area-inset-bottom);
+    /* on a phone this is a full-width screen, so the 20px slide read as a
+       panel flying in from the right. it switches, like every other tab. */
+    animation: none;
+  }
   .modal-inner { max-height: min(88dvh, 700px); margin-bottom: env(safe-area-inset-bottom); }
   /* keep the mark on phones: it is the fastest way to see what got detected */
   .service-badge svg { width: 12px; height: 12px; }
