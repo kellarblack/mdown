@@ -181,8 +181,11 @@ async function main() {
     note ? note.tagName : "missing");
   if (note) {
     note.click();
-    await sleep(160);
+    await sleep(350);
     record("and pressing it answers visibly", note.classList.contains("is-copied"));
+    record("and does not repeat itself in a toast",
+      !/link copied/i.test(doc.querySelector("#toasts").textContent),
+      doc.querySelector("#toasts").textContent.trim().slice(0, 40) || "no toast");
   }
 
   window.__results = { total: results.length, failures, results };

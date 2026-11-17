@@ -90,8 +90,9 @@ the server is built so the person running it cannot see what anyone downloaded.
 - the api log keeps the method, the route and the status. a tunnel path is written
   `/tunnel/[redacted]`, query strings are dropped, and a link that a toolchain prints is
   replaced with `[url]`. no address, no user agent, no referer, no cookie.
-- caddy's access log drops the uri, the client address, the user agent, the referer and
-  cookies. it keeps the host, the method, the status and how long it took.
+- caddy's access log drops the uri, the client address, and every request and response
+  header. no browser, no language, no referer, no cookies, and no file name from a
+  `Content-Disposition`. it keeps the method, the status, the size and how long it took.
 - the link lives in memory while a job runs. it is never written to a log or a database.
 - a finished file sits in a directory named by a random token, readable only by the service
   user, and is deleted 60 seconds after it is served or 15 minutes after it is made.
@@ -140,7 +141,7 @@ request carries it. The engine is about 31 MB, so it is imported only when a too
 ./tests/run-all.sh backend  # python only
 ```
 
-**123 backend tests** (`server/tests`: config, jobs, security, server, uptime) and **463 browser
+**123 backend tests** (`server/tests`: config, jobs, security, server, uptime) and **464 browser
 assertions** across 23 suites (the picker suite runs twice, once at phone width), plus the
 privacy check that fails the build if the published site carries a name, an email or a tracker.
 The runner starts its own mock API on port 4320 and a static server on 4331, then drives headless

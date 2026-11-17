@@ -132,6 +132,10 @@ async function main() {
   record("on a phone it is a sheet, and it clears the bar",
     phone.bottom <= barTop + 1 && phone.height > 200,
     "sheet ends at " + Math.round(phone.bottom) + ", bar starts at " + Math.round(barTop));
+  const topbarBottom = doc.querySelector(".topbar").getBoundingClientRect().bottom;
+  record("and it drops from the bar the button is in",
+    phone.top >= topbarBottom - 1 && phone.top < barTop,
+    "top " + Math.round(phone.top) + ", bar ends " + Math.round(topbarBottom));
   record("with a veil to dismiss it", !!veil && !veil.hidden,
     veil ? "veil " + (veil.classList.contains("is-on") ? "up" : "fading") : "none");
   record("and the whole list fits on that phone",

@@ -154,6 +154,9 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--stroke);
 }
+/* a top-anchored sheet and its veil have to cover the phone bar, and the bar
+   lives outside the topbar's stacking context: raise its owner while open */
+.topbar.is-raised { z-index: 60; }
 .brand { display: inline-flex; align-items: center; gap: 9px; }
 .brand-mark {
   display: grid; place-items: center;
@@ -238,25 +241,46 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   flex: none; font-family: var(--mono); font-size: 0.68rem; color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
+/* a month at a glance: thin ticks, not blocks. one green line reads faster
+   than thirty tall bars, and it leaves the numbers as the thing you read. */
 .hp-strip {
-  display: flex; align-items: flex-end; gap: 2px;
-  height: 24px; margin: 9px 0 8px;
+  display: flex; align-items: stretch; gap: 1px;
+  height: 7px; margin: 10px 0 9px;
 }
 .hp-bar {
-  flex: 1 1 0; height: 100%; border-radius: 2px;
-  background: color-mix(in srgb, var(--ok) 60%, transparent);
+  flex: 1 1 0; height: 100%; border-radius: 1px;
+  background: color-mix(in srgb, var(--ok) 42%, transparent);
   transform-origin: bottom;
   transition: background 300ms ease;
 }
 .hp-bar[data-live="true"] { background: var(--ok); }
-.hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 70%, transparent); }
-.hp-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 80%, transparent); }
-.hp-bar[data-ok="unknown"] { background: var(--text-3); opacity: 0.45; }
-.hp-bar[data-empty="true"] { height: 38%; background: var(--surface-3); }
+.hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 75%, transparent); }
+.hp-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 75%, transparent); }
+.hp-bar[data-ok="unknown"], .hp-bar[data-empty="true"] { background: var(--surface-3); }
+
+/* the signal is the wifi mark: three arcs that rise once when the card opens,
+   green while the server answers, amber while it is checking, red when it is
+   not there. no loop, no glow. */
+.hp-signal { width: 15px; height: 15px; flex: none; color: var(--text-3); }
+.hp-signal .sig { transform-box: view-box; transform-origin: 50% 78%; }
+.health-pop:not([hidden]) .hp-signal .sig { animation: sig-in 460ms var(--ease) both; }
+.health-pop:not([hidden]) .hp-signal .sig-2 { animation-delay: 60ms; }
+.health-pop:not([hidden]) .hp-signal .sig-3 { animation-delay: 120ms; }
+@keyframes sig-in {
+  from { opacity: 0.15; transform: scale(0.62); }
+  to   { opacity: 1; transform: none; }
+}
+.health-pop[data-state="ok"] .hp-signal,
+.health-pop[data-state="ok"] .hp-state b { color: var(--ok); }
+.health-pop[data-state="bad"] .hp-signal,
+.health-pop[data-state="bad"] .hp-state b { color: var(--err); }
+.health-pop[data-state="checking"] .hp-signal,
+.health-pop[data-state="checking"] .hp-state b { color: var(--warn); }
 .hp-foot {
   display: flex; align-items: center; gap: 8px;
   font-family: var(--mono); font-size: 0.67rem; color: var(--text-3);
 }
+.hp-foot #hp-pct { white-space: nowrap; color: var(--text-2); }
 .hp-links { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
 .hp-link {
   padding: 0; border: 0; background: none;
@@ -1685,12 +1709,12 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 .sources-glyph {
   width: 15px; height: 15px; flex: none;
-  transition: transform 220ms var(--ease);
+  /* short and front-loaded: a quarter turn that starts when the press lands */
+  transition: transform 150ms cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 /* plus, turned once: the same control says "open" and "close" */
 .sources-toggle[aria-expanded="true"] .sources-glyph { transform: rotate(45deg); }
 .sources-toggle:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface); }
-.sources-toggle:hover .sources-glyph { transform: scale(1.08); }
 .sources-toggle[aria-expanded="true"] {
   color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
 }
@@ -1761,28 +1785,29 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 @media (max-width: 720px), (hover: none) and (max-height: 520px) {
   .sources-veil { display: block; }
   .sources-panel {
-    /* it floats just above the bar instead of under it: the bar is how you
-       leave, so it stays visible and tappable */
-    position: fixed; left: 8px; right: 8px; top: auto;
-    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-    width: auto; max-height: min(74dvh, 560px);
-    transform: none; transform-origin: bottom center;
-    border-radius: 18px;
-    padding: 4px 14px 14px;
+    /* the + lives in the top bar, so the list drops from the bar. a sheet that
+       rose from the bottom edge came from somewhere the press did not. */
+    position: fixed; left: 8px; right: 8px;
+    top: calc(58px + env(safe-area-inset-top, 0px));
+    bottom: auto;
+    width: auto;
+    max-height: calc(100dvh - 58px - env(safe-area-inset-top, 0px) - 86px);
+    transform: none; transform-origin: top right;
+    border-radius: 16px;
+    padding: 12px 14px 14px;
     box-shadow: 0 24px 50px -28px rgba(0, 0, 0, 0.9);
-    animation: sources-up 300ms cubic-bezier(0.22, 0.9, 0.28, 1) both;
+    animation: sources-drop 190ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
   }
-  .sources-panel.is-closing { animation: sources-down 220ms cubic-bezier(0.45, 0, 0.7, 0.2) both; }
-  @keyframes sources-up {
-    0%   { transform: translateY(100%); }
-    72%  { transform: translateY(-3px); }
-    100% { transform: translateY(0); }
+  .sources-panel.is-closing { animation: sources-lift 140ms cubic-bezier(0.4, 0, 0.7, 0.2) both; }
+  @keyframes sources-drop {
+    from { opacity: 0; transform: translateY(-10px) scale(0.975); }
+    to   { opacity: 1; transform: none; }
   }
-  @keyframes sources-down { from { transform: translateY(0); } to { transform: translateY(100%); } }
-  .sources-handle {
-    display: block; width: 38px; height: 4px; margin: 8px auto 12px;
-    border-radius: 2px; background: var(--stroke-2);
+  @keyframes sources-lift {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateY(-8px) scale(0.985); }
   }
+  .sources-handle { display: none; }
   .sources-head { margin-bottom: 10px; }
   .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px; }
   .sources-panel .source-chip { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
@@ -3424,4 +3449,12 @@ a.addr-value:hover { color: var(--text); }
 @media (max-width: 380px) {
   #paste-btn { width: 48px; padding: 0; }
   #paste-btn .pb-label { display: none; }
+}
+
+/* three columns at 320, not two: two made the list taller than its sheet. It
+   goes last because the phone block above sets wider chips. */
+@media (max-width: 360px) {
+  .sources-panel { padding: 10px 12px 12px; }
+  .sources-panel .source-chips { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 4px; }
+  .sources-panel .source-chip { min-height: 36px; }
 }

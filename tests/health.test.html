@@ -70,7 +70,7 @@ async function main() {
   const online = await waitFor(() => pop.dataset.state === "ok", 10000);
   record("it checks the server on open", online, "state=" + pop.dataset.state);
   record("and says something about uptime",
-    /% up|no checks/.test($("#hp-pct").textContent), $("#hp-pct").textContent);
+    /% ·|no checks/.test($("#hp-pct").textContent), $("#hp-pct").textContent);
 
   // outside click closes it
   doc.body.click();

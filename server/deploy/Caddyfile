@@ -47,18 +47,19 @@ api.mdown.cc {
 		format filter {
 			wrap json
 			fields {
-				request>remote_ip delete
-				client_ip delete
-				request>headers>X-Forwarded-For delete
-				request>headers>Referer delete
-				request>headers>Cookie delete
-				request>headers>User-Agent delete
-				# a tunnel URL is a working download for fifteen minutes; the
-				# path is the only place it would ever be written down
+				# Nothing about the visitor and nothing about the file.
+				# The URI is a tunnel token while a download runs, and the
+				# response headers carry the file name; both go. Request
+				# headers go too, because a browser's hints and language are
+				# still a fingerprint.
 				request>uri delete
-				# and the address itself, which Caddy writes under request.*
-				request>client_ip delete
+				request>remote_ip delete
 				request>remote_port delete
+				request>client_ip delete
+				request>host delete
+				request>headers delete
+				client_ip delete
+				resp_headers delete
 			}
 		}
 	}

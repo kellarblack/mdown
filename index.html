@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=312">
+<link rel="stylesheet" href="assets/app.css?v=317">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -226,7 +226,14 @@
 
       <div class="health-pop" id="health-pop" data-state="unknown" hidden aria-label="server health">
         <div class="hp-head">
-          <span class="hp-state"><span class="dot" aria-hidden="true"></span><b id="hp-state">not connected</b></span>
+          <span class="hp-state">
+            <svg class="hp-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path class="sig sig-1" d="M3.8 9.6a11.6 11.6 0 0 1 16.4 0"/>
+              <path class="sig sig-2" d="M7 13a7 7 0 0 1 10 0"/>
+              <circle class="sig sig-3" cx="12" cy="17.2" r="1.7" fill="currentColor" stroke="none"/>
+            </svg>
+            <b id="hp-state">not connected</b>
+          </span>
           <span class="hp-uptime" id="hp-uptime"></span>
         </div>
         <div class="hp-strip" id="hp-strip" aria-hidden="true"></div>
@@ -384,6 +391,7 @@
       link copied
     </span>
   </button>
+  <span class="sr-only" id="composer-copy-status" role="status" aria-live="polite"></span>
 
   <!-- what the file will be, before anything is fetched. Collapses to zero
        height rather than appearing, so the composer never jumps. -->
@@ -1061,7 +1069,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=7" defer></script>
-<script src="assets/app.js?v=143" defer></script>
+<script src="assets/app.js?v=148" defer></script>
 <script type="module" src="assets/nav.js?v=14"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->

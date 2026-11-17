@@ -381,6 +381,7 @@
     serviceName: $("#service-name"),
     composer: $("#composer"),
     composerNote: $("#composer-note"),
+    copyStatus: $("#composer-copy-status"),
     probePreview: $("#probe-preview"),
     probeThumb: $("#probe-thumb"),
     probeTitle: $("#probe-title"),
@@ -2572,8 +2573,10 @@
       setTimeout(() => { if (!sourcesOpen) veil.hidden = true; }, 220);
     }
     const panel = dom.sourcesPanel;
+    const topbar = document.querySelector(".topbar");
     if (!panel || panel.hidden) {
       dom.openSources.setAttribute("aria-expanded", "false");
+      if (topbar) topbar.classList.remove("is-raised");
       return;
     }
     panel.classList.add("is-closing");
@@ -2585,6 +2588,7 @@
       panel.classList.remove("is-closing");
       panel.hidden = true;
       dom.openSources.setAttribute("aria-expanded", "false");
+      if (topbar) topbar.classList.remove("is-raised");
     };
     panel.addEventListener("animationend", done, { once: true });
     setTimeout(done, 220);   // if the animation is off (reduced motion)
@@ -2597,16 +2601,23 @@
   function fitSources() {}
 
   function toggleSources() {
-    if (sourcesOpen) { closeSources(); return; }
+    if (sourcesOpen) {
+      if (raiseIfBehind(dom.sourcesPanel)) return;
+      closeSources();
+      return;
+    }
     sourcesSeq += 1;
     sourcesOpen = true;
     dom.sourcesPanel.classList.remove("is-closing");
-    renderSources();
-    /* the chevron answers the tap, not the animation: a class flips it the
-       instant you press, and it stays in step when the button is spammed */
+    /* the cross answers the tap, not the render: flip it before building the
+       list, or thirty chips of DOM work sit between your press and the turn */
     dom.openSources.classList.add("is-open");
     dom.openSources.setAttribute("aria-expanded", "true");
+    const topbar = document.querySelector(".topbar");
+    if (topbar) topbar.classList.add("is-raised");
     dom.sourcesPanel.hidden = false;
+    bringToFront(dom.sourcesPanel);
+    renderSources();
     const veil = document.getElementById("sources-veil");
     if (veil) {
       if (veil.hidden) {
@@ -2996,10 +3007,11 @@
   /* ----------------------------------------------------------
      clipboard
      ---------------------------------------------------------- */
-  async function copyText(text, message) {
+  async function copyText(text, message, quiet) {
     try {
       await navigator.clipboard.writeText(text);
-      toast(message || "Copied", "ok");
+      /* a control that already says "copied" does not need a toast saying it */
+      if (!quiet) toast(message || "Copied", "ok");
       return true;
     } catch {
       const ta = document.createElement("textarea");
@@ -3008,8 +3020,11 @@
       ta.style.opacity = "0";
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand("copy"); toast(message || "Copied", "ok"); return true; }
-      catch { toast("Copy failed. Select the text manually.", "err"); return false; }
+      try {
+        document.execCommand("copy");
+        if (!quiet) toast(message || "Copied", "ok");
+        return true;
+      } catch { toast("Copy failed. Select the text manually.", "err"); return false; }
       finally { ta.remove(); }
     }
   }
@@ -3560,7 +3575,7 @@
     const up = counted.filter((x) => x.ok === true).length;
     if (dom.hpPct) {
       dom.hpPct.textContent = total
-        ? Math.round((up / total) * 1000) / 10 + "% up · " + total + " check" + (total === 1 ? "" : "s")
+        ? Math.round((up / total) * 1000) / 10 + "% · " + total + " check" + (total === 1 ? "" : "s")
         : "no checks yet";
     }
   }
@@ -3580,22 +3595,31 @@
       if (!res.ok) return false;
       const data = await res.json();
       if (!data || !Array.isArray(data.days)) return false;
-      const measured = data.days.filter((d) => d && d.total);
+      const days = data.days.slice(-30);
+      const measured = days.filter((d) => d && d.total);
       if (!measured.length) return false;
 
       const strip = dom.hpStrip;
       if (strip) {
-        const sig = "server:" + measured.map((d) => d.date + d.up + d.total).join(",");
+        const sig = "server:" + days.map((d) => (d ? d.date + d.up + d.total : "-")).join(",");
         if (sig !== healthSig) {
           healthSig = sig;
           strip.innerHTML = "";
-          measured.forEach((day, i) => {
-            const ratio = day.up / day.total;
+          /* every day gets a tick, including the ones with no traffic: a
+             two-day-old server should not draw two fat slabs */
+          days.forEach((day, i) => {
             const bar = el("span", { class: "hp-bar" });
-            bar.dataset.ok = ratio >= 0.995 ? "true" : (ratio >= 0.97 ? "partial" : "false");
-            bar.dataset.live = i === measured.length - 1 ? "true" : "false";
-            bar.title = shortClock(day.date) + " · " +
-              Math.round(ratio * 1000) / 10 + "% of " + day.total.toLocaleString() + " checks";
+            const live = i === days.length - 1 ? "true" : "false";
+            bar.dataset.live = live;
+            if (!day || !day.total) {
+              bar.dataset.ok = "unknown";
+              bar.title = (day && day.date ? shortClock(day.date) + " · " : "") + "no checks";
+            } else {
+              const ratio = day.up / day.total;
+              bar.dataset.ok = ratio >= 0.995 ? "true" : (ratio >= 0.97 ? "partial" : "false");
+              bar.title = shortClock(day.date) + " · " +
+                Math.round(ratio * 1000) / 10 + "% of " + day.total.toLocaleString() + " checks";
+            }
             strip.appendChild(bar);
           });
         }
@@ -3603,7 +3627,7 @@
       if (dom.hpPct) {
         const pct = data.uptime === null || data.uptime === undefined
           ? "n/a"
-          : Number(data.uptime).toFixed(1) + "% up";
+          : Number(data.uptime).toFixed(1) + "%";
         dom.hpPct.textContent = pct + " · " + Number(data.checks || 0).toLocaleString() +
           " check" + (Number(data.checks) === 1 ? "" : "s");
       }
@@ -3706,9 +3730,18 @@
      touched — is the last one painted. Two panels can stay open at once; they
      just stop fighting over which is in front. */
   let panelZ = 80;
+  let frontPanel = null;
   function bringToFront(node) {
     if (!node) return;
     node.style.zIndex = String(++panelZ);
+    frontPanel = node;
+  }
+  /* A panel that is already open but behind another one comes forward on the
+     click that reaches for it, instead of closing as if you had dismissed it. */
+  function raiseIfBehind(node) {
+    if (!node || node.hidden || node === frontPanel) return false;
+    bringToFront(node);
+    return true;
   }
   document.addEventListener("pointerdown", (event) => {
     const panel = event.target && event.target.closest
@@ -3759,11 +3792,17 @@
        clipboard, ready to paste into a message */
     if (dom.composerNote) {
       let noteTimer = 0;
-      dom.composerNote.addEventListener("click", () => {
-        copyText("https://mdown.cc", "link copied");
+      dom.composerNote.addEventListener("click", async () => {
+        /* the confirmation appears where the press happened; no toast repeats it */
+        const ok = await copyText("https://mdown.cc", "link copied", true);
+        if (!ok) return;
         dom.composerNote.classList.add("is-copied");
+        if (dom.copyStatus) dom.copyStatus.textContent = "link copied";
         clearTimeout(noteTimer);
-        noteTimer = setTimeout(() => dom.composerNote.classList.remove("is-copied"), 1700);
+        noteTimer = setTimeout(() => {
+          dom.composerNote.classList.remove("is-copied");
+          if (dom.copyStatus) dom.copyStatus.textContent = "";
+        }, 1100);
       });
     }
 
@@ -3785,8 +3824,10 @@
 
     dom.instancePill.addEventListener("click", (event) => {
       event.stopPropagation();
-      if (healthOpen) closeHealthPop();
-      else openHealthPop();
+      if (healthOpen) {
+        if (raiseIfBehind(dom.healthPop)) return;
+        closeHealthPop();
+      } else openHealthPop();
     });
     if (dom.hpSettings) {
       dom.hpSettings.addEventListener("click", () => {
@@ -4040,7 +4081,12 @@
     if (dom.queueToggle) {
       dom.queueToggle.addEventListener("click", (event) => {
         event.stopPropagation();
-        setDock(!dockOpen);
+        if (dockOpen) {
+          if (raiseIfBehind(dom.queuePanel)) return;
+          setDock(false);
+          return;
+        }
+        setDock(true);
       });
       document.addEventListener("click", (event) => {
         if (!dockOpen) return;

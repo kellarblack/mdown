@@ -40,7 +40,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=312">
+<link rel="stylesheet" href="assets/app.css?v=317">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -91,7 +91,7 @@
 
     <h2 id="privacy"><span class="num">06</span>Privacy</h2>
     <p>Settings and recent links live in your browser's local storage. No account, no cookies, no analytics. Requests for links and files go to the server in Settings. Thumbnails are loaded from the source itself, so that host sees your address; nothing else does. Files processed by the local tools never leave your device, and files downloaded through an API are deleted shortly after they are handed over.</p>
-    <p>The server keeps no record of what was downloaded. There is no history and no per-user record: the link is held in memory while the job runs and is not written to a log or a database. A tunnel address is stored as <code>/tunnel/[redacted]</code> in the server log, query strings are dropped, and links that a tool prints are replaced before they are logged. The web server's access log drops the address of the visitor, the browser, the referer and cookies. The page, the API and the file travel over TLS.</p>
+    <p>The server keeps no record of what was downloaded. There is no history and no per-user record: the link is held in memory while the job runs and is not written to a log or a database. A tunnel address is stored as <code>/tunnel/[redacted]</code> in the server log, query strings are dropped, and links that a tool prints are replaced before they are logged. The web server's access log drops the address of the visitor, and every request and response header, so the browser, the language, the referer, cookies and the file name are not written down. The page, the API and the file travel over TLS.</p>
     <p>The finished file is not encrypted on the server's disk while it waits, because the server has to read it to send it. Someone with root access to the machine could watch a download while it is in flight or read that temporary file before it is deleted. That is the limit of a server-side downloader. What this server does not do is keep anything afterwards.</p>
 
     <h2><span class="num">07</span>Donations</h2>
