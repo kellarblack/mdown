@@ -430,6 +430,7 @@
     hpStrip: $("#hp-strip"),
     hpPct: $("#hp-pct"),
     hpChecks: $("#hp-checks"),
+    hpWeek: $("#hp-week"),
     hpSettings: $("#hp-settings"),
     sheet: $("#settings"),
     sheetBody: $("#sheet-body"),
@@ -3502,7 +3503,6 @@
      health: the dot opens a miniature of the status page
      ---------------------------------------------------------- */
   const HEALTH_KEY = "mdown.uptime";
-  const HEALTH_BARS = 36;
   let healthOpen = false;
   let healthTimer = null;
   let healthCloseTimer = null;
@@ -3549,9 +3549,10 @@
     const sig = history.map((x) => x.t + (x.ok === true ? "+" : x.ok === false ? "-" : "?")).join("|");
     if (sig && sig === healthSig) return;   // nothing new: leave the bars alone
     healthSig = sig;
-    const recent = history.slice(-HEALTH_BARS);
-    const pad = Math.max(0, HEALTH_BARS - recent.length);
+    const recent = history.slice(-7);
+    const pad = Math.max(0, 7 - recent.length);
     strip.innerHTML = "";
+    if (dom.hpWeek) dom.hpWeek.innerHTML = "";
     for (let i = 0; i < pad; i += 1) {
       const empty = el("span", { class: "hp-bar", "data-empty": "true" });
       empty.title = "no sample yet";
@@ -3604,27 +3605,39 @@
       const days = data.days.slice(-30);
       const measured = days.filter((d) => d && d.total);
       if (!measured.length) return false;
+      /* the card shows the last seven calendar days. days before the log
+         started are a hairline, which is honest and still fills the width. */
+      const week = days.slice(-7);
 
       const strip = dom.hpStrip;
       if (strip) {
-        const sig = "server:" + measured.map((d) => d.date + d.up + d.total).join(",");
+        const sig = "server:" + week.map((d) => (d ? d.date + d.up + d.total : "-")).join(",");
         if (sig !== healthSig) {
           healthSig = sig;
           strip.innerHTML = "";
-          /* only the days that have data: the chart caps each bar at 14px, so
-             four real days are a small chart on the axis, not four slabs */
-          measured.forEach((day, i) => {
-            const ratio = day.up / day.total;
+          if (dom.hpWeek) dom.hpWeek.innerHTML = "";
+          week.forEach((day, i) => {
+            if (dom.hpWeek) {
+              const label = el("span", {
+                text: day && day.date ? String(Number(day.date.slice(-2))) : ""
+              });
+              dom.hpWeek.appendChild(label);
+            }
             const bar = el("span", { class: "hp-bar" });
-            bar.dataset.ok = ratio >= 0.995 ? "true" : (ratio >= 0.97 ? "partial" : "false");
-            bar.dataset.live = i === measured.length - 1 ? "true" : "false";
-            bar.title = shortClock(day.date) + " · " +
-              Math.round(ratio * 1000) / 10 + "% of " + day.total.toLocaleString() + " checks";
+            if (!day || !day.total) {
+              bar.dataset.empty = "true";
+              bar.title = (day && day.date ? shortClock(day.date) + " · " : "") + "no checks";
+            } else {
+              const ratio = day.up / day.total;
+              bar.dataset.ok = ratio >= 0.995 ? "true" : (ratio >= 0.97 ? "partial" : "false");
+              bar.dataset.live = i === week.length - 1 ? "true" : "false";
+              bar.title = shortClock(day.date) + " · " +
+                Math.round(ratio * 1000) / 10 + "% of " + day.total.toLocaleString() + " checks";
+            }
             strip.appendChild(bar);
           });
         }
       }
-      const span = measured.length + (measured.length === 1 ? " day" : " days");
       if (dom.hpPct) {
         dom.hpPct.textContent = data.uptime === null || data.uptime === undefined
           ? "n/a"
@@ -3632,7 +3645,7 @@
       }
       if (dom.hpChecks) {
         dom.hpChecks.textContent = Number(data.checks || 0).toLocaleString() +
-          " check" + (Number(data.checks) === 1 ? "" : "s") + " · " + span;
+          " check" + (Number(data.checks) === 1 ? "" : "s");
       }
       return true;
     } catch (e) {

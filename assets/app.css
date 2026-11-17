@@ -244,28 +244,38 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 /* the number first, then a small chart on an axis. bars grow to fill a full
    month, and stop at 14px when the log is only a few days old, so a young
    server is a neat little chart instead of four slabs or a field of grey. */
-.hp-figure { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 7px; }
-.hp-pct {
-  font-family: var(--mono); font-size: 1.16rem; font-weight: 500;
-  color: var(--text); letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
-}
-.hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); }
+/* a week fills the card: seven days, four green here because the log is four
+   days old, with the empty days a hairline at the baseline. no axis, no island
+   of four bars in the middle of a wide empty row. */
 .hp-strip {
-  display: flex; align-items: flex-end; justify-content: center; gap: 3px;
-  height: 18px; margin: 0 0 9px; padding-bottom: 4px;
-  border-bottom: 1px solid var(--stroke);
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end; gap: 4px;
+  height: 26px; margin: 8px 0 3px;
+}
+.hp-week {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px; margin: 0 0 8px;
+  font-family: var(--mono); font-size: 0.6rem; color: var(--text-3);
+  text-align: center; font-variant-numeric: tabular-nums;
 }
 .hp-bar {
-  flex: 1 1 0; max-width: 14px; height: 100%; border-radius: 2px;
-  background: color-mix(in srgb, var(--ok) 45%, transparent);
+  width: 100%; height: 100%; border-radius: 2px;
+  background: color-mix(in srgb, var(--ok) 55%, transparent);
   transform-origin: bottom;
   transition: background 300ms ease;
 }
 .hp-bar[data-live="true"] { background: var(--ok); }
-.hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 78%, transparent); }
-.hp-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 78%, transparent); }
-.hp-bar[data-ok="unknown"] { background: var(--surface-3); }
-.hp-bar[data-empty="true"] { background: transparent; }
+.hp-bar[data-ok="false"] { background: color-mix(in srgb, var(--err) 82%, transparent); }
+.hp-bar[data-ok="partial"] { background: color-mix(in srgb, var(--warn) 82%, transparent); }
+.hp-bar[data-ok="unknown"], .hp-bar[data-empty="true"] {
+  height: 3px; background: var(--stroke-2);
+}
+.hp-pct {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+  color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); white-space: nowrap; }
+.hp-checks::before { content: "·"; margin-right: 6px; color: var(--text-3); opacity: 0.6; }
 
 /* the signal is the wifi mark: three arcs that rise once when the card opens,
    green while the server answers, amber while it is checking, red when it is
@@ -286,7 +296,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .health-pop[data-state="checking"] .hp-signal,
 .health-pop[data-state="checking"] .hp-state b { color: var(--warn); }
 .hp-foot {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;
   font-family: var(--mono); font-size: 0.67rem; color: var(--text-3);
 }
 .hp-links { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
@@ -1984,15 +1994,16 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 /* one glyph per coin, monochrome: a coloured logo would be the only saturated
    thing on the page */
+/* the mark itself, the way a wallet shows it: no box, no circle, no app icon
+   around a three-stroke letter at 16px */
 .coin-icon {
   display: grid; place-items: center; flex: none;
-  width: 26px; height: 26px; border-radius: 8px;
-  border: 1px solid var(--stroke); background: var(--surface);
+  width: 24px; height: 24px;
   color: var(--text-2);
-  transition: color 140ms, border-color 140ms, background 140ms;
+  transition: color 140ms;
 }
-.coin-icon svg { width: 16px; height: 16px; display: block; }
-.donate-row:hover .coin-icon { color: var(--text); border-color: var(--stroke-2); }
+.coin-icon svg { width: 19px; height: 19px; display: block; }
+.donate-row:hover .coin-icon { color: var(--text); }
 .donate-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .donate-label {
   font-family: var(--mono); font-size: 0.7rem; color: var(--text-3);

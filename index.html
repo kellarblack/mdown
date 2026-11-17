@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=326">
+<link rel="stylesheet" href="assets/app.css?v=328">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -236,12 +236,11 @@
           </span>
           <span class="hp-uptime" id="hp-uptime"></span>
         </div>
-        <div class="hp-figure">
-          <b class="hp-pct" id="hp-pct">—</b>
-          <span class="hp-checks" id="hp-checks"></span>
-        </div>
         <div class="hp-strip" id="hp-strip" aria-hidden="true"></div>
+        <div class="hp-week" id="hp-week" aria-hidden="true"></div>
         <div class="hp-foot">
+          <span class="hp-pct" id="hp-pct">—</span>
+          <span class="hp-checks" id="hp-checks"></span>
           <span class="hp-links">
             <a href="status.html" class="hp-link">status</a>
             <button type="button" class="hp-link" id="hp-settings">settings</button>

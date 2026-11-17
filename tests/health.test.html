@@ -65,7 +65,7 @@ async function main() {
     dot.getAttribute("aria-expanded"));
 
   const bars = doc.querySelectorAll("#hp-strip .hp-bar");
-  record("it draws a bar per recent check", bars.length === 36, bars.length + " bars");
+  record("it draws a week of bars", bars.length === 7, bars.length + " bars");
 
   const online = await waitFor(() => pop.dataset.state === "ok", 10000);
   record("it checks the server on open", online, "state=" + pop.dataset.state);

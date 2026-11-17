@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#888;display:flex;gap:8px;align-items:flex-start}iframe{border:0;display:block}</style></head><body>
+<iframe id="a" style="width:900px;height:760px"></iframe>
+<iframe id="b" style="width:390px;height:844px"></iframe>
+<iframe id="c" style="width:390px;height:844px"></iframe>
+<script>
+const go = async (id, url, instance) => {
+  const f = document.getElementById(id);
+  f.contentWindow.localStorage.setItem("mdown.settings", JSON.stringify({instance, theme:"dark"}));
+  await new Promise(r => { f.addEventListener("load", r, { once: true }); f.src = url; });
+  await new Promise(r => setTimeout(r, 800));
+  return f;
+};
+window.addEventListener("load", async () => {
+  const a = await go("a", "/donate.html?pr=1", "http://127.0.0.1:4320");
+  a.contentWindow.scrollTo(0, a.contentDocument.querySelector("#addr-grid").offsetTop - 320);
+  const b = await go("b", "/index.html?pr=2", "http://127.0.0.1:4321");
+  b.contentDocument.querySelector("#instance-pill").click();
+  const c = await go("c", "/index.html?pr=3", "http://127.0.0.1:4320/uptime-on");
+  c.contentDocument.querySelector("#instance-pill").click();
+  await new Promise(r => setTimeout(r, 1200));
+});
+</script></body></html>
