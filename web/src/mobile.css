@@ -49,3 +49,81 @@ button, .mbar-item, .icon-btn, .mode, .seg button, .source-chip, .tool-card {
 /* 6. A long file name never pushes the row's buttons off a narrow screen. */
 .qitem .q-title { overflow-wrap: anywhere; }
 .qitem .q-actions { flex-wrap: wrap; justify-content: flex-end; }
+
+/* ============================================================
+   sources panel, cleaner: opaque surface, a header row, each
+   source with its mark, readable names, one footer row.
+   (last in the file on purpose: it wins over the older rules)
+   ============================================================ */
+.sources-panel {
+  width: min(460px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--stroke-2);
+  border-radius: 14px;
+  background: #121214;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  overflow: hidden auto;
+}
+[data-theme="light"] .sources-panel {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.sources-panel .sources { display: grid; }
+.sources-panel .sources-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin: 0; padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--stroke);
+}
+.sources-panel .sources-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text);
+}
+.sources-panel .sources-head .sources-count { font-size: 11px; color: var(--text-3); }
+
+.sources-panel .source-chips {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px;
+  padding: 8px;
+}
+.sources-panel .source-chip {
+  display: flex; align-items: center; justify-content: flex-start; gap: 10px;
+  min-height: 40px; padding: 0 10px;
+  border: 0; border-radius: 8px; background: transparent;
+  font-family: var(--mono); font-size: 12px; line-height: 1; color: var(--text-2);
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  translate: none;
+  transition: background 120ms var(--ease), color 120ms var(--ease);
+}
+.sources-panel .source-chip:hover,
+.sources-panel .source-chip:focus-visible { background: var(--surface-2); color: var(--text); translate: none; }
+.sources-panel .source-chip:active { background: var(--surface-3); transform: none; }
+[data-theme="light"] .sources-panel .source-chip { border: 0; color: #3a3a40; }
+[data-theme="light"] .sources-panel .source-chip:hover { background: #f1f1f3; color: #0a0a0b; }
+.sources-panel .source-mark {
+  display: grid; place-items: center; flex: none;
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--surface-2); color: var(--text);
+}
+[data-theme="light"] .sources-panel .source-mark { background: #f1f1f3; color: #0a0a0b; }
+.sources-panel .source-mark svg { width: 13px; height: 13px; display: block; }
+.sources-panel .source-name { overflow: hidden; text-overflow: ellipsis; }
+
+.sources-panel .sources-note {
+  margin: 0; padding: 4px 16px 12px; font-size: 11px; line-height: 1.5; color: var(--text-3);
+}
+.sources-panel .sources-more {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 0; padding: 12px 16px;
+  border-top: 1px solid var(--stroke);
+  font-family: var(--mono); font-size: 12px; color: var(--text-2); text-decoration: none;
+}
+.sources-panel .sources-more:hover { color: var(--text); background: var(--surface); }
+
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  .sources-panel { left: 8px; right: 8px; width: auto; padding: 0; border-radius: 16px; }
+  .sources-panel .source-chips { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px; }
+  .sources-panel .source-chip { min-height: 44px; font-size: 13px; }
+}
+@media (max-width: 340px) {
+  .sources-panel .source-chip { gap: 8px; padding: 0 8px; font-size: 12px; }
+}

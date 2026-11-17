@@ -5,7 +5,8 @@ import { queueStore, queueSummary } from "../queue";
 import { instanceStore, setPanel, togglePanel, uiStore, useStore, type Panel } from "../store";
 import { navigate, onNav } from "../routing";
 import { BrandMark, IconBack, IconClose, IconDownloads, IconGear, IconHeart, IconHelp, IconPlus } from "../icons";
-import { QueueList, QueuePanelHead } from "./Queue";
+import { Mark, QueueList, QueuePanelHead } from "./Queue";
+import { loadMarks } from "../service-marks";
 import { cx } from "../util";
 
 /* ------------------------------------------------------------------ */
@@ -105,6 +106,9 @@ function Sources() {
   const open = usePanelDismiss("sources", wrap);
   const { mounted, closing } = useClosing(open, 220);
   usePlaceUnder(open, panelRef, button);
+  useEffect(() => {
+    if (open) void loadMarks();
+  }, [open]);
   const services = useStore(instanceStore, (s) => s.info?.services);
   const all = new Set(Object.keys(SOURCES));
   (services || []).forEach((name) => typeof name === "string" && name && !REFUSED.has(name.toLowerCase()) && all.add(name));
@@ -134,8 +138,8 @@ function Sources() {
                 return home ? (
                   <a key={id} className="source-chip" href={home} target="_blank" rel="noopener noreferrer"
                     title={id + (host ? " · " + host : "") + (note ? " · " + note : "")} aria-label={id + ", open " + host}
-                    onClick={() => setPanel("none")}>{id}</a>
-                ) : <span key={id} className="source-chip">{id}</span>;
+                    onClick={() => setPanel("none")}><Mark className="source-mark" service={id} /><span className="source-name">{id}</span></a>
+                ) : <span key={id} className="source-chip"><Mark className="source-mark" service={id} /><span className="source-name">{id}</span></span>;
               })}
             </div>
             <p className="sources-note"><b>download</b> compatibility only, no affiliation or endorsement</p>
