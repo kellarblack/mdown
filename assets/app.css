@@ -864,15 +864,9 @@ a.ghost-btn { text-decoration: none; }
   gap: 0; margin: 0;
   font-family: var(--mono); font-size: 0.7rem; color: var(--text-3);
 }
-/* the repository sits at the far right of the row on its own, so the three
-   words about the site stay together in the middle */
-.footer-meta .footer-source {
-  /* the footer's padding, so the word lines up with the content column and
-     not with the edge of the glass */
-  position: absolute; right: clamp(16px, 4vw, 26px); top: 50%;
-  transform: translateY(-50%);
-}
-.footer-meta .footer-source::before { display: none; }
+/* one row, one cluster: the three words about the site and the repository sit
+   together in the middle, in reading order, with github last */
+.footer-meta .footer-source { position: relative; }
 /* Four words, one rule: a dot between them and a line that grows under the one
    you are pointing at. No boxes, no pills, no border — a footer should not be
    the loudest row on the page. */
@@ -1576,6 +1570,20 @@ a.ghost-btn { text-decoration: none; }
 body[data-view="remux"] .nav-download,
 body[data-view="subs"] .nav-download,
 body[data-view="clean"] .nav-download { display: inline-flex; }
+/* the way back out of a tool is a control the size of the ones beside it, with
+   an arrow you can see. it used to be the word "download" after a 9px glyph. */
+.nav-link.nav-download {
+  align-items: center; justify-content: center;
+  /* the nav carries -8px to cancel the text links' own padding: this button
+     has none, so it puts the gap back */
+  width: 32px; height: 32px; margin-left: 8px; padding: 0;
+  border: 1px solid var(--stroke); border-radius: var(--r-sm);
+  color: var(--text-2);
+}
+.nav-link.nav-download:hover, .nav-link.nav-download:focus-visible {
+  color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
+}
+.nav-back-arrow { width: 18px; height: 18px; display: block; }
 
 .nav-link {
   padding: 5px 7px; border-radius: var(--r-sm);
@@ -2597,9 +2605,7 @@ a.donate-value:hover { text-decoration: underline; }
   .nav-link[data-view="download"],
   .nav-link[href="updates.html"],
   .nav-link[href="donate.html"] { display: none; }
-  /* a phone keeps the arrow only: the word cost 47px of top bar */
-  .nav-back-text { display: none; }
-  .nav-back-arrow { font-size: 0.9rem; line-height: 1; }
+  .nav-link.nav-download { width: 36px; height: 36px; }
   /* the "you are here" dot costs 12px, which the 320px topbar does not have */
   .nav-link.is-active::before { display: none; }
 }

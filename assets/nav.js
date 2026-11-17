@@ -151,6 +151,20 @@ if (REPO_URL.indexOf("http") === 0) {
   });
 }
 
+/* the logo is the other way home: inside a tool it returns to the downloader
+   instead of reloading the page you are already looking at */
+const brandLink = document.querySelector(".brand");
+if (brandLink) {
+  brandLink.addEventListener("click", (event) => {
+    const view = document.body.dataset.view;
+    if (!view || view === "download") return;
+    event.preventDefault();
+    if (location.hash) location.hash = "";
+    else apply();
+    window.scrollTo(0, 0);
+  });
+}
+
 window.addEventListener("hashchange", apply);
 document.addEventListener("DOMContentLoaded", apply);
 if (document.readyState !== "loading") apply();

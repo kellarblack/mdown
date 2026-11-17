@@ -446,6 +446,39 @@ async function main() {
         tip.hidden && !doc.querySelector("#donate-frame").hidden,
         "jar=" + tip.hidden + " frame=" + doc.querySelector("#donate-frame").hidden);
     }
+
+    /* the way back out of a tool, on both shapes of screen */
+    win.location.hash = "#remux";
+    await sleep(400);
+    const headerBack = doc.querySelector(".nav-download");
+    record("a phone keeps the way back in the bar, not a tiny header link",
+      doc.body.dataset.view === "remux" && getComputedStyle(headerBack).display === "none",
+      "view=" + doc.body.dataset.view + " display=" + getComputedStyle(headerBack).display);
+
+    win.__noReload = "alive";
+    doc.querySelector(".brand").click();
+    await sleep(400);
+    record("and the logo is the way back",
+      doc.body.dataset.view === "download" && win.__noReload === "alive",
+      "view=" + doc.body.dataset.view + " reloaded=" + (win.__noReload !== "alive"));
+
+    frame.style.width = "900px";
+    await sleep(300);
+    win.location.hash = "#remux";
+    await sleep(400);
+    const back = doc.querySelector(".nav-download");
+    const backRect = back.getBoundingClientRect();
+    record("a wide screen gets a back button you can hit",
+      backRect.width >= 32 && backRect.height >= 32 &&
+        !!back.getAttribute("aria-label") && !back.textContent.trim(),
+      Math.round(backRect.width) + "x" + Math.round(backRect.height) +
+        " label=" + (back.getAttribute("aria-label") || "none"));
+    back.click();
+    await sleep(400);
+    record("and it still leaves the tool", doc.body.dataset.view === "download",
+      "view=" + doc.body.dataset.view);
+    frame.style.width = "390px";
+    await sleep(250);
   }
 
   window.__results = { total: results.length, failures, results };

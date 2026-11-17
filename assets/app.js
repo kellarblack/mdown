@@ -1120,7 +1120,9 @@
     instagram: _mark('<rect x="4" y="4" width="16" height="16" rx="4.6"/><circle cx="12" cy="12" r="3.6"/><path d="M16.7 7.4h.01"/>'),
     tiktok: _mark('<path d="M14.2 4v10.4a3.4 3.4 0 1 1-3-3.36"/><path d="M14.2 4c.5 2.3 1.9 3.7 4.2 4"/>'),
     douyin: _mark('<path d="M13.8 4.4v9.8a3.1 3.1 0 1 1-2.7-3.08"/><path d="M13.8 4.4c.5 2.1 1.7 3.4 3.9 3.7"/><path d="M6 19.6c3.4 1 8.6 1 12 0"/>'),
-    reddit: _mark('<circle cx="12" cy="13.2" r="7.2"/><path d="M9.7 12.8h.01M14.3 12.8h.01"/><path d="M9.5 15.6c1.4 1.1 3.6 1.1 5 0"/><path d="M12 6c0-1.2 1-2 2.2-1.7"/><circle cx="15.2" cy="4.4" r="1.1"/>'),
+    /* head-on: both eyes, a smile, and the antenna straight up. the old one leaned
+       right, which at 12px looked like a face turned away */
+    reddit: _mark('<circle cx="12" cy="14" r="6.4"/><path d="M9.7 13.2h.01M14.3 13.2h.01"/><path d="M9.5 16.2c1.5 1.2 3.5 1.2 5 0"/><path d="M12 7.6V5.6"/><circle cx="12" cy="4.4" r="1.1"/>'),
     soundcloud: _mark('<path d="M6.6 17.6h9a3.4 3.4 0 0 0 .2-6.8 5.2 5.2 0 0 0-9.9-1.4 3.4 3.4 0 0 0 .7 8.2z"/><path d="M9.8 11.6v6M12.2 11v6.6"/>'),
     bandcamp: _mark('<path d="M9 5.5L4.5 18.5H10l4.5-13z"/><path d="M14.5 5.5H20l-4.5 13"/>'),
     mixcloud: _mark('<path d="M6.6 17.6h9a3.3 3.3 0 0 0 .2-6.6 5 5 0 0 0-9.6-1.3 3.3 3.3 0 0 0 .4 7.9z"/><circle cx="11" cy="13.6" r="1.3"/><path d="M12.3 13.6V8.9l2.6-.7v4.2"/>'),
@@ -3641,7 +3643,7 @@
     }
     if (dom.hpChecks) {
       dom.hpChecks.textContent = total
-        ? total.toLocaleString() + " check" + (total === 1 ? "" : "s")
+        ? compactCount(total) + " check" + (total === 1 ? "" : "s")
         : "no checks yet";
     }
   }
@@ -3696,13 +3698,21 @@
           : Number(data.uptime).toFixed(1) + "%";
       }
       if (dom.hpChecks) {
-        dom.hpChecks.textContent = Number(data.checks || 0).toLocaleString() +
+        dom.hpChecks.textContent = compactCount(data.checks) +
           " check" + (Number(data.checks) === 1 ? "" : "s");
       }
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  /* 3,283 checks is a sentence; 3.3k is a glance. one decimal, and a round
+     thousand loses the .0 */
+  function compactCount(value) {
+    const n = Math.max(0, Math.round(Number(value) || 0));
+    if (n < 1000) return String(n);
+    return (n / 1000).toFixed(1).replace(/\.0$/, "") + "k";
   }
 
   function shortClock(date) {

@@ -38,7 +38,7 @@ async function waitFor(fn, ms = 15000) {
 }
 
 const NAMES = [
-  "the footer holds four links: terms, updates, donate, GitHub",
+  "the footer holds four links: terms, updates, donate, github",
   "every one of them points at a real local page or the repository",
   "on a 390px frame donate is hidden and the other three are visible",
   "on a 1280px frame all four are visible",
@@ -136,7 +136,7 @@ async function main() {
   const donateShown = !!donateLink && visible(donateLink);
   record(NAMES[2],
     !donateShown && phoneVisible.length === 3 &&
-      ["terms", "updates", "GitHub"].every((w) => phoneVisible.indexOf(w) >= 0),
+      ["terms", "updates", "github"].every((w) => phoneVisible.indexOf(w) >= 0),
     "visible: " + (phoneVisible.join(",") || "none") + "; donate " + (donateShown ? "shown" : "hidden"));
 
   /* ---- 5. never sideways ---------------------------------------------- */

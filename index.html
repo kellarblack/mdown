@@ -51,7 +51,7 @@
     if (themeMeta) themeMeta.setAttribute("content", pick === "light" ? "#f6f6f7" : "#0a0a0b");
     } catch (e) {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=334">
+<link rel="stylesheet" href="assets/app.css?v=335">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <script type="application/ld+json">
 {
@@ -208,7 +208,9 @@
   </a>
 
   <nav class="nav" aria-label="Sections">
-    <a class="nav-link nav-download" href="#" data-view="download" title="back to the downloader"><span class="nav-back-arrow" aria-hidden="true">←</span><span class="nav-back-text">download</span></a>
+    <a class="nav-link nav-download" href="#" data-view="download" title="back to the downloader" aria-label="back to the downloader">
+      <svg class="nav-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m11 18-6-6 6-6"/></svg>
+    </a>
   </nav>
 
   <div class="topbar-actions">
@@ -560,7 +562,7 @@
     <a href="terms.html">terms</a>
     <a href="updates.html">updates</a>
     <a href="donate.html" id="donate-link" hidden>donate</a>
-    <a id="repo-link" class="footer-source" href="https://github.com/kelllar/mdown" rel="noopener" hidden>GitHub</a>
+    <a id="repo-link" class="footer-source" href="https://github.com/kelllar/mdown" rel="noopener" hidden>github</a>
   </nav>
 
 </footer>
@@ -1082,8 +1084,8 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="assets/donate.js?v=8" defer></script>
-<script src="assets/app.js?v=157" defer></script>
-<script type="module" src="assets/nav.js?v=15"></script>
+<script src="assets/app.js?v=159" defer></script>
+<script type="module" src="assets/nav.js?v=16"></script>
 <!-- remux.js and tools.js (39 KB of wasm tooling) load on first use, not
      on arrival: the downloader never needs them -->
 </body>
