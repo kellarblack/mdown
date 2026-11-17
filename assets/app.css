@@ -859,7 +859,9 @@ a.ghost-btn { text-decoration: none; }
 /* the repository sits at the far right of the row on its own, so the three
    words about the site stay together in the middle */
 .footer-meta .footer-source {
-  position: absolute; right: 0; top: 50%;
+  /* the footer's padding, so the word lines up with the content column and
+     not with the edge of the glass */
+  position: absolute; right: clamp(16px, 4vw, 26px); top: 50%;
   transform: translateY(-50%);
 }
 .footer-meta .footer-source::before { display: none; }
