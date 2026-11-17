@@ -417,6 +417,20 @@ async function main() {
     record("and another tab closes it",
       frameNode.hidden && doc.body.dataset.view === "download",
       "frame=" + frameNode.hidden + " view=" + doc.body.dataset.view);
+
+    /* the jar's own route to the page has to work from inside the jar */
+    doc.querySelector("#open-donate-top").click();
+    await sleep(420);
+    const tip = doc.querySelector("#tip-pop");
+    const more = tip.querySelector(".tip-more");
+    record("the jar names the full tip page", !!more);
+    if (more) {
+      more.click();
+      await sleep(700);
+      record("and it closes the jar and opens the tab",
+        tip.hidden && !doc.querySelector("#donate-frame").hidden,
+        "jar=" + tip.hidden + " frame=" + doc.querySelector("#donate-frame").hidden);
+    }
   }
 
   window.__results = { total: results.length, failures, results };

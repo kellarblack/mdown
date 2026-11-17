@@ -250,13 +250,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 .hp-strip {
   display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
   align-items: end; gap: 4px;
-  height: 26px; margin: 8px 0 3px;
-}
-.hp-week {
-  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px; margin: 0 0 8px;
-  font-family: var(--mono); font-size: 0.6rem; color: var(--text-3);
-  text-align: center; font-variant-numeric: tabular-nums;
+  height: 26px; margin: 8px 0 9px;
 }
 .hp-bar {
   width: 100%; height: 100%; border-radius: 2px;
@@ -271,7 +265,7 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   height: 3px; background: var(--stroke-2);
 }
 .hp-pct {
-  font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 400;
   color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .hp-checks { font-family: var(--mono); font-size: 0.67rem; color: var(--text-3); white-space: nowrap; }
@@ -1733,6 +1727,9 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 /* a grid, not a count: the glyph says "many things live here", which a number
    never did. The word stays on anything wider than a phone. */
 .sources-toggle {
+  /* the open panel's veil is fixed at 56 and sits over the bar. the cross is
+     the way out, so it has to stay above it, hover and all. */
+  position: relative; z-index: 57;
   display: inline-flex; align-items: center; gap: 7px;
   height: 34px; padding: 0 12px 0 10px; border-radius: 999px;
   border: 1px solid var(--stroke); background: transparent;
@@ -1747,6 +1744,7 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
 }
 /* plus, turned once: the same control says "open" and "close" */
 .sources-toggle[aria-expanded="true"] .sources-glyph { transform: rotate(45deg); }
+.sources-toggle[aria-expanded="true"] { color: var(--text); }
 .sources-toggle:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface); }
 .sources-toggle[aria-expanded="true"] {
   color: var(--text); border-color: var(--stroke-2); background: var(--surface-2);
@@ -2095,7 +2093,12 @@ a.donate-value:hover { text-decoration: underline; }
   text-decoration: none;
 }
 .tip-more:hover { color: var(--text); }
-.tip-more-go { transition: transform 160ms var(--ease); }
+.tip-more-go {
+  width: 14px; height: 14px; flex: none; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h14'/%3E%3Cpath d='m12.5 6 6 6-6 6'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
+  transition: transform 160ms var(--ease);
+}
 .tip-more:hover .tip-more-go { transform: translateX(2px); }
 .tip-veil {
   display: none; position: fixed; inset: 0; z-index: 94;

@@ -128,6 +128,11 @@ async function main() {
   await sleep(350);
   const phone = doc.querySelector("#sources-panel").getBoundingClientRect();
   const barTop = doc.querySelector(".mobile-bar").getBoundingClientRect().top;
+  const tb = button.getBoundingClientRect();
+  const hit = doc.elementFromPoint(tb.left + tb.width / 2, tb.top + tb.height / 2);
+  record("the cross is still the hit target while the panel is open",
+    !!hit && hit.closest(".sources-toggle") === button,
+    hit ? (hit.id || hit.className || hit.tagName) : "none");
   const veil = doc.querySelector("#sources-veil");
   record("on a phone it is a sheet, and it clears the bar",
     phone.bottom <= barTop + 1 && phone.height > 200,

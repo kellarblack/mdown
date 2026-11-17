@@ -430,7 +430,6 @@
     hpStrip: $("#hp-strip"),
     hpPct: $("#hp-pct"),
     hpChecks: $("#hp-checks"),
-    hpWeek: $("#hp-week"),
     hpSettings: $("#hp-settings"),
     sheet: $("#settings"),
     sheetBody: $("#sheet-body"),
@@ -2955,7 +2954,7 @@
 
     const more = el("a", { class: "tip-more", href: "donate.html" });
     more.appendChild(el("span", { text: "all the ways to give" }));
-    more.appendChild(el("span", { class: "tip-more-go", "aria-hidden": "true", text: "→" }));
+    more.appendChild(el("span", { class: "tip-more-go", "aria-hidden": "true" }));
     pop.appendChild(more);
 
     pop.hidden = false;
@@ -3552,7 +3551,6 @@
     const recent = history.slice(-7);
     const pad = Math.max(0, 7 - recent.length);
     strip.innerHTML = "";
-    if (dom.hpWeek) dom.hpWeek.innerHTML = "";
     for (let i = 0; i < pad; i += 1) {
       const empty = el("span", { class: "hp-bar", "data-empty": "true" });
       empty.title = "no sample yet";
@@ -3615,14 +3613,7 @@
         if (sig !== healthSig) {
           healthSig = sig;
           strip.innerHTML = "";
-          if (dom.hpWeek) dom.hpWeek.innerHTML = "";
           week.forEach((day, i) => {
-            if (dom.hpWeek) {
-              const label = el("span", {
-                text: day && day.date ? String(Number(day.date.slice(-2))) : ""
-              });
-              dom.hpWeek.appendChild(label);
-            }
             const bar = el("span", { class: "hp-bar" });
             if (!day || !day.total) {
               bar.dataset.empty = "true";
@@ -4370,6 +4361,9 @@
     if (healthOpen) closeHealthPop();
     if (!dom.sheet.hidden) closeSettings();
     if (dockOpen) setDock(false);
+    /* the tip popover has its own "all the ways to give" link: leaving it up
+       would open the tab underneath the sheet you just pressed */
+    if (tipOpen) closeTipPop();
     setDonateTab(true);
   }
 
