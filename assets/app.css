@@ -2082,6 +2082,11 @@ body[data-view="clean"] .nav-download { display: inline-flex; }
     width: 40px; height: 40px; padding: 0;
     justify-content: center; border-radius: 12px;
   }
+  /* the wrap is absolute at 50% of the bar's padding box; the buttons beside
+     it are centred in the content box, which sat three pixels lower. move the
+     box with `top`, never with a transform: a transform would make the wrap a
+     containing block and pull the fixed panel up with it. */
+  .sources-wrap { top: calc(50% + 3px); }
   .sources-toggle .sources-label { display: none; }
   .sources-glyph { width: 15px; height: 15px; }
 }

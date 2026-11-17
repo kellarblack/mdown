@@ -3119,7 +3119,11 @@
       if (!PHONE()) return;
       event.preventDefault();
       event.stopPropagation();
-      openDonateTab();
+      /* leave first, then switch: opening the tab while the sheet is still
+         animating left the sheet on top of it, which looked like the link just
+         reopened the menu */
+      closeTipPop(true);
+      setTimeout(() => openDonateTab(), 30);
     });
     pop.appendChild(more);
 
