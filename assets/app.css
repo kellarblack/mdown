@@ -176,18 +176,45 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
 }
 .brand-mark svg { width: 15px; height: 15px; overflow: visible; }
 
-/* the mark answers a pointer; it does not move on its own when the page
-   loads, because nothing else above the field does either */
-@keyframes mark-in {
-  0%   { transform: translateY(-2px); opacity: 0.55; }
-  60%  { transform: translateY(0.5px); opacity: 1; }
-  100% { transform: translateY(0); opacity: 1; }
+/* Pointing at the mark performs a download: the arrow drops into the tray and
+   fades as it goes, the tray takes the hit, and a fresh arrow settles in from
+   above with one small overshoot. One gesture, no loop, and nothing outside
+   the 26px box moves. */
+.brand-mark .mark-arrow,
+.brand-mark .mark-tray {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
 }
-.brand:hover .brand-mark svg,
-.brand:focus-visible .brand-mark svg {
-  animation: mark-in 520ms var(--ease) both;
+@keyframes mark-drop {
+  0%   { transform: translateY(0);     opacity: 1; }
+  32%  { transform: translateY(3.6px); opacity: 0; }
+  33%  { transform: translateY(-4.8px); opacity: 0; }
+  58%  { transform: translateY(-0.8px); opacity: 1; }
+  76%  { transform: translateY(0.6px); }
+  100% { transform: translateY(0);     opacity: 1; }
 }
-.brand:active .brand-mark svg { transform: translateY(1px); }
+@keyframes mark-catch {
+  0%, 24% { transform: scaleX(1);    stroke-width: 2; }
+  38%     { transform: scaleX(1.12); stroke-width: 3; }
+  70%     { transform: scaleX(1);    stroke-width: 2; }
+  100%    { transform: scaleX(1);    stroke-width: 2; }
+}
+.brand:hover .brand-mark .mark-arrow,
+.brand:focus-visible .brand-mark .mark-arrow {
+  animation: mark-drop 640ms cubic-bezier(.22, .9, .24, 1) both;
+}
+.brand:hover .brand-mark .mark-tray,
+.brand:focus-visible .brand-mark .mark-tray {
+  animation: mark-catch 640ms cubic-bezier(.22, .9, .24, 1) both;
+}
+.brand:active .brand-mark { transform: translateY(0.5px); }
+@media (prefers-reduced-motion: reduce) {
+  .brand:hover .brand-mark .mark-arrow,
+  .brand:hover .brand-mark .mark-tray,
+  .brand:focus-visible .brand-mark .mark-arrow,
+  .brand:focus-visible .brand-mark .mark-tray { animation: none; }
+}
 .brand-text {
   font-family: var(--mono); font-size: 0.82rem; font-weight: 500;
   letter-spacing: -0.02em; white-space: nowrap;
