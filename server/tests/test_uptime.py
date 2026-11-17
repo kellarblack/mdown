@@ -43,11 +43,13 @@ class UptimeLogTest(unittest.TestCase):
     def test_a_gap_is_counted_as_down(self):
         log = UptimeLog(self.path)
         log.record(True)
-        # pretend the last sample was ten minutes ago, then come back
+        # pretend the last sample was ten minutes ago, then come back.
+        # The window is two days, not one: run this a few minutes after UTC
+        # midnight and the missed minutes belong to yesterday.
         log._last_at = time.time() - 600
-        before = log.summary(1)["checks"]
+        before = log.summary(2)["checks"]
         log.record(True)
-        after = log.summary(1)
+        after = log.summary(2)
         self.assertGreater(after["checks"], before + 1)
         # nine minutes were missed: one of them is the sample we just took
         self.assertGreaterEqual(after["checks"] - before, 10)

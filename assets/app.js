@@ -4121,6 +4121,9 @@
      not just focus: typing replaces whatever is there instead of appending. */
   function focusComposer() {
     if (!dom.input) return;
+    /* a TV remote has no pointer: focusing the field there opens an on-screen
+       keyboard over the page before anyone asked for one */
+    if (window.matchMedia && window.matchMedia("(pointer: none)").matches) return;
     if (dom.modal && !dom.modal.hidden) return;
     if (dom.sheet && !dom.sheet.hidden) return;
     const active = document.activeElement;
