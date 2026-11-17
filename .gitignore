@@ -22,3 +22,7 @@ tests/owner-handle.txt
 
 # the neutral publish tree (generated, not part of this repo)
 .publish/
+
+# web build
+web/node_modules/
+web/dist/

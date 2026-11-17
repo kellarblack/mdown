@@ -1,0 +1,205 @@
+/* ============================================================
+   Fixes on top of app.css for the React build.
+   ============================================================ */
+
+/* 1. The sources "+" on a phone sits IN the action row, the same 40px box as
+   the pill and the buttons beside it. app.css placed it absolutely at 50% of
+   the bar with no upward shift, so it hung below the header. In flow, there
+   is nothing to line up by hand. */
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  .topbar-actions .sources-wrap {
+    position: static;
+    inset: auto;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 0;
+    height: auto;
+    display: flex;
+    align-items: center;
+    pointer-events: auto;
+    order: -1;
+  }
+  .topbar-actions { align-items: center; }
+}
+@media (max-width: 430px) {
+  .topbar-actions .sources-wrap { top: auto; height: 40px; }
+}
+@media (max-width: 360px) {
+  .topbar-actions .sources-wrap { height: 36px; }
+}
+
+/* 2. The tip jar is a page now, everywhere: the heart is a link. */
+a.icon-btn { text-decoration: none; }
+a.icon-btn.donate-btn[aria-current="page"] { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
+
+/* 3. The donate view lives under the app's own header. */
+.donate-page[hidden] { display: none !important; }
+body[data-view="donate"] .footer { margin-top: 8px; }
+
+/* 4. Touch: no double-tap zoom delay on controls, no text selection on taps. */
+button, .mbar-item, .icon-btn, .mode, .seg button, .source-chip, .tool-card {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 5. The phone bar and its sheets respect the home indicator. */
+.mobile-bar { padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+
+/* 6. A long file name never pushes the row's buttons off a narrow screen. */
+.qitem .q-title { overflow-wrap: anywhere; }
+.qitem .q-actions { flex-wrap: wrap; justify-content: flex-end; }
+
+/* ============================================================
+   sources panel, cleaner: opaque surface, a header row, each
+   source with its mark, readable names, one footer row.
+   (last in the file on purpose: it wins over the older rules)
+   ============================================================ */
+.sources-panel {
+  width: min(460px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--stroke-2);
+  border-radius: 14px;
+  background: #121214;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  overflow: hidden auto;
+}
+[data-theme="light"] .sources-panel {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.sources-panel .sources { display: grid; }
+.sources-panel .sources-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin: 0; padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--stroke);
+}
+.sources-panel .sources-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text);
+}
+.sources-panel .sources-head .sources-count { font-size: 11px; color: var(--text-3); }
+
+.sources-panel .source-chips {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px;
+  padding: 8px;
+}
+.sources-panel .source-chip {
+  display: flex; align-items: center; justify-content: flex-start; gap: 10px;
+  min-height: 40px; padding: 0 10px;
+  border: 0; border-radius: 8px; background: transparent;
+  font-family: var(--mono); font-size: 12px; line-height: 1; color: var(--text-2);
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  translate: none;
+  transition: background 120ms var(--ease), color 120ms var(--ease);
+}
+.sources-panel .source-chip:hover,
+.sources-panel .source-chip:focus-visible { background: var(--surface-2); color: var(--text); translate: none; }
+.sources-panel .source-chip:active { background: var(--surface-3); transform: none; }
+[data-theme="light"] .sources-panel .source-chip { border: 0; color: #3a3a40; }
+[data-theme="light"] .sources-panel .source-chip:hover { background: #f1f1f3; color: #0a0a0b; }
+.sources-panel .source-mark {
+  display: grid; place-items: center; flex: none;
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--surface-2); color: var(--text);
+}
+[data-theme="light"] .sources-panel .source-mark { background: #f1f1f3; color: #0a0a0b; }
+.sources-panel .source-mark svg { width: 13px; height: 13px; display: block; }
+.sources-panel .source-name { overflow: hidden; text-overflow: ellipsis; }
+
+.sources-panel .sources-note {
+  margin: 0; padding: 4px 16px 12px; font-size: 11px; line-height: 1.5; color: var(--text-3);
+}
+.sources-panel .sources-more {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 0; padding: 12px 16px;
+  border-top: 1px solid var(--stroke);
+  font-family: var(--mono); font-size: 12px; color: var(--text-2); text-decoration: none;
+}
+.sources-panel .sources-more:hover { color: var(--text); background: var(--surface); }
+
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  .sources-panel { left: 8px; right: 8px; width: auto; padding: 0; border-radius: 16px; }
+  .sources-panel .source-chips { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px; }
+  .sources-panel .source-chip { min-height: 44px; font-size: 13px; }
+}
+@media (max-width: 340px) {
+  .sources-panel .source-chip { gap: 8px; padding: 0 8px; font-size: 12px; }
+}
+
+/* ============================================================
+   header: every control the same box, every glyph the same size
+   ============================================================ */
+.topbar .icon-btn svg,
+.topbar .sources-toggle .sources-glyph { width: 16px; height: 16px; }
+.topbar .icon-btn.help-btn svg { width: 17px; height: 17px; }
+.topbar .instance-pill .dot { width: 8px; height: 8px; }
+
+/* the "all sources" row is a footnote, not a second header */
+.sources-panel .sources-more { padding: 8px 16px; font-size: 11px; color: var(--text-3); }
+.sources-panel .sources-more-go { transform: scale(0.85); }
+
+/* ============================================================
+   uptime card
+   ============================================================ */
+.health-pop.hp2 { --hp-w: 272px; padding: 0; overflow: hidden; background: #121214; border-radius: 12px; }
+[data-theme="light"] .health-pop.hp2 { background: #ffffff; }
+.hp2-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; border-bottom: 1px solid var(--stroke);
+}
+.hp2-state { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.hp2-state b { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); }
+.hp2-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); flex: none; }
+.hp2[data-state="ok"] .hp2-dot { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent); }
+.hp2[data-state="bad"] .hp2-dot { background: var(--err); box-shadow: 0 0 0 3px color-mix(in srgb, var(--err) 18%, transparent); }
+.hp2[data-state="checking"] .hp2-dot { background: var(--warn); }
+.hp2-up { font-family: var(--mono); font-size: 11px; color: var(--text-3); white-space: nowrap; }
+.hp2-graph { display: grid; gap: 8px; padding: 12px 14px 4px; }
+.hp2-label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10.5px; color: var(--text-3); }
+.hp2-bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; height: 28px; }
+.hp2-bar { border-radius: 3px; background: var(--ok); opacity: 0.9; }
+.hp2-bar[data-ok="partial"] { background: var(--warn); }
+.hp2-bar[data-ok="false"] { background: var(--err); }
+.hp2-bar[data-empty="true"] { background: var(--surface-2); opacity: 1; }
+.hp2-stat { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px 12px; font-family: var(--mono); }
+.hp2-stat b { font-size: 18px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+.hp2-stat span { font-size: 11px; color: var(--text-3); }
+.hp2-foot { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--stroke); }
+.hp2-link {
+  display: flex; align-items: center; justify-content: center; min-height: 38px;
+  border: 0; background: none; color: var(--text-2); font-family: var(--mono); font-size: 11px;
+  text-decoration: none; cursor: pointer;
+}
+.hp2-link + .hp2-link { border-left: 1px solid var(--stroke); }
+.hp2-link:hover { color: var(--text); background: var(--surface); }
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  .health-pop.hp2 { width: min(288px, calc(100vw - 16px)); }
+}
+
+/* ============================================================
+   server note: what is wrong, what happens next, two buttons
+   ============================================================ */
+.setup-note.sn2 {
+  display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start;
+  padding: 14px 16px; border-top: 1px solid var(--stroke);
+}
+.sn2-icon {
+  display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px;
+  background: color-mix(in srgb, var(--err) 12%, transparent); color: var(--err);
+}
+.sn2[data-kind="empty"] .sn2-icon { background: var(--surface-2); color: var(--text-2); }
+.sn2-icon svg { width: 16px; height: 16px; }
+.sn2-copy { display: grid; gap: 4px; min-width: 0; }
+.sn2-copy b { font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--text); }
+.sn2-copy span { font-size: 12px; line-height: 1.5; color: var(--text-3); }
+.sn2-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px; }
+@media (min-width: 640px) {
+  .setup-note.sn2 { grid-template-columns: 32px 1fr auto; align-items: center; }
+  .sn2-actions { grid-column: auto; }
+}
+
+/* coins: one size in the tabs */
+.tj-coin, .tj-coin svg { width: 16px; height: 16px; }
+.topbar .icon-btn.labeled svg { width: 15px; height: 15px; }

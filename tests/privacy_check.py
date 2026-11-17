@@ -53,7 +53,7 @@ if OWNER:
 
 # hosts that would mean the page phones somewhere
 TRACKERS = re.compile(
-    r"(google-analytics|googletagmanager|gtag\(|doubleclick|facebook\.net|"
+    r"(google-analytics|googletagmanager|gtag\(|doubleclick\.net|facebook\.net|"
     r"connect\.facebook|hotjar|plausible\.io|posthog|segment\.(io|com)|"
     r"amplitude|mixpanel|sentry\.io|clarity\.ms|matomo|piwik)",
     re.I,
