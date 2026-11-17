@@ -4314,8 +4314,25 @@
   }
   /* A panel that is already open but behind another one comes forward on the
      click that reaches for it, instead of closing as if you had dismissed it. */
+  /* Only a panel that is really covered is raised instead of closed. A front
+     panel that has since closed (or is closing, or sits elsewhere on screen)
+     covers nothing, so the press means "close" and the first click does it.
+     Before this, a closed downloads list stayed marked as "in front", and the
+     next press on the health dot only raised the card. */
   function raiseIfBehind(node) {
     if (!node || node.hidden || node === frontPanel) return false;
+    const front = frontPanel;
+    const covering = !!front && front.isConnected && !front.hidden &&
+      !front.classList.contains("is-closing") && (() => {
+        const a = front.getBoundingClientRect();
+        const b = node.getBoundingClientRect();
+        return a.width > 0 && a.height > 0 &&
+          a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+      })();
+    if (!covering) {
+      frontPanel = node;
+      return false;
+    }
     bringToFront(node);
     return true;
   }
