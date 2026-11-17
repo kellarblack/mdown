@@ -105,7 +105,7 @@ function Sources() {
   const panelRef = useRef<HTMLDivElement>(null);
   const open = usePanelDismiss("sources", wrap);
   const { mounted, closing } = useClosing(open, 220);
-  usePlaceUnder(open, panelRef, button);
+  // centred under its own button by the stylesheet; no measuring needed
   useEffect(() => {
     if (open) void loadMarks();
   }, [open]);
@@ -175,10 +175,10 @@ function Health() {
   const pop = useRef<HTMLDivElement>(null);
   const open = usePanelDismiss("health", box);
   const { mounted, closing } = useClosing(open, 150);
-  usePlaceUnder(open, pop, pill);
+  // centred on the dot by the stylesheet (margin-left: -width/2)
   const inst = useStore(instanceStore);
-  const [state, setState] = useState<{ s: string; label: string; up: string; bars: Bar[]; pct: string; checks: string }>({
-    s: "unknown", label: "checking…", up: "", bars: [], pct: "n/a", checks: "",
+  const [state, setState] = useState<{ s: string; label: string; up: string; bars: Bar[]; pct: string; checks: string; scope: string }>({
+    s: "unknown", label: "checking…", up: "", bars: [], pct: "—", checks: "", scope: "last 7 days",
   });
 
   const refresh = useCallback(async () => {
@@ -202,8 +202,8 @@ function Health() {
       }
     }
     let bars: Bar[] = [];
-    let pct = "n/a";
-    let checks = "no log yet";
+    let pct = "—";
+    let checks = "";
     try {
       const res = await fetch(endpoint + "uptime", { headers: { Accept: "application/json" }, cache: "no-store" });
       const data = res.ok ? await res.json() : null;
@@ -218,14 +218,23 @@ function Health() {
             title: shortDay(d.date) + " · " + Math.round(ratio * 1000) / 10 + "% of " + d.total.toLocaleString() + " checks",
           };
         });
-        pct = data.uptime == null ? "n/a" : Number(data.uptime).toFixed(1) + "%";
+        pct = data.uptime == null ? "—" : Number(data.uptime).toFixed(1) + "%";
         checks = compact(Number(data.checks) || 0) + " check" + (Number(data.checks) === 1 ? "" : "s");
       }
     } catch {
       /* the local samples below */
     }
+    let scope = "last 7 days";
     if (!bars.length) {
-      const local = readHealth().slice(-7);
+      // the server keeps no log: show what this browser saw, and say so
+      scope = "recent checks";
+      const seen = readHealth();
+      const okCount = seen.filter((x) => x.ok).length;
+      if (seen.length) {
+        pct = Math.round((okCount / seen.length) * 1000) / 10 + "%";
+        checks = compact(seen.length) + " check" + (seen.length === 1 ? "" : "s");
+      }
+      const local = seen.slice(-7);
       bars = [
         ...Array.from({ length: 7 - local.length }, (_, i) => ({ key: "pad" + i, empty: true, title: "no sample yet" })),
         ...local.map((x, i) => ({ key: String(x.t), ok: (x.ok ? "true" : "false") as Bar["ok"], live: i === local.length - 1, title: new Date(x.t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })),
@@ -235,7 +244,7 @@ function Health() {
     setState({
       s: !responded ? "bad" : ok ? "ok" : "bad",
       label: !responded ? "unreachable" : ok ? "online" : "down",
-      up, bars, pct, checks,
+      up, bars, pct, checks, scope,
     });
   }, []);
 
@@ -257,31 +266,23 @@ function Health() {
         <span className="instance-pill-label sr-only">{label}</span>
       </button>
       {mounted && (
-        <div ref={pop} className={cx("health-pop", closing && "is-closing")} id="health-pop" data-state={state.s} aria-label="server health">
-          <div className="hp-head">
-            <span className="hp-state">
-              <svg className="hp-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path className="sig sig-1" d="M3.8 9.6a11.6 11.6 0 0 1 16.4 0" />
-                <path className="sig sig-2" d="M7 13a7 7 0 0 1 10 0" />
-                <circle className="sig sig-3" cx="12" cy="17.2" r="1.7" fill="currentColor" stroke="none" />
-              </svg>
-              <b>{state.label}</b>
-            </span>
-            <span className="hp-uptime">{state.up}</span>
+        <div ref={pop} className={cx("health-pop hp2", closing && "is-closing")} id="health-pop" data-state={state.s} aria-label="server health">
+          <div className="hp2-head">
+            <span className="hp2-state"><span className="hp2-dot" aria-hidden="true" /><b>{state.label}</b></span>
+            {state.up && <span className="hp2-up">{state.up}</span>}
           </div>
-          <div className="hp-strip" aria-hidden="true" title="the server keeps the 30-day graph">
-            {state.bars.map((b) => (
-              <span key={b.key} className="hp-bar" data-ok={b.ok} data-empty={b.empty ? "true" : undefined}
-                data-live={b.live ? "true" : "false"} title={b.title} />
-            ))}
+          <div className="hp2-graph">
+            <div className="hp2-label"><span>{state.scope}</span><span>{state.checks}</span></div>
+            <div className="hp2-bars" aria-hidden="true">
+              {state.bars.map((b) => (
+                <span key={b.key} className="hp2-bar" data-ok={b.ok} data-empty={b.empty ? "true" : undefined} title={b.title} />
+              ))}
+            </div>
           </div>
-          <div className="hp-foot">
-            <span className="hp-pct">{state.pct}</span>
-            <span className="hp-checks">{state.checks}</span>
-            <span className="hp-links">
-              <a href="status.html" className="hp-link">status</a>
-              <button type="button" className="hp-link" onClick={() => uiStore.set((s) => ({ ...s, panel: "none", settingsOpen: true, settingsSection: "instance" }))}>settings</button>
-            </span>
+          <div className="hp2-stat"><b>{state.pct}</b><span>uptime</span></div>
+          <div className="hp2-foot">
+            <a href="status.html" className="hp2-link">status page</a>
+            <button type="button" className="hp2-link" onClick={() => uiStore.set((s) => ({ ...s, panel: "none", settingsOpen: true, settingsSection: "instance" }))}>server settings</button>
           </div>
         </div>
       )}

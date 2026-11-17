@@ -17,7 +17,7 @@ export const IconClose = line(<path d="M6 6l12 12M18 6 6 18" />, 2);
 export const IconPlus = line(<path d="M12 5.2v13.6M5.2 12h13.6" />);
 export const IconHeart = line(<path d="M12 20.5 4.6 13a4.7 4.7 0 0 1 6.6-6.7l.8.8.8-.8A4.7 4.7 0 0 1 19.4 13z" />);
 export const IconHeartBar = line(<path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9z" />, 1.7);
-export const IconHelp = line(<><path d="M9.1 9.2a3 3 0 0 1 5.8 1c0 1.9-2.9 2.4-2.9 4" /><path d="M12 17.6h.01" /></>, 1.7);
+export const IconHelp = line(<><path d="M8.3 8.6a3.8 3.8 0 0 1 7.4 1.3c0 2.7-3.7 3.1-3.7 5.6" /><path d="M12 19.4h.01" /></>, 2);
 export const IconGear = line(<><circle cx="12" cy="12" r="3.2" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.9 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9.4a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9.4a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></>, 1.8);
 export const IconDownloads = line(<><path d="M12 4.2v10.2" /><path d="m7.9 10.3 4.1 4.1 4.1-4.1" /><path d="M5 17.6V19a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 19v-1.4" /></>, 1.6);
 export const IconTray = line(<><path d="M12 4v10" /><path d="m7.5 9.5 4.5 4.5 4.5-4.5" /><path d="M5 19h14" /></>);

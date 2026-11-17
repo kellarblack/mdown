@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { fetchProbe, probeKey, probeSupported, ProbeError, readProbe, type ProbeData } from "../api";
+import { checkInstance, fetchProbe, probeKey, probeSupported, ProbeError, readProbe, type ProbeData } from "../api";
 import { AUDIO_FIRST, DRM_SERVICES, HIDDEN_SERVICES, MUSIC_FIRST } from "../constants";
 import { effectiveMode, submitUrls } from "../queue";
 import {
@@ -295,21 +295,44 @@ function Composer() {
             </div>
           </div>
         </form>
-        {setup && (
-          <div className="setup-note" id="setup-note">
-            <p>
-              <span>{setup === "unreachable" ? "The API isn't answering. Retrying. If it stays down, " : "Not connected. "}</span>
-              <button type="button" className="link-btn" onClick={() => openSettings("instance")}>
-                {setup === "unreachable" ? "open settings" : "connect an API"}
-              </button>
-              <span>{setup === "unreachable" ? " to check the address." : " to download."}</span>
-            </p>
-          </div>
-        )}
+        {setup && <ServerNote kind={setup} onSettings={() => openSettings("instance")} />}
       </section>
       <CopyNote />
       <ProbePreview data={probe} />
     </>
+  );
+}
+
+/* why nothing can download right now, and the two things that fix it */
+function ServerNote({ kind, onSettings }: { kind: "empty" | "unreachable"; onSettings: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const retry = async () => {
+    setBusy(true);
+    const ok = await checkInstance();
+    setBusy(false);
+    toast(ok ? "Connected." : "Still not answering.", ok ? "ok" : "warn");
+  };
+  const down = kind === "unreachable";
+  return (
+    <div className="setup-note sn2" id="setup-note" role="status" data-kind={kind}>
+      <span className="sn2-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          {down ? (
+            <><path d="M5 12.6a10 10 0 0 1 5.2-2.7" /><path d="M14.2 10a10 10 0 0 1 4.8 2.6" /><path d="M8.5 16a5 5 0 0 1 7 0" /><path d="M12 19.6h.01" /><path d="m3 3 18 18" /></>
+          ) : (
+            <><circle cx="12" cy="12" r="8.6" /><path d="M12 8v4.6" /><path d="M12 16h.01" /></>
+          )}
+        </svg>
+      </span>
+      <span className="sn2-copy">
+        <b>{down ? "Can't reach the download server" : "No download server set"}</b>
+        <span>{down ? "Trying again every 20 seconds. Downloads work again as soon as it answers." : "Add a server in settings to start downloading."}</span>
+      </span>
+      <span className="sn2-actions">
+        {down && <button type="button" className="ghost-btn small" disabled={busy} aria-busy={busy} onClick={() => void retry()}>{busy ? "checking…" : "retry now"}</button>}
+        <button type="button" className="ghost-btn small" onClick={onSettings}>{down ? "server settings" : "add server"}</button>
+      </span>
+    </div>
   );
 }
 

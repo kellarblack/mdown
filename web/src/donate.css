@@ -89,7 +89,7 @@
 }
 .tj-tab:hover { color: var(--text); }
 .tj-tab[aria-selected="true"] { background: var(--surface-3); color: var(--text); }
-.tj-coin, .tj-coin svg { width: 14px; height: 14px; display: block; }
+.tj-coin, .tj-coin svg { width: 16px; height: 16px; display: block; }
 
 .tj-addr {
   display: grid; gap: 12px; padding: 16px; border-radius: var(--r-md);

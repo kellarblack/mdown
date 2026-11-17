@@ -127,3 +127,79 @@ button, .mbar-item, .icon-btn, .mode, .seg button, .source-chip, .tool-card {
 @media (max-width: 340px) {
   .sources-panel .source-chip { gap: 8px; padding: 0 8px; font-size: 12px; }
 }
+
+/* ============================================================
+   header: every control the same box, every glyph the same size
+   ============================================================ */
+.topbar .icon-btn svg,
+.topbar .sources-toggle .sources-glyph { width: 16px; height: 16px; }
+.topbar .icon-btn.help-btn svg { width: 17px; height: 17px; }
+.topbar .instance-pill .dot { width: 8px; height: 8px; }
+
+/* the "all sources" row is a footnote, not a second header */
+.sources-panel .sources-more { padding: 8px 16px; font-size: 11px; color: var(--text-3); }
+.sources-panel .sources-more-go { transform: scale(0.85); }
+
+/* ============================================================
+   uptime card
+   ============================================================ */
+.health-pop.hp2 { --hp-w: 272px; padding: 0; overflow: hidden; background: #121214; border-radius: 12px; }
+[data-theme="light"] .health-pop.hp2 { background: #ffffff; }
+.hp2-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; border-bottom: 1px solid var(--stroke);
+}
+.hp2-state { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.hp2-state b { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); }
+.hp2-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); flex: none; }
+.hp2[data-state="ok"] .hp2-dot { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent); }
+.hp2[data-state="bad"] .hp2-dot { background: var(--err); box-shadow: 0 0 0 3px color-mix(in srgb, var(--err) 18%, transparent); }
+.hp2[data-state="checking"] .hp2-dot { background: var(--warn); }
+.hp2-up { font-family: var(--mono); font-size: 11px; color: var(--text-3); white-space: nowrap; }
+.hp2-graph { display: grid; gap: 8px; padding: 12px 14px 4px; }
+.hp2-label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10.5px; color: var(--text-3); }
+.hp2-bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; height: 28px; }
+.hp2-bar { border-radius: 3px; background: var(--ok); opacity: 0.9; }
+.hp2-bar[data-ok="partial"] { background: var(--warn); }
+.hp2-bar[data-ok="false"] { background: var(--err); }
+.hp2-bar[data-empty="true"] { background: var(--surface-2); opacity: 1; }
+.hp2-stat { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px 12px; font-family: var(--mono); }
+.hp2-stat b { font-size: 18px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+.hp2-stat span { font-size: 11px; color: var(--text-3); }
+.hp2-foot { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--stroke); }
+.hp2-link {
+  display: flex; align-items: center; justify-content: center; min-height: 38px;
+  border: 0; background: none; color: var(--text-2); font-family: var(--mono); font-size: 11px;
+  text-decoration: none; cursor: pointer;
+}
+.hp2-link + .hp2-link { border-left: 1px solid var(--stroke); }
+.hp2-link:hover { color: var(--text); background: var(--surface); }
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  .health-pop.hp2 { width: min(288px, calc(100vw - 16px)); }
+}
+
+/* ============================================================
+   server note: what is wrong, what happens next, two buttons
+   ============================================================ */
+.setup-note.sn2 {
+  display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start;
+  padding: 14px 16px; border-top: 1px solid var(--stroke);
+}
+.sn2-icon {
+  display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px;
+  background: color-mix(in srgb, var(--err) 12%, transparent); color: var(--err);
+}
+.sn2[data-kind="empty"] .sn2-icon { background: var(--surface-2); color: var(--text-2); }
+.sn2-icon svg { width: 16px; height: 16px; }
+.sn2-copy { display: grid; gap: 4px; min-width: 0; }
+.sn2-copy b { font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--text); }
+.sn2-copy span { font-size: 12px; line-height: 1.5; color: var(--text-3); }
+.sn2-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px; }
+@media (min-width: 640px) {
+  .setup-note.sn2 { grid-template-columns: 32px 1fr auto; align-items: center; }
+  .sn2-actions { grid-column: auto; }
+}
+
+/* coins: one size in the tabs */
+.tj-coin, .tj-coin svg { width: 16px; height: 16px; }
+.topbar .icon-btn.labeled svg { width: 15px; height: 15px; }
