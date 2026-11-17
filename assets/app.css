@@ -226,7 +226,9 @@ code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
   animation: drop-in 150ms var(--ease) both;
 }
 .health-pop.is-closing { animation: drop-out 120ms var(--ease) both; }
-.hp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+/* the uptime appears a beat after the card does, and a baseline-aligned second
+   item made the head 3px taller when it landed. the line is reserved up front. */
+.hp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; min-height: 22px; }
 .hp-state {
   display: inline-flex; align-items: center; gap: 7px; min-width: 0;
   font-family: var(--mono); font-size: 0.72rem; color: var(--text-2);
