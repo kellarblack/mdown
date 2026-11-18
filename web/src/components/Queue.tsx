@@ -6,7 +6,6 @@ import {
   retryItem, saveBlob, shareItem, switchToAlternative, type QueueItem,
 } from "../queue";
 import { settingsStore, setPanel, toast, useStore } from "../store";
-import { TipLine } from "./Tip";
 import { clockTime, copyText, cx, etaText, formatBytes } from "../util";
 import {
   IconClose, IconCopy, IconDots, IconFlag, IconOpen, IconRetry, IconSave, IconShare,
@@ -181,7 +180,6 @@ export function QueueList() {
         {items.map((item) => <Row key={item.id} item={item} v={v} />)}
       </div>
       <p className="empty" id="empty-state" hidden={items.length > 0}>Nothing here yet.</p>
-      <TipLine />
     </>
   );
 }

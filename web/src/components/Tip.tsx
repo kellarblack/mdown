@@ -168,18 +168,6 @@ function quiet(hours: number): void {
   writeNudge(v);
 }
 
-/** the quiet line at the end of the downloads list, once something is saved */
-export function TipLine() {
-  const saved = useStore(queueStore, (q) => q.items.some((i) => i.status === "done"));
-  if (!saved || !DONATE.enabled) return null;
-  return (
-    <p className="tip-line">
-      <IconHeart />
-      <span>mdown is free, with no ads.</span>
-      <button type="button" onClick={() => { quiet(30 * 24); uiStore.set((s) => ({ ...s, panel: "tip" })); }}>leave a tip</button>
-    </p>
-  );
-}
 
 
 export function TipNudge() {
@@ -188,24 +176,21 @@ export function TipNudge() {
   const busy = useStore(queueStore, (q) => q.items.some((i) => ["queued", "working", "downloading", "ready"].includes(i.status)));
   useEffect(() => {
     if (!show) return;
-    const t = setTimeout(() => nudgeStore.set(false), 14000);
+    const t = setTimeout(() => nudgeStore.set(false), 10000);
     return () => clearTimeout(t);
   }, [show]);
   if (!show || busy || !DONATE.enabled) return null;
   return (
     <div className="tn" role="status">
-      <span className="tn-text"><b>saved.</b> mdown is free, with no ads. if it helped you, leave a tip to keep it running.</span>
-      <span className="tn-actions">
-        <button type="button" className="tn-tip" onClick={() => {
-          nudgeStore.set(false);
-          quiet(30 * 24);
-          uiStore.set((s) => ({ ...s, panel: "tip" }));
-        }}>leave a tip</button>
-        <button type="button" className="tn-close" aria-label="dismiss" onClick={() => {
-          nudgeStore.set(false);
-          quiet(3 * 24);
-        }}><IconClose /></button>
-      </span>
+      <button type="button" className="tn-tip" onClick={() => {
+        nudgeStore.set(false);
+        quiet(30 * 24);
+        uiStore.set((s) => ({ ...s, panel: "tip" }));
+      }}><IconHeart /><span>leave a tip</span></button>
+      <button type="button" className="tn-close" aria-label="dismiss" onClick={() => {
+        nudgeStore.set(false);
+        quiet(3 * 24);
+      }}><IconClose /></button>
     </div>
   );
 }
