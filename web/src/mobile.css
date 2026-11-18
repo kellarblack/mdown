@@ -345,3 +345,23 @@ button, .mbar-item, .icon-btn, .mode, .seg button, .source-chip, .tool-card {
 @media (max-width: 360px) {
   .topbar .sources-toggle { width: 36px; height: 36px; }
 }
+
+/* the quiet tip line at the end of the downloads list */
+.tip-line {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px;
+  margin: 10px 0 2px; padding: 10px 8px 2px;
+  border-top: 1px solid var(--stroke);
+  color: var(--text-3); font-family: var(--mono); font-size: 0.7rem;
+}
+.tip-line svg { flex: none; width: 13px; height: 13px; }
+.tip-line button {
+  font: inherit; color: var(--text); padding: 6px 4px; margin: -6px -4px;
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px;
+  background: none; border: 0; cursor: pointer; border-radius: 6px;
+}
+.tip-line button:hover { color: var(--text); text-decoration-color: var(--text-3); }
+/* the downloads header stays one line on a phone */
+.dock-head .qstats, .dock-head #clear-finished { white-space: nowrap; }
+.dock-head .section-actions { min-width: 0; }
+.dock-head .qstats { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dock-head #clear-finished, .dock-head #queue-close { flex: none; }

@@ -129,15 +129,17 @@ export function TipButton() {
 const NUDGE_KEY = "mdown.tipnudge";
 export const nudgeStore = createStore(false);
 
-function readNudge(): { saves: number; shownAt: number; never?: boolean } {
+type Nudge = { saves: number; shownAt: number; quietUntil: number };
+
+function readNudge(): Nudge {
   try {
     const v = JSON.parse(localStorage.getItem(NUDGE_KEY) || "{}");
-    return { saves: Number(v.saves) || 0, shownAt: Number(v.shownAt) || 0, never: !!v.never };
+    return { saves: Number(v.saves) || 0, shownAt: Number(v.shownAt) || 0, quietUntil: Number(v.quietUntil) || 0 };
   } catch {
-    return { saves: 0, shownAt: 0 };
+    return { saves: 0, shownAt: 0, quietUntil: 0 };
   }
 }
-function writeNudge(v: { saves: number; shownAt: number; never?: boolean }) {
+function writeNudge(v: Nudge) {
   try {
     localStorage.setItem(NUDGE_KEY, JSON.stringify(v));
   } catch {
@@ -145,17 +147,40 @@ function writeNudge(v: { saves: number; shownAt: number; never?: boolean }) {
   }
 }
 
-/** after the second saved file, then at most once every two weeks */
+const HOUR = 3600 * 1000;
+
+/** after the first saved file, then at most once a day; a dismiss quiets it
+ *  for three days and a tip for a month */
 export function noteSaved(): void {
   const v = readNudge();
   v.saves += 1;
-  const due = !v.never && v.saves >= 2 && Date.now() - v.shownAt > 14 * 86400 * 1000;
-  if (due) {
-    v.shownAt = Date.now();
-    setTimeout(() => nudgeStore.set(true), 1200);
+  const now = Date.now();
+  if (now >= v.quietUntil && now - v.shownAt > 20 * HOUR) {
+    v.shownAt = now;
+    setTimeout(() => nudgeStore.set(true), 900);
   }
   writeNudge(v);
 }
+
+function quiet(hours: number): void {
+  const v = readNudge();
+  v.quietUntil = Date.now() + hours * HOUR;
+  writeNudge(v);
+}
+
+/** the quiet line at the end of the downloads list, once something is saved */
+export function TipLine() {
+  const saved = useStore(queueStore, (q) => q.items.some((i) => i.status === "done"));
+  if (!saved || !DONATE.enabled) return null;
+  return (
+    <p className="tip-line">
+      <IconHeart />
+      <span>mdown is free, with no ads.</span>
+      <button type="button" onClick={() => { quiet(30 * 24); uiStore.set((s) => ({ ...s, panel: "tip" })); }}>leave a tip</button>
+    </p>
+  );
+}
+
 
 export function TipNudge() {
   const show = useStore(nudgeStore);
@@ -169,14 +194,16 @@ export function TipNudge() {
   if (!show || busy || !DONATE.enabled) return null;
   return (
     <div className="tn" role="status">
-      <span className="tn-text"><b>saved.</b> mdown is free with no ads. if it helped, a tip keeps it running.</span>
+      <span className="tn-text"><b>saved.</b> mdown is free, with no ads. if it helped you, leave a tip to keep it running.</span>
       <span className="tn-actions">
         <button type="button" className="tn-tip" onClick={() => {
           nudgeStore.set(false);
+          quiet(30 * 24);
           uiStore.set((s) => ({ ...s, panel: "tip" }));
         }}>leave a tip</button>
         <button type="button" className="tn-close" aria-label="dismiss" onClick={() => {
           nudgeStore.set(false);
+          quiet(3 * 24);
         }}><IconClose /></button>
       </span>
     </div>

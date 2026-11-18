@@ -6,6 +6,7 @@ import {
   retryItem, saveBlob, shareItem, switchToAlternative, type QueueItem,
 } from "../queue";
 import { settingsStore, setPanel, toast, useStore } from "../store";
+import { TipLine } from "./Tip";
 import { clockTime, copyText, cx, etaText, formatBytes } from "../util";
 import {
   IconClose, IconCopy, IconDots, IconFlag, IconOpen, IconRetry, IconSave, IconShare,
@@ -180,6 +181,7 @@ export function QueueList() {
         {items.map((item) => <Row key={item.id} item={item} v={v} />)}
       </div>
       <p className="empty" id="empty-state" hidden={items.length > 0}>Nothing here yet.</p>
+      <TipLine />
     </>
   );
 }
@@ -195,7 +197,7 @@ export function QueuePanelHead() {
       </span>
       <span className="section-actions">
         <span className="qstats" id="queue-stats">{stats}</span>
-        <button type="button" className="ghost-btn small" id="clear-finished" hidden={!canClear} onClick={clearFinished}>clear finished</button>
+        <button type="button" className="ghost-btn small" id="clear-finished" hidden={!canClear} onClick={clearFinished} title="clear finished downloads">clear</button>
         <button type="button" className="icon-btn" id="queue-close" aria-label="close downloads" title="close" onClick={() => setPanel("none")}>
           <IconClose />
         </button>
