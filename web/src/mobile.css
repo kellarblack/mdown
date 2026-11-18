@@ -203,3 +203,106 @@ button, .mbar-item, .icon-btn, .mode, .seg button, .source-chip, .tool-card {
 /* coins: one size in the tabs */
 .tj-coin, .tj-coin svg { width: 16px; height: 16px; }
 .topbar .icon-btn.labeled svg { width: 15px; height: 15px; }
+
+/* the paste/download button changes colour in place. app.css faded the whole
+   button in from nothing on every switch, which read as flickering */
+#paste-btn[data-state="get"] { animation: none; }
+#paste-btn .pb-label { transition: none; }
+
+/* sources: audio-only services carry a quiet tag instead of a tooltip */
+.sources-panel .source-tag { display: inline-grid; place-items: center; flex: none; margin-left: -4px; color: var(--text-3); }
+.sources-panel .source-tag svg { width: 12px; height: 12px; }
+
+/* ============================================================
+   tip jar popover (desktop dropdown, phone sheet above the bar)
+   ============================================================ */
+.tp {
+  position: fixed; z-index: 96; width: 300px;
+  display: grid; gap: 10px; padding: 14px;
+  border: 1px solid var(--stroke-2); border-radius: 14px;
+  background: #121214; box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  animation: drop-in 150ms var(--ease) both;
+}
+.tp.is-closing { animation: drop-out 140ms var(--ease) both; }
+[data-theme="light"] .tp { background: #ffffff; border-color: rgba(0, 0, 0, 0.12); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.28); }
+.tp-head { display: flex; align-items: center; justify-content: space-between; }
+.tp-title { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
+.tp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+.tp-close { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: none; color: var(--text-3); cursor: pointer; }
+.tp-close:hover { background: var(--surface-2); color: var(--text); }
+.tp-close svg { width: 14px; height: 14px; }
+.tp-lede { margin: 0; font-size: 12px; line-height: 1.55; color: var(--text-3); }
+.tp-card {
+  display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px;
+  min-height: 52px; padding: 8px 12px; border-radius: 10px;
+  background: var(--btn); color: var(--accent-ink); text-decoration: none;
+}
+.tp-card:hover { background: var(--btn-hover); }
+.tp-card-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: color-mix(in srgb, var(--accent-ink) 8%, transparent); }
+.tp-card-icon svg { width: 18px; height: 18px; }
+.tp-card-text { display: grid; gap: 1px; }
+.tp-card-text b { font-size: 12.5px; font-weight: 600; }
+.tp-card-text span { font-size: 11px; opacity: 0.65; }
+.tp-go { width: 15px; height: 15px; }
+.tp-coins { display: grid; gap: 2px; }
+.tp-coin { display: grid; grid-template-columns: 20px 1fr 32px; align-items: center; gap: 10px; min-height: 42px; padding: 0 2px 0 4px; border-radius: 8px; }
+.tp-coin:hover { background: var(--surface); }
+.tp-coin-icon, .tp-coin-icon svg { width: 18px; height: 18px; display: block; color: var(--text-2); }
+.tp-coin-text { display: grid; gap: 1px; min-width: 0; }
+.tp-coin-text b { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); }
+.tp-coin-text code { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+.tp-copy { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--stroke); border-radius: 8px; background: none; color: var(--text-3); cursor: pointer; }
+.tp-copy:hover, .tp-copy.is-copied { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
+.tp-copy svg { width: 14px; height: 14px; }
+.tp-more {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 2px -14px -14px; padding: 12px 14px; border-top: 1px solid var(--stroke);
+  font-family: var(--mono); font-size: 12px; color: var(--text-2); text-decoration: none;
+}
+.tp-more:hover { color: var(--text); background: var(--surface); border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  /* one tip control on a phone: the bar's donate tab. the heart would be a second */
+  .topbar #open-donate-top { display: none; }
+  .tp {
+    left: 8px !important; right: 8px; width: auto; top: auto !important;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    padding: 16px; border-radius: 16px;
+    animation: tp-rise 190ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+  .tp.is-closing { animation: tp-sink 140ms ease-in both; }
+  .tp-more { margin: 2px -16px -16px; padding: 14px 16px; }
+  .tp-coin { min-height: 48px; }
+  .tp-copy { width: 40px; height: 40px; }
+  @keyframes tp-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes tp-sink { to { opacity: 0; transform: translateY(12px); } }
+}
+
+/* ============================================================
+   the one tip prompt, after a download
+   ============================================================ */
+.tn {
+  position: fixed; z-index: 92; right: 16px; bottom: 16px; width: min(380px, calc(100vw - 32px));
+  display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 16px;
+  border: 1px solid var(--stroke-2); border-radius: 12px;
+  background: #121214; box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.8);
+  animation: tp-rise 220ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+[data-theme="light"] .tn { background: #fff; border-color: rgba(0, 0, 0, 0.12); }
+.tn-text { flex: 1; font-size: 12px; line-height: 1.5; color: var(--text-2); }
+.tn-text b { color: var(--text); font-weight: 500; }
+.tn-actions { display: flex; align-items: center; gap: 4px; flex: none; }
+.tn-tip { min-height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--btn); color: var(--accent-ink); font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+.tn-close { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; color: var(--text-3); cursor: pointer; }
+.tn-close svg { width: 14px; height: 14px; }
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  .tn { left: 8px; right: 8px; width: auto; bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .tn-tip, .tn-close { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .tp, .tn, .tp.is-closing { animation: none; } }
+
+/* recent links are tap targets on a phone too */
+@media (max-width: 720px), (hover: none) and (pointer: coarse) {
+  .recent-item, .recent-clear { min-height: 40px; display: inline-flex; align-items: center; }
+  .recent-clear { padding: 0 12px; }
+}

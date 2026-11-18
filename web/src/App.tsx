@@ -14,6 +14,7 @@ import { loadMarks } from "./service-marks";
 const SettingsSheet = lazy(() => import("./components/Settings").then((m) => ({ default: m.SettingsSheet })));
 const DonateView = lazy(() => import("./components/Donate").then((m) => ({ default: m.DonateView })));
 import { MiniDock } from "./components/Queue";
+import { TipNudge } from "./components/Tip";
 import { cx } from "./util";
 
 function Toasts() {
@@ -36,7 +37,7 @@ function Footer() {
       <nav className="footer-meta" aria-label="Footer">
         <a href="terms.html">terms</a>
         <a href="updates.html">updates</a>
-        <a href="donate.html" onClick={onNav("donate")}>donate</a>
+        <a href="donate" onClick={onNav("donate")}>donate</a>
         <a className="footer-source" href="https://github.com/kelllar/mdown" rel="noopener">github</a>
       </nav>
     </footer>
@@ -179,6 +180,7 @@ export function App() {
       <Modals />
       <MiniDock hidden={ui.panel === "queue"} />
       <MobileBar />
+      <TipNudge />
       <Toasts />
     </>
   );

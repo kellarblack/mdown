@@ -1,21 +1,27 @@
 [Unit]
-Description=Update yt-dlp, and restart the mdown API only if it actually changed
+Description=Update yt-dlp to the newest nightly, keep it only if it works
 Documentation=https://mdown.cc
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-# yt-dlp is the extractor layer: when a site changes, only a new release fixes
-# it. The restart is conditional on purpose — an unconditional one killed
-# whatever was downloading every week, for nothing.
+# yt-dlp is the extractor layer: when YouTube, SoundCloud or any other site
+# changes, a new yt-dlp build is the fix. Nightly builds (free, on PyPI as
+# pre-releases) carry those fixes hours after they are written instead of
+# days. Each new build must pass a real lookup, or the previous one comes
+# back. The Go API starts a fresh yt-dlp for every request, so nothing needs
+# a restart: the next download simply uses the new version.
 ExecStart=/bin/sh -c '\
-  before=$(/opt/mdown/venv/bin/yt-dlp --version 2>/dev/null || echo none); \
-  /opt/mdown/venv/bin/pip install --quiet --upgrade "yt-dlp[default,curl-cffi]" || exit 1; \
-  after=$(/opt/mdown/venv/bin/yt-dlp --version 2>/dev/null || echo none); \
-  echo "yt-dlp $before -> $after"; \
-  if [ "$before" != "$after" ]; then \
-    /usr/bin/systemctl restart mdown-api; \
-    date +%s > /var/lib/mdown/ytdlp-updated; \
+  Y=/opt/mdown/venv/bin/yt-dlp; P=/opt/mdown/venv/bin/pip; \
+  before=$($Y --version 2>/dev/null || echo none); \
+  $P install --quiet --upgrade --pre "yt-dlp[default,curl-cffi]" || exit 1; \
+  after=$($Y --version 2>/dev/null || echo none); \
+  [ "$before" = "$after" ] && { echo "yt-dlp $after, unchanged"; exit 0; }; \
+  if timeout 90 $Y --no-warnings --skip-download --print id "https://www.youtube.com/watch?v=jNQXAC9IVRw" >/dev/null 2>&1; then \
+    echo "yt-dlp $before -> $after"; date +%s > /var/lib/mdown/ytdlp-updated; \
+  else \
+    echo "yt-dlp $after failed its check, back to $before"; \
+    [ "$before" != none ] && $P install --quiet "yt-dlp[default,curl-cffi]==$before"; \
   fi'
-TimeoutStartSec=600
+TimeoutStartSec=900

@@ -55,7 +55,7 @@ export function applyMeta(view: View): void {
 /** move to a view: the donate page has a real address, the tools a hash */
 export function navigate(view: View): void {
   const base = appBase();
-  const target = view === "donate" ? base + "donate.html" : base + (view === "download" ? "" : "#" + view);
+  const target = view === "donate" ? base + "donate" : base + (view === "download" ? "" : "#" + view);
   const current = location.pathname + location.hash;
   // leaving from an open sheet replaces the sheet's own history entry, so one
   // back press returns to where the sheet was opened
@@ -67,6 +67,10 @@ export function navigate(view: View): void {
 }
 
 export function startRouting(): void {
+  // old links keep working; the address bar shows the short form
+  if (/\/donate\.html$/.test(location.pathname)) {
+    history.replaceState(history.state, "", location.pathname.replace(/donate\.html$/, "donate") + location.search + location.hash);
+  }
   const sync = () => {
     const view = viewFromLocation();
     uiStore.set((s) => (s.view === view ? s : { ...s, view, panel: "none" }));

@@ -91,6 +91,9 @@ function Composer() {
   const [probe, setProbe] = useState<ProbeData | null>(null);
   const [probeError, setProbeError] = useState(0);
   const [dropping, setDropping] = useState(false);
+  // a pasted link is complete: resolve it now, so the server has the answer
+  // ready by the time the download button is pressed
+  const pastedAt = useRef(0);
   const [shaking, setShaking] = useState(false);
 
   const urls = parseUrls(text);
@@ -150,7 +153,7 @@ function Composer() {
       fetchProbe(first, mode)
         .then((data) => live && setProbe(data))
         .catch((err) => live && err instanceof ProbeError && setProbeError(err.status));
-    }, 550);
+    }, Date.now() - pastedAt.current < 400 ? 0 : 300);
     return () => {
       live = false;
       clearTimeout(t);
@@ -180,6 +183,16 @@ function Composer() {
   if (probeError && !hint) [hint, tone] = [probeText[probeError] || "the server did not respond.", "warn"];
 
   const armed = urls.length >= 1;
+  // the spinner only for a wait you would notice: a quick answer must not flash it
+  const [busyShown, setBusyShown] = useState(false);
+  useEffect(() => {
+    if (!busy) {
+      setBusyShown(false);
+      return;
+    }
+    const t = setTimeout(() => setBusyShown(true), 250);
+    return () => clearTimeout(t);
+  }, [busy]);
   const submit = () => void submitUrls(text);
 
   const paste = async () => {
@@ -196,6 +209,7 @@ function Composer() {
     try {
       const clip = await navigator.clipboard.readText();
       if (!clip) return toast("Clipboard is empty.", "warn");
+      pastedAt.current = Date.now();
       setText(clip);
       input.current?.focus();
     } catch {
@@ -254,6 +268,7 @@ function Composer() {
             <textarea id="url-input" ref={input} rows={1} placeholder="paste a link" spellCheck={false} autoComplete="off"
               autoCapitalize="off" autoCorrect="off" inputMode="url" enterKeyHint="go" value={text}
               onChange={(e) => setText(e.target.value)}
+              onPaste={() => (pastedAt.current = Date.now())}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                   e.preventDefault();
@@ -269,7 +284,7 @@ function Composer() {
                 <IconClose />
               </button>
               <button type="button" className="ghost-btn" id="paste-btn" data-state={armed ? "get" : "paste"}
-                data-busy={busy ? "true" : "false"} aria-busy={busy} aria-disabled={busy}
+                data-busy={busyShown ? "true" : "false"} aria-busy={busy} aria-disabled={busy}
                 aria-label={armed ? "download" : "paste from clipboard"} title={armed ? "download" : "paste"} onClick={() => void paste()}>
                 <span className="pb-spin" aria-hidden="true" />
                 <span className="pb-icons" aria-hidden="true">

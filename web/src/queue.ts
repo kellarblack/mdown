@@ -578,6 +578,8 @@ async function afterReady(item: QueueItem, blob: Blob | null): Promise<void> {
   }
 }
 
+import { noteSaved } from "./components/Tip";
+
 let toldWhere = false;
 function tellWhereItWent(): void {
   if (toldWhere) return;
@@ -613,6 +615,7 @@ function handOffToBrowser(item: QueueItem, note: string): void {
   clickDownload(item.sourceUrl, item.filename);
   setStatus(item, "done", "saved · " + SAVED_WHERE);
   tellWhereItWent();
+  noteSaved();
 }
 
 export function saveBlob(item: QueueItem): void {
@@ -622,6 +625,7 @@ export function saveBlob(item: QueueItem): void {
   clickDownload(item.blobUrl, item.filename);
   setStatus(item, "done", "saved · " + SAVED_WHERE);
   tellWhereItWent();
+  noteSaved();
 }
 
 export function openSource(item: QueueItem): void {

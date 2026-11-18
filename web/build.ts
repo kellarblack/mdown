@@ -69,7 +69,7 @@ async function build(): Promise<void> {
     join(DIST, "donate.html"),
     tidyHtml(shell())
       .replace(/<title>[^<]*<\/title>/, "<title>Support mdown.cc · tip jar</title>")
-      .replace(/<link rel="canonical" href="[^"]*">/, '<link rel="canonical" href="https://mdown.cc/donate.html">'),
+      .replace(/<link rel="canonical" href="[^"]*">/, '<link rel="canonical" href="https://mdown.cc/donate">'),
   );
 
   // static pages and the files they use
@@ -100,6 +100,8 @@ async function build(): Promise<void> {
 function tidyHtml(html: string): string {
   const js = new Bun.Transpiler({ loader: "js", minifyWhitespace: true });
   return html
+    // the tip page lives at /donate (GitHub Pages serves donate.html there)
+    .replace(/href="donate\.html"/g, 'href="donate"')
     .replace(/<!--(?!CSS|JS|PRELOAD)[\s\S]*?-->/g, "")
     .replace(/(<script(?![^>]*\bsrc=)(?![^>]*application\/ld\+json)[^>]*>)([\s\S]*?)(<\/script>)/g, (_m, open, body, close) => {
       try {

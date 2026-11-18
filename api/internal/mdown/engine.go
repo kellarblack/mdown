@@ -219,7 +219,7 @@ type infoCache struct {
 	data map[string]*Info
 }
 
-var InfoCache = &infoCache{ttl: 120 * time.Second, size: 128, data: map[string]*Info{}}
+var InfoCache = &infoCache{ttl: 300 * time.Second, size: 128, data: map[string]*Info{}}
 
 func (c *infoCache) get(key string) *Info {
 	c.mu.Lock()

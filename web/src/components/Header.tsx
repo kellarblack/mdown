@@ -4,8 +4,9 @@ import { isPhone } from "../constants";
 import { queueStore, queueSummary } from "../queue";
 import { instanceStore, setPanel, togglePanel, uiStore, useStore, type Panel } from "../store";
 import { navigate, onNav } from "../routing";
-import { BrandMark, IconBack, IconClose, IconDownloads, IconGear, IconHeart, IconHelp, IconPlus } from "../icons";
+import { BrandMark, IconBack, IconClose, IconDownloads, IconGear, IconHelp, IconPlus } from "../icons";
 import { Mark, QueueList, QueuePanelHead } from "./Queue";
+import { TipButton } from "./Tip";
 import { loadMarks } from "../service-marks";
 import { cx } from "../util";
 
@@ -138,7 +139,11 @@ function Sources() {
                 return home ? (
                   <a key={id} className="source-chip" href={home} target="_blank" rel="noopener noreferrer"
                     title={id + (host ? " · " + host : "") + (note ? " · " + note : "")} aria-label={id + ", open " + host}
-                    onClick={() => setPanel("none")}><Mark className="source-mark" service={id} /><span className="source-name">{id}</span></a>
+                    onClick={() => setPanel("none")}><Mark className="source-mark" service={id} /><span className="source-name">{id}</span>{note === "audio" && (
+                  <span className="source-tag" title="audio only" aria-label="audio only">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18V6.5l9-2V16" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="15.5" cy="16" r="2.5" /></svg>
+                  </span>
+                )}</a>
                 ) : <span key={id} className="source-chip"><Mark className="source-mark" service={id} /><span className="source-name">{id}</span></span>;
               })}
             </div>
@@ -355,10 +360,7 @@ export function Header() {
         <Sources />
         <Health />
         <Dock />
-        <a className="icon-btn labeled donate-btn" id="open-donate-top" href="donate.html" title="leave a tip" onClick={onNav("donate")}
-          aria-current={view === "donate" ? "page" : undefined}>
-          <IconHeart /><span>tip</span>
-        </a>
+        <TipButton />
         <button className="icon-btn help-btn" id="open-help-top" type="button" aria-haspopup="dialog" aria-label="how it works" title="how it works"
           onClick={() => uiStore.set((s) => ({ ...s, panel: "none", helpOpen: true }))}>
           <IconHelp />
@@ -384,7 +386,7 @@ export function MobileBar() {
   const [glide, setGlide] = useState<{ x: number; y: number; w: number; h: number; instant: boolean } | null>(null);
 
   const active =
-    ui.settingsOpen ? "settings" : ui.view === "donate" ? "donate" : ui.panel === "queue" ? "queue" : ui.view === "remux" ? "remux" : ui.view === "download" ? "queue" : "";
+    ui.settingsOpen ? "settings" : ui.panel === "tip" || ui.view === "donate" ? "donate" : ui.panel === "queue" ? "queue" : ui.view === "remux" ? "remux" : ui.view === "download" ? "queue" : "";
 
   useLayoutEffect(() => {
     const place = (instant: boolean) => {
@@ -426,8 +428,14 @@ export function MobileBar() {
         <IconGear />
         <span>settings</span>
       </button>
-      <a className={cx("mbar-item", ui.view === "donate" && "is-active")} href="donate.html" data-tab="donate" id="mbar-donate"
-        data-front={active === "donate" ? "true" : undefined} aria-current={ui.view === "donate" ? "page" : undefined} onClick={onNav("donate")}>
+      <a className={cx("mbar-item", ui.view === "donate" && "is-active")} href="donate" data-tab="donate" id="mbar-donate"
+        data-front={active === "donate" ? "true" : undefined} aria-current={ui.view === "donate" ? "page" : undefined}
+        aria-haspopup="dialog" aria-expanded={ui.panel === "tip"} aria-controls="tip-pop"
+        onClick={(e) => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+          e.preventDefault();
+          uiStore.set((s) => ({ ...s, settingsOpen: false, helpOpen: false, panel: s.panel === "tip" ? "none" : "tip" }));
+        }}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9z" /></svg>
         <span>donate</span>
       </a>

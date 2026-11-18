@@ -3,7 +3,6 @@ import { checkInstance, formatUptime, instanceHost } from "../api";
 import { DEFAULT_SETTINGS, type Settings } from "../constants";
 import { buildBody, clearAll, effectiveMode, queueStore, audioExt } from "../queue";
 import { historyStore, instanceStore, setSetting, settingsStore, toast, uiStore, useStore } from "../store";
-import { navigate } from "../routing";
 import { IconClose, IconFile, NavIcons } from "../icons";
 import { Mark } from "./Queue";
 import { cx, normalizeInstance } from "../util";
@@ -282,16 +281,6 @@ function Pane({ name }: { name: string }) {
           <div className="field">
             <span className="field-label">Theme</span>
             <Seg k="theme" label="Theme" options={[["auto", "system"], ["light", "light"], ["dark", "dark"]]} />
-          </div>
-          <div className="field">
-            <span className="field-label">Support</span>
-            {/* the donate page itself: on a phone this used to open a popover that did nothing */}
-            <a className="ghost-btn" id="open-donate-settings" href="donate.html" onClick={(e) => {
-              if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-              e.preventDefault();
-              navigate("donate");
-            }}>tip jar</a>
-            <p className="field-help">no ads, ever. if mdown earned it, you can leave something.</p>
           </div>
         </section>
       );

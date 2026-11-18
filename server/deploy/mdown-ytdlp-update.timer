@@ -1,12 +1,11 @@
 [Unit]
-Description=Daily yt-dlp update for mdown
+Description=yt-dlp update for mdown, every six hours
 
 [Timer]
-# daily, not weekly: releases land several times a week, and a site that broke
-# on Tuesday should not wait until Sunday. The service restarts only on a
-# version change, so a no-op day costs one pip check and touches nothing.
-OnCalendar=daily
-RandomizedDelaySec=2h
+# a site that changed this morning should work again this afternoon. a run
+# with nothing new costs one pip check and touches nothing.
+OnCalendar=*-*-* 00/6:00:00
+RandomizedDelaySec=30m
 Persistent=true
 
 [Install]

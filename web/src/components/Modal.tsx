@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { apiEndpoint } from "../api";
 import { confirmPicker, getItem, modalStore, queueStore, saveLocalPart, type ModalSpec } from "../queue";
 import { toast, uiStore, useStore } from "../store";
-import { navigate } from "../routing";
 import { IconClose } from "../icons";
 import { copyText, formatBytes, resolveUrl } from "../util";
 
@@ -206,11 +205,6 @@ function Help() {
   const close = () => uiStore.set((s) => ({ ...s, helpOpen: false }));
   return (
     <Dialog title="How it works" onClose={close} foot={<>
-      <a className="ghost-btn" href="donate.html" onClick={(e) => {
-        e.preventDefault();
-        close();
-        navigate("donate");
-      }}>tip jar</a>
       <button type="button" className="primary-btn" data-autofocus onClick={close}>got it</button>
     </>}>
       <div className="help">
