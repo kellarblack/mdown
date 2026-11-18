@@ -44,11 +44,14 @@ now=$(date +%s)
 printf '{"at":%s,"failed":%s,"of":5,"services":"%s"}\n' \
   "$now" "$failed" "$(tr '\n' ' ' < /run/mdown-canary.failed | sed 's/  *$//')" > "$OUT"
 
-# a bad day for one service is normal; two or more is a broken extractor
-if [ "$failed" -ge 2 ]; then
+# youtube or soundcloud failing means the extractor fell behind a site change:
+# fetch the newest yt-dlp now instead of waiting for the six-hourly run. reddit,
+# vimeo and bandcamp are not in this rule: they refuse datacenter addresses,
+# and a new yt-dlp cannot change that.
+if grep -qx 'youtube\|soundcloud' /run/mdown-canary.failed; then
   last=0
   [ -f "$STAMP" ] && last=$(cat "$STAMP" 2>/dev/null || echo 0)
-  if [ $((now - last)) -gt 43200 ]; then
+  if [ $((now - last)) -gt 3600 ]; then
     echo "$now" > "$STAMP"
     /usr/bin/systemctl start mdown-ytdlp-update.service || true
   fi

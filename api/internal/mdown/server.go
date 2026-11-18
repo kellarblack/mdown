@@ -773,7 +773,8 @@ func (s *Server) engineFailure(err error) error {
 	case err == errTimedOut || errors.Is(err, context.DeadlineExceeded):
 		return ErrTimedOut()
 	case errors.As(err, &ee):
-		log.Printf("engine failure: %s", RedactLog(ee.Msg))
+		// the toolchain's last words, without links: what the next fix needs
+		log.Printf("engine failure: %s: %s", RedactLog(ee.Msg), lastLine(ee.Stderr))
 		if ee.Msg == "metadata extraction failed" {
 			return newErr("api.content.video.unavailable", 503, "the source refused, try again")
 		}

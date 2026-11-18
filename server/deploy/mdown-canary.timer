@@ -1,9 +1,11 @@
 [Unit]
-Description=Daily extraction check for mdown
+Description=Hourly extraction check for mdown
 
 [Timer]
-OnCalendar=*-*-* 05:20:00
-RandomizedDelaySec=1h
+# hourly: a site change that breaks youtube is noticed within the hour, and
+# the check itself starts the yt-dlp update that fixes it
+OnCalendar=hourly
+RandomizedDelaySec=5m
 Persistent=true
 
 [Install]
