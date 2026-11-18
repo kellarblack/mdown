@@ -37,6 +37,8 @@ export interface QueueItem {
   received: number;
   speed: number;
   error: string;
+  /** the API's short id for this failure, so a report can quote one string */
+  ref: string;
   sourceUrl: string;
   blobUrl: string;
   blob: Blob | null;
@@ -192,6 +194,7 @@ export function enqueue(url: string, mode?: string): QueueItem {
     received: 0,
     speed: 0,
     error: "",
+    ref: "",
     sourceUrl: "",
     blobUrl: "",
     blob: null,
@@ -369,7 +372,7 @@ async function runItem(item: QueueItem): Promise<void> {
     if (!res.ok && !data) throw new Error(`The API answered HTTP ${res.status} without a body.`);
     if (!data || typeof data !== "object") throw new Error("Unexpected response from the API.");
     if (data.status === "error") {
-      handleApiError(item, data.error?.code || "", data.error?.context);
+      handleApiError(item, data.error?.code || "", data.error?.context, data.error?.ref);
       return;
     }
     switch (data.status) {
@@ -416,7 +419,7 @@ async function runItem(item: QueueItem): Promise<void> {
   }
 }
 
-function handleApiError(item: QueueItem, code: string, context?: Record<string, unknown>): void {
+function handleApiError(item: QueueItem, code: string, context?: Record<string, unknown>, ref?: string): void {
   let text = ERROR_TEXT[code] ||
     (code ? code.replace(/^api\./, "").replace(/\./g, " ").replace(/^./, (c) => c.toUpperCase()) : "The instance returned an error.");
   if (context?.service && context.service !== item.service) text += " (" + String(context.service) + ")";
@@ -427,7 +430,9 @@ function handleApiError(item: QueueItem, code: string, context?: Record<string, 
     } else text += " Limit: " + String(context.limit) + ".";
   }
   if (code === "api.content.video.unavailable") {
-    const audioWanted = item.mode === "audio" || MUSIC_FIRST.has(item.service);
+    /* the job decides the wording, not the service: youtube is audio-first by
+       default, so a youtube *video* failure was being told it might be Go+ */
+    const audioWanted = item.mode === "audio";
     text = audioWanted
       ? "This track isn't available to the API. It may be private, region-locked, Go+ only, or the uploader turned off app playback."
       : "This video isn't available. It may be private, region-locked or age-gated.";
@@ -440,7 +445,10 @@ function handleApiError(item: QueueItem, code: string, context?: Record<string, 
     else if (reason === "queue_full") text = "The queue is full right now. Try again in a moment.";
     else if (rateRemaining != null) text += " Remaining: " + rateRemaining + ".";
   }
-  item.error = text;
+  /* the id goes on the row, not in the toast: it is for the person pasting it
+     into a message later, and a toast is gone before they can select it */
+  item.ref = ref || "";
+  item.error = ref ? text + " · ref " + ref : text;
   setStatus(item, "error", "failed");
   toast(text, "err");
 }
@@ -667,7 +675,7 @@ export function cancelItem(item: QueueItem, silent = false): void {
 }
 
 export function retryItem(item: QueueItem): void {
-  Object.assign(item, { error: "", received: 0, speed: 0, indeterminate: true, filename: "", started: 0 });
+  Object.assign(item, { error: "", ref: "", received: 0, speed: 0, indeterminate: true, filename: "", started: 0 });
   setStatus(item, "queued", "queued");
   pump();
 }
