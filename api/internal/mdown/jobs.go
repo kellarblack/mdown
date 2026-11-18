@@ -2,7 +2,6 @@ package mdown
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -405,5 +404,3 @@ func (j *Jobs) Stats() map[string]any {
 		"disk_free_mb": j.freeBytes() / MB, "uptime_s": int(time.Since(j.started).Seconds()),
 	}
 }
-
-var errAborted = errors.New("aborted")

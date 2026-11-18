@@ -61,6 +61,13 @@ func isHLS(f Format) bool {
 
 func streamable(f Format) bool { return isHTTP(f) || isHLS(f) }
 
+// copyable is streamable for a stream copy into mp4, webm or mkv. HLS is
+// left out on purpose: piped, the muxer writes its header before ffmpeg has
+// read the codec setup from the playlist, and the file decodes as noise
+// (thousands of AAC errors on SoundCloud). Those go through yt-dlp and the
+// disk instead. A re-encode (mp3, ogg, opus, wav) reads HLS without trouble.
+func copyable(f Format) bool { return isHTTP(f) }
+
 func inputOf(f Format, duration float64) Input {
 	size := int64(f.Filesize)
 	return Input{URL: f.URL, Headers: f.HTTPHeaders, Cookies: f.Cookies, Protocol: f.Protocol,
@@ -188,7 +195,7 @@ func mutePlan(info *Info, h, maxHeight int) *Plan {
 			return (has(f.VCodec) || f.VCodec == "") && (f.Height == 0 || int(f.Height) <= maxHeight)
 		})
 	}
-	if !ok || !streamable(v) {
+	if !ok || !copyable(v) {
 		return nil
 	}
 	est := int64(sizeOf(v, info.Duration))
@@ -206,7 +213,7 @@ func mutePlan(info *Info, h, maxHeight int) *Plan {
 // single relays one file that already holds what was asked for. Subtitles
 // turn it into an ffmpeg job, since they have to be muxed in.
 func single(info *Info, f Format, o DownloadOptions, withAudio bool) *Plan {
-	if !streamable(f) {
+	if !copyable(f) {
 		return nil
 	}
 	est := int64(sizeOf(f, info.Duration))
@@ -228,7 +235,7 @@ func single(info *Info, f Format, o DownloadOptions, withAudio bool) *Plan {
 }
 
 func mergePlan(info *Info, v, a Format, o DownloadOptions, d float64) *Plan {
-	if !streamable(v) || !streamable(a) {
+	if !copyable(v) || !copyable(a) {
 		return nil
 	}
 	ext, format := videoContainer(v.VCodec, a.ACodec)
@@ -240,11 +247,11 @@ func mergePlan(info *Info, v, a Format, o DownloadOptions, d float64) *Plan {
 	return withSubtitle(p, maps, format, isHLS(v) || isHLS(a), sub, hasSub)
 }
 
-func withSubtitle(p *Plan, maps []string, format string, hls bool, sub Subtitle, hasSub bool) *Plan {
+func withSubtitle(p *Plan, maps []string, format string, _ bool, sub Subtitle, hasSub bool) *Plan {
+	// no forced aac_adtstoasc: the mp4 muxer inserts it by itself when the
+	// input is ADTS, and forcing it on audio that is already in mp4 form (as
+	// SoundCloud's HLS is) corrupts every frame
 	base := append(append([]string{}, maps...), "-c", "copy")
-	if hls && format == "mp4" {
-		base = append(base, "-bsf:a", "aac_adtstoasc")
-	}
 	without := append(append([]string{}, base...), muxerArgs(format)...)
 	if !hasSub {
 		p.Args = without
@@ -335,14 +342,14 @@ func audioPlan(info *Info, o DownloadOptions) *Plan {
 	}
 
 	if format == "best" {
+		if !copyable(a) {
+			return nil
+		}
 		if audioOnly(a) && isHTTP(a) && a.Ext != "" {
 			return &Plan{Kind: "proxy", Inputs: []Input{in}, Ext: a.Ext, MIME: mimeFor(a.Ext),
 				Estimate: int64(sizeOf(a, d)), Exact: a.Filesize > 0, Optional: -1}
 		}
-		ext, args := audioCopy(a.ACodec)
-		if isHLS(a) && ext == "m4a" {
-			args = append([]string{"-bsf:a", "aac_adtstoasc"}, args...)
-		}
+		ext, args := audioCopy(a.ACodec) // the muxer adds aac_adtstoasc itself when needed
 		return &Plan{Kind: "ffmpeg", Inputs: []Input{in},
 			Args: append([]string{"-map", "0:a:0", "-vn", "-sn", "-c:a", "copy"}, args...),
 			Ext:  ext, MIME: mimeFor(ext), Estimate: int64(sizeOf(a, d)), Optional: -1}

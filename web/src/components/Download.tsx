@@ -55,7 +55,6 @@ function Modes() {
     return () => removeEventListener("resize", place);
   }, [mode]);
   const pick = (m: "auto" | "audio" | "video") => {
-    composerStore.set((s) => ({ ...s, modePicked: true, autoAudio: false }));
     settingsStore.set((s) => ({ ...s, downloadMode: m }));
   };
   const items: { m: "auto" | "audio" | "video"; title: string; icon: React.ReactNode }[] = [
@@ -391,7 +390,6 @@ function ProbePreview({ data }: { data: ProbeData | null }) {
 /* a deep link to YouTube asks what kind of download was meant          */
 /* ------------------------------------------------------------------ */
 
-export const quickpickStore = { url: "", host: "" };
 let setQuick: ((v: { url: string; host: string } | null) => void) | null = null;
 export function askWhatToDownload(url: string, host: string) {
   setQuick?.({ url, host });

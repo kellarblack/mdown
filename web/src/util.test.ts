@@ -75,3 +75,11 @@ test("auto mode: audio only for music links", () => {
   expect(prefersAudio("https://x.com/a/status/1")).toBe(false);
   expect(prefersAudio("not a link")).toBe(false);
 });
+
+test("an encrypted SoundCloud track offers a YouTube search", async () => {
+  const { youtubeSearchFor } = await import("./queue");
+  expect(youtubeSearchFor("https://soundcloud.com/popsmoke/dior")).toBe("https://www.youtube.com/results?search_query=popsmoke%20dior");
+  expect(youtubeSearchFor("https://soundcloud.com/some-artist/a-long_track-name?si=x")).toContain("some%20artist%20a%20long%20track%20name");
+  expect(youtubeSearchFor("https://www.youtube.com/watch?v=x")).toBeUndefined();
+  expect(youtubeSearchFor("https://soundcloud.com/only-artist")).toBeUndefined();
+});

@@ -245,3 +245,18 @@ func TestUptimeNeverRoundsUpTo100(t *testing.T) {
 		t.Fatalf("19999/20000 reported as %v", got)
 	}
 }
+
+func TestChunkPlan(t *testing.T) {
+	small := chunkPlan(4*MB, 4*MB)
+	if small(0) != 256*1024 || small(1) != 512*1024 {
+		t.Fatalf("small file: first %d, then %d", small(0), small(1))
+	}
+	big := chunkPlan(300*MB, 4*MB)
+	if big(0) != 256*1024 || big(5) != 4*MB {
+		t.Fatalf("big file: first %d, then %d", big(0), big(5))
+	}
+	tiny := chunkPlan(100*1024, 4*MB)
+	if tiny(0) != 256*1024 && tiny(0) != 512*1024 {
+		t.Fatalf("tiny file: %d", tiny(0))
+	}
+}

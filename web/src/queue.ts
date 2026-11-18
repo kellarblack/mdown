@@ -1,6 +1,6 @@
 import { apiEndpoint, authHeaders, fetchProbe, friendlyError, getTurnstileToken, probeKey, probeSupported, readProbe, type ProbeData } from "./api";
 import {
-  AUDIO_FIRST, DRM_SERVICES, ERROR_TEXT, LARGE_FILE_BYTES, MAX_CONCURRENT, MAX_URLS_PER_SUBMIT, XL_BYTES,
+  DRM_SERVICES, ERROR_TEXT, LARGE_FILE_BYTES, MAX_CONCURRENT, MAX_URLS_PER_SUBMIT, XL_BYTES,
 } from "./constants";
 import {
   addHistory, clampBitrate, clampFormat, clampQuality, composerStore, createStore, instanceStore, nudgeComposer,
@@ -39,6 +39,8 @@ export interface QueueItem {
   error: string;
   /** the API's short id for this failure, so a report can quote one string */
   ref: string;
+  /** a YouTube search for the same song, when the source was encrypted */
+  altSearch?: string;
   sourceUrl: string;
   blobUrl: string;
   blob: Blob | null;
@@ -152,6 +154,19 @@ export function buildBody(url: string, mode: ItemMode): Record<string, unknown> 
   if (s.subtitleLang && s.subtitleLang !== "none") body.subtitleLang = s.subtitleLang;
   if (s.youtubeDubLang && s.youtubeDubLang !== "original") body.youtubeDubLang = s.youtubeDubLang;
   return body;
+}
+
+/** soundcloud.com/artist/track-name -> a YouTube search for "artist track name" */
+export function youtubeSearchFor(url: string): string | undefined {
+  try {
+    const u = new URL(url);
+    const parts = u.pathname.split("/").filter(Boolean);
+    if (!/soundcloud\.com$/.test(u.hostname) || parts.length < 2) return undefined;
+    const words = (parts[0] + " " + parts[1]).replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+    return words ? "https://www.youtube.com/results?search_query=" + encodeURIComponent(words) : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function audioExt(): string {
@@ -448,6 +463,7 @@ function handleApiError(item: QueueItem, code: string, context?: Record<string, 
   /* the id goes on the row, not in the toast: it is for the person pasting it
      into a message later, and a toast is gone before they can select it */
   item.ref = ref || "";
+  item.altSearch = code === "api.content.drm" ? youtubeSearchFor(item.url) : undefined;
   item.error = ref ? text + " · ref " + ref : text;
   setStatus(item, "error", "failed");
   toast(text, "err");
@@ -787,4 +803,3 @@ export function reportable(item: QueueItem): boolean {
   return queueStore.get().items.filter((n) => n.service === item.service && n.status === "error").length >= 2;
 }
 
-export { AUDIO_FIRST };

@@ -372,6 +372,11 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"status": "error", "error": {"code": "api.content.video.private", "context": {"service": "youtube"}}})
             return
 
+        # an encrypted track, the way SoundCloud's major-label releases answer
+        if "drm" in url:
+            self._json({"status": "error", "error": {"code": "api.content.drm", "ref": "mockdrm1"}}, 422)
+            return
+
         mode = body.get("downloadMode") or "auto"
         if mode == "audio":
             fmt = body.get("audioFormat") or "mp3"

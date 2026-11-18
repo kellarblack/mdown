@@ -4,7 +4,7 @@ import { isPhone } from "../constants";
 import { queueStore, queueSummary } from "../queue";
 import { instanceStore, setPanel, togglePanel, uiStore, useStore, type Panel } from "../store";
 import { navigate, onNav } from "../routing";
-import { BrandMark, IconBack, IconClose, IconDownloads, IconGear, IconHelp, IconPlus } from "../icons";
+import { BrandMark, IconBack, IconDownloads, IconGear, IconHelp, IconPlus } from "../icons";
 import { Mark, QueueList, QueuePanelHead } from "./Queue";
 import { TipButton } from "./Tip";
 import { loadMarks } from "../service-marks";
@@ -442,4 +442,3 @@ export function MobileBar() {
   );
 }
 
-export { IconClose };

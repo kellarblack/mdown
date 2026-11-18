@@ -8,7 +8,7 @@ import {
 import { settingsStore, setPanel, toast, useStore } from "../store";
 import { clockTime, copyText, cx, etaText, formatBytes } from "../util";
 import {
-  IconClose, IconCopy, IconDots, IconFlag, IconOpen, IconRetry, IconSave, IconShare, Svg,
+  IconClose, IconCopy, IconDots, IconFlag, IconOpen, IconRetry, IconSave, IconShare,
 } from "../icons";
 
 /** the logo for a service; re-renders once the logos have loaded */
@@ -122,7 +122,11 @@ const Row = memo(function Row({ item }: { item: QueueItem; v: number }) {
           <Btn label="Cancel" onClick={() => cancelItem(item)}><IconClose /></Btn>
         )}
         {(item.status === "error" || item.status === "cancelled") && (
-          <Btn label="Retry" onClick={() => retryItem(item)}><IconRetry /></Btn>
+          item.altSearch ? (
+            <a className="q-save q-alt" href={item.altSearch} target="_blank" rel="noopener noreferrer" title="search YouTube for this song">
+              <IconOpen /><span>find on YouTube</span>
+            </a>
+          ) : <Btn label="Retry" onClick={() => retryItem(item)}><IconRetry /></Btn>
         )}
         {reportable(item) && (
           <Btn label="Report this service" onClick={() => modalStore.set({ kind: "report", service: item.service })}><IconFlag /></Btn>
@@ -242,4 +246,3 @@ export function MiniDock({ hidden }: { hidden: boolean }) {
   );
 }
 
-export { Svg };

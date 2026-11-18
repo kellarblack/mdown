@@ -265,11 +265,9 @@ export interface ComposerState {
   text: string;
   busy: boolean;
   nudge: number;
-  modePicked: boolean;
-  autoAudio: boolean;
 }
 
-export const composerStore = createStore<ComposerState>({ text: "", busy: false, nudge: 0, modePicked: false, autoAudio: false });
+export const composerStore = createStore<ComposerState>({ text: "", busy: false, nudge: 0 });
 
 let lastNudge = 0;
 export function nudgeComposer(): void {

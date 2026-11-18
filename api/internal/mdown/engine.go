@@ -123,6 +123,9 @@ var errorPatterns = []errorPattern{
 	{regexp.MustCompile(`(?i)Unsupported URL|no suitable InfoExtractor`), "api.url.unsupported", "unsupported url"},
 	// the source wants an account from this server; retrying cannot help
 	{regexp.MustCompile(`(?i)only works when logged-in|authentication is required|login required|log in to|use --cookies|cookies-from-browser for the authentication`), "api.content.login", "the source requires a login"},
+	// encrypted media (SoundCloud's major-label releases, like Spotify's): it
+	// cannot be downloaded, and no retry or update will change that
+	{regexp.MustCompile(`(?i)DRM protected|is DRM|drm-protected`), "api.content.drm", "encrypted by the source"},
 	{regexp.MustCompile(`(?i)attempting impersonation, but no impersonate target|client challenge|challenge webpage`), "api.service.unavailable", "the source is refusing this server"},
 	{regexp.MustCompile(`(?i)This (video|content) is (private|only available)`), "api.content.video.private", "private"},
 	{regexp.MustCompile(`(?i)Private (video|content)`), "api.content.video.private", "private"},

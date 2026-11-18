@@ -328,3 +328,7 @@ button, .mbar-item, .icon-btn, .mode, .seg button, .source-chip, .tool-card {
   /* recent links: still an easy tap, but not a big pill */
   .recent-item, .recent-clear { min-height: 36px; }
 }
+
+/* the "find on YouTube" action is a link that looks like the save button */
+.q-alt { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; white-space: nowrap; }
+.q-alt svg { width: 14px; height: 14px; flex: none; }

@@ -2,6 +2,7 @@ package mdown
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
@@ -89,6 +90,26 @@ func TestPlanAudio(t *testing.T) {
 	}
 	if BuildPlan(ytInfo(), DownloadOptions{Mode: "audio", AudioFormat: "opus", AudioCovers: true}, 4320) != nil {
 		t.Fatal("opus with a cover goes through the disk")
+	}
+}
+
+func TestPlanNeverForcesAdtsFilter(t *testing.T) {
+	// SoundCloud serves HLS whose segments are already mp4: forcing
+	// aac_adtstoasc on them corrupted every frame of the "original audio" file
+	info := &Info{Title: "t", Duration: 60, Formats: []Format{{FormatID: "hls_aac_96k", Ext: "m4a", VCodec: "none",
+		ACodec: "mp4a.40.2", URL: "https://cf-hls.example/x.m3u8", Protocol: "m3u8_native"}}}
+	if p := BuildPlan(info, DownloadOptions{Mode: "audio", AudioFormat: "mp3"}, 4320); p == nil ||
+		strings.Contains(strings.Join(p.Args, " "), "adtstoasc") {
+		t.Fatalf("mp3 from HLS should stream as a re-encode: %+v", p)
+	}
+	// a stream copy of HLS into a piped mp4 decodes as noise: the disk path takes it
+	if p := BuildPlan(info, DownloadOptions{Mode: "audio", AudioFormat: "best"}, 4320); p != nil {
+		t.Fatalf("original audio from HLS must not stream: %+v", p)
+	}
+	hlsVideo := &Info{Title: "t", Duration: 60, Formats: []Format{{FormatID: "hls-720", Ext: "mp4", VCodec: "avc1",
+		ACodec: "mp4a.40.2", Height: 720, URL: "https://x.example/v.m3u8", Protocol: "m3u8_native"}}}
+	if p := BuildPlan(hlsVideo, DownloadOptions{Mode: "auto", Height: 1080}, 4320); p != nil {
+		t.Fatalf("an HLS video copy must not stream: %+v", p)
 	}
 }
 
@@ -388,5 +409,24 @@ func TestEveryFailureCarriesARef(t *testing.T) {
 	}
 	if first["status"] != "error" {
 		t.Fatalf("not an error payload: %v", first)
+	}
+}
+
+func TestSourceDiscoveryRetries(t *testing.T) {
+	AllowPrivateDial = true
+	t.Cleanup(func() { AllowPrivateDial = false })
+	var hits atomic.Int32
+	payload := bytes.Repeat([]byte("x"), 1000)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if hits.Add(1) <= 2 {
+			http.Error(w, "busy", http.StatusForbidden) // a CDN's momentary refusal
+			return
+		}
+		http.ServeContent(w, r, "a", time.Time{}, bytes.NewReader(payload))
+	}))
+	defer srv.Close()
+	src := newSource(Input{URL: srv.URL}, MB, 2)
+	if err := src.discover(context.Background()); err != nil || src.size != 1000 || !src.ranged {
+		t.Fatalf("discover after two refusals: err %v, size %d, ranged %v", err, src.size, src.ranged)
 	}
 }

@@ -1,10 +1,10 @@
 package mdown
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"context"
+	"crypto/rand"
 	"crypto/subtle"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"

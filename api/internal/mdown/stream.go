@@ -97,29 +97,52 @@ func (s *source) request(ctx context.Context, start, end int64) (*http.Response,
 // discover learns the size and whether ranges work, with one tiny request.
 func (s *source) discover(ctx context.Context) error {
 	s.once.Do(func() {
-		res, err := s.request(ctx, 0, 0)
-		if err != nil {
-			s.err = err
-			return
-		}
-		defer res.Body.Close()
-		_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, 64*1024))
-		switch res.StatusCode {
-		case http.StatusPartialContent:
-			s.ranged = true
-			if total := totalFromContentRange(res.Header.Get("Content-Range")); total > 0 {
-				s.size = total
+		// not the caller's context: a reader that hangs up early must not
+		// leave a cancelled discovery behind for the next one to inherit
+		dctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		// video CDNs refuse a request now and then and accept the same one a
+		// moment later; three tries keep that from becoming a slow disk job
+		for attempt := 0; attempt < 3; attempt++ {
+			if attempt > 0 {
+				select {
+				case <-time.After(time.Duration(attempt) * 600 * time.Millisecond):
+				case <-dctx.Done():
+					return
+				}
 			}
-		case http.StatusOK:
-			s.ranged = false
-			if res.ContentLength > 0 {
-				s.size = res.ContentLength
+			s.err = s.discoverOnce(dctx)
+			if s.err == nil {
+				return
 			}
-		default:
-			s.err = fmt.Errorf("source answered %d", res.StatusCode)
 		}
+		log.Printf("stream: source discovery failed after 3 tries: %s", RedactLog(s.err.Error()))
 	})
 	return s.err
+}
+
+func (s *source) discoverOnce(ctx context.Context) error {
+	res, err := s.request(ctx, 0, 0)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, 64*1024))
+	switch res.StatusCode {
+	case http.StatusPartialContent:
+		s.ranged = true
+		if total := totalFromContentRange(res.Header.Get("Content-Range")); total > 0 {
+			s.size = total
+		}
+	case http.StatusOK:
+		s.ranged = false
+		if res.ContentLength > 0 {
+			s.size = res.ContentLength
+		}
+	default:
+		return fmt.Errorf("source answered %d", res.StatusCode)
+	}
+	return nil
 }
 
 func totalFromContentRange(v string) int64 {
@@ -132,6 +155,28 @@ func totalFromContentRange(v string) int64 {
 		return -1
 	}
 	return n
+}
+
+// chunkPlan sizes the ranged requests for one read of `total` bytes. The
+// first piece is small, so the first bytes reach the browser at once instead
+// of after a whole multi-megabyte piece. A small file is cut into about eight
+// pieces so they download in parallel; a large one uses full-size pieces.
+func chunkPlan(total, max int64) func(n int) int64 {
+	const first = 256 * 1024
+	const floor = 512 * 1024
+	piece := total / 8
+	if piece < floor {
+		piece = floor
+	}
+	if piece > max {
+		piece = max
+	}
+	return func(n int) int64 {
+		if n == 0 && piece > first {
+			return first
+		}
+		return piece
+	}
 }
 
 type chunkResult struct {
@@ -168,8 +213,9 @@ func (s *source) open(ctx context.Context, start, end int64) (io.ReadCloser, err
 
 	go func() { // producer: start chunk fetches, at most `parallel` ahead
 		defer close(futures)
-		for off := start; off <= end; off += s.chunk {
-			last := off + s.chunk - 1
+		size := chunkPlan(end-start+1, s.chunk)
+		for off, n := start, 0; off <= end; n++ {
+			last := off + size(n) - 1
 			if last > end {
 				last = end
 			}
@@ -180,6 +226,7 @@ func (s *source) open(ctx context.Context, start, end int64) (io.ReadCloser, err
 				return
 			}
 			go func(a, b int64) { ch <- s.fetchChunk(ctx, a, b) }(off, last)
+			off = last + 1
 		}
 	}()
 	go func() { // consumer: write the chunks in order
