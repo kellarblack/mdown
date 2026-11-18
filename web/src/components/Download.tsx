@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { checkInstance, fetchProbe, probeKey, probeSupported, ProbeError, readProbe, type ProbeData } from "../api";
-import { AUDIO_FIRST, DRM_SERVICES, HIDDEN_SERVICES, MUSIC_FIRST } from "../constants";
+import { AUDIO_FIRST, DRM_SERVICES, HIDDEN_SERVICES } from "../constants";
 import { effectiveMode, submitUrls } from "../queue";
 import {
   composerStore, historyStore, instanceStore, settingsStore, toast, uiStore, useStore,
@@ -105,19 +105,9 @@ function Composer() {
     if (service) void loadMarks();
   }, [service]);
 
-  // auto mode reads the link: a song lights audio until they choose for themselves
-  useEffect(() => {
-    const c = composerStore.get();
-    if (c.modePicked) return;
-    const s = settingsStore.get();
-    if (service && MUSIC_FIRST.has(service) && s.downloadMode === "auto") {
-      composerStore.set((p) => ({ ...p, autoAudio: true }));
-      settingsStore.set((p) => ({ ...p, downloadMode: "audio" }));
-    } else if (c.autoAudio && (!service || !MUSIC_FIRST.has(service))) {
-      composerStore.set((p) => ({ ...p, autoAudio: false }));
-      settingsStore.set((p) => ({ ...p, downloadMode: "auto" }));
-    }
-  }, [service]);
+  // auto stays auto: what it will fetch for this link is shown in the format
+  // note ("soundcloud · mp3 · 128k"). It used to switch the saved setting to
+  // audio, which outlived the link and turned the next video into an mp3.
 
   // the field grows with what is pasted, up to a limit
   useLayoutEffect(() => {

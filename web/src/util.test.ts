@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-  detectService, filenameFromDisposition, formatBytes, isIOS, normalizeInstance, parseUrls, resolveUrl, safeFilename,
+  detectService, filenameFromDisposition, formatBytes, isIOS, normalizeInstance, parseUrls, prefersAudio, resolveUrl, safeFilename,
   safeImageUrl, targetFromLocation,
 } from "./util";
 
@@ -64,4 +64,14 @@ test("formatBytes and iOS detection", () => {
   expect(isIOS("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)", "iPhone", 5)).toBe(true);
   expect(isIOS("Mozilla/5.0 (Macintosh)", "MacIntel", 5)).toBe(true);
   expect(isIOS("Mozilla/5.0 (Macintosh)", "MacIntel", 0)).toBe(false);
+});
+
+test("auto mode: audio only for music links", () => {
+  expect(prefersAudio("https://www.youtube.com/watch?v=x")).toBe(false);
+  expect(prefersAudio("https://youtu.be/x")).toBe(false);
+  expect(prefersAudio("https://music.youtube.com/watch?v=x")).toBe(true);
+  expect(prefersAudio("https://soundcloud.com/a/b")).toBe(true);
+  expect(prefersAudio("https://artist.bandcamp.com/track/x")).toBe(true);
+  expect(prefersAudio("https://x.com/a/status/1")).toBe(false);
+  expect(prefersAudio("not a link")).toBe(false);
 });

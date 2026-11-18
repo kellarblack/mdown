@@ -1,4 +1,4 @@
-import { APP_PATHS, HIDDEN_SERVICES, SERVICE_ALIASES, SERVICE_HOSTS } from "./constants";
+import { APP_PATHS, AUDIO_FIRST, HIDDEN_SERVICES, SERVICE_ALIASES, SERVICE_HOSTS } from "./constants";
 
 export function formatBytes(bytes: number): string {
   if (!bytes || bytes < 0) return "";
@@ -52,6 +52,15 @@ export function detectService(url: string): Detected | null {
     if (host === suffix || host.endsWith("." + suffix)) return { id, host, hidden: HIDDEN_SERVICES.has(id) };
   }
   return { id: null, host, hidden: false };
+}
+
+/** auto mode takes audio from a music link: an audio-only site, or YouTube
+ *  Music. A plain YouTube link is a video, so auto keeps the picture. */
+export function prefersAudio(url: string): boolean {
+  const detected = detectService(url);
+  if (!detected?.id) return false;
+  if (AUDIO_FIRST.has(detected.id)) return true;
+  return detected.id === "youtube" && /^music\./.test(detected.host);
 }
 
 export function normalizeInstance(value: string): string {

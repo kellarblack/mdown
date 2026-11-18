@@ -1,13 +1,13 @@
 import { apiEndpoint, authHeaders, fetchProbe, friendlyError, getTurnstileToken, probeKey, probeSupported, readProbe, type ProbeData } from "./api";
 import {
-  AUDIO_FIRST, DRM_SERVICES, ERROR_TEXT, LARGE_FILE_BYTES, MAX_CONCURRENT, MAX_URLS_PER_SUBMIT, MUSIC_FIRST, XL_BYTES,
+  AUDIO_FIRST, DRM_SERVICES, ERROR_TEXT, LARGE_FILE_BYTES, MAX_CONCURRENT, MAX_URLS_PER_SUBMIT, XL_BYTES,
 } from "./constants";
 import {
   addHistory, clampBitrate, clampFormat, clampQuality, composerStore, createStore, instanceStore, nudgeComposer,
   settingsStore, toast,
 } from "./store";
 import {
-  copyText, detectService, filenameFromDisposition, formatBytes, hostOf, IS_IOS, IS_TOUCH, parseUrls, resolveUrl,
+  copyText, detectService, prefersAudio, filenameFromDisposition, formatBytes, hostOf, IS_IOS, IS_TOUCH, parseUrls, resolveUrl,
   safeFilename, safeImageUrl, SAVED_WHERE,
 } from "./util";
 
@@ -125,9 +125,9 @@ export function effectiveMode(url: string, mode?: string): ItemMode {
   const wanted = mode || s.downloadMode;
   if (wanted === "audio") return "audio";
   if (wanted === "mute") return "mute";
-  const detected = detectService(url);
-  if (wanted === "auto" && detected?.id && MUSIC_FIRST.has(detected.id)) return "audio";
-  return s.muteVideo ? "mute" : "auto";
+  if (wanted === "auto" && prefersAudio(url)) return "audio";
+  // "no sound" is a video-mode switch (its own label says so); auto keeps sound
+  return wanted === "video" && s.muteVideo ? "mute" : "auto";
 }
 
 export function buildBody(url: string, mode: ItemMode): Record<string, unknown> {
