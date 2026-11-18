@@ -35,19 +35,19 @@ probe() {
 : > /run/mdown-canary.failed
 probe youtube   'https://www.youtube.com/watch?v=aqz-KE-bpKQ'
 probe soundcloud 'https://soundcloud.com/forss/flickermood'
-probe bandcamp  'https://bandcamp.com/discover/electronic'
-probe reddit    'https://www.reddit.com/r/interestingasfuck/comments/1cjx6vb/the_way_this_dog_looks_at_his_owner/'
-probe vimeo     'https://vimeo.com/76979871'
+probe x         'https://x.com/SpaceX/status/1732824684683784516'
+probe tiktok    'https://www.tiktok.com/@scout2015/video/6718335390845095173'
+probe streamable 'https://streamable.com/moo'
 
 failed=$(wc -l < /run/mdown-canary.failed | tr -d ' ')
 now=$(date +%s)
 printf '{"at":%s,"failed":%s,"of":5,"services":"%s"}\n' \
   "$now" "$failed" "$(tr '\n' ' ' < /run/mdown-canary.failed | sed 's/  *$//')" > "$OUT"
 
+# only services this server can fetch are checked: reddit, vimeo and bandcamp
+# refuse datacenter addresses, so testing them would only ever say "failed".
 # youtube or soundcloud failing means the extractor fell behind a site change:
-# fetch the newest yt-dlp now instead of waiting for the six-hourly run. reddit,
-# vimeo and bandcamp are not in this rule: they refuse datacenter addresses,
-# and a new yt-dlp cannot change that.
+# fetch the newest yt-dlp now instead of waiting for the six-hourly run.
 if grep -qx 'youtube\|soundcloud' /run/mdown-canary.failed; then
   last=0
   [ -f "$STAMP" ] && last=$(cat "$STAMP" 2>/dev/null || echo 0)

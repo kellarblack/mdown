@@ -306,3 +306,25 @@ button, .mbar-item, .icon-btn, .mode, .seg button, .source-chip, .tool-card {
   .recent-item, .recent-clear { min-height: 40px; display: inline-flex; align-items: center; }
   .recent-clear { padding: 0 12px; }
 }
+
+/* ============================================================
+   phone: smaller, calmer controls
+   ============================================================ */
+@media (max-width: 720px), (hover: none) and (max-height: 520px) {
+  /* the three tools are a row of compact chips, not three tall boxes */
+  .tool-strip { gap: 6px; margin-top: 12px; }
+  .tool-card {
+    flex-direction: row; justify-content: center; align-items: center; gap: 6px;
+    min-height: 40px; padding: 0 8px; border-radius: 10px;
+  }
+  .tool-card::after { display: none; }
+  .tool-card-icon { width: 22px; height: 22px; border: 0; background: none; }
+  .tool-card-icon svg { width: 15px; height: 15px; }
+  .tool-card-body b { font-size: 12px; }
+
+  /* less empty space above the logo: the block sits a little above centre */
+  #download-view { padding-top: clamp(64px, calc(40svh - 190px), 220px); }
+
+  /* recent links: still an easy tap, but not a big pill */
+  .recent-item, .recent-clear { min-height: 36px; }
+}

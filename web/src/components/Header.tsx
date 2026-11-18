@@ -81,23 +81,22 @@ export function usePanelDismiss(panel: Panel, ...inside: RefObject<HTMLElement |
 /* ------------------------------------------------------------------ */
 
 const SOURCES: Record<string, string> = {
-  "9gag": "https://9gag.com", audiomack: "https://audiomack.com", bandcamp: "https://bandcamp.com",
+  "9gag": "https://9gag.com", audiomack: "https://audiomack.com",
   bilibili: "https://www.bilibili.com", bluesky: "https://bsky.app", coub: "https://coub.com",
   dailymotion: "https://www.dailymotion.com", douyin: "https://www.douyin.com", facebook: "https://www.facebook.com",
   hearthis: "https://hearthis.at", imgur: "https://imgur.com", instagram: "https://www.instagram.com",
   kick: "https://kick.com", loom: "https://www.loom.com", mixcloud: "https://www.mixcloud.com",
-  newgrounds: "https://www.newgrounds.com", odysee: "https://odysee.com", ok: "https://ok.ru",
-  reddit: "https://www.reddit.com", rumble: "https://rumble.com", rutube: "https://rutube.ru",
+  newgrounds: "https://www.newgrounds.com", odysee: "https://odysee.com", ok: "https://ok.ru", rumble: "https://rumble.com", rutube: "https://rutube.ru",
   snapchat: "https://www.snapchat.com", soundcloud: "https://soundcloud.com", streamable: "https://streamable.com",
   threads: "https://www.threads.net", tiktok: "https://www.tiktok.com", tumblr: "https://www.tumblr.com",
-  twitch: "https://www.twitch.tv", twitter: "https://x.com", vimeo: "https://vimeo.com", vk: "https://vk.com",
+  twitch: "https://www.twitch.tv", twitter: "https://x.com", vk: "https://vk.com",
   xiaohongshu: "https://www.xiaohongshu.com", youtube: "https://www.youtube.com",
 };
 const SOURCE_NOTES: Record<string, string> = {
-  audiomack: "audio", bandcamp: "audio", hearthis: "audio", mixcloud: "audio", soundcloud: "audio", youtube: "4k",
+  audiomack: "audio", hearthis: "audio", mixcloud: "audio", soundcloud: "audio", youtube: "4k",
 };
-const FEATURED = ["youtube", "soundcloud", "tiktok", "instagram", "reddit", "twitter", "facebook", "vimeo", "twitch",
-  "dailymotion", "bilibili", "bluesky", "threads", "tumblr", "bandcamp", "mixcloud", "rumble", "odysee", "streamable", "snapchat"];
+const FEATURED = ["youtube", "soundcloud", "tiktok", "instagram", "twitter", "facebook", "twitch",
+  "dailymotion", "bilibili", "bluesky", "threads", "tumblr", "mixcloud", "rumble", "odysee", "streamable", "snapchat"];
 const REFUSED = new Set(["spotify", "deezer", "tidal", "apple_music", "applemusic"]);
 
 function Sources() {

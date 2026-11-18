@@ -25,12 +25,15 @@ import (
 const maxBody = 16 * 1024
 
 // Services the instance advertises, for the page's "works here" hint.
+// Reddit, Vimeo and Bandcamp are left out on purpose: they refuse requests
+// from datacenter addresses (login wall or bot challenge), so listing them
+// only leads people into an error.
 var Services = []string{
-	"9gag", "audiomack", "bandcamp", "bilibili", "bluesky", "coub", "dailymotion",
+	"9gag", "audiomack", "bilibili", "bluesky", "coub", "dailymotion",
 	"douyin", "facebook", "hearthis", "imgur", "instagram", "kick", "loom",
-	"mixcloud", "newgrounds", "odysee", "ok", "reddit", "rumble", "rutube",
+	"mixcloud", "newgrounds", "odysee", "ok", "rumble", "rutube",
 	"snapchat", "soundcloud", "streamable", "threads", "tiktok", "tumblr",
-	"twitch", "twitter", "vimeo", "vk", "xiaohongshu", "youtube",
+	"twitch", "twitter", "vk", "xiaohongshu", "youtube",
 }
 
 // Server is the HTTP API.
