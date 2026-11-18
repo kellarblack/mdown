@@ -926,6 +926,10 @@ a.ghost-btn { text-decoration: none; }
 .chip-name { white-space: nowrap; }
 
 
+/* the React root fills the page, so the footer's auto top margin pushes it
+   to the bottom instead of stopping under the content */
+#root { flex: 1 0 auto; display: flex; flex-direction: column; min-width: 0; }
+
 .footer {
   position: relative; z-index: 1;
   width: 100%; max-width: 900px; margin: auto auto 0; padding: 18px clamp(16px, 4vw, 26px) 26px;
