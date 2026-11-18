@@ -327,6 +327,11 @@ func (e *Engine) probe(ctx context.Context, link string) (*Info, error) {
 	}
 	if code != 0 || len(bytes.TrimSpace(out)) == 0 {
 		if f := Classify(stderr); f != nil {
+			if f.Code == "api.content.drm" {
+				if alt := e.Alternative(ctx, link); alt != nil {
+					f.Context = map[string]any{"alt": alt}
+				}
+			}
 			return nil, f
 		}
 		// the bot wall is intermittent: one retry turns a failure into a file

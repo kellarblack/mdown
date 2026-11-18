@@ -41,6 +41,8 @@ export interface QueueItem {
   ref: string;
   /** a YouTube search for the same song, when the source was encrypted */
   altSearch?: string;
+  /** the same recording on YouTube, matched by the API (title, artist, length) */
+  alt?: { url: string; title: string; channel: string };
   sourceUrl: string;
   blobUrl: string;
   blob: Blob | null;
@@ -463,7 +465,9 @@ function handleApiError(item: QueueItem, code: string, context?: Record<string, 
   /* the id goes on the row, not in the toast: it is for the person pasting it
      into a message later, and a toast is gone before they can select it */
   item.ref = ref || "";
-  item.altSearch = code === "api.content.drm" ? youtubeSearchFor(item.url) : undefined;
+  item.alt = code === "api.content.drm" ? altFrom(context) : undefined;
+  item.altSearch = code === "api.content.drm" && !item.alt ? youtubeSearchFor(item.url) : undefined;
+  if (item.alt) text = ERROR_TEXT["api.content.drm.alt"] || text;
   item.error = ref ? text + " · ref " + ref : text;
   setStatus(item, "error", "failed");
   toast(text, "err");
@@ -688,6 +692,27 @@ export function cancelItem(item: QueueItem, silent = false): void {
   if (item.running) return;
   if (!silent && ["queued", "working", "downloading"].includes(item.status)) setStatus(item, "cancelled", "cancelled");
   if (silent) item.status = "cancelled";
+}
+
+const ALT_URL = /^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/;
+
+/** the API's YouTube match, only if it has exactly the shape the API sends */
+export function altFrom(context?: Record<string, unknown>): QueueItem["alt"] {
+  const a = context?.alt as { url?: unknown; title?: unknown; channel?: unknown } | undefined;
+  if (!a || typeof a.url !== "string" || !ALT_URL.test(a.url)) return undefined;
+  return { url: a.url, title: String(a.title || "").slice(0, 200), channel: String(a.channel || "").slice(0, 100) };
+}
+
+/** swap an encrypted track for its YouTube match, in the same row, as audio */
+export function switchToAlternative(item: QueueItem): void {
+  const alt = item.alt;
+  if (!alt) return;
+  const detected = detectService(alt.url);
+  Object.assign(item, {
+    url: alt.url, service: detected?.id || "youtube", host: detected ? detected.host : hostOf(alt.url),
+    mode: "audio" as ItemMode, alt: undefined, altSearch: undefined, previewTitle: alt.title, thumb: "",
+  });
+  retryItem(item);
 }
 
 export function retryItem(item: QueueItem): void {

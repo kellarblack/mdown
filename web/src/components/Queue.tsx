@@ -3,7 +3,7 @@ import { ICONS } from "../status-icons";
 import { markFor, marksStore } from "../service-marks";
 import {
   cancelItem, clearFinished, FINISHED, modalStore, openSource, queueStore, queueSummary, removeItem, reportable,
-  retryItem, saveBlob, shareItem, type QueueItem,
+  retryItem, saveBlob, shareItem, switchToAlternative, type QueueItem,
 } from "../queue";
 import { settingsStore, setPanel, toast, useStore } from "../store";
 import { clockTime, copyText, cx, etaText, formatBytes } from "../util";
@@ -122,7 +122,12 @@ const Row = memo(function Row({ item }: { item: QueueItem; v: number }) {
           <Btn label="Cancel" onClick={() => cancelItem(item)}><IconClose /></Btn>
         )}
         {(item.status === "error" || item.status === "cancelled") && (
-          item.altSearch ? (
+          item.alt ? (
+            <button type="button" className="q-save q-alt" onClick={() => switchToAlternative(item)}
+              title={"Download from YouTube: " + item.alt.title + (item.alt.channel ? " · " + item.alt.channel : "")}>
+              <IconRetry /><span>get from YouTube</span>
+            </button>
+          ) : item.altSearch ? (
             <a className="q-save q-alt" href={item.altSearch} target="_blank" rel="noopener noreferrer" title="search YouTube for this song">
               <IconOpen /><span>find on YouTube</span>
             </a>

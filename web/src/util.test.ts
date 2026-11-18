@@ -83,3 +83,13 @@ test("an encrypted SoundCloud track offers a YouTube search", async () => {
   expect(youtubeSearchFor("https://www.youtube.com/watch?v=x")).toBeUndefined();
   expect(youtubeSearchFor("https://soundcloud.com/only-artist")).toBeUndefined();
 });
+
+test("altFrom only accepts a plain YouTube watch link", async () => {
+  const { altFrom } = await import("./queue");
+  expect(altFrom({ alt: { url: "https://www.youtube.com/watch?v=goYgHnsQdtY", title: "Dior", channel: "POP SMOKE" } })?.url)
+    .toBe("https://www.youtube.com/watch?v=goYgHnsQdtY");
+  expect(altFrom({ alt: { url: "javascript:alert(1)", title: "x" } })).toBeUndefined();
+  expect(altFrom({ alt: { url: "https://evil.example/watch?v=goYgHnsQdtY" } })).toBeUndefined();
+  expect(altFrom({})).toBeUndefined();
+  expect(altFrom(undefined)).toBeUndefined();
+});

@@ -374,7 +374,11 @@ class Handler(BaseHTTPRequestHandler):
 
         # an encrypted track, the way SoundCloud's major-label releases answer
         if "drm" in url:
-            self._json({"status": "error", "error": {"code": "api.content.drm", "ref": "mockdrm1"}}, 422)
+            err = {"code": "api.content.drm", "ref": "mockdrm1"}
+            if "alt" in url:
+                err["context"] = {"alt": {"url": "https://www.youtube.com/watch?v=goYgHnsQdtY",
+                                          "title": "Pop Smoke - Dior (Official Audio)", "channel": "POP SMOKE"}}
+            self._json({"status": "error", "error": err}, 422)
             return
 
         mode = body.get("downloadMode") or "auto"
