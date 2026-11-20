@@ -3140,7 +3140,7 @@ a.addr-value:hover { color: var(--text); }
 /* the x glyph fills its box edge to edge, so it reads heavier than the round
    marks at the same number. everything else is 18 and the x is 14. */
 .share-chip[data-share="x"] .share-icon svg { width: 14px; height: 14px; }
-.share-chip[data-share="reddit"] .share-icon svg { width: 18px; height: 18px; }
+.share-chip[data-share="reddit"] .share-icon svg { width: 22px; height: 22px; margin: -2px; }
 .share-chip[data-share="threads"] .share-icon svg { width: 18px; height: 18px; }
 .share-chip[data-share="bsky"] .share-icon svg { width: 18px; height: 18px; }
 /* the icon leans into the hover a hair before the row does */
@@ -3164,6 +3164,7 @@ a.addr-value:hover { color: var(--text); }
      because "threa…" is not a brand */
   .share-chip { gap: 4px; padding: 0 5px; font-size: 0.65rem; }
   .share-icon, .share-icon svg { width: 16px; height: 16px; }
+  .share-chip[data-share="reddit"] .share-icon svg { width: 20px; height: 20px; margin: -2px; }
 }
 /* under 360px even that is too tight: icons only */
 @media (max-width: 359px) {
@@ -3171,6 +3172,7 @@ a.addr-value:hover { color: var(--text); }
   .share-chip { gap: 0; }
   .share-label { display: none; }
   .share-chip .share-icon svg { width: 15px; height: 15px; }
+  .share-chip[data-share="reddit"] .share-icon svg { width: 19px; height: 19px; margin: -2px; }
 }
 .share-toast {
   margin: 10px 0 0; min-height: 0;
