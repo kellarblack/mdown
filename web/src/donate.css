@@ -108,10 +108,15 @@ a.tj-addr-value { text-decoration: none; }
   background: var(--surface); color: var(--text-2); font: inherit; font-size: 12px; text-decoration: none; cursor: pointer;
   transition: color var(--speed) var(--ease), border-color var(--speed) var(--ease), background var(--speed) var(--ease);
 }
-.tj-copy svg, .tj-chip svg { width: 14px; height: 14px; flex: none; }
+.tj-copy svg, .tj-chip svg { width: 15px; height: 15px; flex: none; }
 .tj-copy:hover, .tj-chip:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
 .tj-copy.is-copied, .tj-chip.is-copied { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
-.tj-chip-icon, .tj-chip-icon svg { width: 14px; height: 14px; display: block; }
+.tj-chip-icon, .tj-chip-icon svg { width: 15px; height: 15px; display: block; }
+/* x fills its whole box, so it reads heavier at the same number */
+a.tj-chip[aria-label="share on x"] .tj-chip-icon, a.tj-chip[aria-label="share on x"] .tj-chip-icon svg { width: 12px; height: 12px; }
+/* the copy/check line icons sit inside padding in their 24 box; the brand marks fill theirs.
+   enlarge the line icons so every glyph in the row has the same visible size */
+.tj-chip-copy svg { width: 19px; height: 19px; margin: -2px; }
 
 .tj-share { display: flex; flex-wrap: wrap; gap: 8px; }
 

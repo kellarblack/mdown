@@ -11,7 +11,7 @@ const BLURB = "mdown: media downloader for video and audio. no ads, no accounts,
 const SHARES: [string, string, string][] = [
   ["x", SERVICE_MARKS.twitter!, "https://x.com/intent/post?text=" + encodeURIComponent(BLURB) + "&url=" + encodeURIComponent(PAGE_URL)],
   ["threads", SERVICE_MARKS.threads!, "https://www.threads.net/intent/post?text=" + encodeURIComponent(BLURB + " " + PAGE_URL)],
-  ["reddit", SERVICE_MARKS.reddit!.replace('viewBox="0 0 24 24"', 'viewBox="3 3.4 18 17"'), "https://www.reddit.com/submit?url=" + encodeURIComponent(PAGE_URL) + "&title=" + encodeURIComponent(BLURB)],
+  ["reddit", SERVICE_MARKS.reddit!.replace('viewBox="0 0 24 24"', 'viewBox="3.5 3.75 17 17"'), "https://www.reddit.com/submit?url=" + encodeURIComponent(PAGE_URL) + "&title=" + encodeURIComponent(BLURB)],
   ["bluesky", SERVICE_MARKS.bluesky!, "https://bsky.app/intent/compose?text=" + encodeURIComponent(BLURB + " " + PAGE_URL)],
 ];
 
