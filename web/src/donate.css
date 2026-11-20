@@ -112,11 +112,10 @@ a.tj-addr-value { text-decoration: none; }
 .tj-copy:hover, .tj-chip:hover { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
 .tj-copy.is-copied, .tj-chip.is-copied { color: var(--text); border-color: var(--stroke-2); background: var(--surface-2); }
 .tj-chip-icon, .tj-chip-icon svg { width: 15px; height: 15px; display: block; }
-/* x fills its whole box, so it reads heavier at the same number */
-a.tj-chip[aria-label="share on x"] .tj-chip-icon, a.tj-chip[aria-label="share on x"] .tj-chip-icon svg { width: 12px; height: 12px; }
 /* the copy/check line icons sit inside padding in their 24 box; the brand marks fill theirs.
    enlarge the line icons so every glyph in the row has the same visible size */
-.tj-chip-copy svg { width: 19px; height: 19px; margin: -2px; }
+.tj-chip-copy svg { width: 18px; height: 18px; margin: -1.5px; }
+a.tj-chip[aria-label="share on reddit"] .tj-chip-icon svg { width: 17px; height: 17px; margin: -1px; }
 
 .tj-share { display: flex; flex-wrap: wrap; gap: 8px; }
 
